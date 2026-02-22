@@ -1,0 +1,37 @@
+import type { Metadata } from "next";
+import { Providers } from "@/components/Providers";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "Reflex L1 — Parametric Micro-Insurance",
+  description:
+    "Decentralized parametric protection powered by Avalanche and zkTLS verification. Instant payouts, zero paperwork.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en" className="dark">
+      <head>
+        <link href="https://fonts.googleapis.com" rel="preconnect" />
+        <link
+          crossOrigin=""
+          href="https://fonts.gstatic.com"
+          rel="preconnect"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="bg-background-dark text-slate-100 font-display selection:bg-primary selection:text-white overflow-x-hidden">
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
