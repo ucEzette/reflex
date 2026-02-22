@@ -1,0 +1,15 @@
+# Environment files
+.env
+.env.local
+.env*.local
+
+# Dependencies
+node_modules/
+
+# Build outputs
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+relayer/dist/
+frontend/.next/
+frontend/out/
