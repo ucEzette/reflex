@@ -1,0 +1,23 @@
+{
+  "name": "reflex-relayer",
+  "version": "1.0.0",
+  "description": "Reflex L1 zkTLS Relayer — monitors flights and submits proofs for parametric insurance payouts",
+  "main": "dist/relayer.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/relayer.js",
+    "dev": "npx ts-node src/relayer.ts"
+  },
+  "dependencies": {
+    "@reclaimprotocol/zk-fetch": "^0.1.0",
+    "ethers": "^6.13.0",
+    "dotenv": "^16.4.0",
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/node-cron": "^3.0.11",
+    "typescript": "^5.3.0",
+    "ts-node": "^10.9.0"
+  }
+}
