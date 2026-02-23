@@ -1,0 +1,35 @@
+name: Relayer CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'relayer/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'relayer/**'
+
+jobs:
+  build:
+    name: Build and Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: relayer/package-lock.json
+
+      - name: Install Dependencies
+        run: |
+          cd relayer
+          npm ci
+
+      - name: Check Build
+        run: |
+          cd relayer
+          npm run build
