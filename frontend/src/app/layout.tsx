@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Providers } from "@/components/Providers";
 import "./globals.css";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Reflex L1 — Parametric Micro-Insurance",
@@ -31,6 +32,7 @@ export default function RootLayout({
       </head>
       <body className="bg-background-dark text-slate-100 font-display selection:bg-primary selection:text-white overflow-x-hidden">
         <Providers>{children}</Providers>
+        <Toaster position="bottom-right" theme="dark" />
       </body>
     </html>
   );
