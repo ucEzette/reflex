@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { toast } from "sonner";
 import { ESCROW_ABI, ERC20_ABI } from "@/lib/contracts";
 import { CONTRACTS, POLICY_PREMIUM, POLICY_PAYOUT, POLICY_DURATION_HOURS } from "@/lib/wagmiConfig";
 
@@ -12,7 +13,7 @@ export function PolicyDashboard() {
     const [purchaseSuccess, setPurchaseSuccess] = useState(false);
 
     /* ── Read USDC balance & allowance ── */
-    const { data: usdcBalance } = useReadContract({
+    const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
         address: CONTRACTS.USDC,
         abi: ERC20_ABI,
         functionName: "balanceOf",
@@ -20,7 +21,7 @@ export function PolicyDashboard() {
         query: { enabled: !!address },
     });
 
-    const { data: allowance } = useReadContract({
+    const { data: allowance, refetch: refetchAllowance } = useReadContract({
         address: CONTRACTS.USDC,
         abi: ERC20_ABI,
         functionName: "allowance",
@@ -29,22 +30,20 @@ export function PolicyDashboard() {
     });
 
     /* ── Write: Approve USDC ── */
-    const { writeContract: approveUsdc, data: approveTxHash, isPending: isApproving } = useWriteContract();
-    const { isLoading: isApproveConfirming } = useWaitForTransactionReceipt({ hash: approveTxHash });
+    const { writeContract: approveUsdc, data: approveTxHash, isPending: isApproving, error: approveError } = useWriteContract();
+    const { isLoading: isApproveConfirming, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({ hash: approveTxHash });
 
     /* ── Write: Purchase Policy ── */
-    const { writeContract: purchasePolicy, data: purchaseTxHash, isPending: isPurchasing } = useWriteContract();
-    const { isLoading: isPurchaseConfirming } = useWaitForTransactionReceipt({
+    const { writeContract: purchasePolicy, data: purchaseTxHash, isPending: isPurchasing, error: purchaseError } = useWriteContract();
+    const { isLoading: isPurchaseConfirming, isSuccess: isPurchaseSuccess } = useWaitForTransactionReceipt({
         hash: purchaseTxHash,
-        query: {
-            enabled: !!purchaseTxHash,
-        },
+        query: { enabled: !!purchaseTxHash },
     });
 
     const hasEnoughAllowance = allowance ? (allowance as bigint) >= POLICY_PREMIUM : false;
-    const apiTarget = flightNumber && flightDate
-        ? `https://aeroapi.flightaware.com/aeroapi/flights/${flightNumber.toUpperCase()}?start=${flightDate}`
-        : "";
+
+    // AviationStack relayer expects just the flight code
+    const apiTarget = flightNumber.trim().toUpperCase();
 
     const handleApprove = () => {
         approveUsdc({
@@ -63,8 +62,29 @@ export function PolicyDashboard() {
             functionName: "purchasePolicy",
             args: [apiTarget, POLICY_PREMIUM, POLICY_PAYOUT, POLICY_DURATION_HOURS],
         });
-        setPurchaseSuccess(true);
     };
+
+    /* ── Progress Toasts ── */
+    useEffect(() => {
+        if (isApproving) toast.loading("Requesting allowance...", { id: "approve" });
+        if (isApproveConfirming) toast.loading("Confirming allowance on-chain...", { id: "approve" });
+        if (isApproveSuccess) {
+            toast.success("Allowance approved!", { id: "approve" });
+            refetchAllowance();
+        }
+        if (approveError) toast.error(approveError.message.split(".")[0], { id: "approve" });
+    }, [isApproving, isApproveConfirming, isApproveSuccess, approveError, refetchAllowance]);
+
+    useEffect(() => {
+        if (isPurchasing) toast.loading("Initializing purchase...", { id: "purchase" });
+        if (isPurchaseConfirming) toast.loading("Securing flight insurance...", { id: "purchase" });
+        if (isPurchaseSuccess) {
+            toast.success("Policy secured successfully!", { id: "purchase" });
+            setPurchaseSuccess(true);
+            refetchBalance();
+        }
+        if (purchaseError) toast.error(purchaseError.message.split(".")[0], { id: "purchase" });
+    }, [isPurchasing, isPurchaseConfirming, isPurchaseSuccess, purchaseError, refetchBalance]);
 
     const isProcessing = isApproving || isApproveConfirming || isPurchasing || isPurchaseConfirming;
     const canPurchase = flightNumber.length >= 3 && flightDate && isConnected;
@@ -87,28 +107,31 @@ export function PolicyDashboard() {
     /* ── Success State ── */
     if (purchaseSuccess && purchaseTxHash) {
         return (
-            <div className="glass-panel rounded-2xl p-1 shadow-2xl shadow-black/50">
-                <div className="bg-background-dark/80 rounded-xl p-8 border border-white/5 text-center">
+            <div className="glass-panel rounded-2xl p-1 shadow-2xl shadow-black/50 overflow-hidden relative">
+                <div className="bg-background-dark/80 rounded-xl p-8 border border-white/5 text-center relative z-10">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-green-400 text-3xl">check_circle</span>
+                        <span className="material-symbols-outlined text-green-400 text-3xl">verified</span>
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Policy Active</h3>
-                    <p className="text-sm text-slate-400 mb-4">Your flight delay insurance is now active</p>
+                    <h3 className="text-xl font-bold text-white mb-2">Policy Secured</h3>
+                    <p className="text-sm text-slate-400 mb-4">Coverage for {flightNumber.toUpperCase()} is active.</p>
                     <a
                         href={`https://testnet.snowtrace.io/tx/${purchaseTxHash}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-neon-cyan text-xs font-mono hover:underline"
+                        className="inline-flex items-center gap-2 text-primary text-xs font-mono hover:underline bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20"
                     >
-                        {purchaseTxHash.slice(0, 16)}...
+                        <span>VIEW ON EXPLORER</span>
+                        <span className="material-symbols-outlined text-[14px]">open_in_new</span>
                     </a>
                     <button
                         onClick={() => setPurchaseSuccess(false)}
-                        className="mt-6 w-full py-3 bg-white/5 hover:bg-white/10 text-white rounded-lg font-bold border border-white/10 transition-colors"
+                        className="mt-8 w-full py-4 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold border border-white/10 transition-all hover:scale-[1.01] active:scale-[0.99]"
                     >
                         Purchase Another Policy
                     </button>
                 </div>
+                {/* Decorative background glow */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/20 blur-[60px] pointer-events-none" />
             </div>
         );
     }
@@ -120,21 +143,20 @@ export function PolicyDashboard() {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h3 className="text-xl font-bold text-white mb-1">New Policy Application</h3>
-                        <p className="text-sm text-slate-400">Fill in details to calculate premium</p>
+                        <h3 className="text-xl font-bold text-white mb-1 tracking-tight">Policy Application</h3>
+                        <p className="text-sm text-slate-400">Calculate premium for instant coverage</p>
                     </div>
                     <div className="hidden sm:block">
-                        <div className="px-3 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-mono text-slate-400">
-                            REFLEX_V1.2
+                        <div className="px-3 py-1 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono text-slate-400 tracking-tighter">
+                            Fuji Testnet v1.0
                         </div>
                     </div>
                 </div>
 
                 {/* Input Forms */}
                 <div className="space-y-6">
-                    {/* Flight Number */}
                     <div className="group">
-                        <label className="block text-xs font-mono text-slate-400 mb-2 uppercase tracking-wider group-focus-within:text-primary transition-colors">
+                        <label className="block text-xs font-mono text-slate-500 mb-2 uppercase tracking-widest group-focus-within:text-primary transition-colors">
                             Flight Number
                         </label>
                         <div className="relative flex items-center">
@@ -145,62 +167,63 @@ export function PolicyDashboard() {
                                 type="text"
                                 value={flightNumber}
                                 onChange={(e) => setFlightNumber(e.target.value)}
-                                placeholder="e.g. AA125"
-                                className="w-full bg-[#0B0F19] border border-slate-700 text-white text-lg placeholder-slate-600 rounded-lg py-4 pl-12 pr-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-mono uppercase"
+                                placeholder="e.g. EK202"
+                                className="w-full bg-[#0B0F19] border border-slate-700/50 text-white text-lg placeholder-slate-600 rounded-xl py-4 pl-12 pr-4 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all font-mono uppercase"
                             />
-                            <div className="absolute right-4">
-                                <span className="material-symbols-outlined text-slate-600 text-lg">wifi_tethering</span>
-                            </div>
                         </div>
                     </div>
 
-                    {/* Date Picker */}
                     <div className="group">
-                        <label className="block text-xs font-mono text-slate-400 mb-2 uppercase tracking-wider group-focus-within:text-primary transition-colors">
-                            Date of Travel
+                        <label className="block text-xs font-mono text-slate-500 mb-2 uppercase tracking-widest group-focus-within:text-primary transition-colors">
+                            Policy Effective Date
                         </label>
                         <div className="relative flex items-center">
                             <div className="absolute left-4 text-slate-500 group-focus-within:text-primary transition-colors">
-                                <span className="material-symbols-outlined">calendar_month</span>
+                                <span className="material-symbols-outlined">event</span>
                             </div>
                             <input
                                 type="date"
                                 value={flightDate}
                                 onChange={(e) => setFlightDate(e.target.value)}
-                                className="w-full bg-[#0B0F19] border border-slate-700 text-white text-lg placeholder-slate-600 rounded-lg py-4 pl-12 pr-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-mono [color-scheme:dark]"
+                                className="w-full bg-[#0B0F19] border border-slate-700/50 text-white text-lg placeholder-slate-600 rounded-xl py-4 pl-12 pr-4 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all font-mono [color-scheme:dark]"
                             />
                         </div>
                     </div>
 
                     {/* Coverage Details Card */}
-                    <div className="mt-6 p-5 bg-[#161d2f] border border-slate-700/50 rounded-lg">
+                    <div className="mt-6 p-5 bg-gradient-to-br from-[#161d2f] to-[#0B0F19] border border-white/5 rounded-xl">
                         <div className="flex items-center justify-between mb-4">
-                            <span className="text-sm text-slate-400">Coverage Tier</span>
-                            <span className="text-xs font-bold bg-primary/20 text-primary px-2 py-1 rounded">STANDARD</span>
+                            <span className="text-sm text-slate-400 font-medium">Auto-Settlement Tier</span>
+                            <span className="text-[10px] font-bold bg-primary/20 text-primary px-2 py-0.5 rounded-sm tracking-widest">PREMIUM</span>
                         </div>
                         <div className="flex items-end gap-2 mb-2">
-                            <span className="text-4xl font-bold text-white">50</span>
-                            <span className="text-xl font-medium text-slate-400 mb-1.5">USDC</span>
+                            <span className="text-4xl font-bold text-white tracking-tighter">50.00</span>
+                            <span className="text-lg font-medium text-slate-500 mb-1.5">USDC</span>
                         </div>
-                        <p className="text-xs text-slate-500 mb-4">Maximum payout for &gt;2hr delay or cancellation.</p>
-                        <div className="w-full h-px bg-slate-700/50 my-4" />
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div className="flex items-center gap-2 text-slate-300">
-                                <span className="material-symbols-outlined text-green-500 text-[18px]">check_circle</span>
-                                <span>Automatic Payout</span>
+                        <p className="text-[11px] text-slate-500 leading-relaxed">Guaranteed 24/7 monitoring. Immediate payout if arrival delay exceeds 120 minutes.</p>
+
+                        <div className="grid grid-cols-2 gap-4 mt-6">
+                            <div className="flex items-center gap-2 text-xs text-slate-400">
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500/50" />
+                                <span>zkTLS Verified</span>
                             </div>
-                            <div className="flex items-center gap-2 text-slate-300">
-                                <span className="material-symbols-outlined text-green-500 text-[18px]">check_circle</span>
-                                <span>Instant Settlement</span>
+                            <div className="flex items-center gap-2 text-xs text-slate-400">
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500/50" />
+                                <span>Chain-Agnostic</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Balance Info */}
                     {usdcBalance !== undefined && (
-                        <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
-                            <span>USDC Balance: ${(Number(usdcBalance) / 1e6).toFixed(2)}</span>
-                            <span>Allowance: {hasEnoughAllowance ? "✓ Approved" : "Needs Approval"}</span>
+                        <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono tracking-tight bg-white/5 px-4 py-2 rounded-lg border border-white/5">
+                            <span className="flex items-center gap-1.5">
+                                <div className="w-1 h-1 rounded-full bg-primary" />
+                                BALANCE: {(Number(usdcBalance) / 1e6).toFixed(2)} USDC
+                            </span>
+                            <span className={hasEnoughAllowance ? "text-green-500" : "text-yellow-500"}>
+                                {hasEnoughAllowance ? "• ALLOWANCE READY" : "• APPROVAL REQUIRED"}
+                            </span>
                         </div>
                     )}
 
@@ -208,42 +231,36 @@ export function PolicyDashboard() {
                     <button
                         onClick={canPurchase ? (hasEnoughAllowance ? handlePurchase : handleApprove) : undefined}
                         disabled={!canPurchase || isProcessing}
-                        className="group w-full relative h-16 mt-4 purchase-btn-gradient rounded-xl text-white font-bold text-lg overflow-hidden transition-all duration-300 transform active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="group w-full relative h-16 mt-4 purchase-btn-gradient rounded-xl text-white font-bold text-lg overflow-hidden transition-all duration-300 transform active:scale-95 disabled:opacity-40 disabled:grayscale disabled:scale-100"
                     >
-                        <div className="absolute inset-0 flex items-center justify-between px-6 z-10">
+                        <div className="absolute inset-0 flex items-center justify-between px-6 z-10 transition-opacity group-disabled:opacity-80">
                             <span className="flex flex-col items-start leading-tight">
-                                <span className="text-xs font-normal text-slate-300 uppercase tracking-widest">Total Premium</span>
-                                <span className="text-xl">$5.00 USDC</span>
+                                <span className="text-[10px] font-normal text-slate-300 uppercase tracking-widest">Insurance Premium</span>
+                                <span className="text-lg tracking-tight">$5.00 USDC</span>
                             </span>
                             <div className="flex items-center gap-3">
                                 {isProcessing ? (
-                                    <span className="flex items-center gap-2">
-                                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                    <span className="flex items-center gap-2 text-sm">
+                                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                                             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" strokeDasharray="32" strokeDashoffset="12" />
                                         </svg>
-                                        Processing...
+                                        PROCESSING
                                     </span>
                                 ) : !hasEnoughAllowance ? (
-                                    <>
-                                        <span className="tracking-wide">APPROVE USDC</span>
-                                        <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                                    </>
+                                    <span className="flex items-center gap-2 text-sm tracking-wide">
+                                        UNLOCK ASSETS
+                                        <span className="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">key</span>
+                                    </span>
                                 ) : (
-                                    <>
-                                        <span className="tracking-wide">PURCHASE POLICY</span>
-                                        <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                                    </>
+                                    <span className="flex items-center gap-2 text-sm tracking-wide">
+                                        INITIATE COVERAGE
+                                        <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">bolt</span>
+                                    </span>
                                 )}
                             </div>
                         </div>
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out z-0" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out z-0" />
                     </button>
-
-                    <p className="text-center text-xs text-slate-500 mt-4">
-                        By purchasing, you agree to the{" "}
-                        <a className="text-slate-400 hover:text-white underline" href="#">Terms of Service</a>{" "}
-                        and <a className="text-slate-400 hover:text-white underline" href="#">Smart Contract Rules</a>.
-                    </p>
                 </div>
             </div>
         </div>
