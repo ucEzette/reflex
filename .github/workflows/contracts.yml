@@ -24,7 +24,10 @@ jobs:
         with:
           version: nightly
 
+      - name: Install Dependencies
+        working-directory: contracts
+        run: forge install
+
       - name: Run Tests
-        run: |
-          cd contracts
-          forge test -vv
+        working-directory: contracts
+        run: forge test -vv
