@@ -11,7 +11,7 @@ const REQUIRED_ENV_VARS = [
     "RPC_URL",
     "ESCROW_CONTRACT_ADDRESS",
     "TELEPORTER_ADDRESS",
-    "FLIGHTAWARE_API_KEY",
+    "AVIATIONSTACK_API_KEY",
     "RECLAIM_APP_ID",
     "RECLAIM_APP_SECRET",
 ] as const;
@@ -28,7 +28,7 @@ function loadConfig() {
         rpcUrl: process.env.RPC_URL!,
         escrowAddress: process.env.ESCROW_CONTRACT_ADDRESS!,
         teleporterAddress: process.env.TELEPORTER_ADDRESS!,
-        flightAwareApiKey: process.env.FLIGHTAWARE_API_KEY!,
+        aviationStackApiKey: process.env.AVIATIONSTACK_API_KEY!,
         reclaimAppId: process.env.RECLAIM_APP_ID!,
         reclaimAppSecret: process.env.RECLAIM_APP_SECRET!,
         pollIntervalSeconds: parseInt(process.env.POLL_INTERVAL_SECONDS || "60", 10),
@@ -68,62 +68,61 @@ interface FlightData {
     status: string;
 }
 
-// ─── FlightAware API Client ─────────────────────────────────────────────────
-
-async function queryFlightAware(
+// ─── Aviationstack API Client ─────────────────────────────────────────────────
+/**
+ * Aviationstack provides flight status via /flights endpoint.
+ * Query params: access_key, flight_iata or flight_icao.
+ */
+async function queryAviationStack(
     apiTarget: string,
     apiKey: string
 ): Promise<FlightData | null> {
-    const baseUrl = "https://aeroapi.flightaware.com/aeroapi";
-    const url = `${baseUrl}/${apiTarget}`;
+    // Basic plan often requires http instead of https, but will try https first.
+    const baseUrl = "http://api.aviationstack.com/v1/flights";
+
+    // Clean apiTarget (strip 'flights/' prefix if user included it for FlightAware compatibility)
+    const flightCode = apiTarget.replace(/^flights\//, "").toUpperCase();
+
+    const url = `${baseUrl}?access_key=${apiKey}&flight_iata=${flightCode}`;
 
     try {
-        const response = await fetch(url, {
-            headers: {
-                "x-apikey": apiKey,
-                Accept: "application/json",
-            },
-        });
+        console.log(`[Aviationstack] Fetching status for: ${flightCode}`);
+        const response = await fetch(url);
 
         if (!response.ok) {
             console.error(
-                `[FlightAware] API error: ${response.status} ${response.statusText}`
+                `[Aviationstack] API error: ${response.status} ${response.statusText}`
             );
             return null;
         }
 
-        const data = await response.json();
+        const data = await response.json() as any;
 
-        // Parse FlightAware AeroAPI response
-        const flights = data.flights || [data];
-        const flight = flights[0];
+        // Parse Aviationstack response
+        // Structure: { data: [ { flight_status: '...', arrival: { delay: 120, ... }, ... } ] }
+        const flights = data.data;
 
-        if (!flight) {
-            console.warn(`[FlightAware] No flight data found for: ${apiTarget}`);
+        if (!flights || flights.length === 0) {
+            console.warn(`[Aviationstack] No flight data found for: ${flightCode}`);
             return null;
         }
 
-        const scheduledArrival = flight.scheduled_in || flight.estimated_in || "";
-        const actualArrival = flight.actual_in || "";
+        const flight = flights[0]; // Take the most recent/relevant one
 
-        let delaySeconds = 0;
-        if (flight.arrival_delay !== undefined) {
-            delaySeconds = flight.arrival_delay;
-        } else if (scheduledArrival && actualArrival) {
-            const scheduled = new Date(scheduledArrival).getTime();
-            const actual = new Date(actualArrival).getTime();
-            delaySeconds = Math.max(0, Math.floor((actual - scheduled) / 1000));
-        }
+        const scheduledArrival = flight.arrival?.scheduled || "";
+        const actualArrival = flight.arrival?.actual || "";
+        const delayMinutes = flight.arrival?.delay || 0; // Aviationstack delay is often in minutes
+        const delaySeconds = delayMinutes * 60;
 
         return {
-            flightId: flight.ident || apiTarget,
+            flightId: flight.flight?.iata || flightCode,
             scheduledArrival,
             actualArrival,
             delaySeconds,
-            status: flight.status || "unknown",
+            status: flight.flight_status || "unknown",
         };
     } catch (error) {
-        console.error(`[FlightAware] Request failed for ${apiTarget}:`, error);
+        console.error(`[Aviationstack] Request failed for ${flightCode}:`, error);
         return null;
     }
 }
@@ -159,7 +158,7 @@ async function generateZkProof(
     const encoder = new TextEncoder();
     const providerData = encoder.encode(
         JSON.stringify({
-            provider: "flightaware-aeroapi",
+            provider: "aviationstack-api",
             endpoint: apiTarget,
             delay: flightData.delaySeconds,
             timestamp: Math.floor(Date.now() / 1000),
@@ -299,10 +298,10 @@ async function monitorPolicies(config: ReturnType<typeof loadConfig>) {
                 `[Relayer] Checking flight: ${policy.apiTarget} for policy ${policyId.slice(0, 18)}...`
             );
 
-            // Query FlightAware API
-            const flightData = await queryFlightAware(
+            // Query Aviationstack API
+            const flightData = await queryAviationStack(
                 policy.apiTarget,
-                config.flightAwareApiKey
+                config.aviationStackApiKey
             );
 
             if (!flightData) {
