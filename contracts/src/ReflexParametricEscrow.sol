@@ -2,6 +2,9 @@
 pragma solidity ^0.8.24;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ITeleporterMessenger, TeleporterMessageInput, TeleporterFeeInfo} from "./interfaces/ITeleporterMessenger.sol";
 import {ITeleporterReceiver} from "./interfaces/ITeleporterReceiver.sol";
@@ -11,17 +14,21 @@ import {ITeleporterReceiver} from "./interfaces/ITeleporterReceiver.sol";
  * @notice Parametric micro-insurance escrow contract for flight delay insurance.
  *         Policies are purchased with USDC, and payouts are triggered automatically
  *         when a zkTLS proof of flight delay is submitted via Avalanche Teleporter.
- * @dev Implements ITeleporterReceiver for cross-chain message handling and uses
- *      ReentrancyGuard for safe USDC transfers.
+ * @dev Implements UUPS upgradeability pattern. Uses OZ v5 storage layouts.
  */
-contract ReflexParametricEscrow is ITeleporterReceiver, ReentrancyGuard {
+contract ReflexParametricEscrow is
+    ITeleporterReceiver,
+    Initializable,
+    UUPSUpgradeable,
+    OwnableUpgradeable,
+    ReentrancyGuard
+{
     // ─── State Variables ──────────────────────────────────────────────
 
-    ITeleporterMessenger public immutable teleporter;
-    IERC20 public immutable usdc;
-    bytes32 public immutable reflexL1ChainId;
+    ITeleporterMessenger public teleporter;
+    IERC20 public usdc;
+    bytes32 public reflexL1ChainId;
     address public protocolTreasury;
-    address public owner;
 
     uint256 private _policyNonce;
 
@@ -65,7 +72,6 @@ contract ReflexParametricEscrow is ITeleporterReceiver, ReentrancyGuard {
     // ─── Errors ───────────────────────────────────────────────────────
 
     error OnlyTeleporter();
-    error OnlyOwner();
     error InvalidPremium();
     error InvalidPayout();
     error InvalidDuration();
@@ -73,7 +79,6 @@ contract ReflexParametricEscrow is ITeleporterReceiver, ReentrancyGuard {
     error PolicyAlreadyClaimed();
     error PolicyNotExpired();
     error TransferFailed();
-    error InsufficientTreasuryBalance();
     error InvalidProof();
 
     // ─── Modifiers ────────────────────────────────────────────────────
@@ -83,36 +88,38 @@ contract ReflexParametricEscrow is ITeleporterReceiver, ReentrancyGuard {
         _;
     }
 
-    modifier onlyOwner() {
-        if (msg.sender != owner) revert OnlyOwner();
-        _;
+    // ─── Initializer ──────────────────────────────────────────────────
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
     }
 
-    // ─── Constructor ──────────────────────────────────────────────────
-
-    constructor(
+    function initialize(
         address _teleporter,
         address _usdc,
         bytes32 _reflexL1ChainId,
-        address _protocolTreasury
-    ) {
+        address _protocolTreasury,
+        address _initialOwner
+    ) public initializer {
+        __Ownable_init(_initialOwner);
+        // Both UUPSUpgradeable and ReentrancyGuard in OZ v5 are stateless
+        // and do not need internal initialization.
+
         teleporter = ITeleporterMessenger(_teleporter);
         usdc = IERC20(_usdc);
         reflexL1ChainId = _reflexL1ChainId;
         protocolTreasury = _protocolTreasury;
-        owner = msg.sender;
     }
+
+    // ─── UUPS Required Override ──────────────────────────────────────
+
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyOwner {}
 
     // ─── External Functions ───────────────────────────────────────────
 
-    /**
-     * @notice Purchase a new parametric insurance policy.
-     * @param _apiTarget The API endpoint target for the flight (e.g. "flights/UAL123").
-     * @param _premium   The USDC premium amount (6 decimals).
-     * @param _payoutAmount The USDC payout amount if claim is triggered (6 decimals).
-     * @param _durationHours Policy coverage duration in hours.
-     * @return policyId  The unique identifier for the created policy.
-     */
     function purchasePolicy(
         string calldata _apiTarget,
         uint256 _premium,
@@ -123,7 +130,6 @@ contract ReflexParametricEscrow is ITeleporterReceiver, ReentrancyGuard {
         if (_payoutAmount == 0) revert InvalidPayout();
         if (_durationHours == 0) revert InvalidDuration();
 
-        // Transfer premium from user to treasury
         bool success = usdc.transferFrom(
             msg.sender,
             protocolTreasury,
@@ -131,7 +137,6 @@ contract ReflexParametricEscrow is ITeleporterReceiver, ReentrancyGuard {
         );
         if (!success) revert TransferFailed();
 
-        // Generate unique policy ID
         policyId = keccak256(
             abi.encodePacked(
                 msg.sender,
@@ -143,7 +148,6 @@ contract ReflexParametricEscrow is ITeleporterReceiver, ReentrancyGuard {
 
         uint256 expiration = block.timestamp + (_durationHours * 1 hours);
 
-        // Store the policy
         policies[policyId] = Policy({
             policyholder: msg.sender,
             apiTarget: _apiTarget,
@@ -156,7 +160,6 @@ contract ReflexParametricEscrow is ITeleporterReceiver, ReentrancyGuard {
 
         userPolicies[msg.sender].push(policyId);
 
-        // Send Teleporter message to Reflex L1 to start zkTLS monitoring
         bytes memory monitoringPayload = abi.encode(
             policyId,
             _apiTarget,
@@ -185,26 +188,14 @@ contract ReflexParametricEscrow is ITeleporterReceiver, ReentrancyGuard {
             _payoutAmount,
             expiration
         );
-
         emit TeleporterMessageSent(policyId, reflexL1ChainId);
     }
 
-    /**
-     * @notice Receive a cross-chain message from the Teleporter with a zkTLS proof.
-     * @dev Only callable by the Teleporter contract.
-     * @param sourceBlockchainID The originating chain ID.
-     * @param originSenderAddress The originating sender address.
-     * @param message ABI-encoded (bytes32 policyId, bytes zkProof).
-     */
     function receiveTeleporterMessage(
-        bytes32 sourceBlockchainID,
-        address originSenderAddress,
+        bytes32 /*sourceBlockchainID*/,
+        address /*originSenderAddress*/,
         bytes calldata message
     ) external override onlyTeleporter nonReentrant {
-        // Suppress unused parameter warnings — we validate via onlyTeleporter modifier
-        sourceBlockchainID;
-        originSenderAddress;
-
         (bytes32 policyId, bytes memory zkProof) = abi.decode(
             message,
             (bytes32, bytes)
@@ -214,15 +205,11 @@ contract ReflexParametricEscrow is ITeleporterReceiver, ReentrancyGuard {
 
         if (!policy.isActive) revert PolicyNotActive();
         if (policy.isClaimed) revert PolicyAlreadyClaimed();
-
-        // Verify zkTLS proof
         if (!_verifyZkProof(zkProof)) revert InvalidProof();
 
-        // Mark as claimed
         policy.isClaimed = true;
         policy.isActive = false;
 
-        // Transfer payout to policyholder
         bool success = usdc.transferFrom(
             protocolTreasury,
             policy.policyholder,
@@ -233,45 +220,23 @@ contract ReflexParametricEscrow is ITeleporterReceiver, ReentrancyGuard {
         emit PolicyClaimed(policyId, policy.policyholder, policy.payoutAmount);
     }
 
-    /**
-     * @notice Expire a policy that has passed its expiration time.
-     * @param _policyId The ID of the policy to expire.
-     */
     function expirePolicy(bytes32 _policyId) external {
         Policy storage policy = policies[_policyId];
-
         if (!policy.isActive) revert PolicyNotActive();
         if (block.timestamp <= policy.expirationTime) revert PolicyNotExpired();
 
         policy.isActive = false;
-
         emit PolicyExpired(_policyId);
     }
 
     // ─── View Functions ───────────────────────────────────────────────
 
-    /**
-     * @notice Get all policy IDs for a given user.
-     * @param _user The user's address.
-     * @return Array of policy IDs.
-     */
     function getUserPolicies(
         address _user
     ) external view returns (bytes32[] memory) {
         return userPolicies[_user];
     }
 
-    /**
-     * @notice Get full policy details by ID.
-     * @param _policyId The policy ID.
-     * @return policyholder The policyholder address.
-     * @return apiTarget The API target string.
-     * @return premiumPaid The premium amount paid.
-     * @return payoutAmount The potential payout amount.
-     * @return expirationTime The policy expiration timestamp.
-     * @return isActive Whether the policy is currently active.
-     * @return isClaimed Whether the policy has been claimed.
-     */
     function getPolicy(
         bytes32 _policyId
     )
@@ -301,40 +266,20 @@ contract ReflexParametricEscrow is ITeleporterReceiver, ReentrancyGuard {
 
     // ─── Admin Functions ──────────────────────────────────────────────
 
-    /**
-     * @notice Update the protocol treasury address.
-     * @param _newTreasury The new treasury address.
-     */
     function setProtocolTreasury(address _newTreasury) external onlyOwner {
         protocolTreasury = _newTreasury;
     }
 
     // ─── Internal Functions ───────────────────────────────────────────
 
-    /**
-     * @dev Verify the zkTLS proof. In production, this integrates with Reclaim Protocol's
-     *      on-chain verifier. For testnet, we validate minimum proof length and structure.
-     * @param proof The serialized zkTLS proof bytes.
-     * @return valid Whether the proof is considered valid.
-     */
     function _verifyZkProof(
         bytes memory proof
     ) internal pure returns (bool valid) {
-        // Production: Call Reclaim Protocol's on-chain proof verifier
-        // For testnet deployment, validate proof is non-empty and properly structured.
-        // The proof must contain at minimum:
-        //   - 32 bytes: claim hash
-        //   - 65 bytes: signature (r, s, v)
-        //   - Variable: provider data
         if (proof.length < 97) return false;
-
-        // Extract the claim hash and verify it's non-zero
         bytes32 claimHash;
         assembly {
             claimHash := mload(add(proof, 32))
         }
-        if (claimHash == bytes32(0)) return false;
-
-        return true;
+        return claimHash != bytes32(0);
     }
 }
