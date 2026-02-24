@@ -5,14 +5,29 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --primary: #e74043;
-  --primary-dark: #b02e30;
-  --bg-dark: #0B0E14;
-  --surface-dark: #161b22;
-  --neon-cyan: #00F0FF;
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-surface: rgba(255, 255, 255, 0.03);
+@layer base {
+  :root {
+    --primary: #e74043;
+    --primary-dark: #b02e30;
+    --bg-base: #f8fafc;
+    /* slate-50 */
+    --surface-base: #ffffff;
+    --neon-cyan: #00bcd4;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-panel-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.08);
+    --glass-surface: rgba(0, 0, 0, 0.03);
+  }
+
+  .dark {
+    --bg-base: #0B0E14;
+    --surface-base: #161b22;
+    --neon-cyan: #00F0FF;
+    --glass-bg: rgba(11, 14, 20, 0.7);
+    --glass-panel-bg: rgba(17, 22, 37, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-surface: rgba(255, 255, 255, 0.03);
+  }
 }
 
 /* ── Scrollbar ── */
@@ -21,7 +36,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-dark);
+  background: var(--bg-base);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -35,7 +50,7 @@
 
 /* ── Glass Effects ── */
 .glass-nav {
-  background: rgba(11, 14, 20, 0.7);
+  background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--glass-border);
@@ -50,10 +65,10 @@
 }
 
 .glass-panel {
-  background: rgba(17, 22, 37, 0.6);
+  background: var(--glass-panel-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
