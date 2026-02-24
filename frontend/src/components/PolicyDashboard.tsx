@@ -12,6 +12,11 @@ export function PolicyDashboard() {
     const [flightDate, setFlightDate] = useState("");
     const [purchaseSuccess, setPurchaseSuccess] = useState(false);
 
+    // Flight Validation State
+    const [isValidating, setIsValidating] = useState(false);
+    const [validationError, setValidationError] = useState<string | null>(null);
+    const [flightDetails, setFlightDetails] = useState<any | null>(null);
+
     /* ── Read USDC balance & allowance ── */
     const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
         address: CONTRACTS.USDC,
@@ -55,7 +60,7 @@ export function PolicyDashboard() {
     };
 
     const handlePurchase = () => {
-        if (!apiTarget) return;
+        if (!apiTarget || !flightDetails) return;
         purchasePolicy({
             address: CONTRACTS.ESCROW,
             abi: ESCROW_ABI,
@@ -63,6 +68,44 @@ export function PolicyDashboard() {
             args: [apiTarget, POLICY_PREMIUM, POLICY_PAYOUT, POLICY_DURATION_HOURS],
         });
     };
+
+    /* ── Validate Flight against API ── */
+    useEffect(() => {
+        const validateFlight = async () => {
+            if (apiTarget.length < 3) {
+                setFlightDetails(null);
+                setValidationError(null);
+                return;
+            }
+
+            setIsValidating(true);
+            setValidationError(null);
+
+            try {
+                const res = await fetch(`/api/flight?flight_iata=${apiTarget}`);
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || "Failed to validate flight");
+                }
+
+                setFlightDetails(data);
+                setValidationError(null);
+            } catch (err: any) {
+                setFlightDetails(null);
+                setValidationError(err.message);
+            } finally {
+                setIsValidating(false);
+            }
+        };
+
+        // Debounce validation
+        const timer = setTimeout(() => {
+            validateFlight();
+        }, 800);
+
+        return () => clearTimeout(timer);
+    }, [apiTarget]);
 
     /* ── Progress Toasts ── */
     useEffect(() => {
@@ -87,7 +130,7 @@ export function PolicyDashboard() {
     }, [isPurchasing, isPurchaseConfirming, isPurchaseSuccess, purchaseError, refetchBalance]);
 
     const isProcessing = isApproving || isApproveConfirming || isPurchasing || isPurchaseConfirming;
-    const canPurchase = flightNumber.length >= 3 && flightDate && isConnected;
+    const canPurchase = flightDetails !== null && !isValidating && flightDate && isConnected;
 
     /* ── Wallet Not Connected ── */
     if (!isConnected) {
@@ -166,11 +209,50 @@ export function PolicyDashboard() {
                             <input
                                 type="text"
                                 value={flightNumber}
-                                onChange={(e) => setFlightNumber(e.target.value)}
+                                onChange={(e) => setFlightNumber(e.target.value.toUpperCase())}
                                 placeholder="e.g. EK202"
-                                className="w-full bg-[#0B0F19] border border-slate-700/50 text-white text-lg placeholder-slate-600 rounded-xl py-4 pl-12 pr-4 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all font-mono uppercase"
+                                className={`w-full bg-[#0B0F19] border ${validationError ? 'border-red-500/50 focus:border-red-500' : flightDetails ? 'border-primary/50 focus:border-primary' : 'border-slate-700/50 focus:border-primary/50'} text-white text-lg placeholder-slate-600 rounded-xl py-4 pl-12 pr-12 focus:outline-none focus:ring-1 ${validationError ? 'focus:ring-red-500/20' : 'focus:ring-primary/20'} transition-all font-mono uppercase`}
                             />
+                            <div className="absolute right-4">
+                                {isValidating ? (
+                                    <svg className="animate-spin h-5 w-5 text-slate-500" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" strokeDasharray="32" strokeDashoffset="12" />
+                                    </svg>
+                                ) : flightDetails ? (
+                                    <span className="material-symbols-outlined text-primary">check_circle</span>
+                                ) : validationError ? (
+                                    <span className="material-symbols-outlined text-red-500">error</span>
+                                ) : null}
+                            </div>
                         </div>
+
+                        {/* Validation Messages & Flight Data */}
+                        {validationError && (
+                            <p className="mt-2 text-xs text-red-400 font-mono tracking-wide">{validationError}</p>
+                        )}
+                        {flightDetails && (
+                            <div className="mt-3 p-3 rounded-lg bg-surface-dark/50 border border-white/5 space-y-2">
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-white font-medium">{flightDetails.airline}</span>
+                                    <span className="text-slate-400 font-mono text-xs">{flightDetails.status.toUpperCase()}</span>
+                                </div>
+                                <div className="flex items-center gap-4 text-xs">
+                                    <div className="flex flex-col flex-1">
+                                        <span className="text-slate-500 font-mono">DEP</span>
+                                        <span className="text-slate-300 font-bold">{flightDetails.departure.iata}</span>
+                                        <span className="text-slate-500">{new Date(flightDetails.departure.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                    </div>
+                                    <div className="flex-1 border-t border-dashed border-slate-600 relative">
+                                        <span className="material-symbols-outlined text-slate-500 text-xs absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface-dark px-1">flight_takeoff</span>
+                                    </div>
+                                    <div className="flex flex-col flex-1 text-right">
+                                        <span className="text-slate-500 font-mono">ARR</span>
+                                        <span className="text-slate-300 font-bold">{flightDetails.arrival.iata}</span>
+                                        <span className="text-slate-500">{new Date(flightDetails.arrival.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="group">
