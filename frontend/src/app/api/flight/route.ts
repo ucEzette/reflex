@@ -47,11 +47,13 @@ export async function GET(request: Request) {
                 airport: flight.departure?.airport,
                 iata: flight.departure?.iata,
                 scheduled: flight.departure?.scheduled,
+                timezone: flight.departure?.timezone,
             },
             arrival: {
                 airport: flight.arrival?.airport,
                 iata: flight.arrival?.iata,
                 scheduled: flight.arrival?.scheduled,
+                timezone: flight.arrival?.timezone,
             },
             status: flight.flight_status,
         });

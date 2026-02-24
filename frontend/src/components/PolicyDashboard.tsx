@@ -236,19 +236,29 @@ export function PolicyDashboard() {
                                     <span className="text-white font-medium">{flightDetails.airline}</span>
                                     <span className="text-slate-400 font-mono text-xs">{flightDetails.status.toUpperCase()}</span>
                                 </div>
-                                <div className="flex items-center gap-4 text-xs">
+                                <div className="flex items-center gap-4 text-xs mt-4">
                                     <div className="flex flex-col flex-1">
                                         <span className="text-slate-500 font-mono">DEP</span>
-                                        <span className="text-slate-300 font-bold">{flightDetails.departure.iata}</span>
-                                        <span className="text-slate-500">{new Date(flightDetails.departure.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        <span className="text-slate-200 font-bold text-lg">{flightDetails.departure.iata}</span>
+                                        <span className="text-white mt-1">
+                                            {new Date(flightDetails.departure.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: flightDetails.departure.timezone })}
+                                        </span>
+                                        <span className="text-slate-500 text-[10px] uppercase mt-0.5">
+                                            {new Date(flightDetails.departure.scheduled).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', timeZone: flightDetails.departure.timezone })}
+                                        </span>
                                     </div>
                                     <div className="flex-1 border-t border-dashed border-slate-600 relative">
                                         <span className="material-symbols-outlined text-slate-500 text-xs absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface-dark px-1">flight_takeoff</span>
                                     </div>
                                     <div className="flex flex-col flex-1 text-right">
                                         <span className="text-slate-500 font-mono">ARR</span>
-                                        <span className="text-slate-300 font-bold">{flightDetails.arrival.iata}</span>
-                                        <span className="text-slate-500">{new Date(flightDetails.arrival.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        <span className="text-slate-200 font-bold text-lg">{flightDetails.arrival.iata}</span>
+                                        <span className="text-white mt-1">
+                                            {new Date(flightDetails.arrival.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: flightDetails.arrival.timezone })}
+                                        </span>
+                                        <span className="text-slate-500 text-[10px] uppercase mt-0.5">
+                                            {new Date(flightDetails.arrival.scheduled).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', timeZone: flightDetails.arrival.timezone })}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
