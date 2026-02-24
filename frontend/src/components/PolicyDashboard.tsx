@@ -241,7 +241,7 @@ export function PolicyDashboard() {
                                         <span className="text-slate-500 font-mono">DEP</span>
                                         <span className="text-slate-200 font-bold text-lg">{flightDetails.departure.iata}</span>
                                         <span className="text-white mt-1">
-                                            {new Date(flightDetails.departure.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: flightDetails.departure.timezone })}
+                                            {new Date(flightDetails.departure.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short', timeZone: flightDetails.departure.timezone })}
                                         </span>
                                         <span className="text-slate-500 text-[10px] uppercase mt-0.5">
                                             {new Date(flightDetails.departure.scheduled).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', timeZone: flightDetails.departure.timezone })}
@@ -254,7 +254,7 @@ export function PolicyDashboard() {
                                         <span className="text-slate-500 font-mono">ARR</span>
                                         <span className="text-slate-200 font-bold text-lg">{flightDetails.arrival.iata}</span>
                                         <span className="text-white mt-1">
-                                            {new Date(flightDetails.arrival.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: flightDetails.arrival.timezone })}
+                                            {new Date(flightDetails.arrival.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short', timeZone: flightDetails.arrival.timezone })}
                                         </span>
                                         <span className="text-slate-500 text-[10px] uppercase mt-0.5">
                                             {new Date(flightDetails.arrival.scheduled).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', timeZone: flightDetails.arrival.timezone })}
@@ -292,16 +292,12 @@ export function PolicyDashboard() {
                             <span className="text-4xl font-bold text-white tracking-tighter">50.00</span>
                             <span className="text-lg font-medium text-slate-500 mb-1.5">USDC</span>
                         </div>
-                        <p className="text-[11px] text-slate-500 leading-relaxed">Guaranteed 24/7 monitoring. Immediate payout if arrival delay exceeds 120 minutes.</p>
+                        <p className="text-[11px] text-slate-500 leading-relaxed">Guaranteed 24/7 monitoring. Immediate payout if departure delay exceeds 120 minutes.</p>
 
-                        <div className="grid grid-cols-2 gap-4 mt-6">
+                        <div className="mt-6">
                             <div className="flex items-center gap-2 text-xs text-slate-400">
                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500/50" />
                                 <span>zkTLS Verified</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-slate-400">
-                                <div className="w-1.5 h-1.5 rounded-full bg-green-500/50" />
-                                <span>Chain-Agnostic</span>
                             </div>
                         </div>
                     </div>
