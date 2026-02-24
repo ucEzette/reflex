@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Providers } from "@/components/Providers";
+import { Navbar } from "@/components/Navbar";
 import "./globals.css";
 import { Toaster } from "sonner";
 
@@ -31,7 +32,10 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-background-dark text-slate-100 font-display selection:bg-primary selection:text-white overflow-x-hidden">
-        <Providers>{children}</Providers>
+        <Providers>
+          <Navbar />
+          {children}
+        </Providers>
         <Toaster position="bottom-right" theme="dark" />
       </body>
     </html>
