@@ -59,6 +59,40 @@ export function PolicyDashboard() {
         });
     };
 
+    const formatFlightTime = (scheduledStr?: string, ianaTimezone?: string) => {
+        if (!scheduledStr) return { time: "--:--", date: "---" };
+        const raw = scheduledStr.split("+")[0]; // Remove +00:00 if exists
+        const [datePart, timePart] = raw.split("T");
+        if (!datePart || !timePart) return { time: "--:--", date: "---" };
+
+        const [year, month, day] = datePart.split("-").map(Number);
+        const dateObj = new Date(year, month - 1, day);
+        const formattedDate = dateObj.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase();
+
+        let [hours, minutes] = timePart.substring(0, 5).split(":").map(Number);
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const formattedTime = `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+
+        let tzAbbr = ianaTimezone || "";
+        if (ianaTimezone) {
+            try {
+                const parts = new Intl.DateTimeFormat('en-US', { timeZone: ianaTimezone, timeZoneName: 'short' }).formatToParts(new Date());
+                const found = parts.find(p => p.type === 'timeZoneName')?.value;
+                if (found) tzAbbr = found;
+            } catch (e) {
+                // fallback if timezone string is invalid
+            }
+        }
+
+        return {
+            time: formattedTime,
+            tzAbbr: tzAbbr,
+            date: formattedDate
+        };
+    };
+
     const handlePurchase = () => {
         if (!apiTarget || !flightDetails) return;
         purchasePolicy({
@@ -240,11 +274,12 @@ export function PolicyDashboard() {
                                     <div className="flex flex-col flex-1">
                                         <span className="text-slate-500 font-mono">DEP</span>
                                         <span className="text-slate-200 font-bold text-lg">{flightDetails.departure.iata}</span>
-                                        <span className="text-white mt-1">
-                                            {new Date(flightDetails.departure.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short', timeZone: flightDetails.departure.timezone })}
+                                        <span className="text-white mt-1 flex items-baseline gap-1">
+                                            <span>{formatFlightTime(flightDetails.departure.scheduled, flightDetails.departure.timezone).time}</span>
+                                            <span className="text-primary text-xs font-mono font-bold tracking-wider">{formatFlightTime(flightDetails.departure.scheduled, flightDetails.departure.timezone).tzAbbr}</span>
                                         </span>
                                         <span className="text-slate-500 text-[10px] uppercase mt-0.5">
-                                            {new Date(flightDetails.departure.scheduled).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', timeZone: flightDetails.departure.timezone })}
+                                            {formatFlightTime(flightDetails.departure.scheduled, flightDetails.departure.timezone).date}
                                         </span>
                                     </div>
                                     <div className="flex-1 border-t border-dashed border-slate-600 relative">
@@ -253,11 +288,12 @@ export function PolicyDashboard() {
                                     <div className="flex flex-col flex-1 text-right">
                                         <span className="text-slate-500 font-mono">ARR</span>
                                         <span className="text-slate-200 font-bold text-lg">{flightDetails.arrival.iata}</span>
-                                        <span className="text-white mt-1">
-                                            {new Date(flightDetails.arrival.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short', timeZone: flightDetails.arrival.timezone })}
+                                        <span className="text-white mt-1 flex items-baseline justify-end gap-1">
+                                            <span>{formatFlightTime(flightDetails.arrival.scheduled, flightDetails.arrival.timezone).time}</span>
+                                            <span className="text-primary text-xs font-mono font-bold tracking-wider">{formatFlightTime(flightDetails.arrival.scheduled, flightDetails.arrival.timezone).tzAbbr}</span>
                                         </span>
                                         <span className="text-slate-500 text-[10px] uppercase mt-0.5">
-                                            {new Date(flightDetails.arrival.scheduled).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', timeZone: flightDetails.arrival.timezone })}
+                                            {formatFlightTime(flightDetails.arrival.scheduled, flightDetails.arrival.timezone).date}
                                         </span>
                                     </div>
                                 </div>
