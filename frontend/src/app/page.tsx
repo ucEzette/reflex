@@ -25,32 +25,7 @@ export default function Home() {
         <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-neon-cyan/5 blur-[100px] rounded-full mix-blend-screen" />
       </div>
 
-      {/* ── Navigation ── */}
-      <nav className="fixed top-0 w-full z-50 glass-nav transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3 group cursor-pointer">
-            <div className="w-8 h-8 relative flex items-center justify-center bg-primary rounded-lg text-white transform group-hover:rotate-12 transition-transform duration-300">
-              <span className="material-symbols-outlined text-xl">bolt</span>
-            </div>
-            <span className="text-xl font-bold tracking-tight text-white group-hover:text-primary transition-colors">
-              Reflex L1
-            </span>
-          </div>
-          <div className="hidden md:flex items-center gap-10">
-            {["Markets", "How It Works", "Docs", "Governance"].map((item) => (
-              <a
-                key={item}
-                href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-                className="text-sm font-medium text-slate-300 hover:text-white transition-colors relative group"
-              >
-                {item}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
-              </a>
-            ))}
-          </div>
-          <WalletConnect />
-        </div>
-      </nav>
+      {/* ── Navigation removed (now in layout) ── */}
 
       {/* ── Main Content ── */}
       <main className="relative z-10 flex flex-col items-center w-full">
