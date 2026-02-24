@@ -1,8 +1,13 @@
 import { http, createConfig } from "wagmi";
 import { avalancheFuji } from "wagmi/chains";
+import { injected, safe } from "wagmi/connectors";
 
 export const config = createConfig({
     chains: [avalancheFuji],
+    connectors: [
+        injected(),
+        safe(),
+    ],
     transports: {
         [avalancheFuji.id]: http("https://api.avax-test.network/ext/bc/C/rpc"),
     },
