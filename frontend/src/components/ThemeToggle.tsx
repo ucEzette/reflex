@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { Moon, Sun } from "lucide-react";
 
 export function ThemeToggle() {
     const { theme, setTheme, resolvedTheme } = useTheme();
@@ -14,81 +13,78 @@ export function ThemeToggle() {
     }, []);
 
     if (!mounted) {
-        return <div className="w-[120px] h-[52px] rounded-full bg-slate-200/50 dark:bg-slate-800/50 animate-pulse" />;
+        return <div className="w-[68px] h-[36px] rounded-full bg-slate-200/50 dark:bg-slate-800/50 animate-pulse" />;
     }
 
     const isDark = resolvedTheme === "dark";
 
-    const toggleTheme = () => {
-        setTheme(isDark ? "light" : "dark");
-    };
-
     return (
-        <button
-            onClick={toggleTheme}
-            className={`
-                relative w-[120px] h-[52px] rounded-full flex items-center p-1 overflow-hidden transition-colors duration-500 ease-in-out
-                ${isDark ? "bg-[#1A1B26]" : "bg-[#87CEEB]"}
-            `}
-            style={{
-                boxShadow: isDark
-                    ? "inset 6px 6px 12px #0a0b0f, inset -6px -6px 12px #2a2b3d"
-                    : "inset 6px 6px 12px #6da6be, inset -6px -6px 12px #a1f6ff",
-            }}
-            aria-label="Toggle Dark Mode"
-        >
-            {/* Hexagonal Texture Overlay */}
+        <div className="flex items-center justify-center pointer-events-auto">
+            {/* 1. Outer recessed container (The "bevel" that makes it look sunken into the navbar) */}
             <div
-                className="absolute inset-0 opacity-[0.15] mix-blend-overlay pointer-events-none"
-                style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='34.64101615137754' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 0L20 5.773502691896257L20 17.32050807568877L10 23.09401076758503L0 17.32050807568877L0 5.773502691896257Z' fill='none' stroke='%23ffffff' stroke-width='1'/%3E%3Cpath d='M10 34.64101615137754L20 28.867513459481283L20 17.32050807568877L10 11.547005383792514L0 17.32050807568877L0 28.867513459481283Z' fill='none' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E")`,
-                    backgroundSize: '20px 34.64px',
-                }}
-            />
-
-            {/* Track Background Icons */}
-            <div className="absolute inset-0 flex justify-between items-center px-4 pointer-events-none">
-                <Moon className={`w-5 h-5 transition-opacity duration-300 ${isDark ? 'opacity-100 text-yellow-300' : 'opacity-0'}`} />
-                <Sun className={`w-6 h-6 transition-opacity duration-300 ${!isDark ? 'opacity-100 text-yellow-100' : 'opacity-0'}`} />
-            </div>
-
-            {/* The Animated Sphere */}
-            <motion.div
-                animate={{
-                    x: isDark ? 0 : 66,
-                    rotate: isDark ? 0 : 360
-                }}
-                transition={{
-                    type: "spring",
-                    stiffness: 400,
-                    damping: 25,
-                    mass: 0.8
-                }}
                 className={`
-                    relative w-[44px] h-[44px] rounded-full flex items-center justify-center z-10
-                    ${isDark ? "bg-[#2A2B3D]" : "bg-gradient-to-br from-yellow-100 to-yellow-300"}
+                    relative w-[68px] h-[36px] rounded-full flex items-center justify-center
+                    transition-colors duration-500
+                    ${isDark ? 'bg-[#161b22] shadow-[inset_2px_2px_4px_rgba(0,0,0,0.6),inset_-2px_-2px_4px_rgba(255,255,255,0.05)]' : 'bg-[#E0E5EC] shadow-[inset_2px_2px_4px_rgba(0,0,0,0.1),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]'}
                 `}
-                style={{
-                    boxShadow: isDark
-                        ? "4px 4px 8px rgba(0,0,0,0.5), -4px -4px 8px rgba(255,255,255,0.05), inset 2px 2px 4px rgba(255,255,255,0.1)"
-                        : "4px 4px 10px rgba(0,0,0,0.2), -2px -2px 6px rgba(255,255,255,0.8), inset -2px -2px 4px rgba(0,0,0,0.1)",
-                }}
             >
-                {/* Sphere Texture Details */}
-                {isDark ? (
-                    <div className="absolute inset-0 rounded-full opacity-30" style={{
-                        backgroundImage: "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 50%)"
-                    }}>
-                        <div className="w-2 h-2 rounded-full bg-black/20 absolute top-2 right-3 shadow-[inset_1px_1px_2px_rgba(0,0,0,0.5)]" />
-                        <div className="w-1.5 h-1.5 rounded-full bg-black/20 absolute bottom-3 left-2 shadow-[inset_1px_1px_2px_rgba(0,0,0,0.5)]" />
-                        <div className="w-2.5 h-2.5 rounded-full bg-black/20 absolute bottom-2 right-2 shadow-[inset_1px_1px_2px_rgba(0,0,0,0.5)]" />
-                    </div>
-                ) : (
-                    <div className="absolute inset-0 rounded-full opacity-50" style={{
-                        backgroundImage: "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8) 0%, transparent 60%)"
-                    }} />
-                )}
-            </motion.div>
-        </button>
+                {/* 2. The Toggle Track (Inner recessed pill) */}
+                <button
+                    onClick={() => setTheme(isDark ? "light" : "dark")}
+                    className={`
+                        relative w-[60px] h-[28px] rounded-full overflow-hidden
+                        transition-colors duration-500 cursor-pointer outline-none
+                        ${isDark ? 'bg-[#1A2C44]' : 'bg-[#96CBF4]'}
+                        shadow-[inset_2px_2px_5px_rgba(0,0,0,0.4),inset_-1px_-1px_3px_rgba(255,255,255,0.2)]
+                    `}
+                    aria-label="Toggle Dark Mode"
+                >
+                    {/* 3. Track Texture (The subtle grid pattern seen in the video) */}
+                    <div
+                        className="absolute inset-0 opacity-20 mix-blend-overlay"
+                        style={{
+                            backgroundImage: `radial-gradient(circle, #fff 1px, transparent 1px)`,
+                            backgroundSize: '4px 4px'
+                        }}
+                    />
+
+                    {/* 4. The 3D Sphere (The "Blue Ball") */}
+                    <motion.div
+                        initial={false}
+                        animate={{
+                            x: isDark ? 2 : 34,
+                        }}
+                        transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 30
+                        }}
+                        className={`
+                            absolute top-[2px] left-0
+                            w-[24px] h-[24px] rounded-full
+                            bg-[#4895EF]
+                            shadow-[0_4px_8px_rgba(0,0,0,0.4),inset_2px_2px_4px_rgba(255,255,255,0.4),inset_-2px_-2px_4px_rgba(0,0,0,0.2)]
+                            flex items-center justify-center
+                        `}
+                    >
+                        {/* 5. Sphere Hex/Dimple Texture (Essential for the "exact" look) */}
+                        <div
+                            className="absolute inset-0 rounded-full opacity-40 overflow-hidden"
+                            style={{
+                                backgroundImage: `
+                                    radial-gradient(circle at center, transparent 1px, rgba(0,0,0,0.15) 1.5px),
+                                    radial-gradient(circle at center, transparent 1px, rgba(255,255,255,0.1) 1.5px)
+                                `,
+                                backgroundPosition: '0 0, 2px 2px',
+                                backgroundSize: '4px 4px'
+                            }}
+                        />
+
+                        {/* 6. Dynamic Sphere Highlights */}
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/30 via-transparent to-black/20 pointer-events-none" />
+                    </motion.div>
+                </button>
+            </div>
+        </div>
     );
 }
