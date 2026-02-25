@@ -7,9 +7,10 @@ export function FiatOnRamp() {
     const { address } = useAccount();
 
     const launchTransak = () => {
+        // @ts-ignore - bypassing missing property types in SDK 4.0.2
         const transak = new Transak({
-            apiKey: process.env.NEXT_PUBLIC_TRANSAK_API_KEY || "8f7ab2d6-419b-4322-a7d9-c0ae76478df9", // Using a dummy/public staging key if env is missing
-            environment: Transak.ENVIRONMENTS.STAGING, // STAGING/PRODUCTION
+            apiKey: process.env.NEXT_PUBLIC_TRANSAK_API_KEY || "8f7ab2d6-419b-4322-a7d9-c0ae76478df9",
+            environment: 'STAGING',
             defaultCryptoCurrency: 'USDC',
             cryptoCurrencyList: 'USDC,AVAX',
             networks: 'avalanche',
@@ -18,17 +19,19 @@ export function FiatOnRamp() {
             themeColor: '#e74043',
             widgetHeight: '650px',
             widgetWidth: '450px',
-        });
+        } as any);
 
         transak.init();
 
         // Listen for close events
-        transak.on(transak.EVENTS.TRANSAK_WIDGET_CLOSE, () => {
+        // @ts-ignore
+        transak.on("TRANSAK_WIDGET_CLOSE", () => {
             transak.close();
         });
 
         // Listen for successful orders
-        transak.on(transak.EVENTS.TRANSAK_ORDER_SUCCESSFUL, (orderData) => {
+        // @ts-ignore
+        transak.on("TRANSAK_ORDER_SUCCESSFUL", (orderData: any) => {
             console.log("Transak Order Successful:", orderData);
             transak.close();
         });
