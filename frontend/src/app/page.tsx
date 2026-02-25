@@ -1,6 +1,3 @@
-"use client";
-
-import { WalletConnect } from "@/components/WalletConnect";
 import { PolicyDashboard } from "@/components/PolicyDashboard";
 import { ActivePolicies } from "@/components/ActivePolicies";
 
