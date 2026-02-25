@@ -3,7 +3,6 @@ import { loadConfig } from "./config";
 import { AviationStackService } from "./services/AviationStackService";
 import { BlockchainService } from "./services/BlockchainService";
 import { PolicyInfo } from "./types";
-import { ethers } from "ethers";
 import { logger } from "./utils/logger";
 
 async function processPolicy(
@@ -43,8 +42,8 @@ async function processPolicy(
         } else {
             logger.info({ policyId: policyIdShort, delay: flightData.delaySeconds }, "Flight delay below threshold - no action");
         }
-    } catch (error: any) {
-        logger.error({ policyId: policyIdShort, error: error.message }, "Error processing policy");
+    } catch (error: unknown) {
+        logger.error({ policyId: policyIdShort, error: error instanceof Error ? error.message : "Unknown error" }, "Error processing policy");
     }
 }
 
@@ -61,8 +60,8 @@ async function monitorCircle(
         for (const policy of activePolicies) {
             await processPolicy(policy, blockchain, aviationStack);
         }
-    } catch (error: any) {
-        console.error(`[Relayer] Fatal error during monitor cycle:`, error.message);
+    } catch (error: unknown) {
+        console.error(`[Relayer] Fatal error during monitor cycle:`, error instanceof Error ? error.message : "Unknown error");
     }
 }
 

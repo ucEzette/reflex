@@ -36,8 +36,8 @@ export class BlockchainService {
                 const tx = await this.escrow.addRelayer(address);
                 await tx.wait();
                 console.log(`[BlockchainService] Relayer ${address} successfully authorized.`);
-            } catch (error: any) {
-                console.error(`[BlockchainService] Failed to authorize relayer. Ensure this wallet is the contract owner or has been added manually. Error:`, error.message);
+            } catch (error: unknown) {
+                console.error(`[BlockchainService] Failed to authorize relayer. Ensure this wallet is the contract owner or has been added manually. Error:`, error instanceof Error ? error.message : String(error));
             }
         } else {
             console.log(`[BlockchainService] Relayer ${address} is authorized.`);

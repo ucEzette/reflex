@@ -4,7 +4,7 @@ export async function withRetry<T>(
         maxRetries?: number;
         baseDelayMs?: number;
         maxDelayMs?: number;
-        onRetry?: (error: any, attempt: number) => void;
+        onRetry?: (error: Error, attempt: number) => void;
     } = {}
 ): Promise<T> {
     const {
@@ -14,7 +14,7 @@ export async function withRetry<T>(
         onRetry,
     } = options;
 
-    let lastError: any;
+    let lastError: unknown;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
             return await fn();
@@ -23,7 +23,7 @@ export async function withRetry<T>(
             if (attempt === maxRetries) break;
 
             const delay = Math.min(baseDelayMs * Math.pow(2, attempt), maxDelayMs);
-            if (onRetry) onRetry(error, attempt + 1);
+            if (onRetry && error instanceof Error) onRetry(error, attempt + 1);
 
             await new Promise((resolve) => setTimeout(resolve, delay));
         }
