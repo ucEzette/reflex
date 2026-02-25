@@ -56,7 +56,7 @@ export default function Home() {
             <p className="text-lg md:text-xl text-slate-400 max-w-2xl font-light leading-relaxed">
               Decentralized parametric protection powered by{" "}
               <span className="text-white font-semibold">Avalanche</span> and{" "}
-              <span className="text-white font-semibold">zkTLS</span> verification. Instant payouts, zero paperwork.
+              <span className="text-white font-semibold">Chainlink Oracles</span>. Instant payouts, zero centralized dependencies.
             </p>
 
             {/* CTAs */}
@@ -225,7 +225,7 @@ export default function Home() {
               </span>
             </h2>
             <p className="mt-6 text-lg text-slate-400 font-light max-w-2xl mx-auto">
-              Reflex L1 leverages Avalanche zkTLS to provide transparent, decentralized parametric micro-insurance. No claims, no paperwork, just code.
+              Reflex L1 leverages Chainlink Decentralized Oracle Networks (DONs) to provide transparent, parametric micro-insurance. No centralized claims adjusters, just code.
             </p>
           </div>
 
@@ -250,8 +250,8 @@ export default function Home() {
                     <span className="font-display font-bold">2</span>
                   </div>
                   <div className="flex flex-col pt-1 opacity-40 group-hover:opacity-80 transition-opacity duration-500">
-                    <h3 className="font-display text-2xl font-bold text-white">zkTLS Verification</h3>
-                    <p className="mt-2 text-slate-400 leading-relaxed">Oracle-free data validation via cryptographic TLS handshakes.</p>
+                    <h3 className="font-display text-2xl font-bold text-white">Chainlink Verification</h3>
+                    <p className="mt-2 text-slate-400 leading-relaxed">A Decentralized Oracle Network queries aviation data and achieves consensus on the delay.</p>
                   </div>
                 </div>
                 {/* Step 3 */}
@@ -312,9 +312,9 @@ export default function Home() {
                 <div className="lg:hidden mb-4 mt-12">
                   <div className="flex items-center gap-4 mb-2">
                     <span className="flex h-8 w-8 items-center justify-center rounded-full bg-neon-cyan/20 border border-neon-cyan text-neon-cyan font-bold font-display text-sm">2</span>
-                    <h3 className="text-2xl font-display font-bold text-white">zkTLS Verification</h3>
+                    <h3 className="text-2xl font-display font-bold text-white">Chainlink Verification</h3>
                   </div>
-                  <p className="text-slate-400 pl-12">Oracle-free data validation via TLS.</p>
+                  <p className="text-slate-400 pl-12">Decentralized flight data validation.</p>
                 </div>
                 <div className="glass-card rounded-2xl p-8 md:p-12 min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden">
                   <div className="absolute bottom-[-20%] right-[-20%] w-[80%] h-[80%] bg-neon-cyan/10 rounded-full blur-[120px] pointer-events-none" />
@@ -334,10 +334,10 @@ export default function Home() {
                     </div>
                     <div className="text-center max-w-md">
                       <h4 className="text-2xl font-display font-bold text-white mb-2 tracking-wide">
-                        <span className="text-neon-cyan drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]">zkTLS</span> Verified
+                        <span className="text-neon-cyan drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]">Chainlink</span> Verified
                       </h4>
                       <p className="text-slate-300 text-sm">
-                        Cryptographic proof generated from the web session. The flight delay is verified without a centralized oracle.
+                        Multiple independent nodes execute custom JavaScript logic to verify the flight delay via AviationStack, achieving consensus before writing the truth on-chain.
                       </p>
                     </div>
                   </div>
@@ -404,7 +404,7 @@ export default function Home() {
               <div className="space-y-4">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neon-cyan/10 border border-neon-cyan/20 text-neon-cyan text-xs font-bold tracking-wider uppercase">
                   <span className="material-symbols-outlined text-[14px]">verified_user</span>
-                  zkTLS Verified
+                  Chainlink Verified
                 </div>
                 <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-white">
                   Flight Delay <br />
@@ -413,7 +413,7 @@ export default function Home() {
                   </span>
                 </h2>
                 <p className="text-slate-400 text-lg leading-relaxed max-w-md">
-                  Instant, parametric protection powered by zero-knowledge proofs. If your flight is delayed by &gt;2 hours, you get paid automatically.
+                  Instant, parametric protection powered by Chainlink Oracles. If your flight is delayed by &gt;2 hours, you get paid automatically.
                 </p>
               </div>
               {/* Stats */}
@@ -477,15 +477,15 @@ export default function Home() {
           <ActivePolicies />
         </section>
 
-        {/* ═══ TECH / zkTLS SECTION ═══ */}
+        {/* ═══ TECH / CHAINLINK SECTION ═══ */}
         <section className="w-full bg-surface-dark/30 border-y border-white/5 py-24 relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center gap-16">
             <div className="flex-1 space-y-8">
               <h2 className="text-4xl font-bold text-white leading-tight">
-                Powered by <span className="text-neon-cyan">zkTLS</span> Verification
+                Powered by <span className="text-neon-cyan">Chainlink</span> DONs
               </h2>
               <p className="text-slate-400 text-lg leading-relaxed">
-                Reflex L1 leverages Zero-Knowledge Proofs to verify real-world events without compromising data privacy. Our oracle network validates flight statuses, weather conditions, and blockchain states instantly.
+                Reflex L1 leverages Chainlink Functions to verify real-world events in a decentralized, trust-minimized way. Our oracle network validates flight statuses and pushes the consensus to the blockchain instantly.
               </p>
               <div className="flex flex-col gap-4">
                 <div className="flex items-start gap-4 p-4 rounded-lg bg-background-dark/50 border border-white/5">
