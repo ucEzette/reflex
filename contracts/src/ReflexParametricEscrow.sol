@@ -59,6 +59,9 @@ contract ReflexParametricEscrow is
 
     mapping(bytes32 => bytes32) public pendingRequests; // requestId => policyId
 
+    // Multi-Relayer Authorized Network
+    mapping(address => bool) public authorizedRelayers;
+
     // ─── Events ───────────────────────────────────────────────────────
 
     event PolicyPurchased(
@@ -94,6 +97,7 @@ contract ReflexParametricEscrow is
 
     error OnlyTeleporter();
     error OnlyRouter();
+    error NotAuthorizedRelayer();
     error InvalidPremium();
     error InvalidPayout();
     error InvalidDuration();
@@ -113,6 +117,11 @@ contract ReflexParametricEscrow is
 
     modifier onlyRouter() {
         if (msg.sender != functionsRouter) revert OnlyRouter();
+        _;
+    }
+
+    modifier onlyAuthorizedRelayer() {
+        if (!authorizedRelayers[msg.sender]) revert NotAuthorizedRelayer();
         _;
     }
 
@@ -255,7 +264,7 @@ contract ReflexParametricEscrow is
     function requestFlightStatus(
         bytes32 _policyId,
         string[] calldata _args
-    ) external nonReentrant returns (bytes32 requestId) {
+    ) external nonReentrant onlyAuthorizedRelayer returns (bytes32 requestId) {
         Policy storage policy = policies[_policyId];
         if (!policy.isActive) revert PolicyNotActive();
         if (policy.isClaimed) revert PolicyAlreadyClaimed();
@@ -385,6 +394,14 @@ contract ReflexParametricEscrow is
         subscriptionId = _subscriptionId;
         fulfillGasLimit = _fulfillGasLimit;
         functionsSource = _functionsSource;
+    }
+
+    function addRelayer(address _relayer) external onlyOwner {
+        authorizedRelayers[_relayer] = true;
+    }
+
+    function removeRelayer(address _relayer) external onlyOwner {
+        authorizedRelayers[_relayer] = false;
     }
 
     // ─── Internal Functions ───────────────────────────────────────────
