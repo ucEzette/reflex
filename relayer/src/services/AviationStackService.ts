@@ -18,7 +18,7 @@ export class AviationStackService {
                     throw new Error(`AviationStack API error: ${response.status} ${response.statusText}`);
                 }
 
-                const data = await response.json() as any;
+                const data = await response.json() as { data: unknown[] };
                 const flights = data.data;
 
                 if (!flights || flights.length === 0) {
