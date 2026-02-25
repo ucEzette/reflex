@@ -5,7 +5,8 @@ import { injected, safe } from "wagmi/connectors";
 export const config = createConfig({
     chains: [avalancheFuji],
     connectors: [
-        injected(),
+        injected({ target: 'metaMask' }),
+        injected({ target: 'core' }),
         safe(),
     ],
     transports: {

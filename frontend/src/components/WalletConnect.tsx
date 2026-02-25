@@ -78,8 +78,9 @@ export function WalletConnect() {
                         >
                             <span className="material-symbols-outlined text-[18px] text-primary/70">
                                 {connector.name.toLowerCase().includes('meta') ? 'account_balance_wallet' :
-                                    connector.name.toLowerCase().includes('safe') ? 'security' :
-                                        'link'}
+                                    connector.name.toLowerCase().includes('core') ? 'token' :
+                                        connector.name.toLowerCase().includes('safe') ? 'security' :
+                                            'link'}
                             </span>
                             <span className="text-sm font-medium">{connector.name}</span>
                         </button>
