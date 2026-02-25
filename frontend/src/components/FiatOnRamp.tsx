@@ -11,6 +11,7 @@ export function FiatOnRamp() {
         const transak = new Transak({
             apiKey: process.env.NEXT_PUBLIC_TRANSAK_API_KEY || "8f7ab2d6-419b-4322-a7d9-c0ae76478df9",
             environment: 'STAGING',
+            widgetUrl: 'https://global-stg.transak.com', // Required in newer SDK versions
             defaultCryptoCurrency: 'USDC',
             cryptoCurrencyList: 'USDC,AVAX',
             networks: 'avalanche',
