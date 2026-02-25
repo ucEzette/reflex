@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import {Script, console2} from "forge-std/Script.sol";
 import {ReflexParametricEscrow} from "../src/ReflexParametricEscrow.sol";
+import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {MockUSDC} from "../src/mocks/MockUSDC.sol";
 import {MockTeleporterMessenger} from "../src/mocks/MockTeleporterMessenger.sol";
 
@@ -54,12 +55,22 @@ contract DeployReflex is Script {
         }
 
         // Deploy the escrow contract
-        ReflexParametricEscrow escrow = new ReflexParametricEscrow(
+        ReflexParametricEscrow implementation = new ReflexParametricEscrow();
+
+        bytes memory initData = abi.encodeWithSelector(
+            ReflexParametricEscrow.initialize.selector,
             teleporterAddress,
             usdcAddress,
             reflexL1ChainId,
-            treasury
+            treasury,
+            deployer // Initial owner
         );
+
+        ERC1967Proxy proxy = new ERC1967Proxy(
+            address(implementation),
+            initData
+        );
+        ReflexParametricEscrow escrow = ReflexParametricEscrow(address(proxy));
 
         console2.log("ReflexParametricEscrow deployed:", address(escrow));
         console2.log("Protocol Treasury:", treasury);

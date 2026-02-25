@@ -8,6 +8,9 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ITeleporterMessenger, TeleporterMessageInput, TeleporterFeeInfo} from "./interfaces/ITeleporterMessenger.sol";
 import {ITeleporterReceiver} from "./interfaces/ITeleporterReceiver.sol";
+import {IFunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/interfaces/IFunctionsClient.sol";
+import {IFunctionsRouter} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/interfaces/IFunctionsRouter.sol";
+import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
 
 /**
  * @title ReflexParametricEscrow
@@ -21,8 +24,10 @@ contract ReflexParametricEscrow is
     Initializable,
     UUPSUpgradeable,
     OwnableUpgradeable,
-    ReentrancyGuard
+    ReentrancyGuard,
+    IFunctionsClient
 {
+    using FunctionsRequest for FunctionsRequest.Request;
     // ─── State Variables ──────────────────────────────────────────────
 
     ITeleporterMessenger public teleporter;
@@ -44,6 +49,15 @@ contract ReflexParametricEscrow is
 
     mapping(bytes32 => Policy) public policies;
     mapping(address => bytes32[]) public userPolicies;
+
+    // Chainlink Functions config
+    address public functionsRouter;
+    bytes32 public donId;
+    uint64 public subscriptionId;
+    uint32 public fulfillGasLimit;
+    string public functionsSource;
+
+    mapping(bytes32 => bytes32) public pendingRequests; // requestId => policyId
 
     // ─── Events ───────────────────────────────────────────────────────
 
@@ -69,9 +83,17 @@ contract ReflexParametricEscrow is
         bytes32 indexed destinationChainId
     );
 
+    event ChainlinkRequestSent(
+        bytes32 indexed requestId,
+        bytes32 indexed policyId
+    );
+    event ChainlinkRequestFulfilled(bytes32 indexed requestId, bool isDelayed);
+    event ChainlinkRequestFailed(bytes32 indexed requestId, string reason);
+
     // ─── Errors ───────────────────────────────────────────────────────
 
     error OnlyTeleporter();
+    error OnlyRouter();
     error InvalidPremium();
     error InvalidPayout();
     error InvalidDuration();
@@ -80,11 +102,17 @@ contract ReflexParametricEscrow is
     error PolicyNotExpired();
     error TransferFailed();
     error InvalidProof();
+    error UnexpectedRequestID();
 
     // ─── Modifiers ────────────────────────────────────────────────────
 
     modifier onlyTeleporter() {
         if (msg.sender != address(teleporter)) revert OnlyTeleporter();
+        _;
+    }
+
+    modifier onlyRouter() {
+        if (msg.sender != functionsRouter) revert OnlyRouter();
         _;
     }
 
@@ -126,20 +154,53 @@ contract ReflexParametricEscrow is
         uint256 _payoutAmount,
         uint256 _durationHours
     ) external nonReentrant returns (bytes32 policyId) {
+        return
+            _purchasePolicy(
+                msg.sender,
+                msg.sender,
+                _apiTarget,
+                _premium,
+                _payoutAmount,
+                _durationHours
+            );
+    }
+
+    function purchasePolicyOnBehalfOf(
+        address _policyholder,
+        string calldata _apiTarget,
+        uint256 _premium,
+        uint256 _payoutAmount,
+        uint256 _durationHours
+    ) external nonReentrant returns (bytes32 policyId) {
+        return
+            _purchasePolicy(
+                msg.sender,
+                _policyholder,
+                _apiTarget,
+                _premium,
+                _payoutAmount,
+                _durationHours
+            );
+    }
+
+    function _purchasePolicy(
+        address _payer,
+        address _policyholder,
+        string calldata _apiTarget,
+        uint256 _premium,
+        uint256 _payoutAmount,
+        uint256 _durationHours
+    ) internal returns (bytes32 policyId) {
         if (_premium == 0) revert InvalidPremium();
         if (_payoutAmount == 0) revert InvalidPayout();
         if (_durationHours == 0) revert InvalidDuration();
 
-        bool success = usdc.transferFrom(
-            msg.sender,
-            protocolTreasury,
-            _premium
-        );
+        bool success = usdc.transferFrom(_payer, protocolTreasury, _premium);
         if (!success) revert TransferFailed();
 
         policyId = keccak256(
             abi.encodePacked(
-                msg.sender,
+                _policyholder,
                 _apiTarget,
                 block.timestamp,
                 _policyNonce++
@@ -149,7 +210,7 @@ contract ReflexParametricEscrow is
         uint256 expiration = block.timestamp + (_durationHours * 1 hours);
 
         policies[policyId] = Policy({
-            policyholder: msg.sender,
+            policyholder: _policyholder,
             apiTarget: _apiTarget,
             premiumPaid: _premium,
             payoutAmount: _payoutAmount,
@@ -158,7 +219,7 @@ contract ReflexParametricEscrow is
             isClaimed: false
         });
 
-        userPolicies[msg.sender].push(policyId);
+        userPolicies[_policyholder].push(policyId);
 
         bytes memory monitoringPayload = abi.encode(
             policyId,
@@ -182,13 +243,55 @@ contract ReflexParametricEscrow is
 
         emit PolicyPurchased(
             policyId,
-            msg.sender,
+            _policyholder,
             _apiTarget,
             _premium,
             _payoutAmount,
             expiration
         );
         emit TeleporterMessageSent(policyId, reflexL1ChainId);
+    }
+
+    function requestFlightStatus(
+        bytes32 _policyId,
+        string[] calldata _args
+    ) external nonReentrant returns (bytes32 requestId) {
+        Policy storage policy = policies[_policyId];
+        if (!policy.isActive) revert PolicyNotActive();
+        if (policy.isClaimed) revert PolicyAlreadyClaimed();
+
+        FunctionsRequest.Request memory req;
+        req.initializeRequestForInlineJavaScript(functionsSource);
+
+        if (_args.length > 0) {
+            req.setArgs(_args);
+        }
+
+        requestId = _sendRequest(
+            req.encodeCBOR(),
+            subscriptionId,
+            fulfillGasLimit,
+            donId
+        );
+
+        pendingRequests[requestId] = _policyId;
+        emit ChainlinkRequestSent(requestId, _policyId);
+    }
+
+    function _sendRequest(
+        bytes memory data,
+        uint64 subId,
+        uint32 callbackGasLimit,
+        bytes32 dId
+    ) internal returns (bytes32) {
+        bytes32 requestId = IFunctionsRouter(functionsRouter).sendRequest(
+            subId,
+            data,
+            FunctionsRequest.REQUEST_DATA_VERSION,
+            callbackGasLimit,
+            dId
+        );
+        return requestId;
     }
 
     function receiveTeleporterMessage(
@@ -270,6 +373,20 @@ contract ReflexParametricEscrow is
         protocolTreasury = _newTreasury;
     }
 
+    function setFunctionsConfig(
+        address _router,
+        bytes32 _donId,
+        uint64 _subscriptionId,
+        uint32 _fulfillGasLimit,
+        string calldata _functionsSource
+    ) external onlyOwner {
+        functionsRouter = _router;
+        donId = _donId;
+        subscriptionId = _subscriptionId;
+        fulfillGasLimit = _fulfillGasLimit;
+        functionsSource = _functionsSource;
+    }
+
     // ─── Internal Functions ───────────────────────────────────────────
 
     function _verifyZkProof(
@@ -281,5 +398,55 @@ contract ReflexParametricEscrow is
             claimHash := mload(add(proof, 32))
         }
         return claimHash != bytes32(0);
+    }
+
+    // ─── Chainlink Functions Override ─────────────────────────────────
+
+    function handleOracleFulfillment(
+        bytes32 requestId,
+        bytes memory response,
+        bytes memory err
+    ) external override onlyRouter {
+        _fulfillRequest(requestId, response, err);
+    }
+
+    function _fulfillRequest(
+        bytes32 requestId,
+        bytes memory response,
+        bytes memory err
+    ) internal {
+        bytes32 policyId = pendingRequests[requestId];
+        if (policyId == bytes32(0)) revert UnexpectedRequestID();
+
+        if (err.length > 0) {
+            emit ChainlinkRequestFailed(requestId, string(err));
+            return;
+        }
+
+        // Response is a 256-bit uint: 1 for delayed > 2 hours, 0 otherwise
+        uint256 decodedResponse = abi.decode(response, (uint256));
+        bool isDelayed = decodedResponse == 1;
+        emit ChainlinkRequestFulfilled(requestId, isDelayed);
+
+        if (isDelayed) {
+            Policy storage policy = policies[policyId];
+            if (policy.isActive && !policy.isClaimed) {
+                policy.isClaimed = true;
+                policy.isActive = false;
+
+                bool success = usdc.transferFrom(
+                    protocolTreasury,
+                    policy.policyholder,
+                    policy.payoutAmount
+                );
+                if (success) {
+                    emit PolicyClaimed(
+                        policyId,
+                        policy.policyholder,
+                        policy.payoutAmount
+                    );
+                }
+            }
+        }
     }
 }
