@@ -15,7 +15,7 @@ export function PolicyDashboard() {
     // Flight Validation State
     const [isValidating, setIsValidating] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
-    const [flightDetails, setFlightDetails] = useState<any | null>(null);
+    const [flightDetails, setFlightDetails] = useState<Record<string, unknown> | null>(null);
 
     /* ── Read USDC balance & allowance ── */
     const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
@@ -69,7 +69,7 @@ export function PolicyDashboard() {
         const dateObj = new Date(year, month - 1, day);
         const formattedDate = dateObj.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase();
 
-        let [hours, minutes] = timePart.substring(0, 5).split(":").map(Number);
+        let [hours, minutes] = timePart.substring(0, 5).split(":").map(Number); // eslint-disable-line prefer-const
         const ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12;
         hours = hours ? hours : 12;
@@ -81,7 +81,7 @@ export function PolicyDashboard() {
                 const parts = new Intl.DateTimeFormat('en-US', { timeZone: ianaTimezone, timeZoneName: 'short' }).formatToParts(new Date());
                 const found = parts.find(p => p.type === 'timeZoneName')?.value;
                 if (found) tzAbbr = found;
-            } catch (e) {
+            } catch {
                 // fallback if timezone string is invalid
             }
         }
@@ -125,9 +125,9 @@ export function PolicyDashboard() {
 
                 setFlightDetails(data);
                 setValidationError(null);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 setFlightDetails(null);
-                setValidationError(err.message);
+                setValidationError(err instanceof Error ? err.message : "An unknown error occurred");
             } finally {
                 setIsValidating(false);
             }

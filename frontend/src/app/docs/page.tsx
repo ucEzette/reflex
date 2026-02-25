@@ -39,7 +39,7 @@ export default function DocsPage() {
                                 Traditional parametric insurance relies heavily on centralized chainlink oracles or trusted third-party APIs. Reflex L1 eliminates this trust assumption by utilizing <strong>Zero-Knowledge Transport Layer Security (zkTLS)</strong>.
                             </p>
                             <p>
-                                When our relayer queries the Aviationstack API for a flight's status, the Reclaim Protocol generates a cryptographic proof of the HTTP response. The smart contract verifies this zkTLS proof on-chain before executing a payout, mathematically guaranteeing that the API response was not tampered with by the relayer.
+                                When our relayer queries the Aviationstack API for a flight&apos;s status, the Reclaim Protocol generates a cryptographic proof of the HTTP response. The smart contract verifies this zkTLS proof on-chain before executing a payout, mathematically guaranteeing that the API response was not tampered with by the relayer.
                             </p>
                         </div>
                     </section>
