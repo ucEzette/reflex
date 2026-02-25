@@ -31,6 +31,7 @@ export class AviationStackService {
 
                 return {
                     flightId: flight.flight?.iata || flightCode,
+                    flightDate: flight.flight_date || "",
                     scheduledArrival: flight.arrival?.scheduled || "",
                     actualArrival: flight.arrival?.actual || "",
                     delaySeconds: delayMinutes * 60,

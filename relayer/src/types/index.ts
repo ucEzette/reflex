@@ -11,6 +11,7 @@ export interface PolicyInfo {
 
 export interface FlightData {
     flightId: string;
+    flightDate: string;
     scheduledArrival: string;
     actualArrival: string;
     delaySeconds: number;
