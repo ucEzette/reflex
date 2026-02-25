@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { WalletConnect } from "@/components/WalletConnect";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { FiatOnRamp } from "@/components/FiatOnRamp";
 
 export function Navbar() {
     return (
@@ -48,6 +49,7 @@ export function Navbar() {
                 </div>
                 <div className="flex items-center gap-4">
                     <ThemeToggle />
+                    <FiatOnRamp />
                     <WalletConnect />
                 </div>
             </div>
