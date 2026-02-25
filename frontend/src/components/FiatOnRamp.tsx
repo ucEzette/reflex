@@ -7,7 +7,7 @@ export function FiatOnRamp() {
     const { address } = useAccount();
 
     const launchTransak = () => {
-        // @ts-ignore - bypassing missing property types in SDK 4.0.2
+        // @ts-expect-error - bypassing missing property types in SDK 4.0.2
         const transak = new Transak({
             apiKey: process.env.NEXT_PUBLIC_TRANSAK_API_KEY || "8f7ab2d6-419b-4322-a7d9-c0ae76478df9",
             environment: 'STAGING',
@@ -21,19 +21,19 @@ export function FiatOnRamp() {
             themeColor: '#e74043',
             widgetHeight: '650px',
             widgetWidth: '450px',
-        } as any);
+        });
 
         transak.init();
 
         // Listen for close events
-        // @ts-ignore
+        // @ts-expect-error - event typing missing in SDK
         transak.on("TRANSAK_WIDGET_CLOSE", () => {
             transak.close();
         });
 
         // Listen for successful orders
-        // @ts-ignore
-        transak.on("TRANSAK_ORDER_SUCCESSFUL", (orderData: any) => {
+        // @ts-expect-error - event typing missing in SDK
+        transak.on("TRANSAK_ORDER_SUCCESSFUL", (orderData: Record<string, unknown>) => {
             console.log("Transak Order Successful:", orderData);
             transak.close();
         });
