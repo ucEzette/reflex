@@ -1,10 +1,10 @@
 # Reflex L1 — Parametric Flight Delay Insurance
 
-Decentralized parametric micro-insurance on Avalanche. Users purchase flight delay coverage with USDC ($5 premium), and if a flight is delayed more than 2 hours, they automatically receive a $50 USDC payout — verified via zkTLS proofs.
+Decentralized parametric micro-insurance on Avalanche. Users purchase flight delay coverage with USDC ($5 premium), and if a flight is delayed more than 2 hours, they automatically receive a $50 USDC payout — verified via Chainlink Decentralized Oracle Networks.
 
 ## Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Frontend (Next.js)                       │
 │  ┌───────────┐  ┌────────────────┐  ┌────────────────────────┐ │
@@ -17,17 +17,17 @@ Decentralized parametric micro-insurance on Avalanche. Users purchase flight del
 ┌─────────────────────────────────────────────────────────────────┐
 │              ReflexParametricEscrow.sol (Fuji C-Chain)          │
 │  ┌──────────────┐  ┌─────────────────┐  ┌──────────────────┐  │
-│  │ purchasePolicy│  │receiveTeleporter │  │  expirePolicy    │  │
-│  │ (USDC escrow) │  │ (zkTLS verify)  │  │  (time-based)    │  │
+│  │ purchasePolicy│  │ requestOracle  │  │  expirePolicy    │  │
+│  │ (USDC escrow) │  │ (Chainlink)    │  │  (time-based)    │  │
 │  └──────────────┘  └─────────────────┘  └──────────────────┘  │
 └────────────────────────────┬────────────────────────────────────┘
                              │ Avalanche Teleporter (AWM)
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                   zkTLS Relayer (Node.js)                        │
+│                   Relayer / Chainlink DON                        │
 │  ┌──────────────┐  ┌────────────────┐  ┌────────────────────┐  │
-│  │  Cron Job    │  │  FlightAware   │  │   Reclaim zkTLS    │  │
-│  │  (60s poll)  │  │  AeroAPI Query │  │   Proof Generator  │  │
+│  │  Cron Job    │  │  FlightAware   │  │   Chainlink DON    │  │
+│  │  (60s poll)  │  │  AviationStack │  │   Validation       │  │
 │  └──────────────┘  └────────────────┘  └────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -39,9 +39,9 @@ Decentralized parametric micro-insurance on Avalanche. Users purchase flight del
 | Smart Contracts | Solidity ^0.8.24, Foundry                          |
 | Frontend        | Next.js 14, TypeScript, Tailwind CSS, wagmi, viem  |
 | Relayer         | Node.js, TypeScript, ethers.js v6, node-cron       |
-| Oracles         | Reclaim Protocol zkTLS (`@reclaimprotocol/zk-fetch`)|
+| Oracles         | Chainlink Functions (DON)                           |
 | Network         | Avalanche Fuji Testnet (C-Chain)                   |
-| Cross-Chain     | Avalanche Teleporter (AWM)                         |
+| Cross-Chain     | Avalanche Teleporter / Chainlink CCIP              |
 
 ## Quick Start
 
