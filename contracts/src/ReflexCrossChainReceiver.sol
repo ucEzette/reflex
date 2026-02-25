@@ -42,11 +42,11 @@ contract ReflexCrossChainReceiver is CCIPReceiver {
         address _escrow,
         address _usdc
     ) CCIPReceiver(_router) {
-        escrow = IReflexParametricEscrow(_escrow);
-        usdc = IERC20(_usdc);
+        ESCROW = IReflexParametricEscrow(_escrow);
+        USDC = IERC20(_usdc);
 
         // Approve Escrow to spend USDC indefinitely to save gas on policy purchases
-        usdc.approve(_escrow, type(uint256).max);
+        USDC.approve(_escrow, type(uint256).max);
     }
 
     function _ccipReceive(

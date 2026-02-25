@@ -6,28 +6,42 @@ const ESCROW_ABI = [
     "function getUserPolicies(address _user) view returns (bytes32[])",
     "function getPolicy(bytes32 _policyId) view returns (address policyholder, string apiTarget, uint256 premiumPaid, uint256 payoutAmount, uint256 expirationTime, bool isActive, bool isClaimed)",
     "event PolicyPurchased(bytes32 indexed policyId, address indexed policyholder, string apiTarget, uint256 premiumPaid, uint256 payoutAmount, uint256 expirationTime)",
-];
-
-const TELEPORTER_ABI = [
-    "function sendCrossChainMessage((bytes32 destinationBlockchainID, address destinationAddress, (address feeTokenAddress, uint256 amount) feeInfo, uint256 requiredGasLimit, address[] allowedRelayerAddresses, bytes message) messageInput) returns (bytes32)",
+    "function requestFlightStatus(bytes32 _policyId, string[] calldata _args) returns (bytes32)",
+    "function authorizedRelayers(address _relayer) view returns (bool)",
+    "function addRelayer(address _relayer) external"
 ];
 
 export class BlockchainService {
     private readonly provider: ethers.JsonRpcProvider;
     private readonly signer: ethers.Wallet;
     private readonly escrow: ethers.Contract;
-    private readonly teleporter: ethers.Contract;
 
     constructor(
         rpcUrl: string,
         privateKey: string,
-        private readonly escrowAddress: string,
-        private readonly teleporterAddress: string
+        private readonly escrowAddress: string
     ) {
         this.provider = new ethers.JsonRpcProvider(rpcUrl);
         this.signer = new ethers.Wallet(privateKey, this.provider);
-        this.escrow = new ethers.Contract(escrowAddress, ESCROW_ABI, this.provider);
-        this.teleporter = new ethers.Contract(teleporterAddress, TELEPORTER_ABI, this.signer);
+        this.escrow = new ethers.Contract(escrowAddress, ESCROW_ABI, this.signer);
+    }
+
+    async ensureAuthorized(): Promise<void> {
+        const address = this.getWalletAddress();
+        const isAuthorized = await this.escrow.authorizedRelayers(address);
+
+        if (!isAuthorized) {
+            console.log(`[BlockchainService] Relayer ${address} is NOT authorized. Attempting to self-authorize...`);
+            try {
+                const tx = await this.escrow.addRelayer(address);
+                await tx.wait();
+                console.log(`[BlockchainService] Relayer ${address} successfully authorized.`);
+            } catch (error: any) {
+                console.error(`[BlockchainService] Failed to authorize relayer. Ensure this wallet is the contract owner or has been added manually. Error:`, error.message);
+            }
+        } else {
+            console.log(`[BlockchainService] Relayer ${address} is authorized.`);
+        }
     }
 
     async getActivePolicies(lookbackBlocks: number = 2000): Promise<PolicyInfo[]> {
@@ -60,24 +74,9 @@ export class BlockchainService {
         });
     }
 
-    async submitClaim(policyId: string, proof: Uint8Array): Promise<string> {
+    async triggerChainlinkRequest(policyId: string, flightIata: string, flightDate: string): Promise<string> {
         return withRetry(async () => {
-            const payload = ethers.AbiCoder.defaultAbiCoder().encode(
-                ["bytes32", "bytes"],
-                [policyId, proof]
-            );
-
-            const chainIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(43113), 32);
-            const messageInput = {
-                destinationBlockchainID: chainIdBytes32,
-                destinationAddress: this.escrowAddress,
-                feeInfo: { feeTokenAddress: ethers.ZeroAddress, amount: 0n },
-                requiredGasLimit: 300_000n,
-                allowedRelayerAddresses: [],
-                message: payload,
-            };
-
-            const tx = await this.teleporter.sendCrossChainMessage(messageInput);
+            const tx = await this.escrow.requestFlightStatus(policyId, [flightIata, flightDate]);
             const receipt = await tx.wait();
             return receipt.hash;
         });

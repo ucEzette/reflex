@@ -2,7 +2,6 @@ import cron from "node-cron";
 import { loadConfig } from "./config";
 import { AviationStackService } from "./services/AviationStackService";
 import { BlockchainService } from "./services/BlockchainService";
-import { ProofService } from "./services/ProofService";
 import { PolicyInfo } from "./types";
 import { ethers } from "ethers";
 import { logger } from "./utils/logger";
@@ -10,8 +9,7 @@ import { logger } from "./utils/logger";
 async function processPolicy(
     policy: PolicyInfo,
     blockchain: BlockchainService,
-    aviationStack: AviationStackService,
-    proofs: ProofService
+    aviationStack: AviationStackService
 ) {
     const policyIdShort = policy.policyId.slice(0, 18);
 
@@ -38,14 +36,10 @@ async function processPolicy(
         const DELAY_THRESHOLD = 7200;
         if (flightData.delaySeconds > DELAY_THRESHOLD) {
             logger.warn({ policyId: policyIdShort, delay: flightData.delaySeconds }, "DELAY DETECTED - Triggering claim");
-
-            // 4. Generate zkTLS Proof
-            const proof = await proofs.generateZkProof(policy.apiTarget, flightData);
-            logger.info({ policyId: policyIdShort, size: proof.length }, "zkTLS Proof generated");
-
-            // 5. Submit Claim
-            const txHash = await blockchain.submitClaim(policy.policyId, proof);
-            logger.info({ policyId: policyIdShort, tx: txHash }, "Claim successful");
+            // 4. Trigger Chainlink Function
+            const flightIata = policy.apiTarget.replace(/^flights\//, "").toUpperCase();
+            const txHash = await blockchain.triggerChainlinkRequest(policy.policyId, flightIata, flightData.flightDate);
+            logger.info({ policyId: policyIdShort, tx: txHash }, "Chainlink request submitted successfully");
         } else {
             logger.info({ policyId: policyIdShort, delay: flightData.delaySeconds }, "Flight delay below threshold - no action");
         }
@@ -56,8 +50,7 @@ async function processPolicy(
 
 async function monitorCircle(
     blockchain: BlockchainService,
-    aviationStack: AviationStackService,
-    proofs: ProofService
+    aviationStack: AviationStackService
 ) {
     console.log(`\n[Relayer] ─── Starting scan at ${new Date().toISOString()} ───`);
 
@@ -66,7 +59,7 @@ async function monitorCircle(
         console.log(`[Relayer] Found ${activePolicies.length} active policies to monitor`);
 
         for (const policy of activePolicies) {
-            await processPolicy(policy, blockchain, aviationStack, proofs);
+            await processPolicy(policy, blockchain, aviationStack);
         }
     } catch (error: any) {
         console.error(`[Relayer] Fatal error during monitor cycle:`, error.message);
@@ -85,22 +78,23 @@ async function main() {
     const blockchain = new BlockchainService(
         config.rpcUrl,
         config.privateKey,
-        config.escrowAddress,
-        config.teleporterAddress
+        config.escrowAddress
     );
-    const proofs = new ProofService(config.reclaimAppId, config.reclaimAppSecret);
 
     console.log(`[Relayer] Operator Wallet: ${blockchain.getWalletAddress()}`);
     console.log(`[Relayer] Escrow Contract: ${config.escrowAddress}`);
     console.log(`[Relayer] Poll Interval: ${config.pollIntervalSeconds}s`);
 
+    // Ensure this relayer is authorized to submit Chainlink requests
+    await blockchain.ensureAuthorized();
+
     // Initial run
-    await monitorCircle(blockchain, aviationStack, proofs);
+    await monitorCircle(blockchain, aviationStack);
 
     // Schedule periodic monitoring
     const pollCron = `*/${Math.max(1, Math.floor(config.pollIntervalSeconds / 60))} * * * *`;
     cron.schedule(pollCron, async () => {
-        await monitorCircle(blockchain, aviationStack, proofs);
+        await monitorCircle(blockchain, aviationStack);
     });
 
     console.log(`\n[Relayer] Service active. Monitoring flight delays via AviationStack...`);
