@@ -1,14 +1,23 @@
 "use client";
 
-import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { useAccount, useConnect, useDisconnect, useSwitchChain } from "wagmi";
 import { useState, useRef, useEffect } from "react";
+import { avalancheFuji } from "wagmi/chains";
 
 export function WalletConnect() {
-    const { address, isConnected } = useAccount();
+    const { address, isConnected, chainId } = useAccount();
     const { connectors, connect } = useConnect();
+    const { switchChain } = useSwitchChain();
     const { disconnect } = useDisconnect();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Prompt user to switch to Fuji testnet if they are connected to another network
+    useEffect(() => {
+        if (isConnected && chainId !== avalancheFuji.id && switchChain) {
+            switchChain({ chainId: avalancheFuji.id });
+        }
+    }, [isConnected, chainId, switchChain]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
