@@ -26,6 +26,13 @@ export function Navbar() {
                         <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
                     </Link>
                     <Link
+                        href="/dashboard"
+                        className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors relative group"
+                    >
+                        Dashboard
+                        <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
+                    </Link>
+                    <Link
                         href="/profile"
                         className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors relative group"
                     >

@@ -6,7 +6,15 @@ export const config = createConfig({
     chains: [avalancheFuji],
     connectors: [
         injected({ target: 'metaMask' }),
-        injected({ target: 'core' }),
+        injected({
+            target() {
+                return {
+                    id: 'coreWallet',
+                    name: 'Core Wallet',
+                    provider: typeof window !== 'undefined' ? (window as any).avalanche : undefined,
+                }
+            }
+        }),
         safe(),
     ],
     transports: {
