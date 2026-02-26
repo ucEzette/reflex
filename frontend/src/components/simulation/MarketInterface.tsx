@@ -159,9 +159,9 @@ export function MarketInterface() {
                 style={{ backdropFilter: "blur(12px) brightness(1.2) contrast(1.1)" }}>
 
                 {/* Decorative gradients */}
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-red-600 via-red-500 to-cyan-500 rounded-t-2xl opacity-80" />
+                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-primary via-primary-dark to-cyan-500 rounded-t-2xl opacity-80" />
                 <div className="absolute -top-32 -right-32 w-64 h-64 bg-cyan-500/20 blur-[80px] rounded-full pointer-events-none" />
-                <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-red-600/20 blur-[80px] rounded-full pointer-events-none" />
+                <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-primary/20 blur-[80px] rounded-full pointer-events-none" />
 
                 <h1 className="text-3xl font-black text-white mb-2 tracking-tighter mix-blend-plus-lighter">
                     Flight Market
@@ -219,30 +219,27 @@ export function MarketInterface() {
                                 <p className="text-xs text-slate-400 mt-1">Your coverage is now active.</p>
                             </div>
                         ) : (
-                            <button
-                                onClick={hasEnoughAllowance ? handlePurchase : handleApprove}
-                                disabled={isProcessing}
-                                className={`w-full h-14 rounded-xl bg-gradient-to-r ${hasEnoughAllowance ? 'from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 shadow-green-900/40' : 'from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 shadow-cyan-900/40'} transition-all duration-500 text-white font-bold tracking-[0.1em] uppercase text-[11px] shadow-xl relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed`}
-                            >
-                                <div className="absolute inset-0 flex items-center justify-between px-6 z-10 transition-opacity">
-                                    <span className="flex flex-col items-start leading-tight text-left">
-                                        <span className="text-[9px] font-normal text-white/70 tracking-widest">{hasEnoughAllowance ? 'Purchase Policy' : 'Unlock Assets'}</span>
-                                        <span className="text-sm tracking-tight">{hasEnoughAllowance ? '50.00 USDC' : 'Approve Contract'}</span>
-                                    </span>
-                                    <div className="flex items-center gap-2">
+                            <div className={`dexter-btn-container w-full relative z-30 mb-2 transition-opacity ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`} style={{ '--btn-color': hasEnoughAllowance ? '#22c55e' : '#06b6d4' } as React.CSSProperties}>
+                                <button onClick={hasEnoughAllowance ? handlePurchase : handleApprove} disabled={isProcessing} className="dexter-btn w-full !h-14 !px-6 !rounded-xl" type="button">
+                                    <span className="dexter-btn-drawer dexter-transition-top !text-[10px] uppercase font-mono tracking-widest">{hasEnoughAllowance ? 'Purchase Policy' : 'Unlock Assets'}</span>
+                                    <span className="dexter-btn-text w-full flex items-center justify-between gap-2 !text-sm">
+                                        <span>{hasEnoughAllowance ? '50.00 USDC' : 'Approve Contract'}</span>
                                         {isProcessing ? (
                                             <span className="flex items-center gap-2 text-xs">
-                                                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                                                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" strokeDasharray="32" strokeDashoffset="12" />
-                                                </svg>
+                                                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" strokeDasharray="32" strokeDashoffset="12" /></svg>
                                                 TX PENDING
                                             </span>
                                         ) : (
                                             <span className="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">{hasEnoughAllowance ? 'receipt_long' : 'key'}</span>
                                         )}
-                                    </div>
-                                </div>
-                            </button>
+                                    </span>
+                                    <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                                    <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                                    <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                                    <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                                    <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[9px] uppercase font-mono">{hasEnoughAllowance ? 'confirm tx' : 'sign approval'}</span>
+                                </button>
+                            </div>
                         )}
                     </div>
                 ) : (
