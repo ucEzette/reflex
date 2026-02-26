@@ -71,7 +71,7 @@ export const searchFlight = async (query: string): Promise<UnifiedFlightData> =>
 
     if (!isFaFlightId && data.flights.length > 1) {
         // Find the first active or scheduled flight, ignoring past ones
-        const activeOrScheduled = data.flights.find((f: any) => {
+        const activeOrScheduled = data.flights.find((f: { status: string }) => {
             const status = (f.status || '').toLowerCase();
             return status.includes('en route') || status.includes('active') || status.includes('scheduled') || status.includes('delayed');
         });

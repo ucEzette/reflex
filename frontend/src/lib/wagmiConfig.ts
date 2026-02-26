@@ -11,6 +11,7 @@ export const config = createConfig({
                 return {
                     id: 'coreWallet',
                     name: 'Core Wallet',
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     provider: typeof window !== 'undefined' ? (window as any).avalanche : undefined,
                 }
             }

@@ -17,17 +17,19 @@ export async function GET(request: Request) {
     try {
         const flightData = await searchFlight(query);
         return NextResponse.json(flightData);
-    } catch (error: any) {
-        if (error.message === "Flight not found" || error.message === "No active flights found for this query") {
-            return NextResponse.json({ error: error.message }, { status: 404 });
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+
+        if (errorMessage === "Flight not found" || errorMessage === "No active flights found for this query") {
+            return NextResponse.json({ error: errorMessage }, { status: 404 });
         }
-        if (error.message.includes("Payment Required")) {
-            return NextResponse.json({ error: error.message }, { status: 402 });
+        if (errorMessage.includes("Payment Required")) {
+            return NextResponse.json({ error: errorMessage }, { status: 402 });
         }
 
         console.error("Flight search error:", error);
         return NextResponse.json(
-            { error: "Failed to fetch flight data", details: error.message },
+            { error: "Failed to fetch flight data", details: errorMessage },
             { status: 500 }
         );
     }
