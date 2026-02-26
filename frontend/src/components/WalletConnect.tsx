@@ -32,35 +32,54 @@ export function WalletConnect() {
     if (isConnected && address) {
         return (
             <div className="flex items-center gap-3">
-                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-mono text-primary">
-                    <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-                    </span>
-                    Fuji Testnet
+                <div className="dexter-btn-container w-32 relative z-30">
+                    <button
+                        onClick={() => disconnect()}
+                        className="dexter-btn !min-w-[124px] !min-h-[36px] !px-3 !py-1.5" type="button"
+                    >
+                        <span className="dexter-btn-drawer dexter-transition-top flex items-center justify-center gap-1.5 !text-[9px] w-full left-0 right-0">
+                            <span className="relative flex h-1.5 w-1.5">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
+                            </span>
+                            FUJI TESTNET
+                        </span>
+                        <span className="dexter-btn-text flex items-center justify-center gap-1.5 !text-xs w-full"><span className="material-symbols-outlined text-[16px]">account_balance_wallet</span> {address.slice(0, 4)}...{address.slice(-4)}</span>
+                        <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100">
+                            <path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path>
+                        </svg>
+                        <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100">
+                            <path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path>
+                        </svg>
+                        <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100">
+                            <path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path>
+                        </svg>
+                        <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100">
+                            <path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path>
+                        </svg>
+                        <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[9px]">disconnect</span>
+                    </button>
                 </div>
-                <button
-                    onClick={() => disconnect()}
-                    className="flex items-center gap-2 bg-surface-dark hover:bg-white/5 border border-white/10 text-slate-300 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
-                >
-                    <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
-                    <span className="font-mono text-xs">
-                        {address.slice(0, 6)}...{address.slice(-4)}
-                    </span>
-                </button>
             </div>
         );
     }
 
     return (
         <div className="relative" ref={dropdownRef}>
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(231,64,67,0.3)]"
-            >
-                <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
-                Connect Wallet
-            </button>
+            <div className="dexter-btn-container w-36 relative z-30">
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="dexter-btn !min-w-[136px] !min-h-[36px] !px-3 !py-1.5" type="button"
+                >
+                    <span className="dexter-btn-drawer dexter-transition-top !text-[9px]">WEB3</span>
+                    <span className="dexter-btn-text flex items-center justify-center gap-1.5 !text-xs w-full"><span className="material-symbols-outlined text-[16px]">account_balance_wallet</span> Connect Wallet</span>
+                    <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                    <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                    <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                    <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                    <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[9px]">connect</span>
+                </button>
+            </div>
 
             {isOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-surface-dark border border-white/10 rounded-xl shadow-2xl overflow-hidden py-2 z-50">

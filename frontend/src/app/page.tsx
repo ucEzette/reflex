@@ -7,6 +7,19 @@ import { ActivePolicies } from "@/components/ActivePolicies";
    unified, interactive experience.
    ═══════════════════════════════════════════ */
 
+const ALL_MARKETS = [
+  { id: "flight", title: "Flight Delay", price: "$5 USDC", unit: "/ flight", icon: "flight_takeoff", iconBg: "bg-blue-500/20", iconColor: "text-blue-400", riskBase: "RISK-L1", bullet1: "Instant Oracle Payout", bullet2: "Global Coverage", rgb: "0, 240, 255" },
+  { id: "cloud-down", title: "SaaS Outage", price: "$50 USDC", unit: "/ down hr", icon: "cloud_off", iconBg: "bg-purple-500/20", iconColor: "text-purple-400", riskBase: "RISK-L2", bullet1: "API Disruption Monitor", bullet2: "Lost Income Cover", rgb: "168, 85, 247" },
+  { id: "rain-check", title: "Event Cover", price: "$100 USDC", unit: "/ mm rain", icon: "umbrella", iconBg: "bg-cyan-500/20", iconColor: "text-cyan-400", riskBase: "RISK-L3", bullet1: "Weather Data Oracle", bullet2: "Automated Claims", rgb: "6, 182, 212" },
+  { id: "gas-guzzler", title: "ETH Gas Hedge", price: "0.05 ETH", unit: "/ spike", icon: "local_gas_station", iconBg: "bg-amber-500/20", iconColor: "text-amber-400", riskBase: "RISK-L4", bullet1: "Etherscan Tracker", bullet2: "Tx Fee Subsidy", rgb: "245, 158, 11" },
+  { id: "shipping-shield", title: "Delivery Guarantee", price: "$20 USDC", unit: "/ day late", icon: "local_shipping", iconBg: "bg-green-500/20", iconColor: "text-green-400", riskBase: "RISK-L5", bullet1: "Logistics Oracle", bullet2: "SLA Enforcement", rgb: "34, 197, 94" },
+  { id: "heat-wave", title: "Utility Subsidy", price: "$100 USDC", unit: "/ wave", icon: "thermostat", iconBg: "bg-red-500/20", iconColor: "text-red-400", riskBase: "RISK-L6", bullet1: "NOAA Temperature Feed", bullet2: "AC Cost Cover", rgb: "239, 68, 68" },
+  { id: "powder-protect", title: "Ski Trip Guarantee", price: "$500 USDC", unit: "/ trip", icon: "ac_unit", iconBg: "bg-slate-300/20", iconColor: "text-slate-300", riskBase: "RISK-L7", bullet1: "Snowfall API Link", bullet2: "Resort Weather Truing", rgb: "203, 213, 225" },
+  { id: "peg-shield", title: "Stablecoin De-Peg", price: "Dynamic", unit: "payout", icon: "currency_exchange", iconBg: "bg-emerald-500/20", iconColor: "text-emerald-400", riskBase: "RISK-L8", bullet1: "Chainlink USD Feeds", bullet2: "Tail-Risk Protection", rgb: "16, 185, 129" },
+  { id: "sun-yield", title: "Solar Energy Hedge", price: "$100 USDC", unit: "/ month", icon: "solar_power", iconBg: "bg-yellow-500/20", iconColor: "text-yellow-400", riskBase: "RISK-L9", bullet1: "Irradiance Indexes", bullet2: "Output Smoothing", rgb: "234, 179, 8" },
+  { id: "freight-wait", title: "Supply Chain Delay", price: "$200 USDC", unit: "/ day", icon: "directions_boat", iconBg: "bg-indigo-500/20", iconColor: "text-indigo-400", riskBase: "RISK-L10", bullet1: "Maritime Fleet Tracking", bullet2: "Demurrage Hedge", rgb: "99, 102, 241" }
+];
+
 export default function Home() {
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-hidden">
@@ -58,20 +71,28 @@ export default function Home() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 mt-4 w-full justify-center">
-              <a
-                href="#dashboard"
-                className="group relative px-8 py-4 bg-white text-background-dark text-base font-bold rounded-lg overflow-hidden transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:-translate-y-1"
-              >
-                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:animate-shimmer" />
-                <span className="relative flex items-center gap-2 justify-center">
-                  Launch App
-                  <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
-                </span>
+              <a href="#dashboard" className="dexter-btn-container w-52 relative z-30">
+                <button className="dexter-btn !min-w-[200px] !min-h-[50px] !px-6 !py-3 !rounded-xl" type="button">
+                  <span className="dexter-btn-drawer dexter-transition-top !text-[11px]">DAPP</span>
+                  <span className="dexter-btn-text flex items-center gap-2 !text-lg">Launch App <span className="material-symbols-outlined text-[20px]">arrow_forward</span></span>
+                  <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                  <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                  <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                  <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                  <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[11px]">mainnet active</span>
+                </button>
               </a>
-              <button className="px-8 py-4 bg-surface-dark/50 border border-white/10 hover:border-white/30 hover:bg-surface-dark text-white text-base font-bold rounded-lg backdrop-blur-sm transition-all hover:-translate-y-1 flex items-center gap-2 justify-center">
-                <span className="material-symbols-outlined">description</span>
-                Read Whitepaper
-              </button>
+              <a href="/docs" className="dexter-btn-container w-52 relative z-30" style={{ '--btn-color': '#475569' } as React.CSSProperties}>
+                <button className="dexter-btn !min-w-[200px] !min-h-[50px] !px-6 !py-3 !rounded-xl opacity-90 hover:opacity-100" type="button">
+                  <span className="dexter-btn-drawer dexter-transition-top !text-[11px]">DOCS</span>
+                  <span className="dexter-btn-text flex items-center gap-2 !text-lg !text-white/90"><span className="material-symbols-outlined text-[20px]">description</span> Whitepaper</span>
+                  <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                  <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                  <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                  <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                  <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[11px] !text-white/80">learn more</span>
+                </button>
+              </a>
             </div>
 
             {/* Stats Row */}
@@ -109,110 +130,61 @@ export default function Home() {
               <span className="material-symbols-outlined text-sm">arrow_outward</span>
             </a>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Flight Delay */}
-            <a href="#dashboard" className="group relative bg-surface-dark border border-white/5 rounded-xl p-6 hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-40 transition-opacity">
-                <span className="material-symbols-outlined text-6xl text-slate-500">flight_takeoff</span>
-              </div>
-              <div className="relative z-10 flex flex-col h-full">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="bg-blue-500/20 text-blue-400 p-2 rounded-lg">
-                    <span className="material-symbols-outlined">schedule</span>
-                  </span>
-                  <span className="text-xs font-mono text-slate-400 bg-white/5 px-2 py-1 rounded">RISK-L1</span>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-1">Flight Delay</h3>
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="text-2xl font-bold text-primary">$5 USDC</span>
-                  <span className="text-sm text-slate-400">/ flight</span>
-                </div>
-                <div className="mt-auto space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-slate-300">
-                    <span className="material-symbols-outlined text-primary text-base">check_circle</span>
-                    <span>Instant Oracle Payout</span>
+          <div className="carousel-wrapper" style={{ '--quantity': 10 } as React.CSSProperties}>
+            <div className="carousel-inner group/inner">
+              {ALL_MARKETS.map((market, index) => (
+                <div
+                  key={market.id}
+                  className="carousel-card group relative overflow-hidden"
+                  style={{ '--index': index, '--color-rgb': market.rgb } as React.CSSProperties}
+                >
+                  <div className="carousel-bg-glow" />
+                  <a href={market.id === 'flight' ? `/markets/flight` : '#dashboard'} className="absolute inset-0 z-20"><span className="sr-only">View {market.title}</span></a>
+                  <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-40 transition-opacity">
+                    <span className="material-symbols-outlined text-6xl text-slate-500">{market.icon}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-300">
-                    <span className="material-symbols-outlined text-primary text-base">check_circle</span>
-                    <span>Global Coverage</span>
-                  </div>
-                  <div className="w-full mt-4 bg-white/5 hover:bg-white/10 text-white font-bold py-2 rounded border border-white/10 transition-colors text-center">
-                    Insure Now
-                  </div>
-                </div>
-              </div>
-            </a>
-
-            {/* Crop Failure */}
-            <div className="group relative bg-surface-dark border border-white/5 rounded-xl p-6 hover:border-green-500/50 transition-all duration-300 hover:-translate-y-1 overflow-hidden opacity-60 cursor-not-allowed">
-              <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-40 transition-opacity">
-                <span className="material-symbols-outlined text-6xl text-slate-500">grass</span>
-              </div>
-              <div className="relative z-10 flex flex-col h-full">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="bg-green-500/20 text-green-400 p-2 rounded-lg">
-                    <span className="material-symbols-outlined">water_drop</span>
-                  </span>
-                  <span className="text-xs font-mono text-slate-400 bg-white/5 px-2 py-1 rounded">RISK-L2</span>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-1">Crop Failure</h3>
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="text-2xl font-bold text-green-500">2.5 AVAX</span>
-                  <span className="text-sm text-slate-400">/ acre</span>
-                </div>
-                <div className="mt-auto space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-slate-300">
-                    <span className="material-symbols-outlined text-green-500 text-base">check_circle</span>
-                    <span>Weather Data Oracle</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-300">
-                    <span className="material-symbols-outlined text-green-500 text-base">check_circle</span>
-                    <span>Automated Claims</span>
-                  </div>
-                  <div className="w-full mt-4 bg-white/5 text-slate-500 font-bold py-2 rounded border border-white/10 text-center">
-                    Coming Soon
+                  <div className="relative z-10 flex flex-col h-full pointer-events-none">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className={`${market.iconBg} ${market.iconColor} p-2 rounded-lg`}>
+                        <span className="material-symbols-outlined">{market.icon}</span>
+                      </span>
+                      <span className="text-xs font-mono text-slate-400 bg-white/5 px-2 py-1 rounded">{market.riskBase}</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-1">{market.title}</h3>
+                    <div className="flex items-baseline gap-1 mb-6">
+                      <span className={`text-2xl font-bold ${market.iconColor}`}>{market.price}</span>
+                      <span className="text-sm text-slate-400">{market.unit}</span>
+                    </div>
+                    <div className="mt-auto space-y-3">
+                      <div className="flex items-center gap-2 text-sm text-slate-300">
+                        <span className={`material-symbols-outlined ${market.iconColor} text-base`}>check_circle</span>
+                        <span>{market.bullet1}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-slate-300">
+                        <span className={`material-symbols-outlined ${market.iconColor} text-base`}>check_circle</span>
+                        <span>{market.bullet2}</span>
+                      </div>
+                      <a href={market.id === 'flight' ? `/markets/flight` : '#dashboard'} className="dexter-btn-container relative z-30 w-36 mt-4 self-center">
+                        <button className="dexter-btn !min-w-[136px] !min-h-[36px] !px-3 !py-1.5" type="button">
+                          <span className="dexter-btn-drawer dexter-transition-top !text-[9px]">RISK PROTOCOL</span>
+                          <span className="dexter-btn-text !text-xs">Insure Now</span>
+                          <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                          <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                          <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                          <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                          <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[9px]">TELEPORTER SETTLEMENT</span>
+                        </button>
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* DeFi Hacks */}
-            <div className="group relative bg-surface-dark border border-white/5 rounded-xl p-6 hover:border-purple-500/50 transition-all duration-300 hover:-translate-y-1 overflow-hidden opacity-60 cursor-not-allowed">
-              <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-40 transition-opacity">
-                <span className="material-symbols-outlined text-6xl text-slate-500">security</span>
-              </div>
-              <div className="relative z-10 flex flex-col h-full">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="bg-purple-500/20 text-purple-400 p-2 rounded-lg">
-                    <span className="material-symbols-outlined">code</span>
-                  </span>
-                  <span className="text-xs font-mono text-slate-400 bg-white/5 px-2 py-1 rounded">RISK-L3</span>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-1">DeFi Hacks</h3>
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="text-2xl font-bold text-purple-500">5.0 AVAX</span>
-                  <span className="text-sm text-slate-400">/ year</span>
-                </div>
-                <div className="mt-auto space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-slate-300">
-                    <span className="material-symbols-outlined text-purple-500 text-base">check_circle</span>
-                    <span>Smart Contract Cover</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-300">
-                    <span className="material-symbols-outlined text-purple-500 text-base">check_circle</span>
-                    <span>Audit Verification</span>
-                  </div>
-                  <div className="w-full mt-4 bg-white/5 text-slate-500 font-bold py-2 rounded border border-white/10 text-center">
-                    Coming Soon
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
 
         {/* ═══ HOW IT WORKS — Scrollytelling ═══ */}
-        <section id="how-it-works" className="relative w-full max-w-[1440px] mx-auto px-6 lg:px-20 pb-40">
+        <section id="how-it-works" className="relative w-full max-w-[1440px] mx-auto px-6 lg:px-20 pb-16">
           {/* Section Title */}
           <div className="text-center mb-16 lg:mb-0">
             <h2 className="font-display text-4xl font-bold tracking-tight text-white md:text-6xl lg:text-7xl">
@@ -226,168 +198,19 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-12 lg:gap-24 mt-12">
-            {/* Sticky Left Sidebar */}
-            <div className="hidden lg:flex flex-col lg:w-1/3 lg:h-screen lg:sticky lg:top-0 justify-center py-20">
-              <div className="flex flex-col gap-16 relative">
-                <div className="absolute left-[19px] top-4 bottom-4 w-[2px] bg-white/5" />
-                {/* Step 1 */}
-                <div className="relative flex gap-8 group">
-                  <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary border-4 border-background-dark shadow-[0_0_15px_rgba(231,64,67,0.6)]">
-                    <span className="font-display font-bold text-white">1</span>
-                  </div>
-                  <div className="flex flex-col pt-1">
-                    <h3 className="font-display text-2xl font-bold text-white">Lock Premium</h3>
-                    <p className="mt-2 text-slate-400 leading-relaxed">Smart contract escrows your $5 USDC instantly in a secure vault.</p>
-                  </div>
-                </div>
-                {/* Step 2 */}
-                <div className="relative flex gap-8 group">
-                  <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background-dark border-2 border-slate-700 text-slate-500">
-                    <span className="font-display font-bold">2</span>
-                  </div>
-                  <div className="flex flex-col pt-1 opacity-40 group-hover:opacity-80 transition-opacity duration-500">
-                    <h3 className="font-display text-2xl font-bold text-white">Chainlink Verification</h3>
-                    <p className="mt-2 text-slate-400 leading-relaxed">A Decentralized Oracle Network queries aviation data and achieves consensus on the delay.</p>
-                  </div>
-                </div>
-                {/* Step 3 */}
-                <div className="relative flex gap-8 group">
-                  <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background-dark border-2 border-slate-700 text-slate-500">
-                    <span className="font-display font-bold">3</span>
-                  </div>
-                  <div className="flex flex-col pt-1 opacity-40 group-hover:opacity-80 transition-opacity duration-500">
-                    <h3 className="font-display text-2xl font-bold text-white">Instant Payout</h3>
-                    <p className="mt-2 text-slate-400 leading-relaxed">Avalanche Teleporter enables cross-subnet settlement in sub-seconds.</p>
-                  </div>
-                </div>
+          <div className="flex justify-center items-center mt-16 mb-8 w-full min-h-[350px]">
+            <div className="glass-group">
+              <div className="glass-panel" data-text="1. Lock Premium" style={{ '--r': '-15' } as React.CSSProperties}>
+                <span className="material-symbols-outlined">lock</span>
+                <p className="text-slate-300 text-sm px-6 text-center leading-relaxed font-light mt-4 mb-6">Smart contract escrows your $5 USDC instantly in a secure vault.</p>
               </div>
-            </div>
-
-            {/* Right — Scrolling Cards */}
-            <div className="flex flex-col gap-32 w-full lg:w-2/3 py-20">
-              {/* CARD 1: Lock Premium */}
-              <div>
-                <div className="lg:hidden mb-4">
-                  <div className="flex items-center gap-4 mb-2">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white font-bold font-display text-sm">1</span>
-                    <h3 className="text-2xl font-display font-bold text-white">Lock Premium</h3>
-                  </div>
-                  <p className="text-slate-400 pl-12">Smart contract escrows funds instantly.</p>
-                </div>
-                <div className="glass-card rounded-2xl p-8 md:p-12 min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden">
-                  <div className="absolute top-[-50%] left-[-50%] w-[100%] h-[100%] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
-                  <div className="relative z-10 flex flex-col items-center gap-8">
-                    <div className="relative w-48 h-48 md:w-64 md:h-64">
-                      <div className="absolute inset-0 rounded-full border border-primary/20 animate-[spin_10s_linear_infinite]" />
-                      <div className="absolute inset-4 rounded-full border border-dashed border-primary/30 animate-[spin_15s_linear_infinite_reverse]" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="bg-gradient-to-br from-[#321a1b] to-[#1a0f0f] p-8 rounded-3xl border border-primary/40 shadow-[0_0_30px_rgba(231,64,67,0.15)] flex flex-col items-center justify-center w-32 h-32">
-                          <span className="material-symbols-outlined text-primary text-5xl mb-2">lock</span>
-                          <span className="text-white font-display font-bold text-lg">$5.00</span>
-                          <span className="text-primary/70 text-xs font-mono">USDC</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-center max-w-md">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium uppercase tracking-wider mb-4">
-                        <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-                        </span>
-                        Escrow Active
-                      </div>
-                      <h4 className="text-xl font-display font-semibold text-white mb-2">Funds Secured</h4>
-                      <p className="text-slate-400 text-sm">Your premium is locked in a non-custodial smart contract until the trigger event resolves.</p>
-                    </div>
-                  </div>
-                </div>
+              <div className="glass-panel" data-text="2. Verification" style={{ '--r': '5' } as React.CSSProperties}>
+                <span className="material-symbols-outlined text-neon-cyan drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]">link</span>
+                <p className="text-slate-300 text-sm px-4 text-center leading-relaxed font-light mt-4 mb-6">A Decentralized Oracle Network queries aviation data and achieves consensus on the delay.</p>
               </div>
-
-              {/* CARD 2: Chainlink Verification */}
-              <div>
-                <div className="lg:hidden mb-4 mt-12">
-                  <div className="flex items-center gap-4 mb-2">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-neon-cyan/20 border border-neon-cyan text-neon-cyan font-bold font-display text-sm">2</span>
-                    <h3 className="text-2xl font-display font-bold text-white">Chainlink Verification</h3>
-                  </div>
-                  <p className="text-slate-400 pl-12">Decentralized flight data validation.</p>
-                </div>
-                <div className="glass-card rounded-2xl p-8 md:p-12 min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden">
-                  <div className="absolute bottom-[-20%] right-[-20%] w-[80%] h-[80%] bg-neon-cyan/10 rounded-full blur-[120px] pointer-events-none" />
-                  <div className="relative z-10 flex flex-col items-center gap-8">
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-neon-cyan/20 blur-xl rounded-full" />
-                      <svg className="drop-shadow-[0_0_15px_rgba(0,240,255,0.5)]" fill="none" height="200" viewBox="0 0 180 200" width="180" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M90 190C90 190 160 154 160 50V20L90 0L20 20V50C20 154 90 190 90 190Z" fill="rgba(0, 240, 255, 0.05)" stroke="#00F0FF" strokeWidth="2" />
-                        <path d="M55 90L80 115L125 70" stroke="#00F0FF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" />
-                      </svg>
-                      <div className="absolute -top-4 -right-8 bg-black/60 backdrop-blur-sm border border-neon-cyan/30 p-2 rounded text-[10px] font-mono text-neon-cyan animate-pulse">
-                        DON_Consensus_OK
-                      </div>
-                      <div className="absolute bottom-10 -left-10 bg-black/60 backdrop-blur-sm border border-neon-cyan/30 p-2 rounded text-[10px] font-mono text-neon-cyan animate-[pulse_2s_infinite]">
-                        Oracle_Data_Valid
-                      </div>
-                    </div>
-                    <div className="text-center max-w-md">
-                      <h4 className="text-2xl font-display font-bold text-white mb-2 tracking-wide">
-                        <span className="text-neon-cyan drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]">Chainlink</span> Verified
-                      </h4>
-                      <p className="text-slate-300 text-sm">
-                        Multiple independent nodes execute custom JavaScript logic to verify the flight delay via AviationStack, achieving consensus before writing the truth on-chain.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* CARD 3: Instant Payout */}
-              <div>
-                <div className="lg:hidden mb-4 mt-12">
-                  <div className="flex items-center gap-4 mb-2">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 border border-primary text-primary font-bold font-display text-sm">3</span>
-                    <h3 className="text-2xl font-display font-bold text-white">Instant Payout</h3>
-                  </div>
-                  <p className="text-slate-400 pl-12">Cross-subnet settlement in sub-seconds.</p>
-                </div>
-                <div className="glass-card rounded-2xl p-8 md:p-12 min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none" />
-                  <div className="relative z-10 w-full flex flex-col items-center gap-10">
-                    <div className="relative w-full max-w-xs h-64 flex flex-col items-center justify-between">
-                      {/* Top Node */}
-                      <div className="z-10 w-full flex justify-center">
-                        <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-[#2a1516] border border-primary/40">
-                          <span className="material-symbols-outlined text-primary text-sm">article</span>
-                          <span className="text-xs font-mono text-slate-300">Contract</span>
-                        </div>
-                      </div>
-                      {/* Beam */}
-                      <div className="absolute top-10 bottom-10 w-0.5 bg-gradient-to-b from-primary/20 via-primary to-primary/20 overflow-visible">
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-20 bg-primary blur-sm animate-pulse" />
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-40 bg-primary/20 blur-xl" />
-                      </div>
-                      {/* Bottom Node */}
-                      <div className="z-10 w-full flex justify-center mt-auto">
-                        <div className="flex items-center gap-3 px-6 py-3 rounded-xl bg-primary text-white shadow-[0_0_20px_rgba(231,64,67,0.5)]">
-                          <span className="material-symbols-outlined text-white">account_balance_wallet</span>
-                          <div className="flex flex-col items-start leading-none">
-                            <span className="text-[10px] font-bold opacity-80 uppercase tracking-wider">Payout Received</span>
-                            <span className="text-base font-bold font-display">+$50.00 USDC</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-center max-w-md">
-                      <h4 className="text-xl font-display font-bold text-white mb-2 flex items-center justify-center gap-2">
-                        <span className="material-symbols-outlined text-primary">bolt</span>
-                        Avalanche Teleporter
-                      </h4>
-                      <p className="text-slate-400 text-sm">
-                        Settlement is instant. The Teleporter protocol moves assets across subnets in sub-seconds, depositing directly into your wallet.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+              <div className="glass-panel" data-text="3. Instant Payout" style={{ '--r': '25' } as React.CSSProperties}>
+                <span className="material-symbols-outlined text-primary drop-shadow-[0_0_8px_rgba(231,64,67,0.8)]">bolt</span>
+                <p className="text-slate-300 text-sm px-6 text-center leading-relaxed font-light mt-4 mb-6">Avalanche Teleporter enables cross-subnet settlement in sub-seconds.</p>
               </div>
             </div>
           </div>
@@ -541,15 +364,28 @@ export default function Home() {
               Connect your wallet and explore available micro-insurance pools powered by Reflex L1.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="#dashboard"
-                className="px-8 py-4 rounded-lg bg-primary hover:bg-primary-dark transition-all text-white font-bold font-display shadow-[0_0_20px_rgba(231,64,67,0.3)] hover:shadow-[0_0_30px_rgba(231,64,67,0.5)]"
-              >
-                Launch App
+              <a href="#dashboard" className="dexter-btn-container w-48 relative z-30">
+                <button className="dexter-btn !min-w-[180px] !min-h-[44px] !px-4 !py-2" type="button">
+                  <span className="dexter-btn-drawer dexter-transition-top">DAPP</span>
+                  <span className="dexter-btn-text flex items-center gap-2 !text-base">Launch App <span className="material-symbols-outlined text-[18px]">arrow_forward</span></span>
+                  <svg className="dexter-btn-corner" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                  <svg className="dexter-btn-corner" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                  <svg className="dexter-btn-corner" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                  <svg className="dexter-btn-corner" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                  <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[10px]">mainnet</span>
+                </button>
               </a>
-              <button className="px-8 py-4 rounded-lg border border-slate-700 hover:border-white text-white font-medium transition-colors">
-                Read Documentation
-              </button>
+              <a href="/docs" className="dexter-btn-container w-48 relative z-30" style={{ '--btn-color': '#475569' } as React.CSSProperties}>
+                <button className="dexter-btn !min-w-[180px] !min-h-[44px] !px-4 !py-2 opacity-90 hover:opacity-100" type="button">
+                  <span className="dexter-btn-drawer dexter-transition-top">DOCS</span>
+                  <span className="dexter-btn-text flex items-center gap-2 !text-base !text-white/90">Documentation</span>
+                  <svg className="dexter-btn-corner" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                  <svg className="dexter-btn-corner" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                  <svg className="dexter-btn-corner" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                  <svg className="dexter-btn-corner" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                  <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[10px] !text-white/80">learn more</span>
+                </button>
+              </a>
             </div>
           </div>
         </section>
