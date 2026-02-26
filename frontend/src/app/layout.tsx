@@ -7,7 +7,7 @@ import { Toaster } from "sonner";
 export const metadata: Metadata = {
   title: "Reflex L1 — Parametric Micro-Insurance",
   description:
-    "Decentralized parametric protection powered by Avalanche and zkTLS verification. Instant payouts, zero paperwork.",
+    "Decentralized parametric protection powered by Avalanche and Chainlink Oracles. Instant payouts, zero paperwork.",
 };
 
 export default function RootLayout({

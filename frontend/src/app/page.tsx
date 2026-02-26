@@ -304,7 +304,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* CARD 2: zkTLS Verification */}
+              {/* CARD 2: Chainlink Verification */}
               <div>
                 <div className="lg:hidden mb-4 mt-12">
                   <div className="flex items-center gap-4 mb-2">
@@ -323,10 +323,10 @@ export default function Home() {
                         <path d="M55 90L80 115L125 70" stroke="#00F0FF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" />
                       </svg>
                       <div className="absolute -top-4 -right-8 bg-black/60 backdrop-blur-sm border border-neon-cyan/30 p-2 rounded text-[10px] font-mono text-neon-cyan animate-pulse">
-                        TLS_Handshake_OK
+                        DON_Consensus_OK
                       </div>
                       <div className="absolute bottom-10 -left-10 bg-black/60 backdrop-blur-sm border border-neon-cyan/30 p-2 rounded text-[10px] font-mono text-neon-cyan animate-[pulse_2s_infinite]">
-                        zk_Proof_Valid
+                        Oracle_Data_Valid
                       </div>
                     </div>
                     <div className="text-center max-w-md">
