@@ -15,7 +15,7 @@ export function PolicyDashboard() {
     // Flight Validation State
     const [isValidating, setIsValidating] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
-    const [flightDetails, setFlightDetails] = useState<Record<string, unknown> | null>(null);
+    const [flightDetails, setFlightDetails] = useState<any>(null);
 
     /* ── Read USDC balance & allowance ── */
     const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
@@ -333,7 +333,7 @@ export function PolicyDashboard() {
                         <div className="mt-6">
                             <div className="flex items-center gap-2 text-xs text-slate-400">
                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500/50" />
-                                <span>zkTLS Verified</span>
+                                <span>Chainlink Verified</span>
                             </div>
                         </div>
                     </div>
