@@ -3,11 +3,10 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Terminal, LineChart, ShieldCheck } from 'lucide-react';
+import { LineChart, ShieldCheck, Globe, Database } from 'lucide-react';
 import { generateOracleLogs, generateTreasuryMetrics } from '@/lib/mockState';
 
 export default function TransparencyDashboard() {
-    // Local state to simulate loading
     const [mounted, setMounted] = useState(false);
     const logs = generateOracleLogs();
     const stats = generateTreasuryMetrics();
@@ -19,60 +18,86 @@ export default function TransparencyDashboard() {
     if (!mounted) return null;
 
     return (
-        <div className="min-h-screen p-6 lg:p-12 space-y-8 max-w-7xl mx-auto bg-background">
-            <header className="mb-10">
-                <h1 className="text-3xl font-bold text-foreground tracking-tight flex items-center gap-3">
-                    <ShieldCheck className="w-8 h-8 text-primary" />
-                    Protocol Transparency
-                </h1>
-                <p className="text-muted-foreground mt-2">Real-time oracle verification and treasury solvency metrics.</p>
-            </header>
+        <div className="min-h-screen p-4 md:p-8 space-y-8 bg-background">
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Header / Breadcrumb - Consistent with Dashboard */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-accent rounded-lg">
+                        <ShieldCheck className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-bold text-foreground">Protocol Transparency</h1>
+                        <nav className="flex text-[10px] text-muted-foreground uppercase font-bold tracking-widest gap-2">
+                            <span className="hover:text-foreground cursor-pointer transition-colors">Reflex</span>
+                            <span>/</span>
+                            <span className="text-foreground">Oracle & Treasury</span>
+                        </nav>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/5 border border-emerald-500/20 rounded-full">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-tighter">Nodes Online</span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
                 {/* Solvency & Chart Column */}
-                <section className="lg:col-span-7 flex flex-col gap-8">
+                <section className="lg:col-span-12 xl:col-span-7 space-y-6">
                     <SolvencyMetrics tvl={stats[stats.length - 1].tvl} claims={stats[stats.length - 1].claimsPaid} />
-                    
+
                     {/* Treasury Chart */}
-                    <article className="bg-card border border-border rounded-2xl p-6 shadow-sm h-[400px] flex flex-col">
-                        <h2 className="text-lg font-bold text-foreground flex items-center gap-2 mb-6">
-                            <LineChart className="w-5 h-5 text-primary" />
-                            Treasury TVL <span className="text-xs text-muted-foreground font-normal ml-2">(30 Days)</span>
-                        </h2>
-                        <div className="flex-1 w-full min-h-0">
+                    <article className="bg-card border border-border rounded-2xl p-6 shadow-sm overflow-hidden relative">
+                        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                            <LineChart className="w-32 h-32 text-primary" />
+                        </div>
+                        <div className="flex items-center justify-between mb-8">
+                            <div>
+                                <h2 className="text-lg font-bold text-foreground">Treasury Solvency</h2>
+                                <p className="text-xs text-muted-foreground whitespace-nowrap">USDC liquidity vs. historical parametric payouts</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold py-1 px-2 bg-accent rounded uppercase text-muted-foreground tracking-tighter">30D Span</span>
+                            </div>
+                        </div>
+
+                        <div className="h-[300px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={stats} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="colorTvl" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#4895EF" stopOpacity={0.3}/>
-                                            <stop offset="95%" stopColor="#4895EF" stopOpacity={0}/>
+                                            <stop offset="5%" stopColor="#8B0000" stopOpacity={0.2} />
+                                            <stop offset="95%" stopColor="#8B0000" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-border/40" vertical={false} />
-                                    <XAxis 
-                                        dataKey="timestamp" 
-                                        stroke="currentColor" 
+                                    <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-border/20" vertical={false} />
+                                    <XAxis
+                                        dataKey="timestamp"
+                                        stroke="currentColor"
                                         className="text-muted-foreground text-[10px]"
-                                        tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} 
+                                        tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                         axisLine={false}
                                         tickLine={false}
                                         dy={10}
                                     />
-                                    <YAxis 
-                                        stroke="currentColor" 
+                                    <YAxis
+                                        stroke="currentColor"
                                         className="text-muted-foreground text-[10px]"
-                                        tickFormatter={(val) => `$${(val / 1000000).toFixed(1)}M`} 
+                                        tickFormatter={(val) => `$${(val / 1000000).toFixed(1)}M`}
                                         axisLine={false}
                                         tickLine={false}
                                         dx={-10}
                                     />
-                                    <Tooltip 
-                                        contentStyle={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)', borderRadius: '8px', color: 'var(--foreground)' }}
-                                        itemStyle={{ color: '#4895EF' }}
-                                        labelStyle={{ color: 'var(--muted-foreground)', fontSize: '12px' }}
-                                        formatter={(value: number) => [new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value), "TVL"]}
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '12px', color: 'var(--foreground)', fontSize: '12px', fontWeight: 'bold' }}
+                                        itemStyle={{ color: 'var(--primary)' }}
+                                        formatter={(value: number | undefined) => [new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value || 0), "TVL"]}
                                     />
-                                    <Area type="monotone" dataKey="tvl" stroke="#4895EF" strokeWidth={2} fillOpacity={1} fill="url(#colorTvl)" />
+                                    <Area type="monotone" dataKey="tvl" stroke="var(--primary)" strokeWidth={3} fillOpacity={1} fill="url(#colorTvl)" />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
@@ -80,43 +105,54 @@ export default function TransparencyDashboard() {
                 </section>
 
                 {/* Live Oracle Console */}
-                <section className="lg:col-span-5 relative flex flex-col">
-                    <article className="bg-[#0A0A0A] border border-border/50 rounded-2xl h-full overflow-hidden flex flex-col shadow-2xl">
+                <section className="lg:col-span-12 xl:col-span-5 h-fit lg:h-full min-h-[500px]">
+                    <article className="bg-black border border-border rounded-2xl h-full overflow-hidden flex flex-col shadow-2xl ring-1 ring-white/5">
                         {/* Terminal Header */}
-                        <div className="bg-[#1A1A1A] p-3 text-xs font-mono text-muted-foreground flex items-center justify-between border-b border-border/10">
-                            <span className="flex items-center gap-2">
-                                <Terminal className="w-4 h-4 text-emerald-500" />
-                                oracle-node-01 // stream
+                        <div className="bg-zinc-900 px-4 py-3 text-[10px] font-bold text-zinc-500 flex items-center justify-between border-b border-white/5">
+                            <span className="flex items-center gap-3 tracking-widest uppercase">
+                                <Database className="w-3.5 h-3.5 text-emerald-500" />
+                                Chainlink // DON-Verification-Feed
                             </span>
-                            <div className="flex gap-1.5">
-                                <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-                                <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+                            <div className="flex gap-1.5 items-center">
+                                <span className="text-[9px] text-zinc-600 mr-2">VERIFIED-TS-01</span>
+                                <div className="flex gap-1.5">
+                                    <div className="w-2 h-2 rounded-full bg-zinc-700" />
+                                    <div className="w-2 h-2 rounded-full bg-zinc-700" />
+                                    <div className="w-2 h-2 rounded-full bg-zinc-700" />
+                                </div>
                             </div>
                         </div>
-                        
+
                         {/* Feed Body */}
-                        <div className="flex-1 p-5 overflow-y-auto space-y-3 font-mono text-[11px] leading-relaxed custom-scrollbar bg-black max-h-[600px] text-slate-300">
+                        <div className="flex-1 p-6 overflow-y-auto space-y-4 font-mono text-[11px] leading-relaxed custom-scrollbar bg-black text-zinc-400">
                             <AnimatePresence initial={false}>
                                 {logs.map((log) => (
                                     <motion.div
                                         key={log.id}
-                                        initial={{ opacity: 0, y: -20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                                        className="border-l-2 pl-3 pb-1"
-                                        style={{ borderColor: log.status === 'Success' ? '#10b981' : log.status === 'Pending' ? '#3b82f6' : '#ef4444' }}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        className="relative pl-4 border-l border-zinc-800"
                                     >
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-slate-500">{new Date(log.timestamp).toLocaleTimeString()}</span>
-                                            <span className={`px-1 rounded bg-white/10 ${log.status === 'Success' ? 'text-emerald-400' : log.status === 'Pending' ? 'text-blue-400' : 'text-red-400'}`}>
-                                                [{log.target.toUpperCase()}]
+                                        <div className="flex items-center gap-3 mb-1">
+                                            <span className="text-zinc-600 tabular-nums">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-tighter ${log.status === 'Success' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                                                {log.target}
                                             </span>
+                                            <span className="text-[9px] text-zinc-700 font-bold ml-auto">0x{log.id.slice(0, 6)}</span>
                                         </div>
-                                        <p className="break-words">{log.message}</p>
+                                        <p className="text-zinc-300 leading-snug">{log.message}</p>
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
+                        </div>
+
+                        {/* Terminal Footer */}
+                        <div className="bg-zinc-900/50 p-4 border-t border-white/5 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Globe className="w-3.5 h-3.5 text-zinc-600" />
+                                <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Global Consensus Active</span>
+                            </div>
+                            <span className="text-[9px] font-mono text-zinc-700">SIG_VER: ECDSA_SEC_PV2</span>
                         </div>
                     </article>
                 </section>
@@ -133,32 +169,35 @@ function SolvencyMetrics({ tvl, claims }: { tvl: number, claims: number }) {
 
     return (
         <article className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-foreground mb-6">Solvency Overview</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <h2 className="text-sm font-bold text-foreground mb-6 uppercase tracking-widest">Solvency Metrics</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
                 {/* Efficiency Bar */}
                 <div>
-                    <div className="flex justify-between items-baseline mb-2">
-                        <span className="text-sm font-medium text-muted-foreground">Capital Efficiency</span>
-                        <span className="text-lg font-bold text-primary">{capitalEfficiency.toFixed(2)}%</span>
+                    <div className="flex justify-between items-baseline mb-3">
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Utilized Liquidity</span>
+                        <span className="text-xl font-bold text-primary">{capitalEfficiency.toFixed(2)}%</span>
                     </div>
-                    <div className="w-full h-2 bg-accent rounded-full overflow-hidden">
-                        <div 
-                            className="h-full bg-primary transition-all duration-1000 ease-out" 
-                            style={{ width: `${Math.min(capitalEfficiency, 100)}%` }} 
+                    <div className="w-full h-2.5 bg-accent rounded-full overflow-hidden ring-1 ring-border/50">
+                        <div
+                            className="h-full bg-primary transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(139,0,0,0.3)]"
+                            style={{ width: `${Math.min(capitalEfficiency * 5, 100)}%` }} // Scaled for visibility since efficiency is low
                         />
                     </div>
-                    <p className="text-[10px] text-muted-foreground mt-2 uppercase tracking-wide">Target Range: 2% - 15%</p>
+                    <div className="flex justify-between mt-3">
+                        <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">0% Min</p>
+                        <p className="text-[9px] text-primary font-bold uppercase tracking-wider">Sustainable Tier</p>
+                    </div>
                 </div>
 
                 {/* Hard Metrics */}
-                <div className="space-y-4">
-                    <div className="flex justify-between items-center pb-3 border-b border-border">
-                        <span className="text-sm text-muted-foreground">Total Capital Pool</span>
-                        <span className="font-mono text-sm text-foreground font-bold">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(tvl)}</span>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 bg-accent/30 rounded-xl border border-border/50">
+                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter mb-1">Treasury TVL</p>
+                        <p className="font-bold text-sm text-foreground">{new Intl.NumberFormat('en-US', { notation: 'compact', style: 'currency', currency: 'USD' }).format(tvl)}</p>
                     </div>
-                    <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Total Claims Settled</span>
-                        <span className="font-mono text-sm text-foreground font-bold">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(claims)}</span>
+                    <div className="p-3 bg-accent/30 rounded-xl border border-border/50">
+                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter mb-1">Total Payouts</p>
+                        <p className="font-bold text-sm text-foreground">{new Intl.NumberFormat('en-US', { notation: 'compact', style: 'currency', currency: 'USD' }).format(claims)}</p>
                     </div>
                 </div>
             </div>
