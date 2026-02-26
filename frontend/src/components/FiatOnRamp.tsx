@@ -40,12 +40,16 @@ export function FiatOnRamp() {
     };
 
     return (
-        <button
-            onClick={launchTransak}
-            className="flex items-center gap-2 bg-surface-dark hover:bg-white/5 border border-neon-cyan/30 text-neon-cyan px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-[0_0_10px_rgba(0,240,255,0.1)] hover:shadow-[0_0_15px_rgba(0,240,255,0.3)]"
-        >
-            <span className="material-symbols-outlined text-[18px]">credit_card</span>
-            Buy Crypto
-        </button>
+        <div className="dexter-btn-container w-32 relative z-30">
+            <button onClick={launchTransak} className="dexter-btn !min-w-[124px] !min-h-[36px] !px-3 !py-1.5" type="button">
+                <span className="dexter-btn-drawer dexter-transition-top !text-[9px]">ON RAMP</span>
+                <span className="dexter-btn-text flex items-center justify-center gap-1.5 !text-xs w-full"><span className="material-symbols-outlined text-[16px]">credit_card</span> Buy Crypto</span>
+                <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[9px]">pay fiat, get crypto</span>
+            </button>
+        </div>
     );
 }

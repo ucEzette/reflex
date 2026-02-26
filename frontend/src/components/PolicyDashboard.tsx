@@ -245,7 +245,7 @@ export function PolicyDashboard() {
                                 value={flightNumber}
                                 onChange={(e) => setFlightNumber(e.target.value.toUpperCase())}
                                 placeholder="e.g. EK202"
-                                className={`w-full bg-[#0B0F19] border ${validationError ? 'border-red-500/50 focus:border-red-500' : flightDetails ? 'border-primary/50 focus:border-primary' : 'border-slate-700/50 focus:border-primary/50'} text-white text-lg placeholder-slate-600 rounded-xl py-4 pl-12 pr-12 focus:outline-none focus:ring-1 ${validationError ? 'focus:ring-red-500/20' : 'focus:ring-primary/20'} transition-all font-mono uppercase`}
+                                className={`w-full bg-[#0B0F19] border ${validationError ? 'border-primary/50 focus:border-primary' : flightDetails ? 'border-primary/50 focus:border-primary' : 'border-slate-700/50 focus:border-primary/50'} text-white text-lg placeholder-slate-600 rounded-xl py-4 pl-12 pr-12 focus:outline-none focus:ring-1 ${validationError ? 'focus:ring-primary/20' : 'focus:ring-primary/20'} transition-all font-mono uppercase`}
                             />
                             <div className="absolute right-4">
                                 {isValidating ? (
@@ -255,14 +255,14 @@ export function PolicyDashboard() {
                                 ) : flightDetails ? (
                                     <span className="material-symbols-outlined text-primary">check_circle</span>
                                 ) : validationError ? (
-                                    <span className="material-symbols-outlined text-red-500">error</span>
+                                    <span className="material-symbols-outlined text-primary">error</span>
                                 ) : null}
                             </div>
                         </div>
 
                         {/* Validation Messages & Flight Data */}
                         {validationError && (
-                            <p className="mt-2 text-xs text-red-400 font-mono tracking-wide">{validationError}</p>
+                            <p className="mt-2 text-xs text-primary font-mono tracking-wide">{validationError}</p>
                         )}
                         {flightDetails && (
                             <div className="mt-3 p-3 rounded-lg bg-surface-dark/50 border border-white/5 space-y-2">
@@ -352,39 +352,39 @@ export function PolicyDashboard() {
                     )}
 
                     {/* Action Button */}
-                    <button
-                        onClick={canPurchase ? (hasEnoughAllowance ? handlePurchase : handleApprove) : undefined}
-                        disabled={!canPurchase || isProcessing}
-                        className="group w-full relative h-16 mt-4 purchase-btn-gradient rounded-xl text-white font-bold text-lg overflow-hidden transition-all duration-300 transform active:scale-95 disabled:opacity-40 disabled:grayscale disabled:scale-100"
-                    >
-                        <div className="absolute inset-0 flex items-center justify-between px-6 z-10 transition-opacity group-disabled:opacity-80">
-                            <span className="flex flex-col items-start leading-tight">
-                                <span className="text-[10px] font-normal text-slate-300 uppercase tracking-widest">Insurance Premium</span>
-                                <span className="text-lg tracking-tight">$5.00 USDC</span>
-                            </span>
-                            <div className="flex items-center gap-3">
+                    <div className={`w-full dexter-btn-container relative z-30 transition-opacity mt-4 ${(!canPurchase || isProcessing) ? 'opacity-50 pointer-events-none' : ''}`} style={{ '--btn-color': hasEnoughAllowance ? '#22c55e' : '#06b6d4' } as React.CSSProperties}>
+                        <button
+                            onClick={canPurchase ? (hasEnoughAllowance ? handlePurchase : handleApprove) : undefined}
+                            disabled={!canPurchase || isProcessing}
+                            className="dexter-btn w-full !h-16 !px-6 !rounded-xl" type="button"
+                        >
+                            <span className="dexter-btn-drawer dexter-transition-top !text-[10px] uppercase font-mono tracking-widest text-[#0009]">Insurance Premium</span>
+                            <span className="dexter-btn-text w-full flex items-center justify-between gap-2 !text-lg">
+                                <span>$5.00 USDC</span>
                                 {isProcessing ? (
                                     <span className="flex items-center gap-2 text-sm">
-                                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" strokeDasharray="32" strokeDashoffset="12" />
-                                        </svg>
+                                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" strokeDasharray="32" strokeDashoffset="12" /></svg>
                                         PROCESSING
                                     </span>
                                 ) : !hasEnoughAllowance ? (
                                     <span className="flex items-center gap-2 text-sm tracking-wide">
                                         UNLOCK ASSETS
-                                        <span className="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">key</span>
+                                        <span className="material-symbols-outlined text-[18px]">key</span>
                                     </span>
                                 ) : (
                                     <span className="flex items-center gap-2 text-sm tracking-wide">
                                         INITIATE COVERAGE
-                                        <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">bolt</span>
+                                        <span className="material-symbols-outlined text-[20px]">bolt</span>
                                     </span>
                                 )}
-                            </div>
-                        </div>
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out z-0" />
-                    </button>
+                            </span>
+                            <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                            <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                            <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                            <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                            <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[10px] uppercase font-mono tracking-[0.2em]">{hasEnoughAllowance ? 'confirm tx' : 'sign approval'}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

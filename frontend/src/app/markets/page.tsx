@@ -146,61 +146,66 @@ export default function MarketsHub() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {markets.map((market) => (
-                        <div key={market.id} className={`card group transition-transform duration-500 ${market.active ? 'cursor-pointer hover:-translate-y-1 hover:scale-[1.02]' : 'opacity-80 grayscale-[30%] hover:grayscale-0 hover:-translate-y-1'}`}>
+                        <div key={market.id} className={`parent group transition-transform duration-500 ${market.active ? 'live-market cursor-pointer hover:-translate-y-2' : 'opacity-80 grayscale-[30%] hover:grayscale-0 hover:-translate-y-2'}`}>
+                            <div className="card-3d relative">
+                                <div className="logo">
+                                    <span className="circle circle1"></span>
+                                    <span className="circle circle2"></span>
+                                    <span className="circle circle3"></span>
+                                    <span className="circle circle4"></span>
+                                    <span className="circle circle5">
+                                        <span className="material-symbols-outlined text-white text-[20px] drop-shadow-md">{market.icon}</span>
+                                    </span>
+                                </div>
+                                <div className="glass"></div>
 
-                            <div className={`blob bg-gradient-to-r ${market.accentColor}`}></div>
-                            <div className="bg"></div>
-
-                            {/* Card Content */}
-                            <div className="relative z-10 w-full h-full p-6 flex flex-col text-left">
-
-                                {/* Header */}
-                                <div className="flex justify-between items-start mb-6 drop-shadow-md">
-                                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br transition-all duration-500 ${market.accentColor} p-px shadow-lg group-hover:scale-110`}>
-                                        <div className="w-full h-full bg-[#0B0F19] rounded-xl flex items-center justify-center">
-                                            <span className="material-symbols-outlined text-white text-xl">{market.icon}</span>
-                                        </div>
+                                {/* Card Content */}
+                                <div className="content relative z-10 w-full h-full flex flex-col text-left">
+                                    {/* Header Status */}
+                                    <div className="mb-4">
+                                        {market.active ? (
+                                            <span className="bg-cyan-500/20 text-cyan-400 text-[10px] font-bold font-mono tracking-widest px-3 py-1 rounded-full border border-cyan-500/30 flex items-center gap-1.5 shadow-[0_0_10px_rgba(34,211,238,0.2)] w-fit">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                                                LIVE
+                                            </span>
+                                        ) : (
+                                            <span className="bg-white/5 text-slate-300 text-[10px] font-bold font-mono tracking-widest px-3 py-1 rounded-full border border-white/10 w-fit">
+                                                COMING SOON
+                                            </span>
+                                        )}
                                     </div>
-                                    {market.active ? (
-                                        <span className="bg-cyan-500/10 text-cyan-400 text-[10px] font-bold font-mono tracking-widest px-3 py-1 rounded-full border border-cyan-500/20 flex items-center gap-1.5 shadow-[0_0_10px_rgba(34,211,238,0.2)]">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                                            LIVE
-                                        </span>
-                                    ) : (
-                                        <span className="bg-white/5 text-slate-400 text-[10px] font-bold font-mono tracking-widest px-3 py-1 rounded-full border border-white/10">
-                                            COMING SOON
-                                        </span>
-                                    )}
+
+                                    <h3 className="text-xl font-bold text-white mb-2 font-display drop-shadow-md group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-300 transition-colors">
+                                        {market.title}
+                                    </h3>
+                                    <p className="text-sm text-slate-200 mb-6 flex-grow leading-relaxed max-w-[95%]">
+                                        {market.description}
+                                    </p>
                                 </div>
 
-                                <h3 className="text-xl font-bold text-white mb-2 font-display drop-shadow-md group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-300 transition-colors">
-                                    {market.title}
-                                </h3>
-                                <p className="text-sm text-slate-300 mb-6 flex-grow leading-relaxed max-w-[280px]">
-                                    {market.description}
-                                </p>
-
-                                {/* Data Trigger & Policy blocks */}
-                                <div className="space-y-3 mt-auto border-t border-white/10 pt-5">
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-[10px] uppercase font-mono tracking-widest text-slate-400 flex items-center gap-1.5">
-                                            <span className="material-symbols-outlined text-[12px]">link</span>
-                                            Oracle Trigger
-                                        </span>
-                                        <span className="text-xs text-slate-200 font-medium">{market.trigger}</span>
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-[10px] uppercase font-mono tracking-widest text-slate-400 flex items-center gap-1.5">
-                                            <span className="material-symbols-outlined text-[12px]">gavel</span>
-                                            Smart Policy
-                                        </span>
-                                        <span className="text-xs text-white font-mono bg-black/20 px-2.5 py-1.5 rounded-md border border-white/10 leading-snug drop-shadow-lg">{market.policy}</span>
+                                <div className="bottom z-20 w-full flex-col items-start gap-4">
+                                    {/* Data Trigger & Policy blocks */}
+                                    <div className="w-full flex flex-col gap-3 border-t border-white/10 pt-4 pr-10">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-[10px] uppercase font-mono tracking-widest text-slate-300 flex items-center gap-1.5">
+                                                <span className="material-symbols-outlined text-[12px]">link</span>
+                                                Oracle Trigger
+                                            </span>
+                                            <span className="text-xs text-white font-medium drop-shadow-md">{market.trigger}</span>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-[10px] uppercase font-mono tracking-widest text-slate-300 flex items-center gap-1.5">
+                                                <span className="material-symbols-outlined text-[12px]">gavel</span>
+                                                Smart Policy
+                                            </span>
+                                            <span className="text-[11px] text-white font-mono bg-black/40 px-2 py-1.5 rounded border border-white/10 leading-snug drop-shadow-lg break-words">{market.policy}</span>
+                                        </div>
                                     </div>
                                 </div>
 
                                 {/* Overlay link for active cards */}
                                 {market.active && market.href && (
-                                    <Link href={market.href} className="absolute inset-0 z-20">
+                                    <Link href={market.href} className="absolute inset-0 z-30">
                                         <span className="sr-only">Go to {market.title}</span>
                                     </Link>
                                 )}
