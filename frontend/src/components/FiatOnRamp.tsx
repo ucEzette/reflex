@@ -7,7 +7,6 @@ export function FiatOnRamp() {
     const { address } = useAccount();
 
     const launchTransak = () => {
-        // @ts-expect-error - bypassing missing property types in SDK 4.0.2
         const transak = new Transak({
             apiKey: process.env.NEXT_PUBLIC_TRANSAK_API_KEY || "8f7ab2d6-419b-4322-a7d9-c0ae76478df9",
             environment: 'STAGING',
@@ -21,7 +20,8 @@ export function FiatOnRamp() {
             themeColor: '#e74043',
             widgetHeight: '650px',
             widgetWidth: '450px',
-        });
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
 
         transak.init();
 

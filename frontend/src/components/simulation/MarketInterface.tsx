@@ -6,6 +6,29 @@ import { toast } from "sonner";
 import { ESCROW_ABI, ERC20_ABI } from "@/lib/contracts";
 import { CONTRACTS, POLICY_PREMIUM, POLICY_PAYOUT, POLICY_DURATION_HOURS } from "@/lib/wagmiConfig";
 
+interface FlightData {
+    flightId?: string;
+    flightNumber?: string;
+    flightDate?: string;
+    airline: string;
+    status: string;
+    aircraft?: string;
+    departure: {
+        iata: string;
+        scheduled: string;
+        timezone: string;
+        terminal?: string;
+        gate?: string;
+    };
+    arrival: {
+        iata: string;
+        scheduled: string;
+        timezone: string;
+        terminal?: string;
+        gate?: string;
+    };
+}
+
 export function MarketInterface() {
     const [flightCode, setFlightCode] = useState("");
     const [windSpeed, setWindSpeed] = useState(42);
@@ -15,7 +38,7 @@ export function MarketInterface() {
     // Validation & Checkout State
     const [isValidating, setIsValidating] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
-    const [flightDetails, setFlightDetails] = useState<any>(null);
+    const [flightDetails, setFlightDetails] = useState<FlightData | null>(null);
     const [showCheckout, setShowCheckout] = useState(false);
     const [purchaseSuccess, setPurchaseSuccess] = useState(false);
 
@@ -124,9 +147,10 @@ export function MarketInterface() {
 
                 setFlightDetails(data);
                 setValidationError(null);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 setFlightDetails(null);
-                setValidationError(err.message || "An unknown error occurred");
+                const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
+                setValidationError(errorMessage);
             } finally {
                 setIsValidating(false);
             }

@@ -6,6 +6,21 @@ import { toast } from "sonner";
 import { ESCROW_ABI, ERC20_ABI } from "@/lib/contracts";
 import { CONTRACTS, POLICY_PREMIUM, POLICY_PAYOUT, POLICY_DURATION_HOURS } from "@/lib/wagmiConfig";
 
+interface FlightData {
+    airline: string;
+    status: string;
+    departure: {
+        iata: string;
+        scheduled: string;
+        timezone: string;
+    };
+    arrival: {
+        iata: string;
+        scheduled: string;
+        timezone: string;
+    };
+}
+
 export function PolicyDashboard() {
     const { address, isConnected } = useAccount();
     const [flightNumber, setFlightNumber] = useState("");
@@ -15,7 +30,7 @@ export function PolicyDashboard() {
     // Flight Validation State
     const [isValidating, setIsValidating] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
-    const [flightDetails, setFlightDetails] = useState<any>(null);
+    const [flightDetails, setFlightDetails] = useState<FlightData | null>(null);
 
     /* ── Read USDC balance & allowance ── */
     const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
