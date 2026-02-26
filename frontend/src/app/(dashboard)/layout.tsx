@@ -4,8 +4,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return (
         <div className="flex flex-col min-h-screen">
             {/* The main navbar is handled at the app/layout.tsx level, so this just wraps the dashboard grid spacing */}
-            <main className="flex-1 w-full bg-background relative pt-24">
-                {children}
+            <main className="flex-1 w-full bg-background relative pt-16">
+                <div className="max-w-[1600px] mx-auto min-h-[calc(100vh-64px)]">
+                    {children}
+                </div>
             </main>
         </div>
     );
