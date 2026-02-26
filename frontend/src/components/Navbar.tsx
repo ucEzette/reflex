@@ -3,12 +3,25 @@
 import Link from "next/link";
 import { usePrivy } from "@privy-io/react-auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Search, Plus, User, Activity as ActivityIcon, BarChart3, Briefcase } from "lucide-react";
-import { useState } from "react";
+import { Search, Wallet, User, Activity as ActivityIcon, BarChart3, Briefcase, ChevronDown, Trophy, Medal, Terminal, Code, Moon, LogOut, Settings, HelpCircle, FileText, CheckCircle2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 
 export function Navbar() {
-    const { login, logout, authenticated } = usePrivy();
+    const { login, logout, authenticated, user } = usePrivy();
     const [searchQuery, setSearchQuery] = useState("");
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Close dropdown on outside click
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsProfileOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     return (
         <nav className="fixed top-0 w-full z-50 border-b border-border bg-background/80 backdrop-blur-md transition-all duration-300 h-16">
@@ -62,30 +75,113 @@ export function Navbar() {
                         {!authenticated ? (
                             <button
                                 onClick={login}
-                                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-bold hover:opacity-90 transition-opacity whitespace-nowrap"
+                                className="bg-[#2490ff] text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-[#2490ff]/90 transition-colors whitespace-nowrap"
                             >
                                 Log In
                             </button>
                         ) : (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-4">
                                 {/* Balance & Deposit (Polymarket style) */}
-                                <div className="flex items-center gap-2 bg-accent/50 border border-border rounded-lg pl-3 pr-1 py-1">
-                                    <span className="text-xs font-bold text-foreground">
-                                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(12450.50)}
-                                    </span>
-                                    <button className="bg-primary text-primary-foreground p-1 rounded-md hover:opacity-90 transition-opacity">
-                                        <Plus className="w-4 h-4" />
+                                <div className="flex items-center gap-4">
+                                    <div className="flex flex-col items-end hidden sm:flex">
+                                        <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Portfolio</span>
+                                        <span className="text-sm font-bold text-[#00c853]">
+                                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(12450.50)}
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-col items-end hidden sm:flex">
+                                        <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Cash</span>
+                                        <span className="text-sm font-bold text-[#00c853]">$0.00</span>
+                                    </div>
+                                    <button className="bg-[#2490ff] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#2490ff]/90 transition-colors">
+                                        Deposit
                                     </button>
                                 </div>
 
-                                {/* User Dropdown / Avatar */}
-                                <button
-                                    onClick={logout}
-                                    className="w-9 h-9 flex items-center justify-center rounded-full bg-accent border border-border hover:bg-accent/80 transition-colors"
-                                    title="Log Out"
-                                >
-                                    <User className="w-5 h-5 text-muted-foreground" />
-                                </button>
+                                {/* User Profile Dropdown */}
+                                <div className="relative" ref={dropdownRef}>
+                                    <button
+                                        onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                        className="h-9 w-9 flex items-center justify-center rounded-full bg-gradient-to-tr from-green-400 via-blue-500 to-purple-500 p-0.5 hover:ring-2 ring-[#2490ff] ring-offset-2 ring-offset-background transition-all"
+                                    >
+                                        <div className="w-full h-full bg-background rounded-full flex items-center justify-center overflow-hidden">
+                                            {/* Gradient Avatar placeholder */}
+                                            <div className="w-full h-full bg-gradient-to-tr from-green-400 via-blue-500 to-purple-500 opacity-80" />
+                                        </div>
+                                    </button>
+
+                                    {/* Dropdown Menu */}
+                                    {isProfileOpen && (
+                                        <div className="absolute right-0 mt-2 w-72 rounded-xl border border-white/10 bg-surface-dark/95 backdrop-blur-xl shadow-2xl py-2 z-50 text-sm overflow-hidden flex flex-col">
+                                            {/* Header */}
+                                            <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-green-400 via-blue-500 to-purple-500 opacity-80" />
+                                                    <div className="flex flex-col">
+                                                        <span className="font-bold text-white text-base">reflex_user</span>
+                                                        <span className="text-xs font-mono text-slate-400">
+                                                            {user?.wallet?.address ? `${user.wallet.address.slice(0, 6)}...${user.wallet.address.slice(-4)}` : '0x000...000'}
+                                                            <span className="material-symbols-outlined text-[10px] ml-1 opacity-50">content_copy</span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <button className="text-slate-400 hover:text-white transition-colors">
+                                                    <Settings className="w-5 h-5" />
+                                                </button>
+                                            </div>
+
+                                            {/* Section 1 */}
+                                            <div className="py-2 border-b border-white/5">
+                                                <button className="w-full px-4 py-2 flex items-center gap-3 hover:bg-white/5 transition-colors text-slate-300 hover:text-white">
+                                                    <Trophy className="w-4 h-4 text-amber-500" /> Leaderboard
+                                                </button>
+                                                <button className="w-full px-4 py-2 flex items-center gap-3 hover:bg-white/5 transition-colors text-slate-300 hover:text-white">
+                                                    <Medal className="w-4 h-4 text-emerald-500" /> Rewards
+                                                </button>
+                                                <button className="w-full px-4 py-2 flex items-center gap-3 hover:bg-white/5 transition-colors text-slate-300 hover:text-white">
+                                                    <Terminal className="w-4 h-4 text-rose-500" /> APIs
+                                                </button>
+                                                <button className="w-full px-4 py-2 flex items-center gap-3 hover:bg-white/5 transition-colors text-slate-300 hover:text-white">
+                                                    <Code className="w-4 h-4 text-slate-400" /> Builders
+                                                </button>
+                                            </div>
+
+                                            {/* Section 2 */}
+                                            <div className="py-2 border-b border-white/5">
+                                                <div className="w-full px-4 py-2 flex items-center justify-between hover:bg-white/5 transition-colors text-slate-300 cursor-pointer">
+                                                    <div className="flex items-center gap-3">
+                                                        <Moon className="w-4 h-4 text-blue-400" /> Dark mode
+                                                    </div>
+                                                    <div className="w-8 h-4 bg-[#2490ff] rounded-full relative">
+                                                        <div className="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full shadow-sm" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Section 3 Links */}
+                                            <div className="py-2 border-b border-white/5">
+                                                <button className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white">Accuracy</button>
+                                                <button className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white">Support</button>
+                                                <button className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white">Documentation</button>
+                                                <button className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white">Help Center</button>
+                                                <button className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white">Terms of Use</button>
+                                            </div>
+
+                                            {/* Footer Logging out */}
+                                            <div className="py-2">
+                                                <button
+                                                    onClick={() => {
+                                                        logout();
+                                                        setIsProfileOpen(false);
+                                                    }}
+                                                    className="w-full px-4 py-2 flex text-left hover:bg-white/5 transition-colors text-red-500 font-medium"
+                                                >
+                                                    Logout
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
                     </div>

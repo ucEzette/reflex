@@ -42,14 +42,7 @@ export default function Home() {
         {/* ═══ HERO SECTION ═══ */}
         <section className="min-h-screen w-full flex flex-col items-center justify-center px-4 relative pt-20">
           <div className="max-w-5xl mx-auto text-center flex flex-col items-center gap-8 relative z-10">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-dark border border-white/10 text-xs font-medium text-neon-cyan">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-cyan opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-neon-cyan" />
-              </span>
-              Live on Avalanche C-Chain
-            </div>
+            {/* Badge Removed per request */}
 
             {/* Headline */}
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.9] text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 drop-shadow-2xl">
@@ -95,20 +88,7 @@ export default function Home() {
               </a>
             </div>
 
-            {/* Stats Row */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-16 mt-16 border-t border-white/5 pt-8 w-full max-w-4xl">
-              {[
-                { value: "$42M+", label: "Total Value Locked" },
-                { value: "~2s", label: "Payout Time" },
-                { value: "12k+", label: "Active Policies" },
-                { value: "0.01%", label: "Fee Structure" },
-              ].map(({ value, label }) => (
-                <div key={label} className="flex flex-col gap-1">
-                  <span className="text-3xl font-bold text-white font-display">{value}</span>
-                  <span className="text-xs uppercase tracking-widest text-slate-500">{label}</span>
-                </div>
-              ))}
-            </div>
+            {/* Stats Row Removed per request */}
           </div>
 
           {/* Scroll Indicator */}
