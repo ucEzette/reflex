@@ -1,122 +1,212 @@
-import { ActivePolicies } from "@/components/ActivePolicies";
-import Link from "next/link";
+import React from 'react';
+import Link from 'next/link';
 
-export default function MarketsPage() {
+interface MarketItem {
+    id: string;
+    title: string;
+    description: string;
+    trigger: string;
+    policy: string;
+    icon: string;
+    active?: boolean;
+    href?: string;
+    accentColor: string;
+}
+
+const markets: MarketItem[] = [
+    {
+        id: "flight",
+        title: "Reflex L1: Flight Delay",
+        description: "Instant, automated compensation for travelers stuck at the gate.",
+        trigger: "FlightAware AeroAPI / Aviationstack status",
+        policy: "If Flight delayed >2h or cancelled ➔ $50 USDC",
+        icon: "flight_takeoff",
+        active: true,
+        href: "/markets/flight",
+        accentColor: "from-cyan-500 to-blue-600"
+    },
+    {
+        id: "cloud-down",
+        title: "Cloud-Down: SaaS Outage",
+        description: "Income protection for remote workers dependent on cloud tools.",
+        trigger: "DownDetector / Status Page APIs",
+        policy: "If Slack/AWS down >30 min (Biz Hrs) ➔ $50 USDC",
+        icon: "cloud_off",
+        accentColor: "from-purple-500 to-pink-600"
+    },
+    {
+        id: "rain-check",
+        title: "Rain-Check: Event Cover",
+        description: "\"Perfect Day\" guarantee for outdoor events, festivals, and weddings.",
+        trigger: "OpenWeatherMap / NOAA historical precipitation",
+        policy: "If rain >5mm at GPS during event ➔ $100 USDC",
+        icon: "umbrella",
+        accentColor: "from-blue-400 to-cyan-400"
+    },
+    {
+        id: "gas-guzzler",
+        title: "Gas-Guzzler: ETH Gas Hedge",
+        description: "Protection against sudden spikes in blockchain transaction fees.",
+        trigger: "Etherscan Gas Tracker API",
+        policy: "If average gas >150 gwei for 3 blocks ➔ 0.05 ETH",
+        icon: "local_gas_station",
+        accentColor: "from-amber-500 to-orange-600"
+    },
+    {
+        id: "shipping-shield",
+        title: "Shipping-Shield: Delivery Guarantee",
+        description: "Compensation for missed '2-Day Shipping' promises.",
+        trigger: "FedEx / UPS / DHL Tracking APIs",
+        policy: "If package not 'Delivered' by promised date ➔ $20 USDC",
+        icon: "local_shipping",
+        accentColor: "from-green-500 to-emerald-600"
+    },
+    {
+        id: "heat-wave",
+        title: "Heat-Wave: Utility Subsidy",
+        description: "Financial relief for households during extreme temperature spikes.",
+        trigger: "Local Weather Station APIs",
+        policy: "If temp >95°F for 5 consecutive days ➔ $100 USDC",
+        icon: "thermostat",
+        accentColor: "from-red-500 to-orange-500"
+    },
+    {
+        id: "powder-protect",
+        title: "Powder-Protect: Ski Trip Guarantee",
+        description: "Vacation insurance for skiers who fear empty, green grass slopes.",
+        trigger: "OnTheSnow / WeatherUnlocked APIs",
+        policy: "If total snowfall <2 inches during trip ➔ $500 USDC",
+        icon: "ac_unit",
+        accentColor: "from-slate-300 to-white"
+    },
+    {
+        id: "peg-shield",
+        title: "Peg-Shield: Stablecoin De-Peg",
+        description: "Catastrophe insurance and tail-risk protection for stablecoin holders.",
+        trigger: "Chainlink USDC/USD Price Feed",
+        policy: "If 24h VWAP of USDC drops below $0.98 ➔ Payout difference",
+        icon: "currency_exchange",
+        accentColor: "from-emerald-400 to-teal-500"
+    },
+    {
+        id: "sun-yield",
+        title: "Sun-Yield: Solar Energy Hedge",
+        description: "Income protection for solar panel owners during cloudy months.",
+        trigger: "Solargis / OpenWeather Solar Irradiance",
+        policy: "If irradiance 20% below 10-yr average ➔ $100 USDC",
+        icon: "solar_power",
+        accentColor: "from-yellow-400 to-amber-500"
+    },
+    {
+        id: "freight-wait",
+        title: "Freight-Wait: Supply Chain Delay",
+        description: "Revenue protection for small businesses importing port goods.",
+        trigger: "MarineTraffic / Kpler Vessel APIs",
+        policy: "If container dwells in port >7 days ➔ $200 USDC/day",
+        icon: "directions_boat",
+        accentColor: "from-indigo-500 to-blue-700"
+    },
+    {
+        id: "ride-surge",
+        title: "Ride-Surge: Uber/Lyft Price Cap",
+        description: "Cost protection against 5x surge pricing after nightlife events.",
+        trigger: "Ride-share estimate aggregated APIs",
+        policy: "If ride home exceeds $50 from 1AM-3AM ➔ Payout difference",
+        icon: "local_taxi",
+        accentColor: "from-pink-500 to-rose-600"
+    },
+    {
+        id: "aqi-guard",
+        title: "AQI-Guard: Pollution Health Shield",
+        description: "Health-related financial aid during hazardous air quality events.",
+        trigger: "World Air Quality Index (WAQI) API",
+        policy: "If AQI > 200 for 3 consecutive days ➔ $50 USDC",
+        icon: "masks",
+        accentColor: "from-zinc-400 to-stone-500"
+    },
+];
+
+export default function MarketsHub() {
     return (
-        <div className="relative min-h-screen pt-32 pb-24 px-6 flex flex-col items-center">
-            <div className="absolute inset-0 bg-grid-pattern opacity-[0.05] pointer-events-none" />
-            <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full mix-blend-screen pointer-events-none" />
+        <div className="min-h-screen bg-[#050510] text-[#E0E0E0] pt-32 pb-24 overflow-hidden relative">
+            {/* Background aesthetics */}
+            <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-cyan-900/10 to-transparent pointer-events-none" />
+            <div className="absolute top-32 left-1/4 w-[600px] h-[600px] bg-cyan-600/5 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
+            <div className="absolute top-64 right-1/4 w-[500px] h-[500px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
 
-            <div className="max-w-7xl w-full relative z-10 flex flex-col gap-16">
-                <div>
-                    <h1 className="text-4xl md:text-6xl font-black text-white mb-4 tracking-tight">Insurance Markets</h1>
-                    <p className="text-slate-400 max-w-2xl text-lg font-light">Browse available parametric insurance pools and secure your assets with zkTLS validation.</p>
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
+                <div className="text-center mb-16">
+                    <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-cyan-300 font-display tracking-tight mb-4">
+                        Parametric Markets
+                    </h1>
+                    <p className="text-lg text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">
+                        Automated, frictionless insurance products powered by <span className="text-cyan-400 font-mono text-sm tracking-wide bg-cyan-950/50 px-2 py-0.5 rounded border border-cyan-800/50">Chainlink Functions</span> and Decentralized Oracle Networks.
+                    </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Flight Delay */}
-                    <Link href="/profile" className="group relative bg-surface-dark border border-white/5 rounded-xl p-6 hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 overflow-hidden block">
-                        <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-40 transition-opacity">
-                            <span className="material-symbols-outlined text-6xl text-slate-500">flight_takeoff</span>
-                        </div>
-                        <div className="relative z-10 flex flex-col h-full">
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="bg-blue-500/20 text-blue-400 p-2 rounded-lg">
-                                    <span className="material-symbols-outlined">schedule</span>
-                                </span>
-                                <span className="text-xs font-mono text-slate-400 bg-white/5 px-2 py-1 rounded">RISK-L1</span>
-                            </div>
-                            <h3 className="text-xl font-bold text-white mb-1">Flight Delay</h3>
-                            <div className="flex items-baseline gap-1 mb-6">
-                                <span className="text-2xl font-bold text-primary">$5 USDC</span>
-                                <span className="text-sm text-slate-400">/ flight</span>
-                            </div>
-                            <div className="mt-auto space-y-3">
-                                <div className="flex items-center gap-2 text-sm text-slate-300">
-                                    <span className="material-symbols-outlined text-primary text-base">check_circle</span>
-                                    <span>Instant Oracle Payout</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-slate-300">
-                                    <span className="material-symbols-outlined text-primary text-base">check_circle</span>
-                                    <span>Global Coverage</span>
-                                </div>
-                                <div className="w-full mt-4 bg-primary/20 hover:bg-primary/30 text-primary font-bold py-2 rounded border border-primary/20 transition-colors text-center">
-                                    Purchase Policy
-                                </div>
-                            </div>
-                        </div>
-                    </Link>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {markets.map((market) => (
+                        <div key={market.id} className={`card group transition-transform duration-500 ${market.active ? 'cursor-pointer hover:-translate-y-1 hover:scale-[1.02]' : 'opacity-80 grayscale-[30%] hover:grayscale-0 hover:-translate-y-1'}`}>
 
-                    {/* Crop Failure */}
-                    <div className="group relative bg-surface-dark border border-white/5 rounded-xl p-6 hover:border-green-500/50 transition-all duration-300 hover:-translate-y-1 overflow-hidden opacity-60 cursor-not-allowed">
-                        <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-40 transition-opacity">
-                            <span className="material-symbols-outlined text-6xl text-slate-500">grass</span>
-                        </div>
-                        <div className="relative z-10 flex flex-col h-full">
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="bg-green-500/20 text-green-400 p-2 rounded-lg">
-                                    <span className="material-symbols-outlined">water_drop</span>
-                                </span>
-                                <span className="text-xs font-mono text-slate-400 bg-white/5 px-2 py-1 rounded">RISK-L2</span>
-                            </div>
-                            <h3 className="text-xl font-bold text-white mb-1">Crop Failure</h3>
-                            <div className="flex items-baseline gap-1 mb-6">
-                                <span className="text-2xl font-bold text-green-500">2.5 AVAX</span>
-                                <span className="text-sm text-slate-400">/ acre</span>
-                            </div>
-                            <div className="mt-auto space-y-3">
-                                <div className="flex items-center gap-2 text-sm text-slate-300">
-                                    <span className="material-symbols-outlined text-green-500 text-base">check_circle</span>
-                                    <span>Weather Data Oracle</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-slate-300">
-                                    <span className="material-symbols-outlined text-green-500 text-base">check_circle</span>
-                                    <span>Automated Claims</span>
-                                </div>
-                                <div className="w-full mt-4 bg-white/5 text-slate-500 font-bold py-2 rounded border border-white/10 text-center">
-                                    Coming Soon
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                            <div className={`blob bg-gradient-to-r ${market.accentColor}`}></div>
+                            <div className="bg"></div>
 
-                    {/* DeFi Hacks */}
-                    <div className="group relative bg-surface-dark border border-white/5 rounded-xl p-6 hover:border-purple-500/50 transition-all duration-300 hover:-translate-y-1 overflow-hidden opacity-60 cursor-not-allowed">
-                        <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-40 transition-opacity">
-                            <span className="material-symbols-outlined text-6xl text-slate-500">security</span>
-                        </div>
-                        <div className="relative z-10 flex flex-col h-full">
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="bg-purple-500/20 text-purple-400 p-2 rounded-lg">
-                                    <span className="material-symbols-outlined">code</span>
-                                </span>
-                                <span className="text-xs font-mono text-slate-400 bg-white/5 px-2 py-1 rounded">RISK-L3</span>
-                            </div>
-                            <h3 className="text-xl font-bold text-white mb-1">DeFi Hacks</h3>
-                            <div className="flex items-baseline gap-1 mb-6">
-                                <span className="text-2xl font-bold text-purple-500">5.0 AVAX</span>
-                                <span className="text-sm text-slate-400">/ year</span>
-                            </div>
-                            <div className="mt-auto space-y-3">
-                                <div className="flex items-center gap-2 text-sm text-slate-300">
-                                    <span className="material-symbols-outlined text-purple-500 text-base">check_circle</span>
-                                    <span>Smart Contract Cover</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-slate-300">
-                                    <span className="material-symbols-outlined text-purple-500 text-base">check_circle</span>
-                                    <span>Audit Verification</span>
-                                </div>
-                                <div className="w-full mt-4 bg-white/5 text-slate-500 font-bold py-2 rounded border border-white/10 text-center">
-                                    Coming Soon
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                            {/* Card Content */}
+                            <div className="relative z-10 w-full h-full p-6 flex flex-col text-left">
 
-                <div className="pt-8 border-t border-white/5">
-                    <h2 className="text-2xl font-bold text-white mb-6">All Platform Policies</h2>
-                    <ActivePolicies />
+                                {/* Header */}
+                                <div className="flex justify-between items-start mb-6 drop-shadow-md">
+                                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br transition-all duration-500 ${market.accentColor} p-px shadow-lg group-hover:scale-110`}>
+                                        <div className="w-full h-full bg-[#0B0F19] rounded-xl flex items-center justify-center">
+                                            <span className="material-symbols-outlined text-white text-xl">{market.icon}</span>
+                                        </div>
+                                    </div>
+                                    {market.active ? (
+                                        <span className="bg-cyan-500/10 text-cyan-400 text-[10px] font-bold font-mono tracking-widest px-3 py-1 rounded-full border border-cyan-500/20 flex items-center gap-1.5 shadow-[0_0_10px_rgba(34,211,238,0.2)]">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                                            LIVE
+                                        </span>
+                                    ) : (
+                                        <span className="bg-white/5 text-slate-400 text-[10px] font-bold font-mono tracking-widest px-3 py-1 rounded-full border border-white/10">
+                                            COMING SOON
+                                        </span>
+                                    )}
+                                </div>
+
+                                <h3 className="text-xl font-bold text-white mb-2 font-display drop-shadow-md group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-300 transition-colors">
+                                    {market.title}
+                                </h3>
+                                <p className="text-sm text-slate-300 mb-6 flex-grow leading-relaxed max-w-[280px]">
+                                    {market.description}
+                                </p>
+
+                                {/* Data Trigger & Policy blocks */}
+                                <div className="space-y-3 mt-auto border-t border-white/10 pt-5">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[10px] uppercase font-mono tracking-widest text-slate-400 flex items-center gap-1.5">
+                                            <span className="material-symbols-outlined text-[12px]">link</span>
+                                            Oracle Trigger
+                                        </span>
+                                        <span className="text-xs text-slate-200 font-medium">{market.trigger}</span>
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[10px] uppercase font-mono tracking-widest text-slate-400 flex items-center gap-1.5">
+                                            <span className="material-symbols-outlined text-[12px]">gavel</span>
+                                            Smart Policy
+                                        </span>
+                                        <span className="text-xs text-white font-mono bg-black/20 px-2.5 py-1.5 rounded-md border border-white/10 leading-snug drop-shadow-lg">{market.policy}</span>
+                                    </div>
+                                </div>
+
+                                {/* Overlay link for active cards */}
+                                {market.active && market.href && (
+                                    <Link href={market.href} className="absolute inset-0 z-20">
+                                        <span className="sr-only">Go to {market.title}</span>
+                                    </Link>
+                                )}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>
