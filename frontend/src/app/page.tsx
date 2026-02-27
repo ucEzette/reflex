@@ -57,9 +57,7 @@ export default function Home() {
 
             {/* Subhead */}
             <p className="text-lg md:text-xl text-slate-400 max-w-2xl font-light leading-relaxed">
-              Decentralized parametric protection powered by{" "}
-              <span className="text-white font-semibold">Avalanche</span> and{" "}
-              <span className="text-white font-semibold">Chainlink Oracles</span>. Instant payouts, zero centralized dependencies.
+              Reflex L1 shares the same event-driven strategy as Polymarket, but instead of being a prediction site for speculators, Reflex is a micro-insurance platform. Both crypto natives and traditional users can browse a marketplace of real-world risks, find a policy that matches their daily needs, and buy it to instantly insure themselves against negative events.
             </p>
 
             {/* CTAs */}
