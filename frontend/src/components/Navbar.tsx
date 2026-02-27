@@ -146,8 +146,8 @@ export function Navbar() {
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <Link href="/dashboard" className="text-slate-400 hover:text-white transition-colors" onClick={() => setIsProfileOpen(false)}>
-                                                    <Settings className="w-5 h-5" />
+                                                <Link href="/dashboard" className="text-slate-400 hover:text-white transition-colors cursor-pointer z-50 p-1" onClick={() => setIsProfileOpen(false)}>
+                                                    <Settings className="w-5 h-5 pointer-events-none" />
                                                 </Link>
                                             </div>
 
