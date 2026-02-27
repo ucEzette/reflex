@@ -23,7 +23,7 @@ export default function RootLayout({
           rel="preconnect"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600&display=swap"
+          href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-sans@5.0.18/index.min.css"
           rel="stylesheet"
         />
         <link

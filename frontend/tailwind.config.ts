@@ -20,8 +20,9 @@ const config: Config = {
         "glass-surface": "rgba(255, 255, 255, 0.03)",
       },
       fontFamily: {
-        display: ["Space Grotesk", "sans-serif"],
-        body: ["Outfit", "sans-serif"],
+        display: ["'Open Sauce Sans'", "sans-serif"],
+        body: ["'Open Sauce Sans'", "sans-serif"],
+        sans: ["'Open Sauce Sans'", "sans-serif"],
       },
       animation: {
         float: "float 6s ease-in-out infinite",
