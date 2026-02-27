@@ -71,7 +71,9 @@ export function MarketInterface() {
     });
 
     const hasEnoughAllowance = allowance ? (allowance as bigint) >= POLICY_PREMIUM : false;
+    const hasEnoughBalance = usdcBalance ? (usdcBalance as bigint) >= POLICY_PREMIUM : false;
     const isProcessing = isApproving || isApproveConfirming || isPurchasing || isPurchaseConfirming;
+    const canPurchase = flightDetails !== null && isConnected && hasEnoughBalance;
 
     const handleApprove = () => {
         approveUsdc({
@@ -243,11 +245,17 @@ export function MarketInterface() {
                                 <p className="text-xs text-slate-400 mt-1">Your coverage is now active.</p>
                             </div>
                         ) : (
-                            <div className={`dexter-btn-container w-full relative z-30 mb-2 transition-opacity ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`} style={{ '--btn-color': hasEnoughAllowance ? '#22c55e' : '#06b6d4' } as React.CSSProperties}>
-                                <button onClick={hasEnoughAllowance ? handlePurchase : handleApprove} disabled={isProcessing} className="dexter-btn w-full !h-14 !px-6 !rounded-xl" type="button">
+                            <div className={`dexter-btn-container w-full relative z-30 mb-2 transition-opacity ${(!canPurchase || isProcessing) ? 'opacity-50 pointer-events-none' : ''}`} style={{ '--btn-color': hasEnoughAllowance ? '#22c55e' : '#06b6d4' } as React.CSSProperties}>
+                                <button onClick={canPurchase ? (hasEnoughAllowance ? handlePurchase : handleApprove) : undefined} disabled={!canPurchase || isProcessing} className="dexter-btn w-full !h-14 !px-6 !rounded-xl" type="button">
                                     <span className="dexter-btn-drawer dexter-transition-top !text-[10px] uppercase font-mono tracking-widest">{hasEnoughAllowance ? 'Purchase Policy' : 'Unlock Assets'}</span>
                                     <span className="dexter-btn-text w-full flex items-center justify-between gap-2 !text-sm">
-                                        <span>{hasEnoughAllowance ? '50.00 USDC' : 'Approve Contract'}</span>
+                                        {!hasEnoughBalance ? (
+                                            <span className="text-red-400 font-bold">INSUFFICIENT BALANCE</span>
+                                        ) : (
+                                            <>
+                                                <span>{hasEnoughAllowance ? '50.00 USDC' : 'Approve Contract'}</span>
+                                            </>
+                                        )}
                                         {isProcessing ? (
                                             <span className="flex items-center gap-2 text-xs">
                                                 <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" strokeDasharray="32" strokeDashoffset="12" /></svg>

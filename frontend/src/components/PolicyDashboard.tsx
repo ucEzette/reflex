@@ -179,7 +179,8 @@ export function PolicyDashboard() {
     }, [isPurchasing, isPurchaseConfirming, isPurchaseSuccess, purchaseError, refetchBalance]);
 
     const isProcessing = isApproving || isApproveConfirming || isPurchasing || isPurchaseConfirming;
-    const canPurchase = flightDetails !== null && !isValidating && flightDate && isConnected;
+    const hasEnoughBalance = usdcBalance ? (usdcBalance as bigint) >= POLICY_PREMIUM : false;
+    const canPurchase = flightDetails !== null && !isValidating && flightDate && isConnected && hasEnoughBalance;
 
     /* ── Wallet Not Connected ── */
     if (!isConnected) {
@@ -380,6 +381,11 @@ export function PolicyDashboard() {
                                     <span className="flex items-center gap-2 text-sm">
                                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" strokeDasharray="32" strokeDashoffset="12" /></svg>
                                         PROCESSING
+                                    </span>
+                                ) : !hasEnoughBalance ? (
+                                    <span className="flex items-center gap-2 text-sm tracking-wide text-red-400">
+                                        INSUFFICIENT BALANCE
+                                        <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
                                     </span>
                                 ) : !hasEnoughAllowance ? (
                                     <span className="flex items-center gap-2 text-sm tracking-wide">
