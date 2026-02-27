@@ -89,11 +89,7 @@ export default function Home() {
             {/* Stats Row Removed per request */}
           </div>
 
-          {/* Scroll Indicator */}
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-60 animate-bounce">
-            <span className="text-[10px] uppercase tracking-widest text-slate-400">Scroll to explore</span>
-            <span className="material-symbols-outlined text-slate-400">keyboard_double_arrow_down</span>
-          </div>
+
         </section>
 
         {/* ═══ ACTIVE MARKETS ═══ */}
