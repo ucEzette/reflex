@@ -735,23 +735,41 @@
 }
 
 @keyframes theme-anima1 {
-  0% { transform: translateX(1.5em); }
-  80% { transform: translateX(-0.3em); }
-  100% { transform: translateX(0em); }
+  0% {
+    transform: translateX(1.5em);
+  }
+
+  80% {
+    transform: translateX(-0.3em);
+  }
+
+  100% {
+    transform: translateX(0em);
+  }
 }
 
-.theme-switch input:checked + .theme-slider:before {
-  background-color: #fcd34d; /* yellow-400 */
+.theme-switch input:checked+.theme-slider:before {
+  background-color: #fcd34d;
+  /* yellow-400 */
   box-shadow: none;
   transform: translateX(1.5em);
   animation: theme-anima 0.3s linear;
 }
 
 @keyframes theme-anima {
-  0% { transform: translateX(0px); }
-  80% { transform: translateX(1.6em); }
-  100% { transform: translateX(1.4em); }
+  0% {
+    transform: translateX(0px);
+  }
+
+  80% {
+    transform: translateX(1.6em);
+  }
+
+  100% {
+    transform: translateX(1.4em);
+  }
 }
+
 /* ── Deposit Button Effect (Uiverse) ── */
 .btn-container {
   --btn-color: #d8ff7c;
@@ -830,6 +848,7 @@
   border-radius: 12px 12px 0 0;
   align-items: start;
 }
+
 .transition-bottom {
   bottom: 0;
   right: 0;
@@ -880,28 +899,26 @@
 .btn-corner:nth-of-type(1) {
   top: 0;
   left: 0;
-  transform: translate(
-      calc(-1 * var(--corner-dist)),
-      calc(-1 * var(--corner-dist))
-    )
-    rotate(90deg);
+  transform: translate(calc(-1 * var(--corner-dist)),
+      calc(-1 * var(--corner-dist))) rotate(90deg);
 }
+
 .btn-corner:nth-of-type(2) {
   top: 0;
   right: 0;
-  transform: translate(var(--corner-dist), calc(-1 * var(--corner-dist)))
-    rotate(180deg);
+  transform: translate(var(--corner-dist), calc(-1 * var(--corner-dist))) rotate(180deg);
 }
+
 .btn-corner:nth-of-type(3) {
   bottom: 0;
   right: 0;
   transform: translate(var(--corner-dist), var(--corner-dist)) rotate(-90deg);
 }
+
 .btn-corner:nth-of-type(4) {
   bottom: 0;
   left: 0;
-  transform: translate(calc(-1 * var(--corner-dist)), var(--corner-dist))
-    rotate(0deg);
+  transform: translate(calc(-1 * var(--corner-dist)), var(--corner-dist)) rotate(0deg);
 }
 
 .btn-container:has(.btn:hover),
@@ -911,6 +928,7 @@
     filter: drop-shadow(0 16px 16px #0002);
     -webkit-filter: drop-shadow(0 16px 16px #0002);
   }
+
   .transition-top {
     transform: translateY(-24px) rotateZ(4deg);
     filter: blur(0px);
@@ -919,6 +937,7 @@
     -webkit-animation: hue-anim 3s infinite linear;
     opacity: 1;
   }
+
   .transition-bottom {
     transform: translateY(24px) rotateZ(4deg);
     filter: blur(0px);
@@ -927,65 +946,48 @@
     -webkit-animation: hue-anim 3s infinite linear;
     opacity: 1;
   }
+
   .btn-text {
-    filter: drop-shadow(0 1px 0 #fff6) drop-shadow(0 -1px 0 #0006)
-      drop-shadow(0px 6px 2px #0003);
-    -webkit-filter: drop-shadow(0 1px 0 #fff6) drop-shadow(0 -1px 0 #0006)
-      drop-shadow(0px 6px 2px #0003);
+    filter: drop-shadow(0 1px 0 #fff6) drop-shadow(0 -1px 0 #0006) drop-shadow(0px 6px 2px #0003);
+    -webkit-filter: drop-shadow(0 1px 0 #fff6) drop-shadow(0 -1px 0 #0006) drop-shadow(0px 6px 2px #0003);
     transform: scale(1.05);
     color: #0008;
   }
 
   --corner-color: #0004;
+
   .btn-corner:first-of-type {
-    transform: translate(
-        calc(-1 * var(--corner-multiplier) * var(--corner-dist)),
-        calc(-1 * var(--corner-multiplier) * var(--corner-dist))
-      )
-      rotate(90deg);
-    filter: drop-shadow(-10px 10px 1px var(--corner-color))
-      drop-shadow(-20px 20px 2px var(--corner-color));
-    -webkit-filter: drop-shadow(-10px 10px 1px var(--corner-color))
-      drop-shadow(-20px 20px 2px var(--corner-color));
+    transform: translate(calc(-1 * var(--corner-multiplier) * var(--corner-dist)),
+        calc(-1 * var(--corner-multiplier) * var(--corner-dist))) rotate(90deg);
+    filter: drop-shadow(-10px 10px 1px var(--corner-color)) drop-shadow(-20px 20px 2px var(--corner-color));
+    -webkit-filter: drop-shadow(-10px 10px 1px var(--corner-color)) drop-shadow(-20px 20px 2px var(--corner-color));
   }
+
   .btn-corner:nth-of-type(2) {
-    transform: translate(
-        calc(var(--corner-multiplier) * var(--corner-dist)),
-        calc(-1 * var(--corner-multiplier) * var(--corner-dist))
-      )
-      rotate(180deg);
-    filter: drop-shadow(-10px 10px 1px var(--corner-color))
-      drop-shadow(-20px 20px 2px var(--corner-color));
-    -webkit-filter: drop-shadow(-10px 10px 1px var(--corner-color))
-      drop-shadow(-20px 20px 2px var(--corner-color));
+    transform: translate(calc(var(--corner-multiplier) * var(--corner-dist)),
+        calc(-1 * var(--corner-multiplier) * var(--corner-dist))) rotate(180deg);
+    filter: drop-shadow(-10px 10px 1px var(--corner-color)) drop-shadow(-20px 20px 2px var(--corner-color));
+    -webkit-filter: drop-shadow(-10px 10px 1px var(--corner-color)) drop-shadow(-20px 20px 2px var(--corner-color));
   }
+
   @-moz-document url-prefix() {
     .btn-corner:nth-of-type(2) {
-      filter: drop-shadow(10px -10px 1px var(--corner-color))
-        drop-shadow(20px -20px 2px var(--corner-color));
+      filter: drop-shadow(10px -10px 1px var(--corner-color)) drop-shadow(20px -20px 2px var(--corner-color));
     }
   }
+
   .btn-corner:nth-of-type(3) {
-    transform: translate(
-        calc(var(--corner-multiplier) * var(--corner-dist)),
-        calc(var(--corner-multiplier) * var(--corner-dist))
-      )
-      rotate(-90deg);
-    filter: drop-shadow(-10px 10px 1px var(--corner-color))
-      drop-shadow(-20px 20px 2px var(--corner-color));
-    -webkit-filter: drop-shadow(-10px 10px 1px var(--corner-color))
-      drop-shadow(-20px 20px 2px var(--corner-color));
+    transform: translate(calc(var(--corner-multiplier) * var(--corner-dist)),
+        calc(var(--corner-multiplier) * var(--corner-dist))) rotate(-90deg);
+    filter: drop-shadow(-10px 10px 1px var(--corner-color)) drop-shadow(-20px 20px 2px var(--corner-color));
+    -webkit-filter: drop-shadow(-10px 10px 1px var(--corner-color)) drop-shadow(-20px 20px 2px var(--corner-color));
   }
+
   .btn-corner:nth-of-type(4) {
-    transform: translate(
-        calc(-1 * var(--corner-multiplier) * var(--corner-dist)),
-        calc(var(--corner-multiplier) * var(--corner-dist))
-      )
-      rotate(0deg);
-    filter: drop-shadow(-10px 10px 1px var(--corner-color))
-      drop-shadow(-20px 20px 2px var(--corner-color));
-    -webkit-filter: drop-shadow(-10px 10px 1px var(--corner-color))
-      drop-shadow(-20px 20px 2px var(--corner-color));
+    transform: translate(calc(-1 * var(--corner-multiplier) * var(--corner-dist)),
+        calc(var(--corner-multiplier) * var(--corner-dist))) rotate(0deg);
+    filter: drop-shadow(-10px 10px 1px var(--corner-color)) drop-shadow(-20px 20px 2px var(--corner-color));
+    -webkit-filter: drop-shadow(-10px 10px 1px var(--corner-color)) drop-shadow(-20px 20px 2px var(--corner-color));
   }
 }
 
@@ -995,69 +997,54 @@
     filter: drop-shadow(0 10px 4px #0002);
     -webkit-filter: drop-shadow(0 10px 4px #0002);
   }
+
   .transition-top,
   .transition-bottom {
     transform: translateY(0px) scale(0.5);
   }
+
   .btn-text {
-    filter: drop-shadow(0 1px 0 #fff6) drop-shadow(0 -1px 0 #0006)
-      drop-shadow(0px 6px 2px #0003);
-    -webkit-filter: drop-shadow(0 1px 0 #fff6) drop-shadow(0 -1px 0 #0006)
-      drop-shadow(0px 6px 2px #0003);
+    filter: drop-shadow(0 1px 0 #fff6) drop-shadow(0 -1px 0 #0006) drop-shadow(0px 6px 2px #0003);
+    -webkit-filter: drop-shadow(0 1px 0 #fff6) drop-shadow(0 -1px 0 #0006) drop-shadow(0px 6px 2px #0003);
     transform: scale(1);
     color: #000a;
   }
+
   --corner-color: #0005;
   --corner-multiplier: 0.95;
+
   .btn-corner:first-of-type {
-    transform: translate(
-        calc(-1 * var(--corner-multiplier) * var(--corner-dist)),
-        calc(-1 * var(--corner-multiplier) * var(--corner-dist))
-      )
-      rotate(90deg);
-    filter: drop-shadow(-10px 10px 2px var(--corner-color))
-      drop-shadow(-20px 20px 3px var(--corner-color));
-    -webkit-filter: drop-shadow(-10px 10px 2px var(--corner-color))
-      drop-shadow(-20px 20px 3px var(--corner-color));
+    transform: translate(calc(-1 * var(--corner-multiplier) * var(--corner-dist)),
+        calc(-1 * var(--corner-multiplier) * var(--corner-dist))) rotate(90deg);
+    filter: drop-shadow(-10px 10px 2px var(--corner-color)) drop-shadow(-20px 20px 3px var(--corner-color));
+    -webkit-filter: drop-shadow(-10px 10px 2px var(--corner-color)) drop-shadow(-20px 20px 3px var(--corner-color));
   }
+
   .btn-corner:nth-of-type(2) {
-    transform: translate(
-        calc(var(--corner-multiplier) * var(--corner-dist)),
-        calc(-1 * var(--corner-multiplier) * var(--corner-dist))
-      )
-      rotate(180deg);
-    filter: drop-shadow(-10px 10px 2px var(--corner-color))
-      drop-shadow(-20px 20px 3px var(--corner-color));
-    -webkit-filter: drop-shadow(-10px 10px 2px var(--corner-color))
-      drop-shadow(-20px 20px 3px var(--corner-color));
+    transform: translate(calc(var(--corner-multiplier) * var(--corner-dist)),
+        calc(-1 * var(--corner-multiplier) * var(--corner-dist))) rotate(180deg);
+    filter: drop-shadow(-10px 10px 2px var(--corner-color)) drop-shadow(-20px 20px 3px var(--corner-color));
+    -webkit-filter: drop-shadow(-10px 10px 2px var(--corner-color)) drop-shadow(-20px 20px 3px var(--corner-color));
   }
+
   @-moz-document url-prefix() {
     .btn-corner:nth-of-type(2) {
-      filter: drop-shadow(10px -10px 2px var(--corner-color))
-        drop-shadow(20px -20px 3px var(--corner-color));
+      filter: drop-shadow(10px -10px 2px var(--corner-color)) drop-shadow(20px -20px 3px var(--corner-color));
     }
   }
+
   .btn-corner:nth-of-type(3) {
-    transform: translate(
-        calc(var(--corner-multiplier) * var(--corner-dist)),
-        calc(var(--corner-multiplier) * var(--corner-dist))
-      )
-      rotate(-90deg);
-    filter: drop-shadow(-10px 10px 2px var(--corner-color))
-      drop-shadow(-20px 20px 3px var(--corner-color));
-    -webkit-filter: drop-shadow(-10px 10px 2px var(--corner-color))
-      drop-shadow(-20px 20px 3px var(--corner-color));
+    transform: translate(calc(var(--corner-multiplier) * var(--corner-dist)),
+        calc(var(--corner-multiplier) * var(--corner-dist))) rotate(-90deg);
+    filter: drop-shadow(-10px 10px 2px var(--corner-color)) drop-shadow(-20px 20px 3px var(--corner-color));
+    -webkit-filter: drop-shadow(-10px 10px 2px var(--corner-color)) drop-shadow(-20px 20px 3px var(--corner-color));
   }
+
   .btn-corner:nth-of-type(4) {
-    transform: translate(
-        calc(-1 * var(--corner-multiplier) * var(--corner-dist)),
-        calc(var(--corner-multiplier) * var(--corner-dist))
-      )
-      rotate(0deg);
-    filter: drop-shadow(-10px 10px 2px var(--corner-color))
-      drop-shadow(-20px 20px 3px var(--corner-color));
-    -webkit-filter: drop-shadow(-10px 10px 2px var(--corner-color))
-      drop-shadow(-20px 20px 3px var(--corner-color));
+    transform: translate(calc(-1 * var(--corner-multiplier) * var(--corner-dist)),
+        calc(var(--corner-multiplier) * var(--corner-dist))) rotate(0deg);
+    filter: drop-shadow(-10px 10px 2px var(--corner-color)) drop-shadow(-20px 20px 3px var(--corner-color));
+    -webkit-filter: drop-shadow(-10px 10px 2px var(--corner-color)) drop-shadow(-20px 20px 3px var(--corner-color));
   }
 }
 
@@ -1082,36 +1069,51 @@
   box-shadow: rgba(128, 0, 32, 0) 40px 50px 25px -40px, rgba(128, 0, 32, 0.2) 0px 25px 25px -5px;
 }
 
+.market3d-parent {
+  width: 100%;
+  height: 380px;
+  perspective: 1000px;
+}
+
+.market3d-card {
+  height: 100%;
+  border-radius: 50px;
+  background: linear-gradient(135deg, rgb(148, 25, 41) 0%, rgb(81, 9, 21) 100%);
+  transition: all 0.5s ease-in-out;
+  transform-style: preserve-3d;
+  box-shadow: rgba(81, 9, 21, 0) 40px 50px 25px -40px, rgba(81, 9, 21, 0.2) 0px 25px 25px -5px;
+}
+
 .market3d-glass {
   transform-style: preserve-3d;
   position: absolute;
   inset: 8px;
   border-radius: 55px;
   border-top-right-radius: 100%;
-  background: linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.15) 100%);
+  background: linear-gradient(0deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.3) 100%);
+  /* -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px); */
   transform: translate3d(0px, 0px, 25px);
-  border-left: 1px solid rgba(255, 255, 255, 0.2);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
   transition: all 0.5s ease-in-out;
 }
 
 .market3d-content {
-  padding: 80px 40px 0px 30px;
+  padding: 85px 60px 0px 30px;
   transform: translate3d(0, 0, 26px);
-  position: relative;
-  z-index: 10;
 }
 
 .market3d-content .market3d-title {
   display: block;
   color: #ffb3c6;
   font-weight: 900;
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .market3d-content .market3d-text {
   display: block;
-  color: rgba(255, 179, 198, 0.8);
+  color: rgba(255, 179, 198, 0.76);
   font-size: 14px;
   margin-top: 15px;
   line-height: 1.4;
@@ -1133,10 +1135,9 @@
 .market3d-bottom .market3d-view-more {
   display: flex;
   align-items: center;
-  width: 100%;
+  width: 50%;
   justify-content: flex-end;
   transition: all 0.2s ease-in-out;
-  cursor: pointer;
 }
 
 .market3d-bottom .market3d-view-more:hover {
@@ -1148,16 +1149,15 @@
   border: none;
   color: #ff8fa3;
   font-weight: bolder;
-  font-size: 14px;
+  font-size: 12px;
   cursor: pointer;
 }
 
-.market3d-bottom .market3d-view-more .svg {
+.market3d-bottom .market3d-view-more .market3d-svg {
   fill: none;
   stroke: #ff8fa3;
   stroke-width: 3px;
   max-height: 15px;
-  margin-left: 5px;
 }
 
 .market3d-bottom .market3d-social-buttons-container {
@@ -1175,7 +1175,8 @@
   border: none;
   display: grid;
   place-content: center;
-  box-shadow: rgba(128, 0, 32, 0.5) 0px 7px 5px -5px;
+  box-shadow: rgba(81, 9, 21, 0.5) 0px 7px 5px -5px;
+  cursor: pointer;
 }
 
 .market3d-bottom .market3d-social-buttons-container .market3d-social-button:first-child {
@@ -1190,7 +1191,7 @@
   transition: transform 0.2s ease-in-out 0.8s, box-shadow 0.2s ease-in-out 0.8s;
 }
 
-.market3d-bottom .market3d-social-buttons-container .market3d-social-button .svg {
+.market3d-bottom .market3d-social-buttons-container .market3d-social-button .market3d-svg {
   width: 15px;
   fill: #800020;
 }
@@ -1199,8 +1200,16 @@
   background: black;
 }
 
-.market3d-bottom .market3d-social-buttons-container .market3d-social-button:hover .svg {
+.market3d-bottom .market3d-social-buttons-container .market3d-social-button:hover .market3d-svg {
   fill: white;
+}
+
+.market3d-bottom .market3d-social-buttons-container .market3d-social-button:active {
+  background: rgb(255, 234, 0);
+}
+
+.market3d-bottom .market3d-social-buttons-container .market3d-social-button:active .market3d-svg {
+  fill: black;
 }
 
 .market3d-logo {
@@ -1218,10 +1227,10 @@
   border-radius: 50%;
   top: 0;
   right: 0;
-  box-shadow: rgba(0, 0, 0, 0.2) -10px 10px 20px 0px;
-  backdrop-filter: blur(5px);
+  box-shadow: rgba(100, 100, 111, 0.2) -10px 10px 20px 0px;
   -webkit-backdrop-filter: blur(5px);
-  background: rgba(255, 179, 198, 0.1);
+  backdrop-filter: blur(5px);
+  background: rgba(255, 179, 198, 0.2);
   transition: all 0.5s ease-in-out;
 }
 
@@ -1237,8 +1246,8 @@
   transform: translate3d(0, 0, 40px);
   top: 10px;
   right: 10px;
-  backdrop-filter: blur(1px);
   -webkit-backdrop-filter: blur(1px);
+  backdrop-filter: blur(1px);
   transition-delay: 0.4s;
 }
 
@@ -1268,19 +1277,19 @@
   transition-delay: 1.6s;
 }
 
-.market3d-logo .market3d-circle5 .svg {
-  width: 25px;
-  color: white;
+.market3d-logo .market3d-circle5 .market3d-svg {
+  width: 20px;
+  fill: white;
 }
 
 .market3d-parent:hover .market3d-card {
   transform: rotate3d(1, 1, 0, 30deg);
-  box-shadow: rgba(128, 0, 32, 0.4) 30px 50px 25px -40px, rgba(128, 0, 32, 0.2) 0px 25px 30px 0px;
+  box-shadow: rgba(81, 9, 21, 0.3) 30px 50px 25px -40px, rgba(81, 9, 21, 0.1) 0px 25px 30px 0px;
 }
 
 .market3d-parent:hover .market3d-card .market3d-bottom .market3d-social-buttons-container .market3d-social-button {
   transform: translate3d(0, 0, 50px);
-  box-shadow: rgba(128, 0, 32, 0.3) -5px 20px 10px 0px;
+  box-shadow: rgba(81, 9, 21, 0.2) -5px 20px 10px 0px;
 }
 
 .market3d-parent:hover .market3d-card .market3d-logo .market3d-circle2 {

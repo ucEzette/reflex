@@ -152,54 +152,40 @@ function SemanticProductCard({ product }: { product: MarketProduct }) {
     const linkHref = product.id === 'prod-flight' || product.title === 'Flight Delay' ? '/markets/flight' : '#dashboard';
 
     return (
-        <article className="market3d-parent group w-full relative">
-            <div className="market3d-card relative flex flex-col items-start justify-start text-left">
+        <article className="market3d-parent">
+            <div className="market3d-card">
                 {/* Background Glass Plate */}
-                <div className="market3d-glass pointer-events-none"></div>
-
-                {/* Animated 3D Logo Circles */}
-                <div className="market3d-logo pointer-events-none overflow-hidden rounded-tr-[50px]">
-                    <span className="market3d-circle market3d-circle1"></span>
-                    <span className="market3d-circle market3d-circle2"></span>
-                    <span className="market3d-circle market3d-circle3"></span>
-                    <span className="market3d-circle market3d-circle4"></span>
-                    <span className="market3d-circle market3d-circle5">
-                        <Icon className="w-5 h-5 text-white" />
-                    </span>
-                </div>
+                <div className="market3d-glass"></div>
 
                 {/* Main Content Area */}
-                <div className="market3d-content pointer-events-none w-full pr-8">
-                    <div className="flex flex-col items-start mb-2">
-                        <span className="text-[10px] font-bold text-white/50 bg-black/20 px-2 py-0.5 rounded uppercase tracking-wider mb-2">{product.category}</span>
-                        <span className="market3d-title leading-tight">{product.title}</span>
-                    </div>
-                    <span className="market3d-text line-clamp-2 min-h-[40px]">
+                <div className="market3d-content">
+                    <span className="market3d-title">{product.title}</span>
+                    <span className="market3d-text">
                         {product.description}
                     </span>
 
                     {/* Quoting Input (Interactive) */}
-                    <div className="mt-6 relative z-50 pointer-events-auto">
+                    <div className="mt-4 relative" style={{ transform: 'translate3d(0,0,10px)' }}>
                         <input
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             placeholder={product.inputPlaceholder}
-                            className="w-full bg-black/20 border border-white/20 rounded-xl py-3 px-4 text-xs text-white placeholder:text-white/60 focus:outline-none focus:border-white/50 transition-all font-medium"
+                            className="w-full bg-black/30 border border-white/20 rounded-xl py-2 px-3 text-xs text-white placeholder:text-white/60 focus:outline-none focus:border-white/50 transition-all font-medium"
                             onClick={(e) => e.stopPropagation()}
                         />
                     </div>
                 </div>
 
                 {/* Bottom Actions Area */}
-                <div className="market3d-bottom z-40 pointer-events-auto w-[calc(100%-40px)]">
+                <div className="market3d-bottom">
                     {isQuoting ? (
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-white/90 animate-pulse uppercase tracking-wider mx-auto">
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-white/90 animate-pulse uppercase tracking-wider mx-auto w-full justify-center">
                             <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> Calculating...
                         </div>
                     ) : quote ? (
-                        <div className="flex items-center justify-between w-full h-full">
-                            <span className="text-xl font-black text-white ml-2">
+                        <div className="flex items-center justify-between w-full h-full text-white">
+                            <span className="text-xl font-black">
                                 {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(quote)}
                             </span>
                             <a href={linkHref} className="bg-white hover:bg-white/90 text-[#800020] font-black px-4 py-2 rounded-xl text-xs transition-shadow shadow-lg shadow-black/20 uppercase tracking-wide">
@@ -208,7 +194,7 @@ function SemanticProductCard({ product }: { product: MarketProduct }) {
                         </div>
                     ) : (
                         <>
-                            <div className="market3d-social-buttons-container pointer-events-auto">
+                            <div className="market3d-social-buttons-container">
                                 <a href={linkHref} className="market3d-social-button flex items-center justify-center">
                                     <Info className="w-4 h-4 text-[#800020]" />
                                 </a>
@@ -216,14 +202,25 @@ function SemanticProductCard({ product }: { product: MarketProduct }) {
                                     <Share2 className="w-4 h-4 text-[#800020]" />
                                 </button>
                             </div>
-                            <div className="market3d-view-more group w-auto ml-auto cursor-pointer">
-                                <a href={linkHref} className="flex items-center gap-1 hover:opacity-80 transition-opacity">
-                                    <span className="market3d-view-more-button text-[#ffb3c6]">Details</span>
-                                    <svg className="svg text-[#ffb3c6] ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                            <div className="market3d-view-more">
+                                <a href={linkHref} className="flex items-center hover:opacity-80 transition-opacity">
+                                    <button className="market3d-view-more-button">Details</button>
+                                    <svg className="market3d-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                                 </a>
                             </div>
                         </>
                     )}
+                </div>
+
+                {/* Animated 3D Logo Circles */}
+                <div className="market3d-logo">
+                    <span className="market3d-circle market3d-circle1"></span>
+                    <span className="market3d-circle market3d-circle2"></span>
+                    <span className="market3d-circle market3d-circle3"></span>
+                    <span className="market3d-circle market3d-circle4"></span>
+                    <span className="market3d-circle market3d-circle5">
+                        <Icon className="w-5 h-5 text-white" />
+                    </span>
                 </div>
             </div>
         </article>
