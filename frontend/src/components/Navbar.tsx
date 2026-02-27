@@ -70,17 +70,20 @@ export function Navbar() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <ThemeToggle />
-
                         {!authenticated ? (
-                            <button
-                                onClick={login}
-                                className="bg-[#2490ff] text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-[#2490ff]/90 transition-colors whitespace-nowrap"
-                            >
-                                Log In
-                            </button>
+                            <>
+                                <ThemeToggle />
+                                <button
+                                    onClick={login}
+                                    className="bg-[#2490ff] text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-[#2490ff]/90 transition-colors whitespace-nowrap"
+                                >
+                                    Log In
+                                </button>
+                            </>
                         ) : (
                             <div className="flex items-center gap-4">
+                                <ThemeToggle />
+
                                 {/* Balance & Deposit (Polymarket style) */}
                                 <div className="flex items-center gap-4">
                                     <div className="flex flex-col items-end hidden sm:flex">
@@ -93,7 +96,7 @@ export function Navbar() {
                                         <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Cash</span>
                                         <span className="text-sm font-bold text-[#00c853]">$0.00</span>
                                     </div>
-                                    <button className="bg-[#2490ff] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#2490ff]/90 transition-colors">
+                                    <button className="bg-[#2490ff] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#2490ff]/90 shadow-[0_0_15px_rgba(36,144,255,0.5)] transition-all">
                                         Deposit
                                     </button>
                                 </div>
@@ -125,42 +128,14 @@ export function Navbar() {
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <button className="text-slate-400 hover:text-white transition-colors">
+                                                <Link href="/dashboard" className="text-slate-400 hover:text-white transition-colors" onClick={() => setIsProfileOpen(false)}>
                                                     <Settings className="w-5 h-5" />
-                                                </button>
+                                                </Link>
                                             </div>
 
-                                            {/* Section 1 */}
+                                            {/* Links */}
                                             <div className="py-2 border-b border-white/5">
-                                                <button className="w-full px-4 py-2 flex items-center gap-3 hover:bg-white/5 transition-colors text-slate-300 hover:text-white">
-                                                    <Trophy className="w-4 h-4 text-amber-500" /> Leaderboard
-                                                </button>
-                                                <button className="w-full px-4 py-2 flex items-center gap-3 hover:bg-white/5 transition-colors text-slate-300 hover:text-white">
-                                                    <Medal className="w-4 h-4 text-emerald-500" /> Rewards
-                                                </button>
-                                                <button className="w-full px-4 py-2 flex items-center gap-3 hover:bg-white/5 transition-colors text-slate-300 hover:text-white">
-                                                    <Terminal className="w-4 h-4 text-rose-500" /> APIs
-                                                </button>
-                                                <button className="w-full px-4 py-2 flex items-center gap-3 hover:bg-white/5 transition-colors text-slate-300 hover:text-white">
-                                                    <Code className="w-4 h-4 text-slate-400" /> Builders
-                                                </button>
-                                            </div>
-
-                                            {/* Section 2 */}
-                                            <div className="py-2 border-b border-white/5">
-                                                <div className="w-full px-4 py-2 flex items-center justify-between hover:bg-white/5 transition-colors text-slate-300 cursor-pointer">
-                                                    <div className="flex items-center gap-3">
-                                                        <Moon className="w-4 h-4 text-blue-400" /> Dark mode
-                                                    </div>
-                                                    <div className="w-8 h-4 bg-[#2490ff] rounded-full relative">
-                                                        <div className="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full shadow-sm" />
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Section 3 Links */}
-                                            <div className="py-2 border-b border-white/5">
-                                                <button className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white">Accuracy</button>
+                                                <Link href="/transparency" className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white" onClick={() => setIsProfileOpen(false)}>Activity</Link>
                                                 <button className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white">Support</button>
                                                 <button className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white">Documentation</button>
                                                 <button className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white">Help Center</button>
