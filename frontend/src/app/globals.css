@@ -1060,3 +1060,242 @@
       drop-shadow(-20px 20px 3px var(--corner-color));
   }
 }
+
+/* ── Burgundy Dark Mode Button ── */
+.dark .btn-container {
+  --btn-color: #800020;
+}
+
+/* ── 3D Market Card (Uiverse) ── */
+.market3d-parent {
+  width: 100%;
+  height: 320px;
+  perspective: 1000px;
+}
+
+.market3d-card {
+  height: 100%;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #800020 0%, #4a0012 100%);
+  transition: all 0.5s ease-in-out;
+  transform-style: preserve-3d;
+  box-shadow: rgba(128, 0, 32, 0) 40px 50px 25px -40px, rgba(128, 0, 32, 0.2) 0px 25px 25px -5px;
+}
+
+.market3d-glass {
+  transform-style: preserve-3d;
+  position: absolute;
+  inset: 8px;
+  border-radius: 55px;
+  border-top-right-radius: 100%;
+  background: linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.15) 100%);
+  transform: translate3d(0px, 0px, 25px);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.5s ease-in-out;
+}
+
+.market3d-content {
+  padding: 80px 40px 0px 30px;
+  transform: translate3d(0, 0, 26px);
+  position: relative;
+  z-index: 10;
+}
+
+.market3d-content .market3d-title {
+  display: block;
+  color: #ffb3c6;
+  font-weight: 900;
+  font-size: 22px;
+}
+
+.market3d-content .market3d-text {
+  display: block;
+  color: rgba(255, 179, 198, 0.8);
+  font-size: 14px;
+  margin-top: 15px;
+  line-height: 1.4;
+}
+
+.market3d-bottom {
+  padding: 10px 12px;
+  transform-style: preserve-3d;
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transform: translate3d(0, 0, 26px);
+}
+
+.market3d-bottom .market3d-view-more {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: flex-end;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.market3d-bottom .market3d-view-more:hover {
+  transform: translate3d(0, 0, 10px);
+}
+
+.market3d-bottom .market3d-view-more .market3d-view-more-button {
+  background: none;
+  border: none;
+  color: #ff8fa3;
+  font-weight: bolder;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.market3d-bottom .market3d-view-more .svg {
+  fill: none;
+  stroke: #ff8fa3;
+  stroke-width: 3px;
+  max-height: 15px;
+  margin-left: 5px;
+}
+
+.market3d-bottom .market3d-social-buttons-container {
+  display: flex;
+  gap: 10px;
+  transform-style: preserve-3d;
+}
+
+.market3d-bottom .market3d-social-buttons-container .market3d-social-button {
+  width: 30px;
+  aspect-ratio: 1;
+  padding: 5px;
+  background: rgb(255, 255, 255);
+  border-radius: 50%;
+  border: none;
+  display: grid;
+  place-content: center;
+  box-shadow: rgba(128, 0, 32, 0.5) 0px 7px 5px -5px;
+}
+
+.market3d-bottom .market3d-social-buttons-container .market3d-social-button:first-child {
+  transition: transform 0.2s ease-in-out 0.4s, box-shadow 0.2s ease-in-out 0.4s;
+}
+
+.market3d-bottom .market3d-social-buttons-container .market3d-social-button:nth-child(2) {
+  transition: transform 0.2s ease-in-out 0.6s, box-shadow 0.2s ease-in-out 0.6s;
+}
+
+.market3d-bottom .market3d-social-buttons-container .market3d-social-button:nth-child(3) {
+  transition: transform 0.2s ease-in-out 0.8s, box-shadow 0.2s ease-in-out 0.8s;
+}
+
+.market3d-bottom .market3d-social-buttons-container .market3d-social-button .svg {
+  width: 15px;
+  fill: #800020;
+}
+
+.market3d-bottom .market3d-social-buttons-container .market3d-social-button:hover {
+  background: black;
+}
+
+.market3d-bottom .market3d-social-buttons-container .market3d-social-button:hover .svg {
+  fill: white;
+}
+
+.market3d-logo {
+  position: absolute;
+  right: 0;
+  top: 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.market3d-logo .market3d-circle {
+  display: block;
+  position: absolute;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  top: 0;
+  right: 0;
+  box-shadow: rgba(0, 0, 0, 0.2) -10px 10px 20px 0px;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  background: rgba(255, 179, 198, 0.1);
+  transition: all 0.5s ease-in-out;
+}
+
+.market3d-logo .market3d-circle1 {
+  width: 170px;
+  transform: translate3d(0, 0, 20px);
+  top: 8px;
+  right: 8px;
+}
+
+.market3d-logo .market3d-circle2 {
+  width: 140px;
+  transform: translate3d(0, 0, 40px);
+  top: 10px;
+  right: 10px;
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  transition-delay: 0.4s;
+}
+
+.market3d-logo .market3d-circle3 {
+  width: 110px;
+  transform: translate3d(0, 0, 60px);
+  top: 17px;
+  right: 17px;
+  transition-delay: 0.8s;
+}
+
+.market3d-logo .market3d-circle4 {
+  width: 80px;
+  transform: translate3d(0, 0, 80px);
+  top: 23px;
+  right: 23px;
+  transition-delay: 1.2s;
+}
+
+.market3d-logo .market3d-circle5 {
+  width: 50px;
+  transform: translate3d(0, 0, 100px);
+  top: 30px;
+  right: 30px;
+  display: grid;
+  place-content: center;
+  transition-delay: 1.6s;
+}
+
+.market3d-logo .market3d-circle5 .svg {
+  width: 25px;
+  color: white;
+}
+
+.market3d-parent:hover .market3d-card {
+  transform: rotate3d(1, 1, 0, 30deg);
+  box-shadow: rgba(128, 0, 32, 0.4) 30px 50px 25px -40px, rgba(128, 0, 32, 0.2) 0px 25px 30px 0px;
+}
+
+.market3d-parent:hover .market3d-card .market3d-bottom .market3d-social-buttons-container .market3d-social-button {
+  transform: translate3d(0, 0, 50px);
+  box-shadow: rgba(128, 0, 32, 0.3) -5px 20px 10px 0px;
+}
+
+.market3d-parent:hover .market3d-card .market3d-logo .market3d-circle2 {
+  transform: translate3d(0, 0, 60px);
+}
+
+.market3d-parent:hover .market3d-card .market3d-logo .market3d-circle3 {
+  transform: translate3d(0, 0, 80px);
+}
+
+.market3d-parent:hover .market3d-card .market3d-logo .market3d-circle4 {
+  transform: translate3d(0, 0, 100px);
+}
+
+.market3d-parent:hover .market3d-card .market3d-logo .market3d-circle5 {
+  transform: translate3d(0, 0, 120px);
+}
+EOF

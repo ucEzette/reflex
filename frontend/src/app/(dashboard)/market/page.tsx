@@ -28,10 +28,10 @@ const IconMap: Record<string, React.ElementType> = {
 };
 
 const CATEGORIES = [
-    { name: "All", count: 12 },
-    { name: "Travel", count: 4 },
-    { name: "Weather", count: 4 },
-    { name: "Web3", count: 4 }
+    { name: "All", count: 4 },
+    { name: "Travel", count: 1 },
+    { name: "Weather", count: 1 },
+    { name: "Web3", count: 2 }
 ];
 
 export default function CoverageMarketplace() {
@@ -149,70 +149,82 @@ function SemanticProductCard({ product }: { product: MarketProduct }) {
         return () => clearTimeout(timer);
     }, [debouncedInput]);
 
+    const linkHref = product.id === 'prod-flight' || product.title === 'Flight Delay' ? '/markets/flight' : '#dashboard';
+
     return (
-        <article className="group relative flex flex-col bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300">
-            {/* Upper Section */}
-            <div className="p-5 flex-1">
-                <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-primary border border-border/50 group-hover:rotate-6 transition-transform">
-                            <Icon className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-foreground group-hover:text-primary transition-colors leading-tight">
-                                {product.title}
-                            </h3>
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{product.category}</span>
-                                <span className="w-1 h-1 rounded-full bg-border" />
-                                <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Active</span>
-                            </div>
-                        </div>
-                    </div>
-                    <button className="text-muted-foreground hover:text-foreground">
-                        <Info className="w-4 h-4" />
-                    </button>
+        <article className="market3d-parent group w-full relative">
+            <div className="market3d-card relative flex flex-col items-start justify-start text-left">
+                {/* Background Glass Plate */}
+                <div className="market3d-glass pointer-events-none"></div>
+
+                {/* Animated 3D Logo Circles */}
+                <div className="market3d-logo pointer-events-none overflow-hidden rounded-tr-[50px]">
+                    <span className="market3d-circle market3d-circle1"></span>
+                    <span className="market3d-circle market3d-circle2"></span>
+                    <span className="market3d-circle market3d-circle3"></span>
+                    <span className="market3d-circle market3d-circle4"></span>
+                    <span className="market3d-circle market3d-circle5">
+                        <Icon className="w-5 h-5 text-white" />
+                    </span>
                 </div>
 
-                <p className="text-xs text-muted-foreground leading-relaxed mb-6 line-clamp-2 min-h-[32px]">
-                    {product.description}
-                </p>
-
-                {/* Quoting Input */}
-                <div className="relative mb-4">
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder={product.inputPlaceholder}
-                        className="w-full bg-accent/30 border border-border rounded-xl py-3 px-4 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-all font-medium"
-                    />
-                </div>
-            </div>
-
-            {/* Bottom Section (Pricing) */}
-            <div className="px-5 py-4 bg-accent/20 border-t border-border mt-auto flex items-center justify-between gap-4">
-                {isQuoting ? (
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-primary animate-pulse uppercase tracking-wider">
-                        <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> Calculating Premium...
+                {/* Main Content Area */}
+                <div className="market3d-content pointer-events-none w-full pr-8">
+                    <div className="flex flex-col items-start mb-2">
+                        <span className="text-[10px] font-bold text-white/50 bg-black/20 px-2 py-0.5 rounded uppercase tracking-wider mb-2">{product.category}</span>
+                        <span className="market3d-title leading-tight">{product.title}</span>
                     </div>
-                ) : quote ? (
-                    <div className="flex items-center justify-between w-full">
-                        <div className="flex flex-col">
-                            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Premium</span>
-                            <span className="text-lg font-bold text-foreground">
+                    <span className="market3d-text line-clamp-2 min-h-[40px]">
+                        {product.description}
+                    </span>
+
+                    {/* Quoting Input (Interactive) */}
+                    <div className="mt-6 relative z-50 pointer-events-auto">
+                        <input
+                            type="text"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            placeholder={product.inputPlaceholder}
+                            className="w-full bg-black/20 border border-white/20 rounded-xl py-3 px-4 text-xs text-white placeholder:text-white/60 focus:outline-none focus:border-white/50 transition-all font-medium"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                </div>
+
+                {/* Bottom Actions Area */}
+                <div className="market3d-bottom z-40 pointer-events-auto w-[calc(100%-40px)]">
+                    {isQuoting ? (
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-white/90 animate-pulse uppercase tracking-wider mx-auto">
+                            <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> Calculating...
+                        </div>
+                    ) : quote ? (
+                        <div className="flex items-center justify-between w-full h-full">
+                            <span className="text-xl font-black text-white ml-2">
                                 {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(quote)}
                             </span>
+                            <a href={linkHref} className="bg-white hover:bg-white/90 text-[#800020] font-black px-4 py-2 rounded-xl text-xs transition-shadow shadow-lg shadow-black/20 uppercase tracking-wide">
+                                Buy Protect
+                            </a>
                         </div>
-                        <button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 py-2.5 rounded-xl text-xs transition-shadow shadow-lg shadow-primary/20">
-                            Buy Protection
-                        </button>
-                    </div>
-                ) : (
-                    <div className="flex items-center space-x-2 text-muted-foreground/60 w-full justify-center">
-                        <p className="text-[10px] uppercase font-bold tracking-widest">Enter details to quote</p>
-                    </div>
-                )}
+                    ) : (
+                        <>
+                            <div className="market3d-social-buttons-container pointer-events-auto">
+                                <a href={linkHref} className="market3d-social-button flex items-center justify-center">
+                                    <Info className="w-4 h-4 text-[#800020]" />
+                                </a>
+                                <button className="market3d-social-button flex items-center justify-center">
+                                    <Share2 className="w-4 h-4 text-[#800020]" />
+                                </button>
+                            </div>
+                            <div className="market3d-view-more group w-auto ml-auto cursor-pointer">
+                                <a href={linkHref} className="flex items-center gap-1 hover:opacity-80 transition-opacity">
+                                    <span className="market3d-view-more-button text-[#ffb3c6]">Details</span>
+                                    <svg className="svg text-[#ffb3c6] ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                                </a>
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
         </article>
     );
