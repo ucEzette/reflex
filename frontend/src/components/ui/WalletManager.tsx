@@ -1,14 +1,49 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { Wallet, ExternalLink, Download, ArrowUpRight, Copy, ShieldCheck } from 'lucide-react';
+import { Wallet, ExternalLink, Download, ArrowUpRight, Copy, ShieldCheck, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
+import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { formatUnits, parseUnits } from 'viem';
+import { ERC20_ABI } from '@/lib/contracts';
+import { CONTRACTS } from '@/lib/wagmiConfig';
 
 export function WalletManager() {
     const { authenticated, exportWallet } = usePrivy();
     const { wallets } = useWallets();
     const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');
+
+    const { data: hash, writeContract, isPending } = useWriteContract();
+    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
+
+    const { data: balanceData, refetch } = useReadContract({
+        address: CONTRACTS.USDC,
+        abi: ERC20_ABI,
+        functionName: 'balanceOf',
+        args: embeddedWallet ? [embeddedWallet.address as `0x${string}`] : undefined,
+        query: {
+            enabled: !!embeddedWallet,
+        }
+    });
+
+    useEffect(() => {
+        if (isConfirmed) {
+            toast.success("Successfully deposited 10,000 test USDC!");
+            refetch();
+        }
+    }, [isConfirmed, refetch]);
+
+    const handleDeposit = () => {
+        if (!embeddedWallet) return;
+        toast.info("Minting 10,000 MOCK USDC...");
+        writeContract({
+            address: CONTRACTS.USDC,
+            abi: ERC20_ABI,
+            functionName: 'mint',
+            args: [embeddedWallet.address as `0x${string}`, parseUnits('10000', 6)],
+        });
+    };
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
@@ -16,6 +51,8 @@ export function WalletManager() {
     };
 
     if (!authenticated || !embeddedWallet) return null;
+
+    const displayBalance = balanceData ? Number(formatUnits(balanceData, 6)) : 0;
 
     return (
         <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
@@ -33,25 +70,28 @@ export function WalletManager() {
                 </div>
 
                 <h3 className="text-3xl font-bold text-foreground mb-1 flex items-baseline gap-2">
-                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(12450.50)}
+                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(displayBalance)}
                     <span className="text-sm font-medium text-muted-foreground uppercase">usdc</span>
                 </h3>
-                <p className="text-xs text-muted-foreground">Available balance on Avalanche Fuji</p>
+                <p className="text-xs text-muted-foreground flex items-center gap-2">
+                    Available balance on Avalanche Fuji
+                    {(isPending || isConfirming) && <RefreshCcw className="w-3 h-3 animate-spin text-primary" />}
+                </p>
             </div>
 
             {/* Wallet Info & Actions */}
             <div className="p-6 space-y-6">
                 {/* Address Row */}
                 <div className="flex items-center justify-between p-3 bg-accent/50 rounded-xl border border-border group">
-                    <div className="flex flex-col">
+                    <div className="flex flex-col overflow-hidden">
                         <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Your Address</span>
-                        <span className="text-sm font-mono text-foreground tracking-tight">
+                        <span className="text-sm font-mono text-foreground tracking-tight opacity-70">
                             {embeddedWallet.address.slice(0, 10)}...{embeddedWallet.address.slice(-10)}
                         </span>
                     </div>
                     <button
                         onClick={() => copyToClipboard(embeddedWallet.address)}
-                        className="p-2 hover:bg-background rounded-lg text-muted-foreground hover:text-primary transition-all shadow-none group-hover:shadow-sm"
+                        className="p-2 hover:bg-background rounded-lg text-muted-foreground hover:text-primary transition-all shadow-none group-hover:shadow-sm shrink-0"
                     >
                         <Copy className="w-4 h-4" />
                     </button>
@@ -59,9 +99,12 @@ export function WalletManager() {
 
                 {/* Primary Actions Grid */}
                 <div className="grid grid-cols-2 gap-3">
-                    <button className="flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/20">
-                        <ArrowUpRight className="w-4 h-4" />
-                        Deposit
+                    <button
+                        onClick={handleDeposit}
+                        disabled={isPending || isConfirming}
+                        className="flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                        {isPending || isConfirming ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <ArrowUpRight className="w-4 h-4" />}
+                        {isPending || isConfirming ? 'Depositing...' : 'Deposit'}
                     </button>
                     <button className="flex items-center justify-center gap-2 bg-accent border border-border text-foreground py-3 rounded-xl font-bold text-sm hover:bg-accent/80 transition-all">
                         <Download className="w-4 h-4" />
