@@ -1,13 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useReadContract } from "wagmi";
+import { formatUnits } from "viem";
+import { CONTRACTS } from "@/lib/wagmiConfig";
+import { ERC20_ABI } from "@/lib/contracts";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Search, Wallet, User, Activity as ActivityIcon, BarChart3, Briefcase, ChevronDown, Trophy, Medal, Terminal, Code, Moon, LogOut, Settings, HelpCircle, FileText, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 export function Navbar() {
     const { login, logout, authenticated, user } = usePrivy();
+    const { wallets } = useWallets();
+    const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');
+
+    const { data: balanceData } = useReadContract({
+        address: CONTRACTS.USDC,
+        abi: ERC20_ABI,
+        functionName: 'balanceOf',
+        args: embeddedWallet ? [embeddedWallet.address as `0x${string}`] : undefined,
+        query: {
+            enabled: !!embeddedWallet,
+        }
+    });
+
+    const displayBalance = balanceData ? Number(formatUnits(balanceData as bigint, 6)) : 0;
+
     const [searchQuery, setSearchQuery] = useState("");
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isBalanceHidden, setIsBalanceHidden] = useState(false);
@@ -96,13 +115,13 @@ export function Navbar() {
                                         <div className="flex flex-col items-end hidden sm:flex">
                                             <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Portfolio</span>
                                             <span className="text-sm font-bold text-slate-200">
-                                                {isBalanceHidden ? '***' : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(12450.50)}
+                                                {isBalanceHidden ? '***' : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(displayBalance)}
                                             </span>
                                         </div>
                                         <div className="flex flex-col items-end hidden sm:flex">
                                             <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Cash</span>
                                             <span className="text-sm font-bold text-slate-200">
-                                                {isBalanceHidden ? '***' : '$0.00'}
+                                                {isBalanceHidden ? '***' : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(displayBalance)}
                                             </span>
                                         </div>
                                     </div>
