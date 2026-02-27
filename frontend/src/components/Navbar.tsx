@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePrivy } from "@privy-io/react-auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Search, Wallet, User, Activity as ActivityIcon, BarChart3, Briefcase, ChevronDown, Trophy, Medal, Terminal, Code, Moon, LogOut, Settings, HelpCircle, FileText, CheckCircle2 } from "lucide-react";
+import { Search, Wallet, User, Activity as ActivityIcon, BarChart3, Briefcase, ChevronDown, Trophy, Medal, Terminal, Code, Moon, LogOut, Settings, HelpCircle, FileText, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 export function Navbar() {
     const { login, logout, authenticated, user } = usePrivy();
     const [searchQuery, setSearchQuery] = useState("");
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isBalanceHidden, setIsBalanceHidden] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Close dropdown on outside click
@@ -82,23 +83,40 @@ export function Navbar() {
                             </>
                         ) : (
                             <div className="flex items-center gap-4">
-                                <ThemeToggle />
 
                                 {/* Balance & Deposit (Polymarket style) */}
                                 <div className="flex items-center gap-4">
-                                    <div className="flex flex-col items-end hidden sm:flex">
-                                        <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Portfolio</span>
-                                        <span className="text-sm font-bold text-[#00c853]">
-                                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(12450.50)}
-                                        </span>
+                                    <div className="flex items-center gap-2 mr-2">
+                                        <button
+                                            onClick={() => setIsBalanceHidden(!isBalanceHidden)}
+                                            className="text-slate-400 hover:text-white transition-colors"
+                                        >
+                                            {isBalanceHidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                        </button>
+                                        <div className="flex flex-col items-end hidden sm:flex">
+                                            <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Portfolio</span>
+                                            <span className="text-sm font-bold text-slate-200">
+                                                {isBalanceHidden ? '***' : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(12450.50)}
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col items-end hidden sm:flex">
+                                            <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Cash</span>
+                                            <span className="text-sm font-bold text-slate-200">
+                                                {isBalanceHidden ? '***' : '$0.00'}
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col items-end hidden sm:flex">
-                                        <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Cash</span>
-                                        <span className="text-sm font-bold text-[#00c853]">$0.00</span>
+                                    <div className="btn-container shrink-0">
+                                        <button className="btn !min-w-[120px] !min-h-[40px] !rounded-lg !px-4 !py-2 shrink-0">
+                                            <span className="btn-drawer transition-top whitespace-nowrap !text-[9px]">DEPOSIT</span>
+                                            <span className="btn-text !text-sm">Deposit</span>
+                                            <svg className="btn-corner !w-[20px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                                            <svg className="btn-corner !w-[20px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                                            <svg className="btn-corner !w-[20px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                                            <svg className="btn-corner !w-[20px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                                            <span className="btn-drawer transition-bottom whitespace-nowrap !text-[9px]">buy crypto</span>
+                                        </button>
                                     </div>
-                                    <button className="bg-[#2490ff] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#2490ff]/90 shadow-[0_0_15px_rgba(36,144,255,0.5)] transition-all">
-                                        Deposit
-                                    </button>
                                 </div>
 
                                 {/* User Profile Dropdown */}
@@ -131,6 +149,18 @@ export function Navbar() {
                                                 <Link href="/dashboard" className="text-slate-400 hover:text-white transition-colors" onClick={() => setIsProfileOpen(false)}>
                                                     <Settings className="w-5 h-5" />
                                                 </Link>
+                                            </div>
+
+                                            {/* Top Switches / Actions */}
+                                            <div className="py-2 border-b border-white/5 flex flex-col gap-1">
+                                                <div className="w-full px-4 py-1.5 flex items-center justify-between text-slate-300">
+                                                    <div className="flex items-center gap-3">
+                                                        <Moon className="w-4 h-4 text-slate-400" /> Dark mode
+                                                    </div>
+                                                    <div className="scale-75 origin-right">
+                                                        <ThemeToggle />
+                                                    </div>
+                                                </div>
                                             </div>
 
                                             {/* Links */}
