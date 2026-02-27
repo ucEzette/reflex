@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { usePrivy, useWallets, useCreateWallet } from '@privy-io/react-auth';
 import { Wallet, ExternalLink, Download, ArrowUpRight, Copy, ShieldCheck, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
@@ -12,6 +12,7 @@ import { CONTRACTS } from '@/lib/wagmiConfig';
 export function WalletManager() {
     const { authenticated, exportWallet } = usePrivy();
     const { wallets } = useWallets();
+    const { createWallet } = useCreateWallet();
     const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');
 
     const { data: hash, writeContract, isPending } = useWriteContract();
@@ -50,7 +51,28 @@ export function WalletManager() {
         toast.success("Address copied to clipboard");
     };
 
-    if (!authenticated || !embeddedWallet) return null;
+    if (!authenticated) return null;
+
+    if (!embeddedWallet) {
+        return (
+            <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm p-8 text-center flex flex-col items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 border border-primary/20">
+                    <Wallet className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2 tracking-tight">Enterprise Wallet Infrastructure</h3>
+                <p className="text-sm text-muted-foreground mb-8 max-w-[280px]">
+                    Provision a secure, non-custodial embedded wallet tied to your session to enable gasless micro-insurance policies and instant auto-payouts.
+                </p>
+                <button
+                    onClick={createWallet}
+                    className="w-full bg-primary text-primary-foreground py-4 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                >
+                    <ShieldCheck className="w-4 h-4" />
+                    Provision Abstracted Wallet
+                </button>
+            </div>
+        );
+    }
 
     const displayBalance = balanceData ? Number(formatUnits(balanceData, 6)) : 0;
 
