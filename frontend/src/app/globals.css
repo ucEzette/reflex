@@ -1106,14 +1106,14 @@
 
 .market3d-content .market3d-title {
   display: block;
-  color: #ffb3c6;
+  color: white;
   font-weight: 900;
   font-size: 20px;
 }
 
 .market3d-content .market3d-text {
   display: block;
-  color: rgba(255, 179, 198, 0.76);
+  color: rgba(255, 255, 255, 0.9);
   font-size: 14px;
   margin-top: 15px;
   line-height: 1.4;
@@ -1147,7 +1147,7 @@
 .market3d-bottom .market3d-view-more .market3d-view-more-button {
   background: none;
   border: none;
-  color: #ff8fa3;
+  color: white;
   font-weight: bolder;
   font-size: 12px;
   cursor: pointer;
@@ -1155,7 +1155,7 @@
 
 .market3d-bottom .market3d-view-more .market3d-svg {
   fill: none;
-  stroke: #ff8fa3;
+  stroke: white;
   stroke-width: 3px;
   max-height: 15px;
 }
