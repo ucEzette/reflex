@@ -26,7 +26,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <PrivyProvider
                 appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || "cm7m2ndj602p2as735xet8s1b"}
                 config={{
-                    loginMethods: ['email', 'wallet'],
+                    loginMethods: ['email', 'wallet', 'google', 'twitter'],
                     appearance: {
                         theme: 'dark',
                         accentColor: '#676FFF',
