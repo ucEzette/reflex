@@ -7,8 +7,8 @@
 
 @layer base {
   :root {
-    --primary: #e74043;
-    --primary-dark: #b02e30;
+    --primary: #800020;
+    --primary-dark: #4a0404;
     --bg-base: #f8fafc;
     /* slate-50 */
     --surface-base: #ffffff;
