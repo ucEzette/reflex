@@ -1,24 +1,12 @@
 import { PolicyDashboard } from "@/components/PolicyDashboard";
 import { ActivePolicies } from "@/components/ActivePolicies";
+import { ALL_MARKETS } from "@/lib/market-data";
 
 /* ═══════════════════════════════════════════
    REFLEX L1 — Scrollytelling Landing Page
    Combines four Stitch screens into one
    unified, interactive experience.
    ═══════════════════════════════════════════ */
-
-const ALL_MARKETS = [
-  { id: "flight", title: "Flight Delay", price: "$5 USDC", unit: "/ flight", icon: "flight_takeoff", iconBg: "bg-blue-500/20", iconColor: "text-blue-400", riskBase: "RISK-L1", bullet1: "Instant Oracle Payout", bullet2: "Global Coverage", rgb: "0, 240, 255" },
-  { id: "cloud-down", title: "SaaS Outage", price: "$50 USDC", unit: "/ down hr", icon: "cloud_off", iconBg: "bg-purple-500/20", iconColor: "text-purple-400", riskBase: "RISK-L2", bullet1: "API Disruption Monitor", bullet2: "Lost Income Cover", rgb: "168, 85, 247" },
-  { id: "rain-check", title: "Event Cover", price: "$100 USDC", unit: "/ mm rain", icon: "umbrella", iconBg: "bg-cyan-500/20", iconColor: "text-cyan-400", riskBase: "RISK-L3", bullet1: "Weather Data Oracle", bullet2: "Automated Claims", rgb: "6, 182, 212" },
-  { id: "gas-guzzler", title: "ETH Gas Hedge", price: "0.05 ETH", unit: "/ spike", icon: "local_gas_station", iconBg: "bg-amber-500/20", iconColor: "text-amber-400", riskBase: "RISK-L4", bullet1: "Etherscan Tracker", bullet2: "Tx Fee Subsidy", rgb: "245, 158, 11" },
-  { id: "shipping-shield", title: "Delivery Guarantee", price: "$20 USDC", unit: "/ day late", icon: "local_shipping", iconBg: "bg-green-500/20", iconColor: "text-green-400", riskBase: "RISK-L5", bullet1: "Logistics Oracle", bullet2: "SLA Enforcement", rgb: "34, 197, 94" },
-  { id: "heat-wave", title: "Utility Subsidy", price: "$100 USDC", unit: "/ wave", icon: "thermostat", iconBg: "bg-red-500/20", iconColor: "text-red-400", riskBase: "RISK-L6", bullet1: "NOAA Temperature Feed", bullet2: "AC Cost Cover", rgb: "239, 68, 68" },
-  { id: "powder-protect", title: "Ski Trip Guarantee", price: "$500 USDC", unit: "/ trip", icon: "ac_unit", iconBg: "bg-slate-300/20", iconColor: "text-slate-300", riskBase: "RISK-L7", bullet1: "Snowfall API Link", bullet2: "Resort Weather Truing", rgb: "203, 213, 225" },
-  { id: "peg-shield", title: "Stablecoin De-Peg", price: "Dynamic", unit: "payout", icon: "currency_exchange", iconBg: "bg-emerald-500/20", iconColor: "text-emerald-400", riskBase: "RISK-L8", bullet1: "Chainlink USD Feeds", bullet2: "Tail-Risk Protection", rgb: "16, 185, 129" },
-  { id: "sun-yield", title: "Solar Energy Hedge", price: "$100 USDC", unit: "/ month", icon: "solar_power", iconBg: "bg-yellow-500/20", iconColor: "text-yellow-400", riskBase: "RISK-L9", bullet1: "Irradiance Indexes", bullet2: "Output Smoothing", rgb: "234, 179, 8" },
-  { id: "freight-wait", title: "Supply Chain Delay", price: "$200 USDC", unit: "/ day", icon: "directions_boat", iconBg: "bg-indigo-500/20", iconColor: "text-indigo-400", riskBase: "RISK-L10", bullet1: "Maritime Fleet Tracking", bullet2: "Demurrage Hedge", rgb: "99, 102, 241" }
-];
 
 export default function Home() {
   return (
