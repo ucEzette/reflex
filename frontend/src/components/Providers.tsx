@@ -37,9 +37,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
                         // @ts-ignore - handling version drift in Privy config
                         createOnLogin: 'all-users',
                     },
-                    defaultChain: avalancheFuji,
-                    supportedChains: [avalancheFuji],
                 }}
+                supportedChains={[avalancheFuji]}
             >
                 <WagmiProvider config={config}>
                     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
