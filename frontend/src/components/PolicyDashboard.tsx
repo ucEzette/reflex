@@ -26,6 +26,11 @@ export function PolicyDashboard() {
     const [flightNumber, setFlightNumber] = useState("");
     const [flightDate, setFlightDate] = useState("");
     const [purchaseSuccess, setPurchaseSuccess] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Flight Validation State
     const [isValidating, setIsValidating] = useState(false);
@@ -181,6 +186,9 @@ export function PolicyDashboard() {
     const isProcessing = isApproving || isApproveConfirming || isPurchasing || isPurchaseConfirming;
     const hasEnoughBalance = usdcBalance ? (usdcBalance as bigint) >= POLICY_PREMIUM : false;
     const canPurchase = flightDetails !== null && !isValidating && flightDate && isConnected && hasEnoughBalance;
+
+    /* ── SSR Hydration Guard ── */
+    if (!mounted) return null;
 
     /* ── Wallet Not Connected ── */
     if (!isConnected) {
