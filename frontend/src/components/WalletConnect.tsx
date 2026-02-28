@@ -97,11 +97,13 @@ export function WalletConnect() {
                         <button
                             key={connector.uid}
                             onClick={async () => {
+                                toast.info(`Attempting to mount ${connector.name}...`);
                                 try {
-                                    await connectAsync({ connector });
+                                    await connectAsync({ connector, chainId: avalancheFuji.id });
+                                    toast.success(`Successfully connected to ${connector.name}!`);
                                 } catch (error: any) {
                                     console.error("Connection error:", error);
-                                    toast.error(error.message || "Wallet connection failed");
+                                    toast.error(String(error?.message || error) || "Wallet connection failed");
                                 }
                                 setIsOpen(false);
                             }}
