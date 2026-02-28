@@ -1,16 +1,21 @@
 import { http, createConfig } from "wagmi";
 import { avalancheFuji } from "wagmi/chains";
-import { injected, safe, walletConnect } from "wagmi/connectors";
+import { injected } from "wagmi/connectors";
 
 export const config = createConfig({
     chains: [avalancheFuji],
     connectors: [
-        injected(),
-        walletConnect({
-            projectId: '80aa3cb4fa682705b76174bb0eb6c6ec',
-            showQrModal: true
-        }),
-        safe(),
+        injected({
+            target() {
+                return {
+                    id: 'coreWallet',
+                    name: 'Core Wallet',
+                    icon: 'https://cdn.worldvectorlogo.com/logos/avalanche-2.svg',
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    provider: typeof window !== 'undefined' ? (window as any).avalanche : undefined,
+                }
+            }
+        })
     ],
     transports: {
         [avalancheFuji.id]: http("https://api.avax-test.network/ext/bc/C/rpc"),
