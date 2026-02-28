@@ -421,7 +421,7 @@
 
 .homepage-card-3d .card-item {
   position: absolute;
-  width: 80px;
+  width: 100px;
   height: 112px;
   background-color: rgb(199, 199, 199);
   border: solid 2px lightgray;
@@ -433,6 +433,8 @@
   transition-duration: 200ms;
   will-change: transform, filter;
   display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
   align-items: center;
   justify-content: center;
 }

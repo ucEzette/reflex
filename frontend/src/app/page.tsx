@@ -96,8 +96,9 @@ export default function Home() {
             <div className="homepage-card-3d">
               {ALL_MARKETS.map((market) => (
                 <div key={market.id} className="card-item group">
-                  <a href={market.id === 'flight' ? `/markets/flight` : '#dashboard'} className="absolute inset-0 z-20"><span className="sr-only">View {market.title}</span></a>
+                  <a href={market.id === 'flight' ? `/markets/flight` : `/markets/${market.id}`} className="absolute inset-0 z-20"><span className="sr-only">View {market.title}</span></a>
                   <span className={`material-symbols-outlined text-4xl group-hover:scale-125 transition-transform drop-shadow-lg ${market.iconColor}`}>{market.icon}</span>
+                  <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest mt-2 text-center px-1 drop-shadow-md group-hover:text-white transition-colors">{market.title}</span>
                 </div>
               ))}
             </div>
