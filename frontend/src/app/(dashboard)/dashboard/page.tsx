@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { RefreshCcw, Bell, BellRing, Zap, CheckCircle2, TrendingUp, Filter } from 'lucide-react';
 import { ActivePolicyCard } from '@/components/ui/ActivePolicyCard';
 import { WalletManager } from '@/components/ui/WalletManager';
-import { generateMockPolicies, generateOracleLogs } from '@/lib/mockState';
+import { ActivePolicies } from '@/components/ActivePolicies';
+import { generateOracleLogs } from '@/lib/mockState';
 
 export default function UserDashboard() {
     const [mounted, setMounted] = useState(false);
@@ -13,7 +14,6 @@ export default function UserDashboard() {
         setMounted(true);
     }, []);
 
-    const policies = generateMockPolicies();
     const logs = generateOracleLogs();
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const [quickBuyType, setQuickBuyType] = useState('flight');
@@ -98,20 +98,8 @@ export default function UserDashboard() {
                     </div>
 
                     {/* Active Assets Grid */}
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-lg font-bold text-foreground">Active Coverage</h2>
-                            <div className="flex items-center gap-4 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                                <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live</span>
-                                <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-orange-500" /> Pending</span>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {policies.map(policy => (
-                                <ActivePolicyCard key={policy.id} policy={policy} />
-                            ))}
-                        </div>
+                    <div className="space-y-4 shadow-2xl">
+                        <ActivePolicies />
                     </div>
 
                     {/* Claims History Table-like list (Polymarket style) */}
@@ -155,15 +143,15 @@ export default function UserDashboard() {
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <span className="text-xs text-muted-foreground">Total Payouts</span>
-                                <span className="text-sm font-bold text-foreground">$1,240.00</span>
+                                <span className="text-sm font-bold text-foreground">Live Data Fetch...</span>
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-xs text-muted-foreground">Win Rate</span>
-                                <span className="text-sm font-bold text-emerald-500">68%</span>
+                                <span className="text-sm font-bold text-emerald-500">Live Fetch...</span>
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-xs text-muted-foreground">Active Policies</span>
-                                <span className="text-sm font-bold text-foreground">{policies.length}</span>
+                                <span className="text-sm font-bold text-foreground">Fetching...</span>
                             </div>
                         </div>
                     </div>
