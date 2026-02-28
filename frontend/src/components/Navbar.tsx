@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useAccount, useReadContract } from "wagmi";
+import { useAccount, useReadContract, useDisconnect } from "wagmi";
 import { formatUnits } from "viem";
 import { CONTRACTS } from "@/lib/wagmiConfig";
 import { ERC20_ABI } from "@/lib/contracts";
@@ -12,6 +12,7 @@ import { useState, useRef, useEffect } from "react";
 
 export function Navbar() {
     const { address, isConnected: authenticated } = useAccount();
+    const { disconnect } = useDisconnect();
 
     const { data: balanceData } = useReadContract({
         address: CONTRACTS.USDC,
