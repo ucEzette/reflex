@@ -82,31 +82,51 @@ export function WalletConnect() {
         <div className="relative" ref={dropdownRef}>
             <div className="dexter-btn-container w-36 relative z-30">
                 <button
-                    onClick={async () => {
-                        if (connectors.length > 0) {
-                            toast.info(`Attempting to mount Core Wallet...`);
-                            try {
-                                await connectAsync({ connector: connectors[0], chainId: avalancheFuji.id });
-                                toast.success(`Successfully connected!`);
-                            } catch (error: any) {
-                                console.error("Connection error:", error);
-                                toast.error(String(error?.message || error) || "Wallet connection failed");
-                            }
-                        } else {
-                            toast.error("Core Wallet extension not found. Please install it.");
-                        }
-                    }}
+                    onClick={() => setIsOpen(!isOpen)}
                     className="dexter-btn !min-w-[136px] !min-h-[36px] !px-3 !py-1.5" type="button"
                 >
-                    <span className="dexter-btn-drawer dexter-transition-top !text-[9px]">AVALANCHE</span>
-                    <span className="dexter-btn-text flex items-center justify-center gap-1.5 !text-xs w-full"><span className="material-symbols-outlined text-[16px]">token</span> Connect Core</span>
+                    <span className="dexter-btn-drawer dexter-transition-top !text-[9px]">WEB3</span>
+                    <span className="dexter-btn-text flex items-center justify-center gap-1.5 !text-xs w-full"><span className="material-symbols-outlined text-[16px]">account_balance_wallet</span> Connect Wallet</span>
                     <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
                     <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
                     <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
                     <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
-                    <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[9px]">secure</span>
+                    <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[9px]">connect</span>
                 </button>
             </div>
+
+            {isOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-surface-dark border border-white/10 rounded-xl shadow-2xl overflow-hidden py-2 z-50">
+                    <div className="px-4 py-2 text-[10px] font-mono text-slate-500 uppercase tracking-widest border-b border-white/5 mb-2">
+                        Select Wallet Provider
+                    </div>
+                    {connectors.map((connector) => (
+                        <button
+                            key={connector.uid}
+                            onClick={async () => {
+                                toast.info(`Attempting to mount ${connector.name}...`);
+                                try {
+                                    await connectAsync({ connector, chainId: avalancheFuji.id });
+                                    toast.success(`Successfully connected to ${connector.name}!`);
+                                } catch (error: any) {
+                                    console.error("Connection error:", error);
+                                    toast.error(String(error?.message || error) || "Wallet connection failed");
+                                }
+                                setIsOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-3 hover:bg-white/5 text-slate-300 hover:text-white transition-colors flex items-center gap-3"
+                        >
+                            <span className="material-symbols-outlined text-[18px] text-primary/70">
+                                {connector.name.toLowerCase().includes('walletconnect') ? 'qr_code' :
+                                    connector.name.toLowerCase().includes('core') ? 'token' :
+                                        connector.name.toLowerCase().includes('safe') ? 'security' :
+                                            'link'}
+                            </span>
+                            <span className="text-sm font-medium">{connector.name}</span>
+                        </button>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

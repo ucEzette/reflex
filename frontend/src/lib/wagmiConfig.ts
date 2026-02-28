@@ -1,6 +1,6 @@
 import { http, createConfig } from "wagmi";
 import { avalancheFuji } from "wagmi/chains";
-import { injected } from "wagmi/connectors";
+import { injected, walletConnect } from "wagmi/connectors";
 
 export const config = createConfig({
     chains: [avalancheFuji],
@@ -15,6 +15,10 @@ export const config = createConfig({
                     provider: typeof window !== 'undefined' ? (window as any).avalanche : undefined,
                 }
             }
+        }),
+        walletConnect({
+            projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
+            showQrModal: true
         })
     ],
     transports: {
