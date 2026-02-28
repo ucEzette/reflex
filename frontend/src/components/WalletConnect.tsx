@@ -3,10 +3,11 @@
 import { useAccount, useConnect, useDisconnect, useSwitchChain } from "wagmi";
 import { useState, useRef, useEffect } from "react";
 import { avalancheFuji } from "wagmi/chains";
+import { toast } from "sonner";
 
 export function WalletConnect() {
     const { address, isConnected, chainId } = useAccount();
-    const { connectors, connect } = useConnect();
+    const { connectors, connect, connectAsync, error: connectError } = useConnect();
     const { switchChain } = useSwitchChain();
     const { disconnect } = useDisconnect();
     const [isOpen, setIsOpen] = useState(false);
@@ -28,6 +29,12 @@ export function WalletConnect() {
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    useEffect(() => {
+        if (connectError) {
+            toast.error(connectError.message || "Failed to connect wallet.");
+        }
+    }, [connectError]);
 
     if (isConnected && address) {
         return (
@@ -89,8 +96,13 @@ export function WalletConnect() {
                     {connectors.map((connector) => (
                         <button
                             key={connector.uid}
-                            onClick={() => {
-                                connect({ connector });
+                            onClick={async () => {
+                                try {
+                                    await connectAsync({ connector });
+                                } catch (error: any) {
+                                    console.error("Connection error:", error);
+                                    toast.error(error.message || "Wallet connection failed");
+                                }
                                 setIsOpen(false);
                             }}
                             className="w-full text-left px-4 py-3 hover:bg-white/5 text-slate-300 hover:text-white transition-colors flex items-center gap-3"

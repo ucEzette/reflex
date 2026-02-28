@@ -5,17 +5,7 @@ import { injected, safe } from "wagmi/connectors";
 export const config = createConfig({
     chains: [avalancheFuji],
     connectors: [
-        injected({ target: 'metaMask' }),
-        injected({
-            target() {
-                return {
-                    id: 'coreWallet',
-                    name: 'Core Wallet',
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    provider: typeof window !== 'undefined' ? (window as any).avalanche : undefined,
-                }
-            }
-        }),
+        injected(),
         safe(),
     ],
     transports: {
