@@ -12,10 +12,17 @@ export const config = createConfig({
                     name: 'Core Wallet',
                     icon: 'https://cdn.worldvectorlogo.com/logos/avalanche-2.svg',
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    provider: typeof window !== 'undefined' ? (window as any).avalanche : undefined,
+                    provider: typeof window !== 'undefined' && (window as any).avalanche ? {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        request: (window as any).avalanche.request.bind((window as any).avalanche),
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        on: (window as any).avalanche.on.bind((window as any).avalanche),
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        removeListener: (window as any).avalanche.removeListener.bind((window as any).avalanche),
+                        isAvalanche: true,
+                    } : undefined,
                 }
-            }
-        }),
+            }),
         walletConnect({
             projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
             showQrModal: true
