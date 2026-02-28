@@ -12,6 +12,11 @@ export function WalletConnect() {
     const { disconnect } = useDisconnect();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Prompt user to switch to Fuji testnet if they are connected to another network
     useEffect(() => {
@@ -35,6 +40,8 @@ export function WalletConnect() {
             toast.error(connectError.message || "Failed to connect wallet.");
         }
     }, [connectError]);
+
+    if (!mounted) return null;
 
     if (isConnected && address) {
         return (

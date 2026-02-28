@@ -28,7 +28,12 @@ export function Navbar() {
     const [searchQuery, setSearchQuery] = useState("");
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isBalanceHidden, setIsBalanceHidden] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Close dropdown on outside click
     useEffect(() => {
@@ -89,7 +94,7 @@ export function Navbar() {
 
                     <div className="flex items-center gap-3">
                         <ThemeToggle />
-                        {!authenticated ? (
+                        {!mounted ? null : !authenticated ? (
                             <WalletConnect />
                         ) : (
                             <div className="flex items-center gap-4">

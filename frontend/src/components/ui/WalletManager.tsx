@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Wallet, ExternalLink, Download, ArrowUpRight, Copy, ShieldCheck, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
@@ -10,6 +10,11 @@ import { CONTRACTS } from '@/lib/wagmiConfig';
 
 export function WalletManager() {
     const { address, isConnected } = useAccount();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const { data: hash, writeContract, isPending } = useWriteContract();
     const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
@@ -46,6 +51,8 @@ export function WalletManager() {
         navigator.clipboard.writeText(text);
         toast.success("Address copied to clipboard");
     };
+
+    if (!mounted) return null;
 
     if (!isConnected || !address) {
         return (
