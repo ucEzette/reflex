@@ -7,7 +7,7 @@ import { Toaster } from "sonner";
 export const metadata: Metadata = {
   title: "Reflex L1 — Parametric Micro-Insurance",
   description:
-    "Reflex L1 is a micro-insurance platform akin to Polymarket where users can browse and instantly insure themselves against real-world risks.",
+    "Reflex L1 is a micro-insurance platform akin to prediction markets where users can browse and instantly insure themselves against real-world risks.",
 };
 
 export default function RootLayout({
