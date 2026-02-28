@@ -6,7 +6,7 @@ import { avalancheFuji } from "wagmi/chains";
 import { toast } from "sonner";
 
 export function WalletConnect() {
-    const { address, isConnected, chainId } = useAccount();
+    const { address, isConnected, chainId, connector } = useAccount();
     const { connectors, connect, connectAsync, error: connectError } = useConnect();
     const { switchChain } = useSwitchChain();
     const { disconnect } = useDisconnect();
@@ -48,7 +48,13 @@ export function WalletConnect() {
             <div className="flex items-center gap-3">
                 <div className="dexter-btn-container w-32 relative z-30">
                     <button
-                        onClick={() => disconnect()}
+                        onClick={() => {
+                            if (connector) {
+                                disconnect({ connector });
+                            } else {
+                                disconnect();
+                            }
+                        }}
                         className="dexter-btn !min-w-[124px] !min-h-[36px] !px-3 !py-1.5" type="button"
                     >
                         <span className="dexter-btn-drawer dexter-transition-top flex items-center justify-center gap-1.5 !text-[9px] w-full left-0 right-0">

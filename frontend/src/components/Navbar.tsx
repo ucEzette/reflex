@@ -11,7 +11,7 @@ import { Search, Wallet, User, Activity as ActivityIcon, BarChart3, Briefcase, C
 import { useState, useRef, useEffect } from "react";
 
 export function Navbar() {
-    const { address, isConnected: authenticated } = useAccount();
+    const { address, isConnected: authenticated, connector } = useAccount();
     const { disconnect } = useDisconnect();
 
     const { data: balanceData } = useReadContract({
@@ -182,7 +182,11 @@ export function Navbar() {
                                             <div className="py-2">
                                                 <button
                                                     onClick={() => {
-                                                        disconnect();
+                                                        if (connector) {
+                                                            disconnect({ connector });
+                                                        } else {
+                                                            disconnect();
+                                                        }
                                                         setIsProfileOpen(false);
                                                     }}
                                                     className="w-full px-4 py-2 flex text-left hover:bg-white/5 transition-colors text-red-500 font-medium"
