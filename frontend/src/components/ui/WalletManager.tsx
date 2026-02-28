@@ -1,19 +1,15 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import { usePrivy, useWallets, useCreateWallet } from '@privy-io/react-auth';
 import { Wallet, ExternalLink, Download, ArrowUpRight, Copy, ShieldCheck, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { formatUnits, parseUnits } from 'viem';
 import { ERC20_ABI } from '@/lib/contracts';
 import { CONTRACTS } from '@/lib/wagmiConfig';
 
 export function WalletManager() {
-    const { authenticated, exportWallet } = usePrivy();
-    const { wallets } = useWallets();
-    const { createWallet } = useCreateWallet();
-    const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');
+    const { address, isConnected } = useAccount();
 
     const { data: hash, writeContract, isPending } = useWriteContract();
     const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
@@ -22,9 +18,9 @@ export function WalletManager() {
         address: CONTRACTS.USDC,
         abi: ERC20_ABI,
         functionName: 'balanceOf',
-        args: embeddedWallet ? [embeddedWallet.address as `0x${string}`] : undefined,
+        args: address ? [address as `0x${string}`] : undefined,
         query: {
-            enabled: !!embeddedWallet,
+            enabled: !!address,
         }
     });
 
@@ -36,13 +32,13 @@ export function WalletManager() {
     }, [isConfirmed, refetch]);
 
     const handleDeposit = () => {
-        if (!embeddedWallet) return;
+        if (!address) return;
         toast.info("Minting 10,000 MOCK USDC...");
         writeContract({
             address: CONTRACTS.USDC,
             abi: ERC20_ABI,
             functionName: 'mint',
-            args: [embeddedWallet.address as `0x${string}`, parseUnits('10000', 6)],
+            args: [address as `0x${string}`, parseUnits('10000', 6)],
         });
     };
 
@@ -51,25 +47,16 @@ export function WalletManager() {
         toast.success("Address copied to clipboard");
     };
 
-    if (!authenticated) return null;
-
-    if (!embeddedWallet) {
+    if (!isConnected || !address) {
         return (
             <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm p-8 text-center flex flex-col items-center justify-center">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 border border-primary/20">
                     <Wallet className="w-8 h-8 text-primary" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-2 tracking-tight">Enterprise Wallet Infrastructure</h3>
+                <h3 className="text-xl font-bold text-foreground mb-2 tracking-tight">Connect Web3 Wallet</h3>
                 <p className="text-sm text-muted-foreground mb-8 max-w-[280px]">
-                    Provision a secure, non-custodial embedded wallet tied to your session to enable gasless micro-insurance policies and instant auto-payouts.
+                    Connect your Core Wallet or MetaMask to interact with the decentralized insurance protocol.
                 </p>
-                <button
-                    onClick={createWallet}
-                    className="w-full bg-primary text-primary-foreground py-4 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
-                >
-                    <ShieldCheck className="w-4 h-4" />
-                    Provision Abstracted Wallet
-                </button>
             </div>
         );
     }
@@ -108,11 +95,11 @@ export function WalletManager() {
                     <div className="flex flex-col overflow-hidden">
                         <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Your Address</span>
                         <span className="text-sm font-mono text-foreground tracking-tight opacity-70">
-                            {embeddedWallet.address.slice(0, 10)}...{embeddedWallet.address.slice(-10)}
+                            {address.slice(0, 10)}...{address.slice(-10)}
                         </span>
                     </div>
                     <button
-                        onClick={() => copyToClipboard(embeddedWallet.address)}
+                        onClick={() => copyToClipboard(address)}
                         className="p-2 hover:bg-background rounded-lg text-muted-foreground hover:text-primary transition-all shadow-none group-hover:shadow-sm shrink-0"
                     >
                         <Copy className="w-4 h-4" />
@@ -138,19 +125,8 @@ export function WalletManager() {
                 <div className="pt-4 border-t border-border">
                     <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">Security & Advanced</h4>
                     <div className="space-y-2">
-                        <button
-                            onClick={() => exportWallet()}
-                            className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-red-500/5 hover:text-red-500 transition-all group"
-                        >
-                            <div className="flex items-center gap-3">
-                                <Download className="w-4 h-4" />
-                                <span className="text-sm font-medium">Export Private Key</span>
-                            </div>
-                            <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </button>
-
                         <a
-                            href={`https://testnet.snowtrace.io/address/${embeddedWallet.address}`}
+                            href={`https://testnet.snowtrace.io/address/${address}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-accent transition-all group"
@@ -170,7 +146,7 @@ export function WalletManager() {
                 <div className="flex items-start gap-2">
                     <ShieldCheck className="w-3.5 h-3.5 text-muted-foreground mt-0.5" />
                     <p className="text-[10px] text-muted-foreground leading-snug">
-                        Your private key is secured by Privy and can be exported at any time. We never have access to your funds.
+                        Your interaction is secured by your native Web3 wallet. We do not have access to your private keys or funds.
                     </p>
                 </div>
             </div>

@@ -1,27 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
-import { useReadContract } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { formatUnits } from "viem";
 import { CONTRACTS } from "@/lib/wagmiConfig";
 import { ERC20_ABI } from "@/lib/contracts";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { WalletConnect } from "@/components/WalletConnect";
 import { Search, Wallet, User, Activity as ActivityIcon, BarChart3, Briefcase, ChevronDown, Trophy, Medal, Terminal, Code, Moon, LogOut, Settings, HelpCircle, FileText, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 export function Navbar() {
-    const { login, logout, authenticated, user } = usePrivy();
-    const { wallets } = useWallets();
-    const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');
+    const { address, isConnected: authenticated } = useAccount();
 
     const { data: balanceData } = useReadContract({
         address: CONTRACTS.USDC,
         abi: ERC20_ABI,
         functionName: 'balanceOf',
-        args: embeddedWallet ? [embeddedWallet.address as `0x${string}`] : undefined,
+        args: address ? [address as `0x${string}`] : undefined,
         query: {
-            enabled: !!embeddedWallet,
+            enabled: !!address,
         }
     });
 
@@ -90,20 +88,12 @@ export function Navbar() {
                     </div>
 
                     <div className="flex items-center gap-3">
+                        <ThemeToggle />
                         {!authenticated ? (
-                            <>
-                                <ThemeToggle />
-                                <button
-                                    onClick={login}
-                                    className="bg-[#2490ff] text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-[#2490ff]/90 transition-colors whitespace-nowrap"
-                                >
-                                    Log In
-                                </button>
-                            </>
+                            <WalletConnect />
                         ) : (
                             <div className="flex items-center gap-4">
-
-                                {/* Balance & Deposit (Polymarket style) */}
+                                {/* Balance (Polymarket style) */}
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-2 mr-2">
                                         <button
@@ -125,17 +115,8 @@ export function Navbar() {
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="btn-container shrink-0">
-                                        <button className="btn !min-w-[120px] !min-h-[40px] !rounded-lg !px-4 !py-2 shrink-0">
-                                            <span className="btn-drawer transition-top whitespace-nowrap !text-[9px]">DEPOSIT</span>
-                                            <span className="btn-text !text-sm">Deposit</span>
-                                            <svg className="btn-corner !w-[20px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
-                                            <svg className="btn-corner !w-[20px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
-                                            <svg className="btn-corner !w-[20px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
-                                            <svg className="btn-corner !w-[20px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
-                                            <span className="btn-drawer transition-bottom whitespace-nowrap !text-[9px]">buy crypto</span>
-                                        </button>
-                                    </div>
+
+                                    <WalletConnect />
                                 </div>
 
                                 {/* User Profile Dropdown */}
