@@ -81,7 +81,7 @@ export default function Home() {
         </section>
 
         {/* ═══ ACTIVE MARKETS ═══ */}
-        <section id="markets" className="w-full max-w-7xl mx-auto px-6 py-24 relative z-10">
+        <section id="markets" className="w-full max-w-7xl mx-auto px-6 py-12 xl:py-16 relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">Active Markets</h2>
@@ -92,7 +92,7 @@ export default function Home() {
               <span className="material-symbols-outlined text-sm">arrow_outward</span>
             </a>
           </div>
-          <div className="flex justify-center items-center w-full min-h-[500px]">
+          <div className="flex justify-center items-center w-full min-h-[300px] xl:min-h-[350px]">
             <div className="homepage-card-3d">
               {ALL_MARKETS.map((market) => (
                 <div key={market.id} className="card-item group">
