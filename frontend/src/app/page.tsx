@@ -104,53 +104,12 @@ export default function Home() {
               <span className="material-symbols-outlined text-sm">arrow_outward</span>
             </a>
           </div>
-          <div className="carousel-wrapper" style={{ '--quantity': 10 } as React.CSSProperties}>
-            <div className="carousel-inner group/inner">
-              {ALL_MARKETS.map((market, index) => (
-                <div
-                  key={market.id}
-                  className="carousel-card group relative overflow-hidden"
-                  style={{ '--index': index, '--color-rgb': market.rgb } as React.CSSProperties}
-                >
-                  <div className="carousel-bg-glow" />
+          <div className="flex justify-center items-center w-full min-h-[500px]">
+            <div className="homepage-card-3d">
+              {ALL_MARKETS.map((market) => (
+                <div key={market.id} className="card-item group">
                   <a href={market.id === 'flight' ? `/markets/flight` : '#dashboard'} className="absolute inset-0 z-20"><span className="sr-only">View {market.title}</span></a>
-                  <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-40 transition-opacity">
-                    <span className="material-symbols-outlined text-6xl text-slate-500">{market.icon}</span>
-                  </div>
-                  <div className="relative z-10 flex flex-col h-full pointer-events-none">
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className={`${market.iconBg} ${market.iconColor} p-2 rounded-lg`}>
-                        <span className="material-symbols-outlined">{market.icon}</span>
-                      </span>
-                      <span className="text-xs font-mono text-slate-400 bg-white/5 px-2 py-1 rounded">{market.riskBase}</span>
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-1">{market.title}</h3>
-                    <div className="flex items-baseline gap-1 mb-6">
-                      <span className={`text-2xl font-bold ${market.iconColor}`}>{market.price}</span>
-                      <span className="text-sm text-slate-400">{market.unit}</span>
-                    </div>
-                    <div className="mt-auto space-y-3">
-                      <div className="flex items-center gap-2 text-sm text-slate-300">
-                        <span className={`material-symbols-outlined ${market.iconColor} text-base`}>check_circle</span>
-                        <span>{market.bullet1}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-slate-300">
-                        <span className={`material-symbols-outlined ${market.iconColor} text-base`}>check_circle</span>
-                        <span>{market.bullet2}</span>
-                      </div>
-                      <a href={market.id === 'flight' ? `/markets/flight` : '#dashboard'} className="dexter-btn-container relative z-30 w-36 mt-4 self-center">
-                        <button className="dexter-btn !min-w-[136px] !min-h-[36px] !px-3 !py-1.5" type="button">
-                          <span className="dexter-btn-drawer dexter-transition-top !text-[9px]">RISK PROTOCOL</span>
-                          <span className="dexter-btn-text !text-xs">Insure Now</span>
-                          <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
-                          <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
-                          <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
-                          <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
-                          <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[9px]">TELEPORTER SETTLEMENT</span>
-                        </button>
-                      </a>
-                    </div>
-                  </div>
+                  <span className={`material-symbols-outlined text-4xl group-hover:scale-125 transition-transform drop-shadow-lg ${market.iconColor}`}>{market.icon}</span>
                 </div>
               ))}
             </div>
