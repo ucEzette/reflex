@@ -1,0 +1,199 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { toast } from "sonner";
+import { ESCROW_ABI, ERC20_ABI } from "@/lib/contracts";
+import { CONTRACTS, POLICY_PREMIUM, POLICY_PAYOUT, POLICY_DURATION_HOURS } from "@/lib/wagmiConfig";
+import { MarketDetail } from "@/lib/market-data";
+
+export function MarketActionCard({ market }: { market: MarketDetail }) {
+    const [inputValue, setInputValue] = useState("");
+
+    // Validation & Checkout State
+    const [isValidating, setIsValidating] = useState(false);
+    const [purchaseSuccess, setPurchaseSuccess] = useState(false);
+
+    /* ── Web3 Integration ── */
+    const { address, isConnected } = useAccount();
+
+    const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
+        address: CONTRACTS.USDC,
+        abi: ERC20_ABI,
+        functionName: "balanceOf",
+        args: address ? [address] : undefined,
+        query: { enabled: !!address },
+    });
+
+    const { data: allowance, refetch: refetchAllowance } = useReadContract({
+        address: CONTRACTS.USDC,
+        abi: ERC20_ABI,
+        functionName: "allowance",
+        args: address ? [address, CONTRACTS.ESCROW] : undefined,
+        query: { enabled: !!address },
+    });
+
+    const { writeContract: approveUsdc, data: approveTxHash, isPending: isApproving, error: approveError } = useWriteContract();
+    const { isLoading: isApproveConfirming, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({ hash: approveTxHash });
+
+    const { writeContract: purchasePolicy, data: purchaseTxHash, isPending: isPurchasing, error: purchaseError } = useWriteContract();
+    const { isLoading: isPurchaseConfirming, isSuccess: isPurchaseSuccess } = useWaitForTransactionReceipt({
+        hash: purchaseTxHash,
+        query: { enabled: !!purchaseTxHash },
+    });
+
+    // We use a mock numeric premium based on the display string if it contains USDC
+    const numPremium = market.price.includes("USDC") ? Number(market.price.replace(/[^0-9.-]+/g, "")) * 1e6 : POLICY_PREMIUM;
+    // Default max payout scaling if not strictly defined for this specific UI
+    const numPayout = market.marketData.maxPayout.includes("USDC") ? Number(market.marketData.maxPayout.replace(/[^0-9.-]+/g, "")) * 1e6 : POLICY_PAYOUT;
+
+    const hasEnoughAllowance = allowance ? (Number(allowance) >= numPremium) : false;
+    const hasEnoughBalance = usdcBalance ? (Number(usdcBalance) >= numPremium) : false;
+    const isProcessing = isApproving || isApproveConfirming || isPurchasing || isPurchaseConfirming;
+    const canPurchase = inputValue.trim().length > 3 && isConnected && hasEnoughBalance;
+
+    const handleApprove = () => {
+        approveUsdc({
+            address: CONTRACTS.USDC,
+            abi: ERC20_ABI,
+            functionName: "approve",
+            args: [CONTRACTS.ESCROW, BigInt(numPremium)],
+        });
+    };
+
+    const handlePurchase = () => {
+        purchasePolicy({
+            address: CONTRACTS.ESCROW,
+            abi: ESCROW_ABI,
+            functionName: "purchasePolicy",
+            args: [inputValue.trim().toUpperCase(), BigInt(numPremium), BigInt(numPayout), POLICY_DURATION_HOURS],
+        });
+    };
+
+    useEffect(() => {
+        if (isApproving) toast.loading("Requesting allowance...", { id: "approve" });
+        if (isApproveConfirming) toast.loading("Confirming on-chain...", { id: "approve" });
+        if (isApproveSuccess) {
+            toast.success("Allowance approved!", { id: "approve" });
+            refetchAllowance();
+        }
+        if (approveError) toast.error(approveError.message.split(".")[0], { id: "approve" });
+    }, [isApproving, isApproveConfirming, isApproveSuccess, approveError, refetchAllowance]);
+
+    useEffect(() => {
+        if (isPurchasing) toast.loading(`Initializing ${market.title} policy...`, { id: "purchase" });
+        if (isPurchaseConfirming) toast.loading("Securing coverage on-chain...", { id: "purchase" });
+        if (isPurchaseSuccess) {
+            toast.success("Policy secured successfully!", { id: "purchase" });
+            setPurchaseSuccess(true);
+            refetchBalance();
+        }
+        if (purchaseError) toast.error(purchaseError.message.split(".")[0], { id: "purchase" });
+    }, [isPurchasing, isPurchaseConfirming, isPurchaseSuccess, purchaseError, refetchBalance, market.title]);
+
+
+    const getPlaceholder = () => {
+        switch (market.id) {
+            case "flight": return "e.g., UAL123";
+            case "shipping-shield": return "e.g., FX192837465";
+            case "rain-check": return "e.g., 34.0522 N, -118.2437 W";
+            case "powder-protect": return "e.g., Aspen Snowmass";
+            default: return "Enter tracking, hash, or ID...";
+        }
+    }
+
+    const getLabel = () => {
+        switch (market.id) {
+            case "flight": return "Flight Number";
+            case "shipping-shield": return "Tracking Number";
+            case "rain-check": return "Event Coordinates";
+            case "powder-protect": return "Resort Name";
+            default: return "Target Identifier";
+        }
+    }
+
+
+    return (
+        <div className="w-full rounded-2xl p-6 lg:p-8 border border-white/10 shadow-2xl backdrop-blur-xl bg-black/40 xl:bg-black/20"
+            style={{ backdropFilter: "blur(12px) brightness(1.2) contrast(1.1)" }}>
+
+            {/* Decorative gradients based on market color */}
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-t-2xl opacity-50" />
+
+            <h3 className="text-xl font-bold text-white mb-6">Secure Coverage</h3>
+
+            <div className="space-y-6 animate-in fade-in duration-500">
+
+                <div className="p-5 bg-gradient-to-br from-[#161d2f] to-[#0B0F19] border border-white/5 rounded-xl text-left relative overflow-hidden">
+                    <div className="absolute unset-0 bg-white opacity-5 mix-blend-overlay" />
+                    <div className="flex items-center justify-between mb-4 relative z-10">
+                        <span className="text-sm text-slate-400 font-medium">Policy Premium</span>
+                        <span className="text-[10px] font-bold bg-white/10 text-white px-2 py-0.5 rounded-sm tracking-widest uppercase">{market.riskBase}</span>
+                    </div>
+                    <div className="flex items-end gap-2 mb-2 relative z-10">
+                        <span className="text-4xl font-bold text-white tracking-tighter">{market.price.split(' ')[0]}</span>
+                        <span className="text-lg font-medium text-slate-500 mb-1.5">{market.price.split(' ')[1] || 'USDC'}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-relaxed text-left relative z-10">
+                        Guaranteed 24/7 monitoring. Immediate <span className="text-white font-bold">{market.marketData.maxPayout} payout</span> if oracle verifies failure conditions.
+                    </p>
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{getLabel()}</label>
+                    <div className="relative">
+                        <input
+                            type="text"
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value.toUpperCase())}
+                            className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-mono"
+                            placeholder={getPlaceholder()}
+                            disabled={isProcessing || purchaseSuccess}
+                        />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                            <span className="material-symbols-outlined text-slate-600">
+                                {market.icon}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {usdcBalance !== undefined && isConnected && (
+                    <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono tracking-tight bg-white/5 px-4 py-3 rounded-lg border border-white/5">
+                        <span className="flex items-center gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                            BAL: {(Number(usdcBalance) / 1e6).toFixed(2)} USDC
+                        </span>
+                        <span className={hasEnoughAllowance ? "text-green-400" : "text-yellow-500"}>
+                            {hasEnoughAllowance ? "ALLOWANCE READY" : "APPROVAL REQ."}
+                        </span>
+                    </div>
+                )}
+
+                {!isConnected ? (
+                    <div className="text-center p-4 bg-white/5 rounded-xl border border-white/10">
+                        <p className="text-sm text-slate-400">Please connect your wallet to purchase this policy.</p>
+                    </div>
+                ) : purchaseSuccess ? (
+                    <div className="text-center p-4 bg-green-500/10 rounded-xl border border-green-500/20">
+                        <span className="material-symbols-outlined text-green-400 mb-2 text-3xl">verified</span>
+                        <p className="text-sm text-green-400 font-bold">Policy Secured</p>
+                        <p className="text-xs text-slate-400 mt-1">Your coverage is now active.</p>
+                    </div>
+                ) : (
+                    <div className={`dexter-btn-container w-full relative z-30 mb-2 transition-opacity ${(!canPurchase || isProcessing) ? 'opacity-50 pointer-events-none' : ''}`} style={{ '--btn-color': hasEnoughAllowance ? '#22c55e' : `rgb(${market.rgb})` } as React.CSSProperties}>
+                        <button onClick={canPurchase ? (hasEnoughAllowance ? handlePurchase : handleApprove) : undefined} disabled={!canPurchase || isProcessing} className="dexter-btn w-full !h-14 !px-6 !rounded-xl" type="button">
+                            <span className="dexter-btn-drawer dexter-transition-top !text-[10px] uppercase font-mono tracking-widest">{hasEnoughAllowance ? 'Purchase Policy' : 'Unlock Assets'}</span>
+                            <span className="dexter-btn-text !text-sm tracking-wide font-bold">{isProcessing ? "Processing..." : (!hasEnoughBalance ? "Insufficient Balance" : (hasEnoughAllowance ? "Confirm Coverage" : "Approve USDC"))}</span>
+                            <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                            <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                            <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                            <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
+                            <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[10px] uppercase font-mono tracking-widest">{market.marketData.settlement}</span>
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
