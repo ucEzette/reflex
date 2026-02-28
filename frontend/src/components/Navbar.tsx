@@ -146,7 +146,7 @@ export function Navbar() {
                                                     <div className="flex flex-col">
                                                         <span className="font-bold text-white text-base">reflex_user</span>
                                                         <span className="text-xs font-mono text-slate-400">
-                                                            {user?.wallet?.address ? `${user.wallet.address.slice(0, 6)}...${user.wallet.address.slice(-4)}` : '0x000...000'}
+                                                            {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '0x000...000'}
                                                             <span className="material-symbols-outlined text-[10px] ml-1 opacity-50">content_copy</span>
                                                         </span>
                                                     </div>
@@ -181,7 +181,7 @@ export function Navbar() {
                                             <div className="py-2">
                                                 <button
                                                     onClick={() => {
-                                                        logout();
+                                                        disconnect();
                                                         setIsProfileOpen(false);
                                                     }}
                                                     className="w-full px-4 py-2 flex text-left hover:bg-white/5 transition-colors text-red-500 font-medium"
