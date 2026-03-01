@@ -35,9 +35,22 @@ export interface TreasuryMetrics {
 export interface MarketProduct {
     id: string;
     title: string;
-    category: "Travel" | "Weather" | "Web3" | "Lifestyle";
+    category: "Travel" | "Agriculture" | "Energy" | "Catastrophe" | "Maritime";
     description: string;
     iconType: string;
     badges: string[];
     inputPlaceholder: string;
+    contractAddress?: `0x${string}`;
+    tooltipSummary: {
+        oracle: string;
+        riskModel: string;
+        settlement: string;
+        premiumRange: string;
+        trigger: string;
+    };
+    calculationMethod: {
+        formula: string;
+        variables: string[];
+        example: string;
+    };
 }
