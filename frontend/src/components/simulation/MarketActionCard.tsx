@@ -112,6 +112,143 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
         }
     }
 
+    const [specData, setSpecData] = useState<Record<string, string>>({});
+
+    const updateSpec = (key: string, val: string) => {
+        setSpecData(prev => ({ ...prev, [key]: val }));
+    };
+
+    // Construct the final target string from specData
+    useEffect(() => {
+        if (market.id === "flight") return; // flight uses standard inputValue
+        const values = Object.values(specData).filter(v => v.trim() !== "");
+        if (values.length > 0) {
+            setInputValue(values.join(" | "));
+        }
+    }, [specData, market.id]);
+
+    const renderSpecializedInputs = () => {
+        switch (market.id) {
+            case "agriculture":
+                return (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Geographic Zone</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. California Central Valley"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                onChange={(e) => updateSpec("zone", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Strike (mm)</label>
+                            <input
+                                type="number"
+                                placeholder="100"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                onChange={(e) => updateSpec("strike", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Exit (mm)</label>
+                            <input
+                                type="number"
+                                placeholder="20"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                onChange={(e) => updateSpec("exit", e.target.value)}
+                            />
+                        </div>
+                    </div>
+                );
+            case "energy":
+                return (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Target Grid</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. ERCOT North"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                onChange={(e) => updateSpec("grid", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Strike Index</label>
+                            <input
+                                type="number"
+                                placeholder="150"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                onChange={(e) => updateSpec("strike", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Tick ($/DD)</label>
+                            <input
+                                type="number"
+                                placeholder="10"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                onChange={(e) => updateSpec("tick", e.target.value)}
+                            />
+                        </div>
+                    </div>
+                );
+            case "catastrophe":
+                return (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Target Coordinates</label>
+                            <input
+                                type="text"
+                                placeholder="34.0522 N, -118.2437 W"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                onChange={(e) => updateSpec("coords", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Tier 1 Radius (km)</label>
+                            <input
+                                type="number"
+                                placeholder="50"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                onChange={(e) => updateSpec("t1", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Tier 2 Radius (km)</label>
+                            <input
+                                type="number"
+                                placeholder="150"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                onChange={(e) => updateSpec("t2", e.target.value)}
+                            />
+                        </div>
+                    </div>
+                );
+            default:
+                return (
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{getLabel()}</label>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value.toUpperCase())}
+                                className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-mono"
+                                placeholder={getPlaceholder()}
+                                disabled={isProcessing || purchaseSuccess}
+                            />
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                <span className="material-symbols-outlined text-slate-600">
+                                    {market.icon}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                );
+        }
+    };
+
 
     return (
         <div className="w-full rounded-2xl p-6 lg:p-8 border border-white/10 shadow-2xl backdrop-blur-xl bg-black/40 xl:bg-black/20"
@@ -139,24 +276,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                     </p>
                 </div>
 
-                <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{getLabel()}</label>
-                    <div className="relative">
-                        <input
-                            type="text"
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value.toUpperCase())}
-                            className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-mono"
-                            placeholder={getPlaceholder()}
-                            disabled={isProcessing || purchaseSuccess}
-                        />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                            <span className="material-symbols-outlined text-slate-600">
-                                {market.icon}
-                            </span>
-                        </div>
-                    </div>
-                </div>
+                {renderSpecializedInputs()}
 
                 {usdcBalance !== undefined && isConnected && (
                     <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono tracking-tight bg-white/5 px-4 py-3 rounded-lg border border-white/5">

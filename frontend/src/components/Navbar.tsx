@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { WalletConnect } from "@/components/WalletConnect";
 import { Search, Wallet, User, Activity as ActivityIcon, BarChart3, Briefcase, ChevronDown, Trophy, Medal, Terminal, Code, Moon, LogOut, Settings, HelpCircle, FileText, CheckCircle2, Eye, EyeOff, TrendingUp, Menu, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { ALL_MARKETS, MarketDetail } from "@/lib/market-data";
 
 export function Navbar() {
     const { address, isConnected: authenticated, connector } = useAccount();
@@ -31,22 +32,42 @@ export function Navbar() {
     const [isBalanceHidden, setIsBalanceHidden] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [searchResults, setSearchResults] = useState<MarketDetail[]>([]);
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
+    const searchRef = useRef<HTMLDivElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    // Close dropdown on outside click
+    // Close dropdowns on outside click
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsProfileOpen(false);
             }
+            if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+                setIsSearchFocused(false);
+            }
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    // Search Logic
+    useEffect(() => {
+        if (!searchQuery.trim()) {
+            setSearchResults([]);
+            return;
+        }
+        const filtered = ALL_MARKETS.filter(m =>
+            m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            m.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            m.riskBase.toLowerCase().includes(searchQuery.toLowerCase())
+        ).slice(0, 5);
+        setSearchResults(filtered);
+    }, [searchQuery]);
 
     // Lock body scroll when mobile menu is open
     useEffect(() => {
@@ -92,7 +113,7 @@ export function Navbar() {
                     </div>
 
                     {/* Center: Search Bar (Polymarket Style) */}
-                    <div className="flex-1 max-w-2xl relative hidden md:block">
+                    <div className="flex-1 max-w-2xl relative hidden md:block" ref={searchRef}>
                         <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                             <Search className="h-4 w-4 text-muted-foreground" />
                         </div>
@@ -100,9 +121,44 @@ export function Navbar() {
                             type="text"
                             placeholder="Search markets..."
                             value={searchQuery}
+                            onFocus={() => setIsSearchFocused(true)}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full bg-accent/50 border border-border rounded-lg py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
                         />
+
+                        {/* Search Results Dropdown */}
+                        {isSearchFocused && searchQuery.trim() !== "" && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-xl border border-border rounded-xl shadow-2xl overflow-hidden z-50">
+                                {searchResults.length > 0 ? (
+                                    <div className="py-2">
+                                        <div className="px-4 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest border-b border-border/50 mb-1">Markets</div>
+                                        {searchResults.map(market => (
+                                            <Link
+                                                key={market.id}
+                                                href={`/markets/${market.id}`}
+                                                onClick={() => {
+                                                    setIsSearchFocused(false);
+                                                    setSearchQuery("");
+                                                }}
+                                                className="flex items-center gap-3 px-4 py-3 hover:bg-primary/10 transition-colors group"
+                                            >
+                                                <div className={`w-8 h-8 rounded-lg ${market.iconBg} ${market.iconColor} flex items-center justify-center shrink-0`}>
+                                                    <span className="material-symbols-outlined text-base">{market.icon}</span>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{market.title}</span>
+                                                    <span className="text-[10px] text-muted-foreground font-mono">{market.riskBase} • {market.marketData.maxPayout} limit</span>
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="px-4 py-8 text-center">
+                                        <p className="text-sm text-muted-foreground">No markets found for "{searchQuery}"</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Right: Nav Links + Auth */}
