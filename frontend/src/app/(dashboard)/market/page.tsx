@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Plane, CloudRain, Zap, Cloud, Search, Share2, Info, RefreshCcw } from 'lucide-react';
+import { Plane, CloudRain, Zap, Flame, Anchor, Search, Share2, Info, RefreshCcw } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { generateMarketProducts } from '@/lib/mockState';
@@ -22,16 +22,19 @@ function useDebounce<T>(value: T, delay: number): T {
 
 const IconMap: Record<string, React.ElementType> = {
     Plane: Plane,
-    Cloud: Cloud,
     CloudRain: CloudRain,
-    Zap: Zap
+    Zap: Zap,
+    Flame: Flame,
+    Anchor: Anchor
 };
 
 const CATEGORIES = [
-    { name: "All", count: 4 },
+    { name: "All", count: 5 },
     { name: "Travel", count: 1 },
-    { name: "Weather", count: 1 },
-    { name: "Web3", count: 2 }
+    { name: "Agriculture", count: 1 },
+    { name: "Energy", count: 1 },
+    { name: "Catastrophe", count: 1 },
+    { name: "Maritime", count: 1 }
 ];
 
 export default function CoverageMarketplace() {
@@ -129,12 +132,53 @@ export default function CoverageMarketplace() {
     );
 }
 
+function ProductTooltip({ product, onClose }: { product: MarketProduct, onClose: () => void }) {
+    const tip = product.tooltipSummary;
+    if (!tip) return null;
+    return (
+        <div className="absolute inset-0 z-50 bg-[#0a0a0a] border border-white/10 rounded-xl p-5 flex flex-col justify-between" style={{ transform: 'translate3d(0, 0, 150px)' }} onClick={(e) => e.stopPropagation()}>
+            <div>
+                <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-primary">{product.title}</span>
+                    <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors text-xs font-black">✕</button>
+                </div>
+                <div className="space-y-3 text-[11px]">
+                    <div className="flex justify-between">
+                        <span className="text-zinc-500 font-bold">Oracle</span>
+                        <span className="text-zinc-200 text-right max-w-[60%]">{tip.oracle}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-zinc-500 font-bold">Risk Model</span>
+                        <span className="text-zinc-200 text-right max-w-[60%]">{tip.riskModel}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-zinc-500 font-bold">Settlement</span>
+                        <span className="text-zinc-200 text-right max-w-[60%]">{tip.settlement}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-zinc-500 font-bold">Premium</span>
+                        <span className="text-emerald-400 font-bold text-right max-w-[60%]">{tip.premiumRange}</span>
+                    </div>
+                    <div className="border-t border-white/5 pt-3 mt-1">
+                        <span className="text-zinc-500 font-bold block mb-1">Trigger Condition</span>
+                        <span className="text-amber-400/90 text-[10px] leading-relaxed">{tip.trigger}</span>
+                    </div>
+                </div>
+            </div>
+            <a href={`/market/${product.id}`} className="mt-4 block w-full text-center bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest py-2.5 rounded-lg hover:bg-primary/20 transition-all">
+                View Full Details →
+            </a>
+        </div>
+    );
+}
+
 function SemanticProductCard({ product }: { product: MarketProduct }) {
     const Icon = IconMap[product.iconType] || Plane;
     const [input, setInput] = useState("");
     const debouncedInput = useDebounce(input, 500);
     const [isQuoting, setIsQuoting] = useState(false);
     const [quote, setQuote] = useState<number | null>(null);
+    const [showTooltip, setShowTooltip] = useState(false);
 
     useEffect(() => {
         if (!debouncedInput) {
@@ -149,13 +193,16 @@ function SemanticProductCard({ product }: { product: MarketProduct }) {
         return () => clearTimeout(timer);
     }, [debouncedInput]);
 
-    const linkHref = product.id === 'prod-flight' || product.title === 'Flight Delay' ? '/markets/flight' : '#dashboard';
+    const linkHref = `/market/${product.id}`;
 
     return (
         <article className="market3d-parent">
             <div className="market3d-card">
                 {/* Background Glass Plate */}
                 <div className="market3d-glass"></div>
+
+                {/* Tooltip Overlay */}
+                {showTooltip && <ProductTooltip product={product} onClose={() => setShowTooltip(false)} />}
 
                 {/* Main Content Area */}
                 <div className="market3d-content">
@@ -195,9 +242,9 @@ function SemanticProductCard({ product }: { product: MarketProduct }) {
                     ) : (
                         <>
                             <div className="market3d-social-buttons-container">
-                                <a href={linkHref} className="market3d-social-button flex items-center justify-center">
+                                <button onClick={(e) => { e.stopPropagation(); setShowTooltip(!showTooltip); }} className="market3d-social-button flex items-center justify-center">
                                     <Info className="w-4 h-4 text-[#800020]" />
-                                </a>
+                                </button>
                                 <button className="market3d-social-button flex items-center justify-center">
                                     <Share2 className="w-4 h-4 text-[#800020]" />
                                 </button>
