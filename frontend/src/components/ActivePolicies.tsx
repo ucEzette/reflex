@@ -1,6 +1,7 @@
 "use client";
 
-import { useAccount, useReadContract } from "wagmi";
+import { useAccount, useReadContract, usePublicClient } from "wagmi";
+import { parseAbiItem } from "viem";
 import { ESCROW_ABI } from "@/lib/contracts";
 import { CONTRACTS } from "@/lib/wagmiConfig";
 import { useEffect, useState } from "react";
@@ -75,7 +76,7 @@ function StatusBadge({ isActive, isClaimed }: { isActive: boolean; isClaimed: bo
     );
 }
 
-function PolicyRow({ policyId }: { policyId: string }) {
+function PolicyRow({ policyId, txHash }: { policyId: string, txHash?: string }) {
     const { data } = useReadContract({
         address: CONTRACTS.ESCROW,
         abi: ESCROW_ABI,
@@ -122,16 +123,38 @@ function PolicyRow({ policyId }: { policyId: string }) {
                 )}
             </td>
             <td className="px-4 py-4">
-                <span className="text-xs font-mono text-zinc-600">
-                    {policyId.slice(0, 10)}...
-                </span>
+                <div className="flex flex-col gap-1.5 align-start">
+                    <span className="text-xs font-mono text-zinc-400">
+                        {policyId.slice(0, 10)}...
+                    </span>
+                    {txHash && (
+                        <a
+                            href={`https://testnet.snowscan.xyz/tx/${txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex max-w-max items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-800/50 text-[10px] text-sky-400 hover:text-sky-300 hover:bg-zinc-800 transition-colors border border-zinc-800"
+                        >
+                            <span>Snowscan</span>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                <polyline points="15 3 21 3 21 9" />
+                                <line x1="10" y1="14" x2="21" y2="3" />
+                            </svg>
+                        </a>
+                    )}
+                </div>
             </td>
         </tr>
     );
 }
 
 export function ActivePolicies() {
+    const [mounted, setMounted] = useState(false);
     const { address, isConnected } = useAccount();
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const { data: policyIds, isLoading } = useReadContract({
         address: CONTRACTS.ESCROW,
@@ -141,7 +164,40 @@ export function ActivePolicies() {
         query: { enabled: !!address },
     });
 
-    if (!isConnected) return null;
+    const publicClient = usePublicClient();
+    const [txHashes, setTxHashes] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        if (!publicClient || !address || !policyIds || policyIds.length === 0) return;
+
+        const fetchLogs = async () => {
+            try {
+                const logs = await publicClient.getLogs({
+                    address: CONTRACTS.ESCROW,
+                    event: parseAbiItem('event PolicyPurchased(bytes32 indexed policyId, address indexed policyholder, string apiTarget, uint256 premiumPaid, uint256 payoutAmount, uint256 expirationTime)'),
+                    args: {
+                        policyholder: address
+                    },
+                    fromBlock: BigInt(0),
+                    toBlock: 'latest'
+                });
+
+                const hashMapping: Record<string, string> = {};
+                logs.forEach(log => {
+                    if (log.args.policyId && log.transactionHash) {
+                        hashMapping[log.args.policyId] = log.transactionHash;
+                    }
+                });
+                setTxHashes(hashMapping);
+            } catch (e) {
+                console.error("Error fetching policy logs", e);
+            }
+        };
+
+        fetchLogs();
+    }, [publicClient, address, policyIds]);
+
+    if (!mounted || !isConnected) return null;
 
     return (
         <div className="relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-900/50 backdrop-blur-xl">
@@ -199,7 +255,7 @@ export function ActivePolicies() {
                         </thead>
                         <tbody>
                             {policyIds.map((id) => (
-                                <PolicyRow key={id} policyId={id} />
+                                <PolicyRow key={id} policyId={id} txHash={txHashes[id]} />
                             ))}
                         </tbody>
                     </table>

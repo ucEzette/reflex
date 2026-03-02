@@ -7,7 +7,7 @@ import { CONTRACTS } from "@/lib/wagmiConfig";
 import { ERC20_ABI } from "@/lib/contracts";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { WalletConnect } from "@/components/WalletConnect";
-import { Search, Wallet, User, Activity as ActivityIcon, BarChart3, Briefcase, ChevronDown, Trophy, Medal, Terminal, Code, Moon, LogOut, Settings, HelpCircle, FileText, CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { Search, Wallet, User, Activity as ActivityIcon, BarChart3, Briefcase, ChevronDown, Trophy, Medal, Terminal, Code, Moon, LogOut, Settings, HelpCircle, FileText, CheckCircle2, Eye, EyeOff, TrendingUp } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 export function Navbar() {
@@ -91,6 +91,14 @@ export function Navbar() {
                             <ActivityIcon className="w-4 h-4" />
                             Activity
                         </Link>
+                        <Link href="/invest" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                            <TrendingUp className="w-4 h-4" />
+                            Invest
+                        </Link>
+                        <Link href="/docs" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                            <FileText className="w-4 h-4" />
+                            Docs
+                        </Link>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -173,7 +181,7 @@ export function Navbar() {
                                             <div className="py-2 border-b border-white/5">
                                                 <Link href="/transparency" className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white" onClick={() => setIsProfileOpen(false)}>Activity</Link>
                                                 <button className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white">Support</button>
-                                                <button className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white">Documentation</button>
+                                                <Link href="/docs" className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white" onClick={() => setIsProfileOpen(false)}>Documentation</Link>
                                                 <button className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white">Help Center</button>
                                                 <button className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white">Terms of Use</button>
                                             </div>
