@@ -1,0 +1,88 @@
+"use client";
+
+import Link from "next/link";
+import { Twitter, Github, Linkedin, Globe, Shield, Terminal, Activity } from "lucide-react";
+
+export function Footer() {
+    return (
+        <footer className="w-full bg-background border-t border-border mt-20">
+            <div className="max-w-[1600px] mx-auto px-4 py-16">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+
+                    {/* Brand Section */}
+                    <div className="space-y-6">
+                        <Link href="/" className="flex items-center gap-2 group">
+                            <div className="w-8 h-8 flex items-center justify-center bg-primary rounded-md text-white">
+                                <span className="material-symbols-outlined text-xl">bolt</span>
+                            </div>
+                            <span className="text-xl font-bold tracking-tight text-foreground">
+                                Reflex <span className="text-primary font-mono text-xs ml-1 uppercase">v1.0</span>
+                            </span>
+                        </Link>
+                        <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
+                            The internet of value needs a safety net. Reflex provides hyper-efficient, parametric coverage for the most volatile real-world risks.
+                        </p>
+                        <div className="flex items-center gap-4">
+                            <a href="#" className="p-2 bg-accent/50 rounded-lg hover:text-primary transition-colors border border-border">
+                                <Twitter className="w-4 h-4" />
+                            </a>
+                            <a href="#" className="p-2 bg-accent/50 rounded-lg hover:text-primary transition-colors border border-border">
+                                <Github className="w-4 h-4" />
+                            </a>
+                            <a href="#" className="p-2 bg-accent/50 rounded-lg hover:text-primary transition-colors border border-border">
+                                <Activity className="w-4 h-4" />
+                            </a>
+                        </div>
+                    </div>
+
+                    {/* Protocol */}
+                    <div>
+                        <h4 className="font-bold text-sm mb-6 uppercase tracking-widest text-muted-foreground">Protocol</h4>
+                        <ul className="space-y-4">
+                            <li><Link href="/market" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Markets Explorer</Link></li>
+                            <li><Link href="/invest" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Liquidity Pools</Link></li>
+                            <li><Link href="/transparency" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Transparency Feed</Link></li>
+                            <li><Link href="/analytics" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Risk Analytics</Link></li>
+                        </ul>
+                    </div>
+
+                    {/* Developers */}
+                    <div>
+                        <h4 className="font-bold text-sm mb-6 uppercase tracking-widest text-muted-foreground">Developers</h4>
+                        <ul className="space-y-4">
+                            <li><Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Terminal className="w-3 h-3" /> Documentation</Link></li>
+                            <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Github className="w-3 h-3" /> GitHub Org</a></li>
+                            <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Globe className="w-3 h-3" /> API Reference</a></li>
+                            <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Shield className="w-3 h-3" /> Bug Bounty</a></li>
+                        </ul>
+                    </div>
+
+                    {/* Stats / Status */}
+                    <div className="p-6 bg-accent/30 rounded-2xl border border-border flex flex-col justify-between">
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Mainnet Ready</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground">All contracts audited by OZ. Oracles monitored by 27 independent nodes.</p>
+                        </div>
+                        <div className="mt-6 pt-6 border-t border-border/50">
+                            <span className="text-[10px] text-muted-foreground uppercase font-medium">TVL Protected</span>
+                            <p className="text-2xl font-bold text-foreground">$12.4M+</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bottom Bar */}
+                <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] text-muted-foreground font-medium uppercase tracking-tighter">
+                    <p>© 2026 Reflex Protocol. All rights reserved.</p>
+                    <div className="flex items-center gap-8">
+                        <a href="#" className="hover:text-foreground transition-colors">Terms of Service</a>
+                        <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>
+                        <a href="#" className="hover:text-foreground transition-colors">Cookie Policy</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    );
+}

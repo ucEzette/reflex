@@ -1,14 +1,44 @@
 import type { Metadata } from "next";
 import { Providers } from "@/components/Providers";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import "./globals.css";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-  title: "Reflex L1 — Parametric Micro-Insurance",
+  title: "Reflex L1 | Parametric Micro-Insurance on Avalanche",
   description:
-    "Reflex L1 is a micro-insurance platform akin to prediction markets where users can browse and instantly insure themselves against real-world risks.",
+    "Reflex L1 is a decentralized micro-insurance platform built on Avalanche. Instantly insure against flight delays, crop failures, and climate risks with 24/7 oracle monitoring.",
+  keywords: ["Reflex L1", "Micro-insurance", "Parametric Insurance", "Avalanche", "Blockchain Insurance", "Flight Delay Insurance", "DeFi"],
+  authors: [{ name: "Reflex Protocol Team" }],
+  openGraph: {
+    title: "Reflex L1 | Parametric Micro-Insurance on Avalanche",
+    description: "Insure your life's edges. Instant payouts, zero claims adjusters, powered by Chainlink.",
+    url: "https://reflex.finance",
+    siteName: "Reflex L1",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Reflex L1 Dashboard Preview",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Reflex L1 | Parametric Micro-Insurance on Avalanche",
+    description: "The first parametric insurance layer for the internet of value. Powered by Avalanche.",
+    images: ["/twitter-card.png"],
+  },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-32x32.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
@@ -37,8 +67,11 @@ export default function RootLayout({
         <Providers>
           <Navbar />
           <ErrorBoundary>
-            {children}
+            <main className="min-h-screen">
+              {children}
+            </main>
           </ErrorBoundary>
+          <Footer />
         </Providers>
         <Toaster position="bottom-right" theme="dark" />
       </body>
