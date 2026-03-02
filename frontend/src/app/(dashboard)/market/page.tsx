@@ -123,8 +123,10 @@ export default function CoverageMarketplace() {
 
                 {/* Market Cards Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {filtered.map((prod) => (
-                        <SemanticProductCard key={prod.id} product={prod} />
+                    {filtered.map((prod, idx) => (
+                        <div key={prod.id} className="animate-fade-in-up" style={{ animationDelay: `${idx * 80}ms`, animationFillMode: 'backwards' }}>
+                            <SemanticProductCard product={prod} />
+                        </div>
                     ))}
                 </div>
             </main>
