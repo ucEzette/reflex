@@ -9,6 +9,18 @@ export interface MarketProduct {
     badges: string[];
     inputPlaceholder: string;
     contractAddress: `0x${string}`;
+    tooltipSummary?: {
+        oracle: string;
+        riskModel: string;
+        settlement: string;
+        premiumRange: string;
+        trigger: string;
+    };
+    calculationMethod?: {
+        formula: string;
+        variables: string[];
+        example: string;
+    };
 }
 
 export interface PoolMetrics {

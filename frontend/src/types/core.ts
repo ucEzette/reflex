@@ -41,14 +41,14 @@ export interface MarketProduct {
     badges: string[];
     inputPlaceholder: string;
     contractAddress?: `0x${string}`;
-    tooltipSummary: {
+    tooltipSummary?: {
         oracle: string;
         riskModel: string;
         settlement: string;
         premiumRange: string;
         trigger: string;
     };
-    calculationMethod: {
+    calculationMethod?: {
         formula: string;
         variables: string[];
         example: string;
