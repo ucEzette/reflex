@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Providers } from "@/components/Providers";
 import { Navbar } from "@/components/Navbar";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import "./globals.css";
 import { Toaster } from "sonner";
 
@@ -16,6 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <link href="https://fonts.googleapis.com" rel="preconnect" />
         <link
           crossOrigin=""
@@ -34,7 +36,9 @@ export default function RootLayout({
       <body className="bg-slate-50 text-slate-900 dark:bg-background-dark dark:text-slate-100 font-display selection:bg-primary selection:text-white overflow-x-hidden transition-colors duration-500">
         <Providers>
           <Navbar />
-          {children}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
         </Providers>
         <Toaster position="bottom-right" theme="dark" />
       </body>

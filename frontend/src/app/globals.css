@@ -1390,3 +1390,123 @@
 .market3d-parent:hover .market3d-card .market3d-logo .market3d-circle5 {
   transform: translate3d(0, 0, 120px);
 }
+
+/* ═══════════════════════════════════════════
+   MOBILE RESPONSIVENESS
+   ═══════════════════════════════════════════ */
+
+/* Slow pulse for background blobs */
+@keyframes pulse-slow {
+
+  0%,
+  100% {
+    opacity: 0.08;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.15;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
+/* 3D Carousel — scale down on mobile */
+@media (max-width: 640px) {
+  .homepage-card-3d {
+    width: 250px;
+    height: 140px;
+  }
+
+  .homepage-card-3d .card-item {
+    width: 70px;
+    height: 80px;
+  }
+
+  .homepage-card-3d .card-item:nth-child(1),
+  .homepage-card-3d .card-item:nth-child(2),
+  .homepage-card-3d .card-item:nth-child(3),
+  .homepage-card-3d .card-item:nth-child(4),
+  .homepage-card-3d .card-item:nth-child(5),
+  .homepage-card-3d .card-item:nth-child(6),
+  .homepage-card-3d .card-item:nth-child(7),
+  .homepage-card-3d .card-item:nth-child(8),
+  .homepage-card-3d .card-item:nth-child(9),
+  .homepage-card-3d .card-item:nth-child(10) {
+    transform: translate(-50%, -50%) rotateY(var(--ry, 0deg)) translateZ(130px);
+  }
+
+  .homepage-card-3d .card-item .material-symbols-outlined {
+    font-size: 24px;
+  }
+
+  .homepage-card-3d .card-item span:last-child {
+    font-size: 7px;
+  }
+
+  /* Glass group — stack on mobile */
+  .glass-group .glass-panel {
+    width: 180px;
+    height: 220px;
+    margin: 0 -40px;
+    font-size: 0.85rem;
+  }
+
+  .glass-group .glass-panel p {
+    font-size: 0.7rem;
+    padding: 0 10px;
+  }
+
+  /* 3D Market Card — smaller */
+  .parent {
+    height: 260px;
+  }
+
+  .content {
+    padding: 24px 20px 0 16px;
+  }
+
+  /* Touch-friendly minimum tap targets */
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Fix nav links overflow */
+  nav input {
+    font-size: 16px;
+    /* Prevent iOS zoom */
+  }
+}
+
+@media (max-width: 768px) {
+  .homepage-card-3d {
+    width: 300px;
+    height: 160px;
+  }
+
+  .homepage-card-3d .card-item {
+    width: 80px;
+    height: 90px;
+  }
+}
+
+/* Loading state animation for buttons */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 2s linear infinite;
+}
