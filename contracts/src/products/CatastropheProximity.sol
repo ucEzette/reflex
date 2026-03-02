@@ -2,33 +2,43 @@
 pragma solidity ^0.8.24;
 
 import "../ReflexLiquidityPool.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+/// @title CatastropheProximity — Seismic Event Insurance
+/// @notice Chainlink Automation compatible. Policies auto-expire via Keepers.
 contract CatastropheProximity {
+    using SafeERC20 for IERC20;
     ReflexLiquidityPool public immutable pool;
     address public immutable owner;
 
     uint256 public constant PROTOCOL_MARGIN = 500;
     uint256 public constant BPS_DENOMINATOR = 10000;
+    uint256 public constant MAX_PAYOUT_CAP = 10_000_000e6;
+    uint256 private _nonce;
 
     struct CatPolicy {
         address policyholder;
         uint256 premium;
         uint256 maxPayout;
-        uint256 tier1Radius; // Distance in meters (100% payout)
-        uint256 tier2Radius; // Distance in meters (50% payout)
+        uint256 tier1Radius;
+        uint256 tier2Radius;
         uint256 status;
-        string targetCoordinates; // e.g. "34.0522,-118.2437"
+        uint256 expiresAt;
+        string targetCoordinates;
     }
 
     mapping(bytes32 => CatPolicy) public policies;
+    bytes32[] public activePolicyIds;
 
     event PolicyCreated(
         bytes32 id,
         address holder,
         uint256 premium,
-        uint256 maxPayout
+        uint256 maxPayout,
+        uint256 expiresAt
     );
     event PolicyClaimed(bytes32 id, uint256 actualPayout);
+    event PolicyExpired(bytes32 id);
 
     constructor(address _pool) {
         pool = ReflexLiquidityPool(_pool);
@@ -48,14 +58,22 @@ contract CatastropheProximity {
         uint256 _maxPayout,
         uint256 _tier1Radius,
         uint256 _tier2Radius,
-        uint256 _expectedRiskBase
+        uint256 _expectedRiskBase,
+        uint256 _durationSeconds
     ) external returns (bytes32) {
         require(_tier1Radius < _tier2Radius, "Invalid ring sizing");
+        require(_durationSeconds > 0, "Invalid duration");
 
         uint256 premium = quotePremium(_expectedRiskBase);
+        uint256 expiry = block.timestamp + _durationSeconds;
 
         bytes32 policyId = keccak256(
-            abi.encodePacked(_targetCoordinates, msg.sender, block.timestamp)
+            abi.encodePacked(
+                _targetCoordinates,
+                msg.sender,
+                block.timestamp,
+                _nonce++
+            )
         );
         policies[policyId] = CatPolicy({
             policyholder: msg.sender,
@@ -64,18 +82,19 @@ contract CatastropheProximity {
             tier1Radius: _tier1Radius,
             tier2Radius: _tier2Radius,
             status: 0,
+            expiresAt: expiry,
             targetCoordinates: _targetCoordinates
         });
+        activePolicyIds.push(policyId);
 
-        // Reserve capital
+        IERC20 usdc = pool.usdc();
+        SafeERC20.safeTransferFrom(usdc, msg.sender, address(this), premium);
+        usdc.approve(address(pool), premium);
         pool.routePremiumAndReserve(premium, _maxPayout);
-
-        emit PolicyCreated(policyId, msg.sender, premium, _maxPayout);
+        emit PolicyCreated(policyId, msg.sender, premium, _maxPayout, expiry);
         return policyId;
     }
 
-    /// @notice Resolves based on Chainlink executing a JS Haversine calculation finding true radial vector
-    /// @param _distanceMeters The true distance from user parameter to epicenter mapped by Oracle
     function executeClaim(bytes32 _id, uint256 _distanceMeters) external {
         require(msg.sender == owner, "Only authorized oracle");
         CatPolicy storage pol = policies[_id];
@@ -91,8 +110,67 @@ contract CatastropheProximity {
             pool.releasePayout(pol.maxPayout, payout, pol.policyholder);
             emit PolicyClaimed(_id, payout);
         } else {
-            pol.status = 2; // Event safely far away
+            pol.status = 2;
             pool.releasePayout(pol.maxPayout, 0, pol.policyholder);
+        }
+        _removeFromActive(_id);
+    }
+
+    function expirePolicy(bytes32 _id) public {
+        CatPolicy storage pol = policies[_id];
+        require(pol.status == 0, "Not active");
+        require(block.timestamp >= pol.expiresAt, "Not expired yet");
+        pol.status = 2;
+        pool.releasePayout(pol.maxPayout, 0, pol.policyholder);
+        _removeFromActive(_id);
+        emit PolicyExpired(_id);
+    }
+
+    function checkUpkeep(
+        bytes calldata
+    ) external view returns (bool upkeepNeeded, bytes memory performData) {
+        bytes32[] memory toExpire = new bytes32[](activePolicyIds.length);
+        uint256 count = 0;
+        for (uint256 i = 0; i < activePolicyIds.length; i++) {
+            bytes32 pid = activePolicyIds[i];
+            if (
+                policies[pid].status == 0 &&
+                block.timestamp >= policies[pid].expiresAt
+            ) {
+                toExpire[count++] = pid;
+            }
+        }
+        upkeepNeeded = count > 0;
+        bytes32[] memory trimmed = new bytes32[](count);
+        for (uint256 i = 0; i < count; i++) trimmed[i] = toExpire[i];
+        performData = abi.encode(trimmed);
+    }
+
+    function performUpkeep(bytes calldata performData) external {
+        bytes32[] memory toExpire = abi.decode(performData, (bytes32[]));
+        for (uint256 i = 0; i < toExpire.length; i++) {
+            if (
+                policies[toExpire[i]].status == 0 &&
+                block.timestamp >= policies[toExpire[i]].expiresAt
+            ) {
+                expirePolicy(toExpire[i]);
+            }
+        }
+    }
+
+    function getActivePolicyCount() external view returns (uint256) {
+        return activePolicyIds.length;
+    }
+
+    function _removeFromActive(bytes32 _id) internal {
+        for (uint256 i = 0; i < activePolicyIds.length; i++) {
+            if (activePolicyIds[i] == _id) {
+                activePolicyIds[i] = activePolicyIds[
+                    activePolicyIds.length - 1
+                ];
+                activePolicyIds.pop();
+                break;
+            }
         }
     }
 }
