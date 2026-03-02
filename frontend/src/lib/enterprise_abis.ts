@@ -18,9 +18,14 @@ export const LIQUIDITY_POOL_ABI = parseAbi([
 
 export const PRODUCT_ABI = parseAbi([
     "function quotePremium(uint256 nDelayed, uint256 nTotal, uint256 requestedPayout) view returns (uint256)",
-    "function purchasePolicy(string flightId, uint256 requestedPayout, uint256 nDelayed, uint256 nTotal, bytes signature) external returns (bytes32)",
-    "function policies(bytes32) view returns (address policyholder, uint256 premium, uint256 payout, uint256 status, string flightId)",
-    "event PolicyCreated(bytes32 id, address holder, uint256 premium, uint256 payout)"
+    "function purchasePolicy(string flightId, uint256 requestedPayout, uint256 nDelayed, uint256 nTotal, uint256 durationSeconds, bytes signature) external returns (bytes32)",
+    "function executeClaim(bytes32 id, bool delayedOver2Hours) external",
+    "function expirePolicy(bytes32 id) external",
+    "function getActivePolicyCount() view returns (uint256)",
+    "function policies(bytes32) view returns (address policyholder, uint256 premium, uint256 payout, uint256 status, uint256 expiresAt, string flightId)",
+    "event PolicyCreated(bytes32 id, address holder, uint256 premium, uint256 payout, uint256 expiresAt)",
+    "event PolicyClaimed(bytes32 id, uint256 payout)",
+    "event PolicyExpired(bytes32 id)"
 ]);
 
 export const ERC20_ABI = parseAbi([
@@ -32,10 +37,16 @@ export const ERC20_ABI = parseAbi([
     "function mint(address, uint256)"
 ]);
 
-// Agriculture, Energy, Catastrophe, and Maritime all follow similar interface patterns
+// Agriculture, Energy, Catastrophe, and Maritime all follow similar patterns
 export const GENERIC_PRODUCT_ABI = parseAbi([
     "function quotePremium(uint256 expectedRiskBase) view returns (uint256)",
-    "function purchasePolicy(string, uint256, uint256, uint256, uint256, bytes) external returns (bytes32)",
+    "function purchasePolicy(string, uint256, uint256, uint256, uint256, uint256) external returns (bytes32)",
     "function executeClaim(bytes32, uint256) external",
-    "event PolicyCreated(bytes32 id, address holder, uint256 premium, uint256 maxPayout)"
+    "function expirePolicy(bytes32) external",
+    "function getActivePolicyCount() view returns (uint256)",
+    "function checkUpkeep(bytes) view returns (bool upkeepNeeded, bytes performData)",
+    "function performUpkeep(bytes) external",
+    "event PolicyCreated(bytes32 id, address holder, uint256 premium, uint256 maxPayout, uint256 expiresAt)",
+    "event PolicyClaimed(bytes32 id, uint256 actualPayout)",
+    "event PolicyExpired(bytes32 id)"
 ]);

@@ -95,6 +95,10 @@ export function Navbar() {
                             <TrendingUp className="w-4 h-4" />
                             Invest
                         </Link>
+                        <Link href="/analytics" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                            <BarChart3 className="w-4 h-4" />
+                            Analytics
+                        </Link>
                         <Link href="/docs" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
                             <FileText className="w-4 h-4" />
                             Docs

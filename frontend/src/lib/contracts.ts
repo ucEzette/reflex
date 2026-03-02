@@ -139,12 +139,12 @@ export const CONTRACTS = {
     ESCROW: "0xb8387c02a388387c02a388387c02a388387c02a388" as `0x${string}`,
     USDC: "0x5425890298aed601595a70AB815c96711a31Bc65" as `0x${string}`,
 
-    // Phase 10: Enterprise Expansion
-    LP_POOL: "0xBB296CEDB57320F7cAdeb18145e29D4779D578D8" as `0x${string}`,
-    PRODUCT_FACTORY: "0x7FafA41d52eFa6Ad03cB51A877602F6CB0CC5431" as `0x${string}`,
-    TRAVEL: "0x8f3f5a247E97F78DdDEae96A358aC5Cd175bd7b3" as `0x${string}`,
-    AGRI: "0x60C09F174A9007D9A1E457b95E67738acFdCf1ad" as `0x${string}`,
-    ENERGY: "0x9Cfbc7AA845a5900CFe30F9C8e0cd5f2c36E6d31" as `0x${string}`,
-    CATASTROPHE: "0x29Fc20d0b2bF7db3325da8a7E1Fc422C91773eD8" as `0x${string}`,
-    MARITIME: "0x776F1b5c544d42Bf12067E65212797175616c755" as `0x${string}`
+    // Phase 72: Redeployed Enterprise Contracts (USDC flow fix + Keeper hooks)
+    LP_POOL: "0xb4741AD6436023f275fD1725B0Df1042dDFd44Cc" as `0x${string}`,
+    PRODUCT_FACTORY: "0xEDA58669214Ab2342bfD42f41FC8E4674931D72F" as `0x${string}`,
+    TRAVEL: "0x860f5d9e6A6F7C2A6dBe8c396CA5dc37f298f86b" as `0x${string}`,
+    AGRI: "0xA63CdC07ebC3B2deAF5faD45aabC35C2Dd86fF80" as `0x${string}`,
+    ENERGY: "0xc8392691CC8e09fBc34a17cbCfb607e6a9a6d663" as `0x${string}`,
+    CATASTROPHE: "0xaCbbeFe183Bff58FA57c99D0352d4cA1e720240A" as `0x${string}`,
+    MARITIME: "0xfC873105314170de85A043fc39F332e203DA7B1a" as `0x${string}`
 };
