@@ -1,170 +1,100 @@
-# Reflex L1 — Parametric Flight Delay Insurance
+# Reflex — Parametric Micro-Insurance L1
 
-Decentralized parametric micro-insurance on Avalanche. Users purchase flight delay coverage with USDC ($5 premium), and if a flight is delayed more than 2 hours, they automatically receive a $50 USDC payout — verified via Chainlink Decentralized Oracle Networks.
+Reflex is a decentralized parametric micro-insurance protocol built on Avalanche. It allows users and businesses to hedge against real-world risks (weather, travel, catastrophe, energy) using transparent, code-driven policies triggered by Chainlink Decentralized Oracle Networks (DONs).
 
-## Architecture
+## 🚀 Core Value Proposition
+- **Instant Settlement**: No manual claims adjusting. Smart contracts pay out the moment oracle data verifies a trigger.
+- **Deep Liquidity**: A shared USDC liquidity pool with Aave v3 integration for capital efficiency.
+- **Parametric Variety**: 5 distinct risk products with diverse mathematical payout models (Linear, Tick, Tiered, Binary).
+- **Security First**: 640k+ invariant tests and hardened contracts with reentrancy guards and payout caps.
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                        Frontend (Next.js)                       │
-│  ┌───────────┐  ┌────────────────┐  ┌────────────────────────┐ │
-│  │  Wallet   │  │    Purchase    │  │    Active Policies     │ │
-│  │  Connect  │  │   Dashboard    │  │    Table + Countdown   │ │
-│  └───────────┘  └────────────────┘  └────────────────────────┘ │
-└────────────────────────────┬────────────────────────────────────┘
-                             │ wagmi / viem
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│              ReflexParametricEscrow.sol (Fuji C-Chain)          │
-│  ┌──────────────┐  ┌─────────────────┐  ┌──────────────────┐  │
-│  │ purchasePolicy│  │ requestOracle  │  │  expirePolicy    │  │
-│  │ (USDC escrow) │  │ (Chainlink)    │  │  (time-based)    │  │
-│  └──────────────┘  └─────────────────┘  └──────────────────┘  │
-└────────────────────────────┬────────────────────────────────────┘
-                             │ Avalanche Teleporter (AWM)
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                   Relayer / Chainlink DON                        │
-│  ┌──────────────┐  ┌────────────────┐  ┌────────────────────┐  │
-│  │  Cron Job    │  │  FlightAware   │  │   Chainlink DON    │  │
-│  │  (60s poll)  │  │  AviationStack │  │   Validation       │  │
-│  └──────────────┘  └────────────────┘  └────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
+---
+
+## 🏗️ Protocol Architecture
+
+```mermaid
+graph TD
+    User((User)) -->|Purchase Policy| Factory
+    Factory[Product Factory] -->|Deploy/Authorize| Product[Parametric Product]
+    Product -->|Lock Premium/Request Payout| Pool[Reflex Liquidity Pool]
+    Pool -->|Supply Idle USDC| Aave[(Aave v3)]
+    Oracle((Chainlink DON)) -->|Consensus Data| Product
+    Product -->|Release Funds| User
 ```
 
-## Tech Stack
+### 1. Reflex Liquidity Pool (`ReflexLiquidityPool.sol`)
+The central treasury of the protocol. It handles LP deposits, maintains protocol solvency invariants, and releases payouts when authorized by verified product contracts. Idle capital is automagically routed to Aave v3 to generate yield for LPs.
 
-| Component        | Technology                                          |
-|-----------------|-----------------------------------------------------|
-| Smart Contracts | Solidity ^0.8.24, Foundry                          |
-| Frontend        | Next.js 14, TypeScript, Tailwind CSS, wagmi, viem  |
-| Relayer         | Node.js, TypeScript, ethers.js v6, node-cron       |
-| Oracles         | Chainlink Functions (DON)                           |
-| Network         | Avalanche Fuji Testnet (C-Chain)                   |
-| Cross-Chain     | Avalanche Teleporter / Chainlink CCIP              |
+### 2. Product Factory (`ProductFactory.sol`)
+An administrative contract used to deploy and authorize new parametric risk products, ensuring they satisfy the protocol's interface and security standards.
 
-## Quick Start
+### 3. Parametric Products (`IParametricProduct.sol`)
+Stateless logic contracts that define the risk parameters, oracle sources, and payout calculations. 
+- **TravelSolutions**: Binary delay trigger (>120m).
+- **AgricultureIndex**: Linear scaling between Strike and Exit rainfall indexes.
+- **EnergySolutions**: Tick-based payout per Heating/Cooling Degree Day.
+- **CatastropheProximity**: Tiered payouts based on earthquake epicenter distance.
+- **MaritimeSolutions**: Binary wind speed trigger.
+
+---
+
+## 🛠️ Tech Stack
+
+| Component | Technology |
+|---|---|
+| **Smart Contracts** | Solidity 0.8.24, Foundry, OpenZeppelin UUPS |
+| **Oracles** | Chainlink Functions (DON), Keepers |
+| **Defi Integration** | Aave v3 (Supply/Withdraw) |
+| **Frontend** | Next.js 14, TypeScript, Tailwind, Wagmi/Viem |
+| **Relayer** | Node.js, Ethers.js v6, zkTLS Simulations |
+| **Infrastructure** | Avalanche Fuji / custom L1 |
+
+---
+
+## 🏁 Quick Start
 
 ### Prerequisites
+- Node.js ≥ 20
+- Foundry
+- Avalanche Fuji Testnet Funds
 
-- Node.js ≥ 18
-- Foundry (`curl -L https://foundry.paradigm.xyz | bash`)
-- MetaMask or Core Wallet
-- Avalanche Fuji testnet AVAX (faucet: https://faucet.avax.network/)
-
-### 1. Clone & Configure
-
-```bash
-git clone <repo-url> && cd reflex
-cp .env.example .env
-# Fill in your PRIVATE_KEY, API keys, etc.
-```
-
-### 2. Smart Contracts
-
+### 1. Smart Contracts
 ```bash
 cd contracts
-
-# Install dependencies
 forge install
-
-# Compile
 forge build
-
-# Deploy to Fuji (update .env first)
-source ../.env
-forge script script/Deploy.s.sol:DeployReflex \
-  --rpc-url $FUJI_RPC_URL \
-  --broadcast \
-  -vvvv
-
-# Note the deployed addresses and update .env
+# Run security invariants (requires local node or fuji fork)
+forge test --match-path test/SecurityInvariants.t.sol -vv
 ```
 
-### 3. Relayer
-
+### 2. Relayer
 ```bash
 cd relayer
-
-# Install dependencies
 npm install
-
-# Configure environment
-cp .env.example .env
-# Update ESCROW_CONTRACT_ADDRESS, TELEPORTER_ADDRESS, etc.
-
-# Run
 npm run dev
 ```
 
-### 4. Frontend
-
+### 3. Frontend
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Configure environment
-cp .env.example .env.local
-# Update NEXT_PUBLIC_ESCROW_ADDRESS, NEXT_PUBLIC_USDC_ADDRESS
-
-# Run dev server
 npm run dev
 # Open http://localhost:3000
 ```
 
-## Project Structure
+---
 
-```
-reflex/
-├── contracts/                 # Foundry smart contracts
-│   ├── src/
-│   │   ├── ReflexParametricEscrow.sol   # Main escrow contract
-│   │   ├── interfaces/
-│   │   │   ├── ITeleporterMessenger.sol  # Teleporter interface
-│   │   │   └── ITeleporterReceiver.sol   # Teleporter receiver
-│   │   └── mocks/
-│   │       ├── MockUSDC.sol             # Test USDC token
-│   │       └── MockTeleporterMessenger.sol
-│   ├── script/
-│   │   └── Deploy.s.sol                 # Deployment script
-│   ├── foundry.toml
-│   └── remappings.txt
-├── relayer/                   # Node.js zkTLS relayer
-│   ├── src/
-│   │   └── relayer.ts                   # Main relayer service
-│   ├── package.json
-│   └── tsconfig.json
-├── frontend/                  # Next.js web application
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── layout.tsx               # Root layout
-│   │   │   ├── page.tsx                 # Main page
-│   │   │   └── globals.css              # Global styles
-│   │   ├── components/
-│   │   │   ├── Providers.tsx            # wagmi/react-query
-│   │   │   ├── WalletConnect.tsx        # Wallet connection
-│   │   │   ├── PolicyDashboard.tsx      # Purchase flow
-│   │   │   └── ActivePolicies.tsx       # Policy table
-│   │   └── lib/
-│   │       ├── wagmiConfig.ts           # Chain config
-│   │       └── contracts.ts             # ABIs
-│   └── package.json
-├── .env.example
-└── README.md
-```
+## 🧬 Security & Invariants
+Reflex maintains strict protocol invariants verified via stateful fuzzing:
+1. **Solvency**: `Pool Assets >= Sum(Max Payouts)` of all active policies.
+2. **Capital Efficiency**: Idle assets remain in Aave while preserving withdrawal liquidity.
+3. **Hard Caps**: Every policy is capped at `$10M` to prevent catastrophic drain via oracle failure.
+4. **Access Control**: Critical functions are restricted to `onlyOwner` (Multisig) or `onlyProduct`.
 
-## Contract Functions
+---
 
-| Function | Description |
-|----------|------------|
-| `purchasePolicy(apiTarget, premium, payout, hours)` | Purchase parametric insurance policy |
-| `receiveTeleporterMessage(chainId, sender, message)` | Receive zkTLS proof and trigger payout |
-| `expirePolicy(policyId)` | Mark expired policies as inactive |
-| `getUserPolicies(user)` | Get all policy IDs for a user |
-| `getPolicy(policyId)` | Get full policy details |
+## 📄 Documentation
+For detailed mathematical formulas and API references, see the in-app [Documentation](http://localhost:3000/docs).
 
-## License
-
+## ⚖️ License
 MIT
