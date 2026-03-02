@@ -73,6 +73,7 @@ contract ReflexLiquidityPool is
         uint256 amount,
         uint256 shares
     );
+    event ProductAuthorized(address indexed product, bool status);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -86,6 +87,8 @@ contract ReflexLiquidityPool is
         address _aUsdc,
         address _quoter
     ) public initializer {
+        require(_usdc != address(0), "Zero USDC address");
+        require(_protocolTreasury != address(0), "Zero treasury address");
         __Ownable_init(msg.sender);
         __Pausable_init();
 
@@ -115,7 +118,9 @@ contract ReflexLiquidityPool is
         address _product,
         bool _status
     ) external onlyOwner {
+        require(_product != address(0), "Zero product address");
         authorizedProducts[_product] = _status;
+        emit ProductAuthorized(_product, _status);
     }
 
     /// @notice Admin can set the authorized quoter for signed insurance premiums
@@ -239,8 +244,14 @@ contract ReflexLiquidityPool is
 
         usdc.safeTransfer(protocolTreasury, originationFee);
 
-        // Send remaining pure profit into Aave yield directly
-        aavePool.supply(address(usdc), lpProfit, address(this), 0);
+        // Send remaining pure profit into Aave yield directly — safe guarded
+        if (
+            address(aavePool) != address(0) && address(aavePool).code.length > 0
+        ) {
+            try
+                aavePool.supply(address(usdc), lpProfit, address(this), 0)
+            {} catch {}
+        }
 
         totalMaxPayouts += _maxPayout;
     }
