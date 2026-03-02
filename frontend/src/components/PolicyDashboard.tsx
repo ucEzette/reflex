@@ -5,6 +5,7 @@ import { useAccount, useReadContract, useWriteContract, useWaitForTransactionRec
 import { toast } from "sonner";
 import { ESCROW_ABI, ERC20_ABI } from "@/lib/contracts";
 import { CONTRACTS, POLICY_PREMIUM, POLICY_PAYOUT, POLICY_DURATION_HOURS } from "@/lib/wagmiConfig";
+import { DashboardSkeleton } from "@/components/ui/Skeletons";
 
 interface FlightData {
     airline: string;
@@ -188,7 +189,7 @@ export function PolicyDashboard() {
     const canPurchase = flightDetails !== null && !isValidating && flightDate && isConnected && hasEnoughBalance;
 
     /* ── SSR Hydration Guard ── */
-    if (!mounted) return null;
+    if (!mounted) return <DashboardSkeleton />;
 
     /* ── Wallet Not Connected ── */
     if (!isConnected) {

@@ -5,6 +5,7 @@ import { parseAbiItem } from "viem";
 import { ESCROW_ABI } from "@/lib/contracts";
 import { CONTRACTS } from "@/lib/wagmiConfig";
 import { useEffect, useState } from "react";
+import { TableSkeleton } from "@/components/ui/Skeletons";
 
 function CountdownTimer({ expirationTime }: { expirationTime: bigint }) {
     const [timeLeft, setTimeLeft] = useState("");
@@ -226,10 +227,8 @@ export function ActivePolicies() {
             {/* Table */}
             <div className="relative overflow-x-auto">
                 {isLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <svg className="animate-spin h-6 w-6 text-zinc-500" viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" strokeDasharray="32" strokeDashoffset="12" />
-                        </svg>
+                    <div className="p-4">
+                        <TableSkeleton rows={5} />
                     </div>
                 ) : !policyIds || policyIds.length === 0 ? (
                     <div className="text-center py-12">
