@@ -35,13 +35,7 @@ export const config = createConfig({
     ssr: false,
 });
 
-// Contract addresses — update after deployment
-export const CONTRACTS = {
-    ESCROW: (process.env.NEXT_PUBLIC_ESCROW_ADDRESS ||
-        "0x0000000000000000000000000000000000000000") as `0x${string}`,
-    USDC: (process.env.NEXT_PUBLIC_USDC_ADDRESS ||
-        "0x0000000000000000000000000000000000000000") as `0x${string}`,
-} as const;
+import { CONTRACTS } from "./contracts";
 
 // Policy constants
 export const POLICY_PREMIUM = BigInt(5_000_000); // $5 USDC (6 decimals)

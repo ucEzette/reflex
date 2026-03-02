@@ -4,11 +4,54 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, ShieldCheck, Globe, Database } from 'lucide-react';
+import { useReadContract, useWatchContractEvent } from 'wagmi';
+import { formatUnits } from 'viem';
+import { CONTRACTS } from '@/lib/wagmiConfig';
+import { LP_POOL_ABI, TRAVEL_ABI, AGRI_ABI, ENERGY_ABI } from '@/lib/contracts';
 import { generateOracleLogs, generateTreasuryMetrics } from '@/lib/mockState';
 
 export default function TransparencyDashboard() {
     const [mounted, setMounted] = useState(false);
-    const logs = generateOracleLogs();
+    const [liveLogs, setLiveLogs] = useState<any[]>([]);
+
+    // 1. Fetch Real-time Treasury Metrics
+    const { data: totalAssets } = useReadContract({
+        address: CONTRACTS.LP_POOL,
+        abi: LP_POOL_ABI,
+        functionName: 'totalAssets',
+        query: { refetchInterval: 10000 }
+    });
+
+    const { data: totalMaxPayouts } = useReadContract({
+        address: CONTRACTS.LP_POOL,
+        abi: LP_POOL_ABI,
+        functionName: 'totalMaxPayouts',
+        query: { refetchInterval: 10000 }
+    });
+
+    const tvl = totalAssets ? Number(formatUnits(totalAssets as bigint, 6)) : 12450000;
+    const payouts = totalMaxPayouts ? Number(formatUnits(totalMaxPayouts as bigint, 6)) : 450000;
+
+    // 2. Watch for Real-time Events (Live Console)
+    const handleNewEvent = (log: any, type: string, target: string) => {
+        const newLog = {
+            id: log.transactionHash,
+            timestamp: new Date().toISOString(),
+            target,
+            message: `${type}: ${log.args?.policyId || log.args?.id || 'N/A'} - Tx: ${log.transactionHash.slice(0, 10)}...`,
+            status: type === 'Claimed' ? 'Success' : 'Active'
+        };
+        setLiveLogs(prev => [newLog, ...prev].slice(0, 50));
+    };
+
+    // Watchers for different products
+    useWatchContractEvent({ address: CONTRACTS.TRAVEL, abi: TRAVEL_ABI, eventName: 'PolicyCreated', onLogs: (logs: any[]) => logs.forEach(l => handleNewEvent(l, 'Created', 'TRAVEL')) });
+    useWatchContractEvent({ address: CONTRACTS.AGRI, abi: AGRI_ABI, eventName: 'PolicyCreated', onLogs: (logs: any[]) => logs.forEach(l => handleNewEvent(l, 'Created', 'AGRI')) });
+    useWatchContractEvent({ address: CONTRACTS.ENERGY, abi: ENERGY_ABI, eventName: 'PolicyCreated', onLogs: (logs: any[]) => logs.forEach(l => handleNewEvent(l, 'Created', 'ENERGY')) });
+    useWatchContractEvent({ address: CONTRACTS.TRAVEL, abi: TRAVEL_ABI, eventName: 'PolicyClaimed', onLogs: (logs: any[]) => logs.forEach(l => handleNewEvent(l, 'Claimed', 'TRAVEL')) });
+
+    // Fallback to mock for filling space if no live events yet
+    const initialLogs = generateOracleLogs();
     const stats = generateTreasuryMetrics();
 
     useEffect(() => {
@@ -16,6 +59,8 @@ export default function TransparencyDashboard() {
     }, []);
 
     if (!mounted) return null;
+
+    const displayLogs = liveLogs.length > 0 ? liveLogs : initialLogs;
 
     return (
         <div className="min-h-screen p-4 md:p-8 space-y-8 bg-background">
@@ -48,7 +93,7 @@ export default function TransparencyDashboard() {
 
                 {/* Solvency & Chart Column */}
                 <section className="lg:col-span-12 xl:col-span-7 space-y-6">
-                    <SolvencyMetrics tvl={stats[stats.length - 1].tvl} claims={stats[stats.length - 1].claimsPaid} />
+                    <SolvencyMetrics tvl={tvl} claims={payouts} />
 
                     {/* Treasury Chart */}
                     <article className="bg-card border border-border rounded-2xl p-6 shadow-sm overflow-hidden relative">
@@ -126,7 +171,7 @@ export default function TransparencyDashboard() {
                         {/* Feed Body */}
                         <div className="flex-1 p-6 overflow-y-auto space-y-4 font-mono text-[11px] leading-relaxed custom-scrollbar bg-black text-zinc-400">
                             <AnimatePresence initial={false}>
-                                {logs.map((log) => (
+                                {displayLogs.map((log) => (
                                     <motion.div
                                         key={log.id}
                                         initial={{ opacity: 0, x: -10 }}

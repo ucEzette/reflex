@@ -1,3 +1,5 @@
+import { LIQUIDITY_POOL_ABI, PRODUCT_ABI, GENERIC_PRODUCT_ABI, ERC20_ABI as ENTERPRISE_ERC20 } from './enterprise_abis';
+
 export const ESCROW_ABI = [
     {
         inputs: [
@@ -81,59 +83,14 @@ export const ESCROW_ABI = [
     },
 ] as const;
 
-export const ERC20_ABI = [
-    {
-        inputs: [
-            { name: "spender", type: "address" },
-            { name: "amount", type: "uint256" },
-        ],
-        name: "approve",
-        outputs: [{ name: "", type: "bool" }],
-        stateMutability: "nonpayable",
-        type: "function",
-    },
-    {
-        inputs: [
-            { name: "owner", type: "address" },
-            { name: "spender", type: "address" },
-        ],
-        name: "allowance",
-        outputs: [{ name: "", type: "uint256" }],
-        stateMutability: "view",
-        type: "function",
-    },
-    {
-        inputs: [{ name: "account", type: "address" }],
-        name: "balanceOf",
-        outputs: [{ name: "", type: "uint256" }],
-        stateMutability: "view",
-        type: "function",
-    },
-    {
-        inputs: [],
-        name: "decimals",
-        outputs: [{ name: "", type: "uint8" }],
-        stateMutability: "view",
-        type: "function",
-    },
-    {
-        inputs: [],
-        name: "symbol",
-        outputs: [{ name: "", type: "string" }],
-        stateMutability: "view",
-        type: "function",
-    },
-    {
-        inputs: [
-            { name: "to", type: "address" },
-            { name: "amount", type: "uint256" },
-        ],
-        name: "mint",
-        outputs: [],
-        stateMutability: "nonpayable",
-        type: "function",
-    },
-] as const;
+
+export { ENTERPRISE_ERC20 as ERC20_ABI };
+export const LP_POOL_ABI = LIQUIDITY_POOL_ABI;
+export const TRAVEL_ABI = PRODUCT_ABI;
+export const AGRI_ABI = GENERIC_PRODUCT_ABI;
+export const ENERGY_ABI = GENERIC_PRODUCT_ABI;
+export const CATASTROPHE_ABI = GENERIC_PRODUCT_ABI;
+export const MARITIME_ABI = GENERIC_PRODUCT_ABI;
 
 export const CONTRACTS = {
     ESCROW: "0xb8387c02a388387c02a388387c02a388387c02a388" as `0x${string}`,
