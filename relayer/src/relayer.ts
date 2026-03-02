@@ -13,7 +13,6 @@ async function processPolicy(
     const policyIdShort = policy.policyId.slice(0, 18);
 
     try {
-        // 1. Expiration check
         const now = BigInt(Math.floor(Date.now() / 1000));
         if (now > policy.expirationTime) {
             logger.info({ policyId: policyIdShort }, "Policy expired, skipping");
@@ -22,7 +21,6 @@ async function processPolicy(
 
         logger.info({ policyId: policyIdShort, flight: policy.apiTarget }, "Checking flight status");
 
-        // 2. Query Flight Data
         const flightData = await aviationStack.queryFlightStatus(policy.apiTarget);
         if (!flightData) {
             logger.warn({ flight: policy.apiTarget }, "No flight data available, retrying next cycle");
@@ -31,11 +29,9 @@ async function processPolicy(
 
         logger.info({ flight: flightData.flightId, delay: flightData.delaySeconds, status: flightData.status }, "Flight status retrieved");
 
-        // 3. Delay Threshold Check (2 hours = 7200s)
         const DELAY_THRESHOLD = 7200;
         if (flightData.delaySeconds > DELAY_THRESHOLD) {
             logger.warn({ policyId: policyIdShort, delay: flightData.delaySeconds }, "DELAY DETECTED - Triggering claim");
-            // 4. Trigger Chainlink Function
             const flightIata = policy.apiTarget.replace(/^flights\//, "").toUpperCase();
             const txHash = await blockchain.triggerChainlinkRequest(policy.policyId, flightIata, flightData.flightDate);
             logger.info({ policyId: policyIdShort, tx: txHash }, "Chainlink request submitted successfully");
@@ -47,28 +43,56 @@ async function processPolicy(
     }
 }
 
-async function monitorCircle(
+// ── Legacy Escrow Monitor ──
+async function monitorEscrow(
     blockchain: BlockchainService,
     aviationStack: AviationStackService
 ) {
-    console.log(`\n[Relayer] ─── Starting scan at ${new Date().toISOString()} ───`);
-
+    console.log(`\n[Relayer] ─── Escrow scan at ${new Date().toISOString()} ───`);
     try {
         const activePolicies = await blockchain.getActivePolicies();
-        console.log(`[Relayer] Found ${activePolicies.length} active policies to monitor`);
-
+        console.log(`[Relayer] Found ${activePolicies.length} escrow policies`);
         for (const policy of activePolicies) {
             await processPolicy(policy, blockchain, aviationStack);
         }
     } catch (error: unknown) {
-        console.error(`[Relayer] Fatal error during monitor cycle:`, error instanceof Error ? error.message : "Unknown error");
+        console.error(`[Relayer] Escrow monitor error:`, error instanceof Error ? error.message : "Unknown error");
+    }
+}
+
+// ── Enterprise Product Monitor ──
+async function monitorEnterprise(blockchain: BlockchainService) {
+    console.log(`\n[Keeper] ─── Enterprise scan at ${new Date().toISOString()} ───`);
+    try {
+        const policies = await blockchain.getActiveEnterprisePolicies();
+        console.log(`[Keeper] Found ${policies.length} active enterprise policies across all products`);
+
+        // Log per-product breakdown
+        const byProduct = new Map<string, number>();
+        for (const p of policies) {
+            byProduct.set(p.productName, (byProduct.get(p.productName) || 0) + 1);
+        }
+        for (const [name, count] of byProduct) {
+            console.log(`[Keeper]   └─ ${name}: ${count} policies`);
+        }
+
+        // Run Keeper upkeep for each product (auto-expire overdue policies)
+        const products = ['Travel', 'Agriculture', 'Energy', 'Catastrophe', 'Maritime'];
+        for (const product of products) {
+            const expired = await blockchain.checkAndPerformUpkeep(product);
+            if (expired) {
+                console.log(`[Keeper] ✓ ${product}: Expired policies settled on-chain`);
+            }
+        }
+    } catch (error: unknown) {
+        console.error(`[Keeper] Enterprise monitor error:`, error instanceof Error ? error.message : "Unknown error");
     }
 }
 
 async function main() {
     console.log("╔══════════════════════════════════════════════╗");
-    console.log("║      Reflex L1 — Modular zkTLS Relayer      ║");
-    console.log("║    Production-Ready Claims Architecture     ║");
+    console.log("║      Reflex — Enterprise Relayer v2.0       ║");
+    console.log("║  Multi-Product Monitor + Chainlink Keepers  ║");
     console.log("╚══════════════════════════════════════════════╝");
 
     const config = loadConfig();
@@ -77,26 +101,41 @@ async function main() {
     const blockchain = new BlockchainService(
         config.rpcUrl,
         config.privateKey,
-        config.escrowAddress
+        config.escrowAddress,
+        {
+            travel: config.travelContract,
+            agri: config.agriContract,
+            energy: config.energyContract,
+            cat: config.catContract,
+            maritime: config.maritimeContract,
+        }
     );
 
     console.log(`[Relayer] Operator Wallet: ${blockchain.getWalletAddress()}`);
-    console.log(`[Relayer] Escrow Contract: ${config.escrowAddress}`);
     console.log(`[Relayer] Poll Interval: ${config.pollIntervalSeconds}s`);
+    console.log(`[Relayer] Enterprise Products: Travel, Agriculture, Energy, Catastrophe, Maritime`);
 
-    // Ensure this relayer is authorized to submit Chainlink requests
-    await blockchain.ensureAuthorized();
+    // Ensure escrow authorization (backward compat)
+    if (config.escrowAddress) {
+        await blockchain.ensureAuthorized();
+    }
 
     // Initial run
-    await monitorCircle(blockchain, aviationStack);
+    if (config.escrowAddress) {
+        await monitorEscrow(blockchain, aviationStack);
+    }
+    await monitorEnterprise(blockchain);
 
     // Schedule periodic monitoring
     const pollCron = `*/${Math.max(1, Math.floor(config.pollIntervalSeconds / 60))} * * * *`;
     cron.schedule(pollCron, async () => {
-        await monitorCircle(blockchain, aviationStack);
+        if (config.escrowAddress) {
+            await monitorEscrow(blockchain, aviationStack);
+        }
+        await monitorEnterprise(blockchain);
     });
 
-    console.log(`\n[Relayer] Service active. Monitoring flight delays via AviationStack...`);
+    console.log(`\n[Relayer] Service active. Monitoring all products + Chainlink Keeper loop...`);
 }
 
 main().catch((error) => {
