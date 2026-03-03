@@ -1,20 +1,26 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Wallet, ExternalLink, Download, ArrowUpRight, Copy, ShieldCheck, RefreshCcw } from 'lucide-react';
+import { Wallet, ExternalLink, Download, ArrowUpRight, Copy, ShieldCheck, RefreshCcw, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useChainId, useSwitchChain } from 'wagmi';
 import { formatUnits, parseUnits } from 'viem';
 import { ERC20_ABI } from '@/lib/contracts';
 import { CONTRACTS } from '@/lib/wagmiConfig';
 
+const TARGET_CHAIN_ID = 43113; // Avalanche Fuji
+
 export function WalletManager() {
     const { address, isConnected } = useAccount();
+    const chainId = useChainId();
+    const { switchChain } = useSwitchChain();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    const isWrongNetwork = isConnected && chainId !== TARGET_CHAIN_ID;
 
     const { data: hash, writeContract, isPending } = useWriteContract();
     const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
@@ -73,27 +79,46 @@ export function WalletManager() {
     return (
         <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
             {/* Header / Balance Section */}
-            <div className="p-6 border-b border-border bg-gradient-to-br from-primary/10 to-transparent">
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                        <Wallet className="w-4 h-4" />
-                        <span className="text-xs font-medium uppercase tracking-wider">Embedded Wallet</span>
+            {isWrongNetwork ? (
+                <div className="p-6 border-b border-border bg-amber-500/10">
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2 text-amber-500">
+                            <AlertTriangle className="w-4 h-4" />
+                            <span className="text-xs font-bold uppercase tracking-wider">Wrong Network</span>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-bold">
-                        <ShieldCheck className="w-3 h-3" />
-                        SECURE
-                    </div>
+                    <h3 className="text-xl font-bold text-foreground mb-4">Switch to Avalanche Fuji</h3>
+                    <button
+                        onClick={() => switchChain({ chainId: TARGET_CHAIN_ID })}
+                        className="w-full bg-amber-500 text-white py-2 rounded-xl font-bold text-sm hover:bg-amber-600 transition-all flex items-center justify-center gap-2"
+                    >
+                        <RefreshCcw className="w-4 h-4" />
+                        Switch Network
+                    </button>
                 </div>
+            ) : (
+                <div className="p-6 border-b border-border bg-gradient-to-br from-primary/10 to-transparent">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                            <Wallet className="w-4 h-4" />
+                            <span className="text-xs font-medium uppercase tracking-wider">Embedded Wallet</span>
+                        </div>
+                        <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-bold">
+                            <ShieldCheck className="w-3 h-3" />
+                            SECURE
+                        </div>
+                    </div>
 
-                <h3 className="text-3xl font-bold text-foreground mb-1 flex items-baseline gap-2">
-                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(displayBalance)}
-                    <span className="text-sm font-medium text-muted-foreground uppercase">usdc</span>
-                </h3>
-                <p className="text-xs text-muted-foreground flex items-center gap-2">
-                    Available balance on Avalanche Fuji
-                    {(isPending || isConfirming) && <RefreshCcw className="w-3 h-3 animate-spin text-primary" />}
-                </p>
-            </div>
+                    <h3 className="text-3xl font-bold text-foreground mb-1 flex items-baseline gap-2">
+                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(displayBalance)}
+                        <span className="text-sm font-medium text-muted-foreground uppercase">usdc</span>
+                    </h3>
+                    <p className="text-xs text-muted-foreground flex items-center gap-2">
+                        Available balance on Avalanche Fuji
+                        {(isPending || isConfirming) && <RefreshCcw className="w-3 h-3 animate-spin text-primary" />}
+                    </p>
+                </div>
+            )}
 
             {/* Wallet Info & Actions */}
             <div className="p-6 space-y-6">
@@ -117,12 +142,14 @@ export function WalletManager() {
                 <div className="grid grid-cols-2 gap-3">
                     <button
                         onClick={handleDeposit}
-                        disabled={isPending || isConfirming}
+                        disabled={isPending || isConfirming || isWrongNetwork}
                         className="flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed">
                         {isPending || isConfirming ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <ArrowUpRight className="w-4 h-4" />}
                         {isPending || isConfirming ? 'Depositing...' : 'Deposit'}
                     </button>
-                    <button className="flex items-center justify-center gap-2 bg-accent border border-border text-foreground py-3 rounded-xl font-bold text-sm hover:bg-accent/80 transition-all">
+                    <button
+                        disabled={isWrongNetwork}
+                        className="flex items-center justify-center gap-2 bg-accent border border-border text-foreground py-3 rounded-xl font-bold text-sm hover:bg-accent/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                         <Download className="w-4 h-4" />
                         Withdraw
                     </button>

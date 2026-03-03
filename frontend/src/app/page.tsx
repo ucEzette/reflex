@@ -1,6 +1,7 @@
 import { PolicyDashboard } from "@/components/PolicyDashboard";
 import { ActivePolicies } from "@/components/ActivePolicies";
 import { ALL_MARKETS } from "@/lib/market-data";
+import { GlobalStats } from "@/components/GlobalStats";
 
 /* ═══════════════════════════════════════════
    REFLEX L1 — Scrollytelling Landing Page
@@ -45,7 +46,7 @@ export default function Home() {
 
             {/* Subhead */}
             <p className="text-lg md:text-xl text-slate-400 max-w-2xl font-light leading-relaxed">
-              Reflex L1 is a <strong>Protection Market</strong>. Instead of speculating on outcomes, Reflex is a micro-insurance platform where crypto natives and traditional users can browse a marketplace of real-world risks, find a policy that matches their daily needs, and buy it to instantly insure themselves against negative events.
+              Reflex is a <strong>Protection Market</strong>. Instead of speculating on outcomes, Reflex is a micro-insurance platform where crypto natives and traditional users can browse a marketplace of real-world risks, find a policy that matches their daily needs, and buy it to instantly insure themselves against negative events.
             </p>
 
             {/* CTAs */}
@@ -116,7 +117,7 @@ export default function Home() {
               </span>
             </h2>
             <p className="mt-6 text-lg text-slate-400 font-light max-w-2xl mx-auto">
-              Reflex L1 is the first decentralized <strong>Protection Market</strong>, leveraging Chainlink Decentralized Oracle Networks (DONs) to provide transparent, parametric micro-insurance. No centralized claims adjusters, just code.
+              Reflex is the first decentralized <strong>Protection Market</strong>, leveraging Chainlink Decentralized Oracle Networks (DONs) to provide transparent, parametric micro-insurance. No centralized claims adjusters, just code.
             </p>
           </div>
 
@@ -158,17 +159,7 @@ export default function Home() {
                   Instant, parametric protection powered by Chainlink Oracles. If your flight is delayed by &gt;2 hours, you get paid automatically.
                 </p>
               </div>
-              {/* Stats */}
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                <div className="glass-panel p-5 rounded-xl flex flex-col gap-1 hover:border-primary/30 transition-colors group">
-                  <span className="text-slate-500 text-xs font-mono uppercase tracking-wider">Total Value Locked</span>
-                  <span className="text-2xl font-bold text-white group-hover:text-primary transition-colors">$4.2M</span>
-                </div>
-                <div className="glass-panel p-5 rounded-xl flex flex-col gap-1 hover:border-neon-cyan/30 transition-colors group">
-                  <span className="text-slate-500 text-xs font-mono uppercase tracking-wider">Claims Paid (24h)</span>
-                  <span className="text-2xl font-bold text-white group-hover:text-neon-cyan transition-colors">$128k</span>
-                </div>
-              </div>
+              <GlobalStats />
               {/* Live Feed */}
               <div className="hidden lg:flex flex-col gap-4 mt-8">
                 <div className="flex items-center justify-between text-sm text-slate-400 border-b border-white/5 pb-2">
@@ -227,7 +218,7 @@ export default function Home() {
                 Powered by <span className="text-neon-cyan">Chainlink</span> DONs
               </h2>
               <p className="text-slate-400 text-lg leading-relaxed">
-                Reflex L1 leverages Chainlink Functions to verify real-world events in a decentralized, trust-minimized way. Our oracle network validates flight statuses and pushes the consensus to the blockchain instantly.
+                Reflex leverages Chainlink Functions to verify real-world events in a decentralized, trust-minimized way. Our oracle network validates flight statuses and pushes the consensus to the blockchain instantly.
               </p>
               <div className="flex flex-col gap-4">
                 <div className="flex items-start gap-4 p-4 rounded-lg bg-background-dark/50 border border-white/5">
@@ -283,7 +274,7 @@ export default function Home() {
           <div className="max-w-4xl mx-auto px-6 text-center">
             <h2 className="text-3xl md:text-5xl font-display font-bold text-white mb-6">Ready to secure your future?</h2>
             <p className="text-slate-400 mb-10 max-w-xl mx-auto">
-              Connect your wallet and explore available micro-insurance pools powered by Reflex L1.
+              Connect your wallet and explore available micro-insurance pools powered by Reflex.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a href="#dashboard" className="dexter-btn-container w-48 relative z-30">
@@ -318,11 +309,14 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex flex-col gap-2 items-center md:items-start">
-              <div className="flex items-center gap-2 text-white font-bold text-xl">
-                <span className="material-symbols-outlined text-primary">bolt</span>
-                Reflex L1
+              <div className="flex items-center text-white font-bold text-xl">
+                <img
+                  src="/logoD.png"
+                  alt="Reflex Logo"
+                  className="h-8 w-auto"
+                />
               </div>
-              <p className="text-slate-500 text-sm">© 2024 Reflex L1. Built on Avalanche.</p>
+              <p className="text-slate-500 text-sm">© 2024 Reflex. Built on Avalanche.</p>
             </div>
             <div className="flex gap-8">
               <a className="text-slate-400 hover:text-white transition-colors" href="#">Privacy Policy</a>
