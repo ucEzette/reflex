@@ -101,13 +101,12 @@ export function Navbar() {
                         >
                             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                         </button>
-                        <Link href="/" className="flex items-center gap-2 group shrink-0" onClick={() => setIsMobileMenuOpen(false)}>
-                            <div className="w-7 h-7 flex items-center justify-center bg-primary rounded-md text-white">
-                                <span className="material-symbols-outlined text-lg">bolt</span>
-                            </div>
-                            <span className="text-lg font-bold tracking-tight text-foreground hidden sm:block">
-                                Reflex
-                            </span>
+                        <Link href="/" className="flex items-center group shrink-0" onClick={() => setIsMobileMenuOpen(false)}>
+                            <img
+                                src="/logoD.png"
+                                alt="Reflex Logo"
+                                className="h-8 w-auto"
+                            />
                         </Link>
                     </div>
 

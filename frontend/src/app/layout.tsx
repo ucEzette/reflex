@@ -7,22 +7,22 @@ import "./globals.css";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-  title: "Reflex L1 | Parametric Micro-Insurance on Avalanche",
+  title: "Reflex | Parametric Protection Market on Avalanche",
   description:
-    "Reflex L1 is a decentralized micro-insurance platform built on Avalanche. Instantly insure against flight delays, crop failures, and climate risks with 24/7 oracle monitoring.",
-  keywords: ["Reflex L1", "Micro-insurance", "Parametric Insurance", "Avalanche", "Blockchain Insurance", "Flight Delay Insurance", "DeFi"],
+    "Reflex is a decentralized protection market built on Avalanche. Instantly insure against flight delays, crop failures, and climate risks with 24/7 oracle monitoring.",
+  keywords: ["Reflex", "Protection Market", "Parametric Insurance", "Avalanche", "Blockchain Insurance", "Flight Delay Insurance", "DeFi"],
   authors: [{ name: "Reflex Protocol Team" }],
   openGraph: {
-    title: "Reflex L1 | Parametric Micro-Insurance on Avalanche",
+    title: "Reflex | Parametric Protection Market on Avalanche",
     description: "Insure your life's edges. Instant payouts, zero claims adjusters, powered by Chainlink.",
     url: "https://reflex.finance",
-    siteName: "Reflex L1",
+    siteName: "Reflex",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Reflex L1 Dashboard Preview",
+        alt: "Reflex Dashboard Preview",
       },
     ],
     locale: "en_US",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Reflex L1 | Parametric Micro-Insurance on Avalanche",
+    title: "Reflex | Parametric Micro-Insurance on Avalanche",
     description: "The first parametric insurance layer for the internet of value. Powered by Avalanche.",
     images: ["/twitter-card.png"],
   },

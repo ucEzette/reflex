@@ -11,13 +11,12 @@ export function Footer() {
 
                     {/* Brand Section */}
                     <div className="space-y-6">
-                        <Link href="/" className="flex items-center gap-2 group">
-                            <div className="w-8 h-8 flex items-center justify-center bg-primary rounded-md text-white">
-                                <span className="material-symbols-outlined text-xl">bolt</span>
-                            </div>
-                            <span className="text-xl font-bold tracking-tight text-foreground">
-                                Reflex <span className="text-primary font-mono text-xs ml-1 uppercase">v1.0</span>
-                            </span>
+                        <Link href="/" className="flex items-center group">
+                            <img
+                                src="/logoD.png"
+                                alt="Reflex Logo"
+                                className="h-8 w-auto"
+                            />
                         </Link>
                         <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
                             The internet of value needs a safety net. Reflex provides hyper-efficient, parametric coverage for the most volatile real-world risks.
@@ -54,6 +53,7 @@ export function Footer() {
                             <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Github className="w-3 h-3" /> GitHub Org</a></li>
                             <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Globe className="w-3 h-3" /> API Reference</a></li>
                             <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Shield className="w-3 h-3" /> Bug Bounty</a></li>
+                            <li><a href="mailto:support@reflex.finance" className="text-sm text-primary hover:text-primary/80 transition-colors flex items-center gap-2 font-bold"><Activity className="w-3 h-3" /> Report Issue</a></li>
                         </ul>
                     </div>
 
