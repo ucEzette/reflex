@@ -96,6 +96,48 @@ export default function CoverageMarketplace() {
                         </label>
                     </div>
                 </div>
+
+                <div className="pt-6 border-t border-border">
+                    <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">How it Works</h3>
+                    <div className="space-y-4">
+                        <div className="flex gap-3">
+                            <div className="w-5 h-5 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                                <span className="text-[10px] font-bold text-primary">1</span>
+                            </div>
+                            <div>
+                                <p className="text-[11px] font-bold text-foreground">Search</p>
+                                <p className="text-[10px] text-muted-foreground leading-tight">Enter your flight or asset details.</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-3">
+                            <div className="w-5 h-5 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                                <span className="text-[10px] font-bold text-primary">2</span>
+                            </div>
+                            <div>
+                                <p className="text-[11px] font-bold text-foreground">Quote</p>
+                                <p className="text-[10px] text-muted-foreground leading-tight">See your custom premium instantly.</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-3">
+                            <div className="w-5 h-5 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                                <span className="text-[10px] font-bold text-primary">3</span>
+                            </div>
+                            <div>
+                                <p className="text-[11px] font-bold text-foreground">Secure</p>
+                                <p className="text-[10px] text-muted-foreground leading-tight">Pay premium to lock protection.</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-3">
+                            <div className="w-5 h-5 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                                <span className="text-[10px] font-bold text-primary">4</span>
+                            </div>
+                            <div>
+                                <p className="text-[11px] font-bold text-foreground">Settle</p>
+                                <p className="text-[10px] text-muted-foreground leading-tight">Auto-payout if event is verified.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </aside>
 
             {/* Main Content area */}

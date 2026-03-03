@@ -62,7 +62,7 @@ export default function DocsPage() {
                             </h2>
                             <div className="glass-panel p-8 rounded-2xl space-y-6">
                                 <p className="text-slate-300 leading-relaxed font-light text-lg">
-                                    Reflex L1 is a decentralized <strong>Protection Market</strong> for Parametric Micro-Insurance. By utilizing immutable smart contracts and high-fidelity oracle data, Reflex eliminates the friction, costs, and subjectivity of traditional insurance claims processing.
+                                    Reflex is a decentralized <strong>Protection Market</strong> for Parametric Micro-Insurance. By utilizing immutable smart contracts and high-fidelity oracle data, Reflex eliminates the friction, costs, and subjectivity of traditional insurance claims processing.
                                 </p>
                                 <blockquote className="border-l-2 border-primary/30 pl-6 py-2 italic text-slate-400 font-light text-sm">
                                     &quot;In a Protection Market, the code is the contract, and the data is the adjuster.&quot;

@@ -16,7 +16,7 @@ interface MarketItem {
 const markets: MarketItem[] = [
     {
         id: "flight",
-        title: "Reflex L1: Flight Delay",
+        title: "Reflex: Flight Delay",
         description: "Instant, automated compensation for travelers stuck at the gate.",
         trigger: "FlightAware AeroAPI / Aviationstack status",
         policy: "If Flight delayed >2h or cancelled ➔ $50 USDC",
