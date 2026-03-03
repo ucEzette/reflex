@@ -2,8 +2,7 @@
 
 import { useAccount, useReadContract, usePublicClient } from "wagmi";
 import { parseAbiItem } from "viem";
-import { ESCROW_ABI } from "@/lib/contracts";
-import { CONTRACTS } from "@/lib/wagmiConfig";
+import { ESCROW_ABI, CONTRACTS } from "@/lib/contracts";
 import { useEffect, useState } from "react";
 import { TableSkeleton } from "@/components/ui/Skeletons";
 
