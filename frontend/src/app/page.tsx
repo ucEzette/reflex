@@ -45,7 +45,7 @@ export default function Home() {
 
             {/* Subhead */}
             <p className="text-lg md:text-xl text-slate-400 max-w-2xl font-light leading-relaxed">
-              Reflex L1 shares the same event-driven strategy as prediction markets, but instead of being a prediction site for speculators, Reflex is a micro-insurance platform. Both crypto natives and traditional users can browse a marketplace of real-world risks, find a policy that matches their daily needs, and buy it to instantly insure themselves against negative events.
+              Reflex L1 is a <strong>Protection Market</strong>. Instead of speculating on outcomes, Reflex is a micro-insurance platform where crypto natives and traditional users can browse a marketplace of real-world risks, find a policy that matches their daily needs, and buy it to instantly insure themselves against negative events.
             </p>
 
             {/* CTAs */}
@@ -116,7 +116,7 @@ export default function Home() {
               </span>
             </h2>
             <p className="mt-6 text-lg text-slate-400 font-light max-w-2xl mx-auto">
-              Reflex L1 leverages Chainlink Decentralized Oracle Networks (DONs) to provide transparent, parametric micro-insurance. No centralized claims adjusters, just code.
+              Reflex L1 is the first decentralized <strong>Protection Market</strong>, leveraging Chainlink Decentralized Oracle Networks (DONs) to provide transparent, parametric micro-insurance. No centralized claims adjusters, just code.
             </p>
           </div>
 

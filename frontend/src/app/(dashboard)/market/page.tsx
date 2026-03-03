@@ -60,7 +60,7 @@ export default function CoverageMarketplace() {
     return (
         <div className="min-h-screen bg-background flex flex-col lg:flex-row pb-12">
 
-            {/* Sidebar Filters (Polymarket Style) */}
+            {/* Sidebar Filters (Protection Market Style) */}
             <aside className="w-full lg:w-64 shrink-0 lg:border-r border-border p-4 lg:p-6 space-y-8 sticky top-16 h-fit lg:h-[calc(100vh-64px)] overflow-y-auto">
                 <div>
                     <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">Categories</h3>

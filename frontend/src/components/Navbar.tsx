@@ -111,7 +111,7 @@ export function Navbar() {
                         </Link>
                     </div>
 
-                    {/* Center: Search Bar (Polymarket Style) */}
+                    {/* Center: Search Bar (Protection Market Style) */}
                     <div className="flex-1 max-w-2xl relative hidden md:block" ref={searchRef}>
                         <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                             <Search className="h-4 w-4 text-muted-foreground" />

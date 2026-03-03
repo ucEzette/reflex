@@ -1,6 +1,6 @@
-# Reflex — Parametric Micro-Insurance L1
+# Reflex — Protection Market for Parametric Micro-Insurance
 
-Reflex is a decentralized parametric micro-insurance protocol built on Avalanche. It allows users and businesses to hedge against real-world risks (weather, travel, catastrophe, energy) using transparent, code-driven policies triggered by Chainlink Decentralized Oracle Networks (DONs).
+Reflex is a decentralized **Protection Market** for parametric micro-insurance built on Avalanche. It allows users and businesses to hedge against real-world risks (weather, travel, catastrophe, energy) using transparent, code-driven policies triggered by Chainlink Decentralized Oracle Networks (DONs).
 
 ## 🚀 Core Value Proposition
 - **Instant Settlement**: No manual claims adjusting. Smart contracts pay out the moment oracle data verifies a trigger.
