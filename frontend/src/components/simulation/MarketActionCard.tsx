@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { ESCROW_ABI, ERC20_ABI, CONTRACTS } from "@/lib/contracts";
 import { POLICY_PREMIUM, POLICY_PAYOUT, POLICY_DURATION_HOURS } from "@/lib/wagmiConfig";
 import { MarketDetail } from "@/lib/market-data";
+import { CrossChainCheckout } from "./CrossChainCheckout";
+import { IpfsService } from "@/services/ipfs";
 
 export function MarketActionCard({ market }: { market: MarketDetail }) {
     const [inputValue, setInputValue] = useState("");
@@ -13,6 +15,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
     // Validation & Checkout State
     const [isValidating, setIsValidating] = useState(false);
     const [purchaseSuccess, setPurchaseSuccess] = useState(false);
+    const [showCrossChain, setShowCrossChain] = useState(false);
 
     /* ── Web3 Integration ── */
     const { address, isConnected } = useAccount();
@@ -61,13 +64,34 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
         });
     };
 
-    const handlePurchase = () => {
-        purchasePolicy({
-            address: CONTRACTS.ESCROW,
-            abi: ESCROW_ABI,
-            functionName: "purchasePolicy",
-            args: [inputValue.trim().toUpperCase(), BigInt(numPremium), BigInt(numPayout), POLICY_DURATION_HOURS],
-        });
+    const handlePurchase = async () => {
+        setIsPurchasing(true); // Move this before async ops
+
+        try {
+            // 1. Pin metadata to IPFS
+            const meta = {
+                marketId: market.id,
+                title: market.title,
+                target: inputValue.trim(),
+                payout: numPayout,
+                timestamp: new Date().toISOString(),
+                policyholder: address
+            };
+
+            const cid = await IpfsService.pinPolicyMetadata(meta);
+            console.log("Policy metadata pinned to IPFS:", cid);
+
+            // 2. Execute on-chain purchase
+            purchasePolicy({
+                address: CONTRACTS.ESCROW,
+                abi: ESCROW_ABI,
+                functionName: "purchasePolicy",
+                args: [inputValue.trim().toUpperCase(), BigInt(numPremium), BigInt(numPayout), POLICY_DURATION_HOURS],
+            });
+        } catch (error) {
+            console.error("Purchase initiation failed:", error);
+            setIsPurchasing(false);
+        }
     };
 
     useEffect(() => {
@@ -137,7 +161,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="text"
                                 placeholder="e.g. California Central Valley"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("zone", e.target.value)}
                             />
                         </div>
@@ -146,7 +170,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="100"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("strike", e.target.value)}
                             />
                         </div>
@@ -155,7 +179,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="20"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("exit", e.target.value)}
                             />
                         </div>
@@ -169,7 +193,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="text"
                                 placeholder="e.g. ERCOT North"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("grid", e.target.value)}
                             />
                         </div>
@@ -178,7 +202,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="150"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("strike", e.target.value)}
                             />
                         </div>
@@ -187,7 +211,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="10"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("tick", e.target.value)}
                             />
                         </div>
@@ -201,7 +225,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="text"
                                 placeholder="34.0522 N, -118.2437 W"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("coords", e.target.value)}
                             />
                         </div>
@@ -210,7 +234,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="50"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("t1", e.target.value)}
                             />
                         </div>
@@ -219,13 +243,239 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="150"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("t2", e.target.value)}
                             />
                         </div>
                     </div>
                 );
-            default:
+            case "maritime":
+                return (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Port Identifier</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Port of Long Beach"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("port", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Wind Strike (knots)</label>
+                            <input
+                                type="number"
+                                placeholder="34"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("strike", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Alert Radius (km)</label>
+                            <input
+                                type="number"
+                                placeholder="10"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("radius", e.target.value)}
+                            />
+                        </div>
+                    </div>
+                );
+            case "heat-wave":
+                return (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Location (ZIP/GPS)</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. 90210"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("location", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Strike Temp (°F)</label>
+                            <input
+                                type="number"
+                                placeholder="100"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("strike", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Min Duration (Days)</label>
+                            <input
+                                type="number"
+                                placeholder="3"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("days", e.target.value)}
+                            />
+                        </div>
+                    </div>
+                );
+            case "sun-yield":
+                return (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Solar Farm Coordinates</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Arizona Desert Plot 4"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("location", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Irradiance Strike (DNI)</label>
+                            <input
+                                type="number"
+                                placeholder="85"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("strike", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Output Target (MWh)</label>
+                            <input
+                                type="number"
+                                placeholder="500"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("target", e.target.value)}
+                            />
+                        </div>
+                    </div>
+                );
+            case "freight-wait":
+                return (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Vessel IMO Number</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. IMO 9857183"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("imo", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Target Port</label>
+                            <input
+                                type="text"
+                                placeholder="Rotterdam"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("port", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Wait Threshold (Hrs)</label>
+                            <input
+                                type="number"
+                                placeholder="48"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("threshold", e.target.value)}
+                            />
+                        </div>
+                    </div>
+                );
+            case "rain-check":
+                return (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Event Venue Coordinates</label>
+                            <input
+                                type="text"
+                                placeholder="34.0522 N, -118.2437 W"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("coords", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Rain Threshold (mm)</label>
+                            <input
+                                type="number"
+                                placeholder="5"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("threshold", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Event Date</label>
+                            <input
+                                type="date"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("date", e.target.value)}
+                            />
+                        </div>
+                    </div>
+                );
+            case "powder-protect":
+                return (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Resort Name</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Aspen Snowmass"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("resort", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Min Base Depth (in)</label>
+                            <input
+                                type="number"
+                                placeholder="12"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("depth", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Arrival Date</label>
+                            <input
+                                type="date"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("date", e.target.value)}
+                            />
+                        </div>
+                    </div>
+                );
+            case "peg-shield":
+                return (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Stablecoin Pair</label>
+                            <select
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("pair", e.target.value)}
+                            >
+                                <option value="USDC/USD">USDC/USD</option>
+                                <option value="USDT/USD">USDT/USD</option>
+                                <option value="DAI/USD">DAI/USD</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">De-peg Strike ($)</label>
+                            <input
+                                type="number"
+                                placeholder="0.98"
+                                step="0.01"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("strike", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Recovery Target ($)</label>
+                            <input
+                                type="number"
+                                placeholder="0.95"
+                                step="0.01"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                onChange={(e) => updateSpec("target", e.target.value)}
+                            />
+                        </div>
+                    </div>
+                );
+            case "flight":
                 return (
                     <div className="space-y-2">
                         <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{getLabel()}</label>
@@ -311,6 +561,29 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
                             <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[10px] uppercase font-mono tracking-widest">{market.marketData.settlement}</span>
                         </button>
+                    </div>
+                )}
+
+                {isConnected && !purchaseSuccess && (
+                    <div className="pt-2 border-t border-white/5 mt-4">
+                        <button
+                            onClick={() => setShowCrossChain(!showCrossChain)}
+                            className="w-full flex items-center justify-between text-[10px] font-bold text-slate-500 hover:text-white transition-colors uppercase tracking-widest group"
+                        >
+                            <span>Pay from another chain?</span>
+                            <span className="material-symbols-outlined text-sm group-hover:translate-x-0.5 transition-transform">
+                                {showCrossChain ? 'expand_less' : 'east'}
+                            </span>
+                        </button>
+
+                        {showCrossChain && (
+                            <CrossChainCheckout
+                                marketId={market.id}
+                                premiumUsdc={numPremium}
+                                targetIdentifier={inputValue}
+                                onSuccess={() => setPurchaseSuccess(true)}
+                            />
+                        )}
                     </div>
                 )}
             </div>
