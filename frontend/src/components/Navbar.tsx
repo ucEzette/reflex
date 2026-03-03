@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useAccount, useReadContract, useDisconnect } from "wagmi";
 import { formatUnits } from "viem";
-import { CONTRACTS } from "@/lib/wagmiConfig";
-import { ERC20_ABI } from "@/lib/contracts";
+import { CONTRACTS, ERC20_ABI } from "@/lib/contracts";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { WalletConnect } from "@/components/WalletConnect";
 import { Search, Wallet, User, Activity as ActivityIcon, BarChart3, Briefcase, ChevronDown, Trophy, Medal, Terminal, Code, Moon, LogOut, Settings, HelpCircle, FileText, CheckCircle2, Eye, EyeOff, TrendingUp, Menu, X } from "lucide-react";

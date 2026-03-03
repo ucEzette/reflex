@@ -35,7 +35,7 @@ export const config = createConfig({
     ssr: false,
 });
 
-import { CONTRACTS } from "./contracts";
+export { CONTRACTS } from "./contracts";
 
 // Policy constants
 export const POLICY_PREMIUM = BigInt(5_000_000); // $5 USDC (6 decimals)
