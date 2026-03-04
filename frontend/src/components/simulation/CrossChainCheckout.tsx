@@ -27,7 +27,7 @@ export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, on
 
     const [selectedChain, setSelectedChain] = useState(SUPPORTED_CHAINS[0]);
     const [isFeeLoading, setIsFeeLoading] = useState(false);
-    const [ccipFee, setCcipFee] = useState<bigint>(0n);
+    const [ccipFee, setCcipFee] = useState<bigint>(BigInt(0));
 
     // Current chain configuration
     const routerAddress = CCIP_CONFIG.ROUTERS[chainId.toString() as keyof typeof CCIP_CONFIG.ROUTERS];
@@ -131,8 +131,8 @@ export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, on
                             key={c.id}
                             onClick={() => switchChain({ chainId: c.id })}
                             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${chainId === c.id
-                                    ? "bg-primary border-primary text-white"
-                                    : "bg-black/40 border-white/10 text-slate-400 hover:border-white/30"
+                                ? "bg-primary border-primary text-white"
+                                : "bg-black/40 border-white/10 text-slate-400 hover:border-white/30"
                                 }`}
                         >
                             {c.name}
@@ -144,11 +144,11 @@ export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, on
             <div className="space-y-2">
                 <div className="flex justify-between text-[11px]">
                     <span className="text-slate-500">Premium Amount</span>
-                    <span className="text-white font-mono">{(premiumUsdc / 1e6).toFixed(2)} USDC</span>
+                    <span className="text-foreground font-mono">{(premiumUsdc / 1e6).toFixed(2)} USDC</span>
                 </div>
                 <div className="flex justify-between text-[11px]">
                     <span className="text-slate-500">Estimated CCIP Fee</span>
-                    <span className="text-white font-mono">{estimatedFee ? `${(Number(estimatedFee) / 1e18).toFixed(4)} ETH` : "Calculating..."}</span>
+                    <span className="text-foreground font-mono">{estimatedFee ? `${(Number(estimatedFee) / 1e18).toFixed(4)} ETH` : "Calculating..."}</span>
                 </div>
                 <div className="h-[1px] bg-white/5 w-full my-2" />
                 <div className="flex justify-between text-xs font-bold">
@@ -171,8 +171,8 @@ export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, on
                     })}
                     disabled={isSending || isSendConfirming || isApproving || isApproveConfirming || !hasEnoughBalance}
                     className={`w-full py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${hasEnoughBalance
-                            ? "bg-primary text-white hover:brightness-110"
-                            : "bg-white/5 text-slate-500 cursor-not-allowed border border-white/5"
+                        ? "bg-primary text-white hover:brightness-110"
+                        : "bg-white/5 text-slate-500 cursor-not-allowed border border-white/5"
                         }`}
                 >
                     {isSending || isSendConfirming || isApproving || isApproveConfirming

@@ -48,7 +48,7 @@ export function PolicyCard({ policy, onClick }: PolicyCardProps) {
                         <Icon className="w-5 h-5" />
                     </div>
                     <div>
-                        <h3 className="font-bold text-white tracking-tight">{policy.metadata.flightNumber || policy.metadata.serviceName || policy.metadata.location}</h3>
+                        <h3 className="font-bold text-foreground tracking-tight">{policy.metadata.flightNumber || policy.metadata.serviceName || policy.metadata.location}</h3>
                         <p className="text-xs text-slate-400 font-mono">{policy.id}</p>
                     </div>
                 </div>
@@ -58,13 +58,13 @@ export function PolicyCard({ policy, onClick }: PolicyCardProps) {
             <div className="space-y-3">
                 <div className="flex justify-between items-baseline">
                     <span className="text-sm text-slate-400">Coverage</span>
-                    <span className="text-lg font-bold text-white tracking-tight">
+                    <span className="text-lg font-bold text-foreground tracking-tight">
                         {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(policy.payout).replace('$', '')} <span className="text-xs text-slate-500 font-medium">USDC</span>
                     </span>
                 </div>
                 <div className="flex justify-between items-baseline">
                     <span className="text-sm text-slate-400">Premium</span>
-                    <span className="text-sm font-medium text-slate-300">
+                    <span className="text-sm font-medium text-foreground">
                         {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(policy.premium).replace('$', '')} <span className="text-[10px] text-slate-500">USDC</span>
                     </span>
                 </div>
