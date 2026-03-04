@@ -199,7 +199,7 @@ export function PolicyDashboard() {
                     <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center">
                         <span className="material-symbols-outlined text-primary text-3xl">account_balance_wallet</span>
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Connect Your Wallet</h3>
+                    <h3 className="text-xl font-bold text-foreground mb-2">Connect Your Wallet</h3>
                     <p className="text-slate-400 text-sm">Connect your wallet to purchase flight delay insurance</p>
                 </div>
             </div>
@@ -214,7 +214,7 @@ export function PolicyDashboard() {
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
                         <span className="material-symbols-outlined text-green-400 text-3xl">verified</span>
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Policy Secured</h3>
+                    <h3 className="text-xl font-bold text-foreground mb-2">Policy Secured</h3>
                     <p className="text-sm text-slate-400 mb-4">Coverage for {flightNumber.toUpperCase()} is active.</p>
                     <a
                         href={`https://testnet.snowtrace.io/tx/${purchaseTxHash}`}
@@ -227,7 +227,7 @@ export function PolicyDashboard() {
                     </a>
                     <button
                         onClick={() => setPurchaseSuccess(false)}
-                        className="mt-8 w-full py-4 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold border border-white/10 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                        className="mt-8 w-full py-4 bg-white/5 hover:bg-white/10 text-foreground rounded-xl font-bold border border-white/10 transition-all hover:scale-[1.01] active:scale-[0.99]"
                     >
                         Purchase Another Policy
                     </button>
@@ -245,7 +245,7 @@ export function PolicyDashboard() {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h3 className="text-xl font-bold text-white mb-1 tracking-tight">Policy Application</h3>
+                        <h3 className="text-xl font-bold text-foreground mb-1 tracking-tight">Policy Application</h3>
                         <p className="text-sm text-slate-400">Calculate premium for instant coverage</p>
                     </div>
                     <div className="hidden sm:block">
@@ -270,7 +270,7 @@ export function PolicyDashboard() {
                                 value={flightNumber}
                                 onChange={(e) => setFlightNumber(e.target.value.toUpperCase())}
                                 placeholder="e.g. EK202"
-                                className={`w-full bg-[#0B0F19] border ${validationError ? 'border-primary/50 focus:border-primary' : flightDetails ? 'border-primary/50 focus:border-primary' : 'border-slate-700/50 focus:border-primary/50'} text-white text-lg placeholder-slate-600 rounded-xl py-4 pl-12 pr-12 focus:outline-none focus:ring-1 ${validationError ? 'focus:ring-primary/20' : 'focus:ring-primary/20'} transition-all font-mono uppercase`}
+                                className={`w-full bg-[#0B0F19] border ${validationError ? 'border-primary/50 focus:border-primary' : flightDetails ? 'border-primary/50 focus:border-primary' : 'border-slate-700/50 focus:border-primary/50'} text-foreground text-lg placeholder-slate-600 rounded-xl py-4 pl-12 pr-12 focus:outline-none focus:ring-1 ${validationError ? 'focus:ring-primary/20' : 'focus:ring-primary/20'} transition-all font-mono uppercase`}
                             />
                             <div className="absolute right-4">
                                 {isValidating ? (
@@ -292,14 +292,14 @@ export function PolicyDashboard() {
                         {flightDetails && (
                             <div className="mt-3 p-3 rounded-lg bg-surface-dark/50 border border-white/5 space-y-2">
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-white font-medium">{flightDetails.airline}</span>
+                                    <span className="text-foreground font-medium">{flightDetails.airline}</span>
                                     <span className="text-slate-400 font-mono text-xs">{flightDetails.status.toUpperCase()}</span>
                                 </div>
                                 <div className="flex items-center gap-4 text-xs mt-4">
                                     <div className="flex flex-col flex-1">
                                         <span className="text-slate-500 font-mono">DEP</span>
-                                        <span className="text-slate-200 font-bold text-lg">{flightDetails.departure.iata}</span>
-                                        <span className="text-white mt-1 flex items-baseline gap-1">
+                                        <span className="text-foreground font-bold text-lg">{flightDetails.departure.iata}</span>
+                                        <span className="text-foreground mt-1 flex items-baseline gap-1">
                                             <span>{formatFlightTime(flightDetails.departure.scheduled, flightDetails.departure.timezone).time}</span>
                                             <span className="text-primary text-xs font-mono font-bold tracking-wider">{formatFlightTime(flightDetails.departure.scheduled, flightDetails.departure.timezone).tzAbbr}</span>
                                         </span>
@@ -312,8 +312,8 @@ export function PolicyDashboard() {
                                     </div>
                                     <div className="flex flex-col flex-1 text-right">
                                         <span className="text-slate-500 font-mono">ARR</span>
-                                        <span className="text-slate-200 font-bold text-lg">{flightDetails.arrival.iata}</span>
-                                        <span className="text-white mt-1 flex items-baseline justify-end gap-1">
+                                        <span className="text-foreground font-bold text-lg">{flightDetails.arrival.iata}</span>
+                                        <span className="text-foreground mt-1 flex items-baseline justify-end gap-1">
                                             <span>{formatFlightTime(flightDetails.arrival.scheduled, flightDetails.arrival.timezone).time}</span>
                                             <span className="text-primary text-xs font-mono font-bold tracking-wider">{formatFlightTime(flightDetails.arrival.scheduled, flightDetails.arrival.timezone).tzAbbr}</span>
                                         </span>
@@ -338,7 +338,7 @@ export function PolicyDashboard() {
                                 type="date"
                                 value={flightDate}
                                 onChange={(e) => setFlightDate(e.target.value)}
-                                className="w-full bg-[#0B0F19] border border-slate-700/50 text-white text-lg placeholder-slate-600 rounded-xl py-4 pl-12 pr-4 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all font-mono [color-scheme:dark]"
+                                className="w-full bg-[#0B0F19] border border-slate-700/50 text-foreground text-lg placeholder-slate-600 rounded-xl py-4 pl-12 pr-4 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all font-mono [color-scheme:dark]"
                             />
                         </div>
                     </div>
@@ -350,7 +350,7 @@ export function PolicyDashboard() {
                             <span className="text-[10px] font-bold bg-primary/20 text-primary px-2 py-0.5 rounded-sm tracking-widest">PREMIUM</span>
                         </div>
                         <div className="flex items-end gap-2 mb-2">
-                            <span className="text-4xl font-bold text-white tracking-tighter">50.00</span>
+                            <span className="text-4xl font-bold text-foreground tracking-tighter">50.00</span>
                             <span className="text-lg font-medium text-slate-500 mb-1.5">USDC</span>
                         </div>
                         <p className="text-[11px] text-slate-500 leading-relaxed">Guaranteed 24/7 monitoring. Immediate payout if departure delay exceeds 120 minutes.</p>

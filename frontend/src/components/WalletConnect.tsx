@@ -5,14 +5,18 @@ import { useState, useRef, useEffect } from "react";
 import { avalancheFuji } from "wagmi/chains";
 import { toast } from "sonner";
 
+const TARGET_CHAIN_ID = avalancheFuji.id;
+const TARGET_CHAIN_NAME = "Avalanche Fuji";
+
 export function WalletConnect() {
     const { address, isConnected, chainId, connector } = useAccount();
     const { connectors, connect, connectAsync, error: connectError } = useConnect();
-    const { switchChain } = useSwitchChain();
+    const { switchChain, switchChainAsync } = useSwitchChain();
     const { disconnect } = useDisconnect();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [mounted, setMounted] = useState(false);
+    const [isSwitching, setIsSwitching] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -20,10 +24,28 @@ export function WalletConnect() {
 
     // Prompt user to switch to Fuji testnet if they are connected to another network
     useEffect(() => {
-        if (isConnected && chainId !== avalancheFuji.id && switchChain) {
-            switchChain({ chainId: avalancheFuji.id });
-        }
-    }, [isConnected, chainId, switchChain]);
+        const performSwitch = async () => {
+            if (isConnected && chainId !== TARGET_CHAIN_ID && switchChainAsync && !isSwitching) {
+                setIsSwitching(true);
+                toast.warning(`Please switch to ${TARGET_CHAIN_NAME}`, {
+                    description: "Reflex requires this network for parametric settlements.",
+                    duration: 5000,
+                });
+                try {
+                    await switchChainAsync({ chainId: TARGET_CHAIN_ID });
+                    toast.success(`Switched to ${TARGET_CHAIN_NAME}`);
+                } catch (e: any) {
+                    console.error("Switch chain error:", e);
+                    toast.error("Network Switch Failed", {
+                        description: `Please manually switch your wallet to ${TARGET_CHAIN_NAME}.`,
+                    });
+                } finally {
+                    setIsSwitching(false);
+                }
+            }
+        };
+        performSwitch();
+    }, [isConnected, chainId, switchChainAsync, isSwitching]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -120,7 +142,7 @@ export function WalletConnect() {
                                 }
                                 setIsOpen(false);
                             }}
-                            className="w-full text-left px-4 py-3 hover:bg-white/5 text-slate-300 hover:text-white transition-colors flex items-center gap-3"
+                            className="w-full text-left px-4 py-3 hover:bg-white/5 text-foreground hover:text-foreground transition-colors flex items-center gap-3"
                         >
                             <span className="material-symbols-outlined text-[18px] text-primary/70">
                                 {connector.name.toLowerCase().includes('walletconnect') ? 'qr_code' :
