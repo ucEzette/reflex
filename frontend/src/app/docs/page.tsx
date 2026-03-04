@@ -7,7 +7,7 @@ export default function DocsPage() {
 
             <div className="max-w-5xl w-full relative z-10 flex flex-col gap-12">
                 <div className="space-y-4">
-                    <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-tight drop-shadow-2xl text-center md:text-left">
+                    <h1 className="text-5xl md:text-7xl font-black text-foreground tracking-tighter leading-tight drop-shadow-2xl text-center md:text-left">
                         Protocol <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">Manual</span>
                     </h1>
                     <p className="text-slate-400 text-xl font-light max-w-3xl leading-relaxed mx-auto md:mx-0 text-center md:text-left">
@@ -21,32 +21,32 @@ export default function DocsPage() {
                         <nav className="space-y-3">
                             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest px-4">Fundamentals</h3>
                             <ul className="space-y-1">
-                                <li><a href="#overview" className="block px-4 py-1.5 text-sm text-slate-300 hover:text-primary transition-colors border-l border-white/5 hover:border-primary">Protocol Overview</a></li>
-                                <li><a href="#policyholders" className="block px-4 py-1.5 text-sm text-slate-300 hover:text-primary transition-colors border-l border-white/5 hover:border-primary">For Policyholders</a></li>
-                                <li><a href="#investors" className="block px-4 py-1.5 text-sm text-slate-300 hover:text-primary transition-colors border-l border-white/5 hover:border-primary">For Investors</a></li>
+                                <li><a href="#overview" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">Protocol Overview</a></li>
+                                <li><a href="#policyholders" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">For Policyholders</a></li>
+                                <li><a href="#investors" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">For Investors</a></li>
                             </ul>
                         </nav>
                         <nav className="space-y-3">
                             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest px-4">Markets</h3>
                             <ul className="space-y-1">
-                                <li><a href="#agriculture" className="block px-4 py-1.5 text-sm text-slate-300 hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Agriculture (Linear)</a></li>
-                                <li><a href="#energy" className="block px-4 py-1.5 text-sm text-slate-300 hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Energy (Tick)</a></li>
-                                <li><a href="#catastrophe" className="block px-4 py-1.5 text-sm text-slate-300 hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Catastrophe (Tiered)</a></li>
-                                <li><a href="#binary" className="block px-4 py-1.5 text-sm text-slate-300 hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Maritime & Travel</a></li>
+                                <li><a href="#agriculture" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Agriculture (Linear)</a></li>
+                                <li><a href="#energy" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Energy (Tick)</a></li>
+                                <li><a href="#catastrophe" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Catastrophe (Tiered)</a></li>
+                                <li><a href="#binary" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Maritime & Travel</a></li>
                             </ul>
                         </nav>
                         <nav className="space-y-3">
                             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest px-4">Technical</h3>
                             <ul className="space-y-1">
-                                <li><a href="#premium-pricing" className="block px-4 py-1.5 text-sm text-slate-300 hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Premium Pricing</a></li>
-                                <li><a href="#lp-tokenomics" className="block px-4 py-1.5 text-sm text-slate-300 hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">LP Tokenomics</a></li>
-                                <li><a href="#oracle-flow" className="block px-4 py-1.5 text-sm text-slate-300 hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Oracle Data Flow</a></li>
-                                <li><a href="#policy-states" className="block px-4 py-1.5 text-sm text-slate-300 hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Policy States</a></li>
-                                <li><a href="#fees" className="block px-4 py-1.5 text-sm text-slate-300 hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Fee Structure</a></li>
-                                <li><a href="#contracts" className="block px-4 py-1.5 text-sm text-slate-300 hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Contracts</a></li>
-                                <li><a href="#security" className="block px-4 py-1.5 text-sm text-slate-300 hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Security</a></li>
-                                <li><a href="#glossary" className="block px-4 py-1.5 text-sm text-slate-300 hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Glossary</a></li>
-                                <li><a href="#faq" className="block px-4 py-1.5 text-sm text-slate-300 hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">FAQ</a></li>
+                                <li><a href="#premium-pricing" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Premium Pricing</a></li>
+                                <li><a href="#lp-tokenomics" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">LP Tokenomics</a></li>
+                                <li><a href="#oracle-flow" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Oracle Data Flow</a></li>
+                                <li><a href="#policy-states" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Policy States</a></li>
+                                <li><a href="#fees" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Fee Structure</a></li>
+                                <li><a href="#contracts" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Contracts</a></li>
+                                <li><a href="#security" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Security</a></li>
+                                <li><a href="#glossary" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">Glossary</a></li>
+                                <li><a href="#faq" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary font-light">FAQ</a></li>
                             </ul>
                         </nav>
                     </aside>
@@ -56,12 +56,12 @@ export default function DocsPage() {
 
                         {/* ═══════════ PROTOCOL OVERVIEW ═══════════ */}
                         <section id="overview" className="scroll-mt-32">
-                            <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
                                 <span className="material-symbols-outlined text-primary text-4xl">travel_explore</span>
                                 Protection Market Mission
                             </h2>
                             <div className="glass-panel p-8 rounded-2xl space-y-6">
-                                <p className="text-slate-300 leading-relaxed font-light text-lg">
+                                <p className="text-foreground leading-relaxed font-light text-lg">
                                     Reflex is a decentralized <strong>Protection Market</strong> for Parametric Micro-Insurance. By utilizing immutable smart contracts and high-fidelity oracle data, Reflex eliminates the friction, costs, and subjectivity of traditional insurance claims processing.
                                 </p>
                                 <blockquote className="border-l-2 border-primary/30 pl-6 py-2 italic text-slate-400 font-light text-sm">
@@ -72,7 +72,7 @@ export default function DocsPage() {
 
                         {/* ═══════════ FOR POLICYHOLDERS ═══════════ */}
                         <section id="policyholders" className="scroll-mt-32">
-                            <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
                                 <span className="material-symbols-outlined text-neon-cyan text-4xl">verified_user</span>
                                 The Policyholder Lifecycle
                             </h2>
@@ -91,7 +91,7 @@ export default function DocsPage() {
                                             <div className={`w-10 h-10 rounded-lg bg-${step.color}/10 flex items-center justify-center text-${step.color}`}>
                                                 <span className="material-symbols-outlined text-xl">{step.icon}</span>
                                             </div>
-                                            <h4 className="text-white font-bold text-sm">{step.title}</h4>
+                                            <h4 className="text-foreground font-bold text-sm">{step.title}</h4>
                                             <p className="text-[11px] text-slate-400 leading-relaxed">{step.desc}</p>
                                         </div>
                                     ))}
@@ -101,17 +101,17 @@ export default function DocsPage() {
 
                         {/* ═══════════ FOR INVESTORS ═══════════ */}
                         <section id="investors" className="scroll-mt-32">
-                            <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
                                 <span className="material-symbols-outlined text-emerald-400 text-4xl">trending_up</span>
                                 The Investor Yield Engine
                             </h2>
                             <div className="glass-panel p-8 rounded-2xl space-y-10">
-                                <p className="text-slate-300 font-light leading-relaxed">
+                                <p className="text-foreground font-light leading-relaxed">
                                     Liquidity Providers (LPs) act as the protocol&apos;s underwriters. By depositing USDC, they provide collateral to back Max Payouts and earn multifaceted yield.
                                 </p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10 border-t border-white/5 pt-10">
                                     <div className="space-y-5">
-                                        <h4 className="text-white font-bold flex items-center gap-2">
+                                        <h4 className="text-foreground font-bold flex items-center gap-2">
                                             <span className="material-symbols-outlined text-emerald-400">account_balance_wallet</span>
                                             Yield Waterfall
                                         </h4>
@@ -125,7 +125,7 @@ export default function DocsPage() {
                                                     <span className="text-[10px] text-emerald-400 font-bold">{item.n}</span>
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs text-white font-bold">{item.title}</p>
+                                                    <p className="text-xs text-foreground font-bold">{item.title}</p>
                                                     <p className="text-[10px] text-slate-500 leading-tight">{item.desc}</p>
                                                 </div>
                                             </div>
@@ -152,7 +152,7 @@ export default function DocsPage() {
                         {/* ═══════════ MARKET MECHANICS ═══════════ */}
                         <section className="scroll-mt-32 space-y-20">
                             <div className="space-y-3">
-                                <h2 className="text-4xl font-black text-white italic tracking-tighter">Market Mechanics</h2>
+                                <h2 className="text-4xl font-black text-foreground italic tracking-tighter">Market Mechanics</h2>
                                 <p className="text-slate-400 font-light max-w-2xl">Industrial specification for each risk index, its mathematical model, and primary data source.</p>
                             </div>
 
@@ -160,7 +160,7 @@ export default function DocsPage() {
                             <div id="agriculture" className="glass-panel p-8 rounded-2xl border-l-4 border-green-500 scroll-mt-32">
                                 <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-3">
                                     <div>
-                                        <h3 className="text-2xl font-bold text-white flex items-center gap-3">
+                                        <h3 className="text-2xl font-bold text-foreground flex items-center gap-3">
                                             <span className="material-symbols-outlined text-green-500 text-3xl">grass</span> Agriculture Index
                                         </h3>
                                         <p className="text-xs text-slate-500 italic mt-1">Dual-Threshold Linear Interpolation (DTLI)</p>
@@ -169,17 +169,17 @@ export default function DocsPage() {
                                 </div>
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                                     <div className="lg:col-span-7 space-y-4">
-                                        <p className="text-sm text-slate-300 font-light leading-relaxed">Hedge against cumulative rainfall variance. Payout scales linearly as precipitation drops from Strike to Exit threshold.</p>
+                                        <p className="text-sm text-foreground font-light leading-relaxed">Hedge against cumulative rainfall variance. Payout scales linearly as precipitation drops from Strike to Exit threshold.</p>
                                         <div className="p-4 bg-black/40 rounded-xl font-mono text-[11px] text-green-400 border border-green-500/20">
-                                            <div className="text-slate-600 mb-1">// Fractional loss between Strike and Exit</div>
+                                            <div className="text-slate-600 mb-1">{'// Fractional loss between Strike and Exit'}</div>
                                             {`Ratio = Clamp((Strike - Actual) / (Strike - Exit), 0, 1);\nPayout = maxPayout × Ratio;`}
                                         </div>
                                     </div>
                                     <div className="lg:col-span-5 space-y-3">
                                         <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-white/5 pb-2">Risk Factors</h5>
-                                        <p className="text-[10px] text-slate-500">• <strong className="text-white">Strike</strong> — mm level where partial payout begins (e.g. 80% of historical mean)</p>
-                                        <p className="text-[10px] text-slate-500">• <strong className="text-white">Exit</strong> — Catastrophic level triggering 100% payout</p>
-                                        <p className="text-[10px] text-slate-500">• <strong className="text-white">Oracle</strong> — NOAA / GHCND cumulative rainfall</p>
+                                        <p className="text-[10px] text-slate-500">• <strong className="text-foreground">Strike</strong> — mm level where partial payout begins (e.g. 80% of historical mean)</p>
+                                        <p className="text-[10px] text-slate-500">• <strong className="text-foreground">Exit</strong> — Catastrophic level triggering 100% payout</p>
+                                        <p className="text-[10px] text-slate-500">• <strong className="text-foreground">Oracle</strong> — NOAA / GHCND cumulative rainfall</p>
                                     </div>
                                 </div>
                             </div>
@@ -188,7 +188,7 @@ export default function DocsPage() {
                             <div id="energy" className="glass-panel p-8 rounded-2xl border-l-4 border-amber-500 scroll-mt-32">
                                 <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-3">
                                     <div>
-                                        <h3 className="text-2xl font-bold text-white flex items-center gap-3">
+                                        <h3 className="text-2xl font-bold text-foreground flex items-center gap-3">
                                             <span className="material-symbols-outlined text-amber-500 text-3xl">bolt</span> Energy Hedge
                                         </h3>
                                         <p className="text-xs text-slate-500 italic mt-1">Incremental Degree Day Accumulator (IDDA)</p>
@@ -197,16 +197,16 @@ export default function DocsPage() {
                                 </div>
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                                     <div className="lg:col-span-7 space-y-4">
-                                        <p className="text-sm text-slate-300 font-light leading-relaxed">Protects against utility price spikes from extreme climate. Tracks HDD/CDD against 18.3°C base.</p>
+                                        <p className="text-sm text-foreground font-light leading-relaxed">Protects against utility price spikes from extreme climate. Tracks HDD/CDD against 18.3°C base.</p>
                                         <div className="p-4 bg-black/40 rounded-xl font-mono text-[11px] text-amber-400 border border-amber-500/20">
                                             {`HDD = Max(0, 18.3 - MeanTemp);\nPayout = Min(MaxPayout, HDD × TickValue);`}
                                         </div>
                                     </div>
                                     <div className="lg:col-span-5 space-y-3">
                                         <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-white/5 pb-2">Factors</h5>
-                                        <p className="text-[10px] text-slate-500">• <strong className="text-white">Tick Value</strong> — USD per Degree Day unit</p>
-                                        <p className="text-[10px] text-slate-500">• <strong className="text-white">Resolution</strong> — 24h oracle cycle</p>
-                                        <p className="text-[10px] text-slate-500">• <strong className="text-white">Oracle</strong> — OpenWeatherMap</p>
+                                        <p className="text-[10px] text-slate-500">• <strong className="text-foreground">Tick Value</strong> — USD per Degree Day unit</p>
+                                        <p className="text-[10px] text-slate-500">• <strong className="text-foreground">Resolution</strong> — 24h oracle cycle</p>
+                                        <p className="text-[10px] text-slate-500">• <strong className="text-foreground">Oracle</strong> — OpenWeatherMap</p>
                                     </div>
                                 </div>
                             </div>
@@ -215,7 +215,7 @@ export default function DocsPage() {
                             <div id="catastrophe" className="glass-panel p-8 rounded-2xl border-l-4 border-red-500 scroll-mt-32">
                                 <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-3">
                                     <div>
-                                        <h3 className="text-2xl font-bold text-white flex items-center gap-3">
+                                        <h3 className="text-2xl font-bold text-foreground flex items-center gap-3">
                                             <span className="material-symbols-outlined text-red-500 text-3xl">earthquake</span> Catastrophe Proximity
                                         </h3>
                                         <p className="text-xs text-slate-500 italic mt-1">Haversine Magnitude-Weighted Tiers</p>
@@ -224,7 +224,7 @@ export default function DocsPage() {
                                 </div>
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                                     <div className="lg:col-span-7 space-y-4">
-                                        <p className="text-sm text-slate-300 font-light leading-relaxed">Payout determined by Haversine distance from user coordinates to USGS-verified epicenter (&gt;5.0 Mw).</p>
+                                        <p className="text-sm text-foreground font-light leading-relaxed">Payout determined by Haversine distance from user coordinates to USGS-verified epicenter (&gt;5.0 Mw).</p>
                                         <div className="p-4 bg-black/40 rounded-xl font-mono text-[11px] text-red-400 border border-red-500/20">
                                             {`Dist = Haversine(User, Epicenter);\nIf (Dist < 25km) → 100% Payout;\nIf (Dist < 50km) → 30% Payout;\nElse → 0;`}
                                         </div>
@@ -239,14 +239,14 @@ export default function DocsPage() {
                             {/* Binary */}
                             <div id="binary" className="grid grid-cols-1 md:grid-cols-2 gap-6 scroll-mt-32">
                                 <div className="glass-panel p-6 rounded-2xl border-t-4 border-indigo-500 space-y-4">
-                                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                    <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                                         <span className="material-symbols-outlined text-indigo-400">sailing</span> Maritime Wind
                                     </h3>
                                     <p className="text-[11px] text-slate-400 font-light leading-relaxed">Binary 100% payout if sustained wind ≥ 35 knots at target IMO location. Oracle: OpenWeatherMap.</p>
                                     <div className="p-2.5 bg-black/40 rounded text-[10px] font-mono text-indigo-300 uppercase">Strike: WIND_GUST ≥ 35 KNT</div>
                                 </div>
                                 <div className="glass-panel p-6 rounded-2xl border-t-4 border-blue-500 space-y-4">
-                                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                    <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                                         <span className="material-symbols-outlined text-blue-400">flight_takeoff</span> Travel Solutions
                                     </h3>
                                     <p className="text-[11px] text-slate-400 font-light leading-relaxed">Binary payout if verified arrival lag ≥ 120 minutes. Oracle: FlightAware AeroAPI.</p>
@@ -257,30 +257,30 @@ export default function DocsPage() {
 
                         {/* ═══════════ PREMIUM PRICING ═══════════ */}
                         <section id="premium-pricing" className="scroll-mt-32">
-                            <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
                                 <span className="material-symbols-outlined text-amber-400 text-4xl">receipt_long</span>
                                 Premium Pricing Mechanics
                             </h2>
                             <div className="glass-panel p-8 rounded-2xl space-y-6">
-                                <p className="text-slate-300 font-light leading-relaxed">
+                                <p className="text-foreground font-light leading-relaxed">
                                     Premiums are priced using an <strong>Expected Loss + Margin</strong> model. The base expected loss is derived from historical data, then a protocol margin is applied.
                                 </p>
                                 <div className="p-5 bg-black/40 rounded-xl font-mono text-xs text-amber-400 border border-amber-500/20 space-y-1">
-                                    <div className="text-slate-600">// TravelSolutions.quotePremium()</div>
+                                    <div className="text-slate-600">{'// TravelSolutions.quotePremium()'}</div>
                                     {`BaseExpectedLoss = (RequestedPayout × nDelayed) / nTotal;\nPremium = BaseExpectedLoss × (10000 + 500) / 10000;`}
-                                    <div className="text-slate-600 mt-2">// PROTOCOL_MARGIN = 500 BPS (5% markup on expected loss)</div>
+                                    <div className="text-slate-600 mt-2">{'// PROTOCOL_MARGIN = 500 BPS (5% markup on expected loss)'}</div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                                     <div className="p-4 bg-white/5 rounded-xl border border-white/10 text-center">
-                                        <p className="text-lg font-black text-white">nDelayed / nTotal</p>
+                                        <p className="text-lg font-black text-foreground">nDelayed / nTotal</p>
                                         <p className="text-[10px] text-slate-500">Historical frequency ratio</p>
                                     </div>
                                     <div className="p-4 bg-white/5 rounded-xl border border-white/10 text-center">
-                                        <p className="text-lg font-black text-white">5%</p>
+                                        <p className="text-lg font-black text-foreground">5%</p>
                                         <p className="text-[10px] text-slate-500">Protocol Margin (500 BPS)</p>
                                     </div>
                                     <div className="p-4 bg-white/5 rounded-xl border border-white/10 text-center">
-                                        <p className="text-lg font-black text-white">EIP-712</p>
+                                        <p className="text-lg font-black text-foreground">EIP-712</p>
                                         <p className="text-[10px] text-slate-500">Signed quote verification</p>
                                     </div>
                                 </div>
@@ -289,12 +289,12 @@ export default function DocsPage() {
 
                         {/* ═══════════ LP TOKENOMICS ═══════════ */}
                         <section id="lp-tokenomics" className="scroll-mt-32">
-                            <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
                                 <span className="material-symbols-outlined text-purple-400 text-4xl">token</span>
                                 LP Share Tokenomics
                             </h2>
                             <div className="glass-panel p-8 rounded-2xl space-y-6">
-                                <p className="text-slate-300 font-light leading-relaxed">
+                                <p className="text-foreground font-light leading-relaxed">
                                     LP shares follow an <strong>ERC-4626-style vault model</strong>. Shares represent a proportional claim on the pool&apos;s total assets (local USDC + Aave aUSDC balance).
                                 </p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -316,7 +316,7 @@ export default function DocsPage() {
 
                         {/* ═══════════ ORACLE DATA FLOW ═══════════ */}
                         <section id="oracle-flow" className="scroll-mt-32">
-                            <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
                                 <span className="material-symbols-outlined text-cyan-400 text-4xl">device_hub</span>
                                 Oracle Data Flow
                             </h2>
@@ -333,7 +333,7 @@ export default function DocsPage() {
                                         <div key={s.step} className={`flex items-center gap-4 p-4 bg-${s.color}-500/5 rounded-xl border border-${s.color}-500/10`}>
                                             <div className={`w-8 h-8 rounded-full bg-${s.color}-500/20 flex items-center justify-center text-${s.color}-400 font-black text-xs shrink-0`}>{s.step}</div>
                                             <div>
-                                                <p className="text-xs text-white font-bold">{s.label}</p>
+                                                <p className="text-xs text-foreground font-bold">{s.label}</p>
                                                 <p className="text-[10px] text-slate-500">{s.desc}</p>
                                             </div>
                                         </div>
@@ -344,7 +344,7 @@ export default function DocsPage() {
 
                         {/* ═══════════ POLICY STATES ═══════════ */}
                         <section id="policy-states" className="scroll-mt-32">
-                            <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
                                 <span className="material-symbols-outlined text-sky-400 text-4xl">swap_horiz</span>
                                 Policy Lifecycle States
                             </h2>
@@ -352,17 +352,17 @@ export default function DocsPage() {
                                 <div className="grid grid-cols-3 gap-4">
                                     <div className="p-5 bg-blue-500/5 border border-blue-500/10 rounded-xl text-center space-y-2">
                                         <div className="text-3xl font-black text-blue-400">0</div>
-                                        <p className="text-xs text-white font-bold">Active</p>
+                                        <p className="text-xs text-foreground font-bold">Active</p>
                                         <p className="text-[10px] text-slate-500">Policy is live, oracle is monitoring the target. Max payout is locked in the LP pool.</p>
                                     </div>
                                     <div className="p-5 bg-emerald-500/5 border border-emerald-500/10 rounded-xl text-center space-y-2">
                                         <div className="text-3xl font-black text-emerald-400">1</div>
-                                        <p className="text-xs text-white font-bold">Claimed</p>
+                                        <p className="text-xs text-foreground font-bold">Claimed</p>
                                         <p className="text-[10px] text-slate-500">Event breached threshold. USDC payout was released to the policyholder.</p>
                                     </div>
                                     <div className="p-5 bg-slate-500/5 border border-slate-500/10 rounded-xl text-center space-y-2">
                                         <div className="text-3xl font-black text-slate-400">2</div>
-                                        <p className="text-xs text-white font-bold">Expired</p>
+                                        <p className="text-xs text-foreground font-bold">Expired</p>
                                         <p className="text-[10px] text-slate-500">Policy expired without a trigger event. Max payout reservation is released back to the LP pool.</p>
                                     </div>
                                 </div>
@@ -372,7 +372,7 @@ export default function DocsPage() {
 
                         {/* ═══════════ FEE STRUCTURE ═══════════ */}
                         <section id="fees" className="scroll-mt-32">
-                            <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
                                 <span className="material-symbols-outlined text-orange-400 text-4xl">price_change</span>
                                 Fee Structure
                             </h2>
@@ -387,7 +387,7 @@ export default function DocsPage() {
                                                 <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-widest">Destination</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="text-xs text-slate-300">
+                                        <tbody className="text-xs text-foreground">
                                             <tr className="border-b border-white/5"><td className="py-3 font-bold">Origination Fee</td><td>3% (300 BPS)</td><td>Policyholder</td><td>Protocol Treasury</td></tr>
                                             <tr className="border-b border-white/5"><td className="py-3 font-bold">Protocol Margin</td><td>5% (500 BPS)</td><td>Policyholder</td><td>Baked into premium pricing</td></tr>
                                             <tr className="border-b border-white/5"><td className="py-3 font-bold">Performance Fee</td><td>10% (1000 BPS)</td><td>LP Yield</td><td>Protocol Treasury</td></tr>
@@ -400,7 +400,7 @@ export default function DocsPage() {
 
                         {/* ═══════════ CONTRACT ADDRESSES ═══════════ */}
                         <section id="contracts" className="scroll-mt-32">
-                            <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
                                 <span className="material-symbols-outlined text-violet-400 text-4xl">code</span>
                                 Contract Addresses
                             </h2>
@@ -417,7 +417,7 @@ export default function DocsPage() {
                                     { name: "USDC (Mock)", addr: "0x5425890298aed601595a70AB815c96711a31Bc65" },
                                 ].map((c) => (
                                     <div key={c.name} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
-                                        <span className="text-xs text-white font-bold">{c.name}</span>
+                                        <span className="text-xs text-foreground font-bold">{c.name}</span>
                                         <code className="text-[10px] text-slate-400 font-mono truncate max-w-[300px]">{c.addr}</code>
                                     </div>
                                 ))}
@@ -426,35 +426,35 @@ export default function DocsPage() {
 
                         {/* ═══════════ SECURITY ═══════════ */}
                         <section id="security" className="scroll-mt-32">
-                            <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
                                 <span className="material-symbols-outlined text-emerald-400 text-4xl">verified</span>
                                 Protocol Guardrails
                             </h2>
                             <div className="glass-panel p-8 rounded-2xl space-y-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-4">
-                                        <h4 className="text-white font-bold text-sm border-b border-white/5 pb-2">Solvency Invariant</h4>
+                                        <h4 className="text-foreground font-bold text-sm border-b border-white/5 pb-2">Solvency Invariant</h4>
                                         <div className="p-4 bg-black/40 rounded-lg text-emerald-400 font-mono text-xs">
                                             {`totalAssets() >= totalMaxPayouts\n// Checked in routePremiumAndReserve()\n// Enforced: new policies revert if violated`}
                                         </div>
                                     </div>
                                     <div className="space-y-4">
-                                        <h4 className="text-white font-bold text-sm border-b border-white/5 pb-2">Oracle Trust</h4>
+                                        <h4 className="text-foreground font-bold text-sm border-b border-white/5 pb-2">Oracle Trust</h4>
                                         <p className="text-[11px] text-slate-400 leading-relaxed">Multi-node Chainlink DON consensus. EIP-712 signed quotes prevent unauthorized premium manipulation. Only the authorizedQuoter can sign valid quotes.</p>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-6 border-t border-white/5">
-                                    <div className="text-center"><p className="text-2xl font-black text-white">640k+</p><p className="text-[10px] text-slate-500 font-bold uppercase">Fuzz Sequences</p></div>
-                                    <div className="text-center"><p className="text-2xl font-black text-white">100%</p><p className="text-[10px] text-slate-500 font-bold uppercase">Escrow Backed</p></div>
-                                    <div className="text-center"><p className="text-2xl font-black text-white">$10M</p><p className="text-[10px] text-slate-500 font-bold uppercase">Tx Cap</p></div>
-                                    <div className="text-center"><p className="text-2xl font-black text-white">0s</p><p className="text-[10px] text-slate-500 font-bold uppercase">Claim Delay</p></div>
+                                    <div className="text-center"><p className="text-2xl font-black text-foreground">640k+</p><p className="text-[10px] text-slate-500 font-bold uppercase">Fuzz Sequences</p></div>
+                                    <div className="text-center"><p className="text-2xl font-black text-foreground">100%</p><p className="text-[10px] text-slate-500 font-bold uppercase">Escrow Backed</p></div>
+                                    <div className="text-center"><p className="text-2xl font-black text-foreground">$10M</p><p className="text-[10px] text-slate-500 font-bold uppercase">Tx Cap</p></div>
+                                    <div className="text-center"><p className="text-2xl font-black text-foreground">0s</p><p className="text-[10px] text-slate-500 font-bold uppercase">Claim Delay</p></div>
                                 </div>
                             </div>
                         </section>
 
                         {/* ═══════════ GLOSSARY ═══════════ */}
                         <section id="glossary" className="scroll-mt-32">
-                            <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
                                 <span className="material-symbols-outlined text-pink-400 text-4xl">menu_book</span>
                                 Glossary
                             </h2>
@@ -475,7 +475,7 @@ export default function DocsPage() {
                                         { term: "Solvency Invariant", def: "totalAssets() ≥ totalMaxPayouts must hold at all times." },
                                     ].map((g) => (
                                         <div key={g.term} className="py-2 border-b border-white/5">
-                                            <span className="text-xs text-white font-bold">{g.term}</span>
+                                            <span className="text-xs text-foreground font-bold">{g.term}</span>
                                             <span className="text-[10px] text-slate-500 ml-2">— {g.def}</span>
                                         </div>
                                     ))}
@@ -485,7 +485,7 @@ export default function DocsPage() {
 
                         {/* ═══════════ FAQ ═══════════ */}
                         <section id="faq" className="scroll-mt-32">
-                            <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
                                 <span className="material-symbols-outlined text-teal-400 text-4xl">help_center</span>
                                 FAQ & Edge Cases
                             </h2>
@@ -499,7 +499,7 @@ export default function DocsPage() {
                                     { q: "How are gas costs handled?", a: "Policyholders pay gas for purchasePolicy(). Claim execution and policy expiration gas is covered by the Relayer/Keeper infrastructure." },
                                 ].map((faq) => (
                                     <div key={faq.q} className="glass-panel p-6 rounded-xl">
-                                        <h4 className="text-sm text-white font-bold mb-2">{faq.q}</h4>
+                                        <h4 className="text-sm text-foreground font-bold mb-2">{faq.q}</h4>
                                         <p className="text-[11px] text-slate-400 leading-relaxed font-light">{faq.a}</p>
                                     </div>
                                 ))}
