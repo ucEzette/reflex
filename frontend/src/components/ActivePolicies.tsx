@@ -3,6 +3,7 @@
 import { useAccount, useReadContract, usePublicClient } from "wagmi";
 import { parseAbiItem } from "viem";
 import { ESCROW_ABI, CONTRACTS } from "@/lib/contracts";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { TableSkeleton } from "@/components/ui/Skeletons";
 
@@ -101,7 +102,7 @@ function PolicyRow({ policyId, txHash }: { policyId: string, txHash?: string }) 
                             <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" fill="currentColor" />
                         </svg>
                     </div>
-                    <span className="text-sm font-medium text-white">{flightNumber}</span>
+                    <span className="text-sm font-medium text-foreground">{flightNumber}</span>
                 </div>
             </td>
             <td className="px-4 py-4">
@@ -127,20 +128,42 @@ function PolicyRow({ policyId, txHash }: { policyId: string, txHash?: string }) 
                     <span className="text-xs font-mono text-zinc-400">
                         {policyId.slice(0, 10)}...
                     </span>
-                    {txHash && (
-                        <a
-                            href={`https://testnet.snowscan.xyz/tx/${txHash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex max-w-max items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-800/50 text-[10px] text-sky-400 hover:text-sky-300 hover:bg-zinc-800 transition-colors border border-zinc-800"
+                    {!isActive && !isClaimed && (
+                        <Link
+                            href={`/claims/evidence/${policyId}`}
+                            className="inline-flex max-w-max items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 text-[10px] text-amber-400 hover:text-amber-300 hover:bg-amber-500/20 transition-colors border border-amber-500/20"
                         >
-                            <span>Snowscan</span>
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                                <polyline points="15 3 21 3 21 9" />
-                                <line x1="10" y1="14" x2="21" y2="3" />
-                            </svg>
-                        </a>
+                            <span className="material-symbols-outlined !text-[12px]">gavel</span>
+                            <span>Dispute</span>
+                        </Link>
+                    )}
+                    {txHash && (
+                        <div className="flex items-center gap-2">
+                            <a
+                                href={`https://testnet.snowscan.xyz/tx/${txHash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex max-w-max items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-800/50 text-[10px] text-sky-400 hover:text-sky-300 hover:bg-zinc-800 transition-colors border border-zinc-800"
+                            >
+                                <span>Snowscan</span>
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                    <polyline points="15 3 21 3 21 9" />
+                                    <line x1="10" y1="14" x2="21" y2="3" />
+                                </svg>
+                            </a>
+                            <a
+                                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I just secured ${payoutAmount ? `$${(Number(payoutAmount) / 1e6).toFixed(0)}` : "parametric"} protection on @ReflexProtocol! 🛡️\n\nMy policy for ${flightNumber} is now live on Avalanche. \n\n#Reflex #DeFi #Avalanche`)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex max-w-max items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-[10px] text-primary hover:bg-primary/20 transition-colors border border-primary/20"
+                            >
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.451-6.231zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" />
+                                </svg>
+                                <span>Share</span>
+                            </a>
+                        </div>
                     )}
                 </div>
             </td>
@@ -208,13 +231,13 @@ export function ActivePolicies() {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-500 flex items-center justify-center">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-white">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-foreground">
                                 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" fill="currentColor" />
                                 <path d="M7 12h2v5H7v-5zm4-3h2v8h-2V9zm4-2h2v10h-2V7z" fill="currentColor" />
                             </svg>
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-white">Your Policies</h2>
+                            <h2 className="text-xl font-bold text-foreground">Your Policies</h2>
                             <p className="text-sm text-zinc-500">
                                 {policyIds ? `${policyIds.length} policies found` : "Loading..."}
                             </p>
