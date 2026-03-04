@@ -535,5 +535,6 @@ export default function ProductDynamicPage({ params }: { params: { product: stri
                     </div>
                 </div>
             </div>
-            );
+        </div>
+    );
 }
