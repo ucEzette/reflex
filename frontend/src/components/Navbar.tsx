@@ -14,21 +14,8 @@ export function Navbar() {
     const { address, isConnected: authenticated, connector } = useAccount();
     const { disconnect } = useDisconnect();
 
-    const { data: balanceData } = useReadContract({
-        address: CONTRACTS.USDC,
-        abi: ERC20_ABI,
-        functionName: 'balanceOf',
-        args: address ? [address as `0x${string}`] : undefined,
-        query: {
-            enabled: !!address,
-        }
-    });
-
-    const displayBalance = balanceData ? Number(formatUnits(balanceData as bigint, 6)) : 0;
-
     const [searchQuery, setSearchQuery] = useState("");
     const [isProfileOpen, setIsProfileOpen] = useState(false);
-    const [isBalanceHidden, setIsBalanceHidden] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [searchResults, setSearchResults] = useState<MarketDetail[]>([]);
@@ -57,13 +44,20 @@ export function Navbar() {
     // Search Logic
     useEffect(() => {
         if (!searchQuery.trim()) {
-            setSearchResults([]);
+            // Show popular/featured markets when empty but focused
+            const popular = ALL_MARKETS.filter(m =>
+                ['flight', 'rainfall', 'usdc'].includes(m.id)
+            ).slice(0, 3);
+            setSearchResults(popular);
             return;
         }
+
+        const query = searchQuery.toLowerCase();
         const filtered = ALL_MARKETS.filter(m =>
-            m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            m.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            m.riskBase.toLowerCase().includes(searchQuery.toLowerCase())
+            m.title.toLowerCase().includes(query) ||
+            m.description.toLowerCase().includes(query) ||
+            m.riskBase.toLowerCase().includes(query) ||
+            m.id.toLowerCase().includes(query)
         ).slice(0, 5);
         setSearchResults(filtered);
     }, [searchQuery]);
@@ -81,7 +75,6 @@ export function Navbar() {
     const mobileNavLinks = [
         { href: "/market", label: "Markets", icon: <BarChart3 className="w-5 h-5" /> },
         { href: "/dashboard", label: "Portfolio", icon: <Briefcase className="w-5 h-5" /> },
-        { href: "/transparency", label: "Activity", icon: <ActivityIcon className="w-5 h-5" /> },
         { href: "/invest", label: "Invest", icon: <TrendingUp className="w-5 h-5" /> },
         { href: "/analytics", label: "Analytics", icon: <BarChart3 className="w-5 h-5" /> },
         { href: "/docs", label: "Docs", icon: <FileText className="w-5 h-5" /> },
@@ -125,15 +118,17 @@ export function Navbar() {
                         />
 
                         {/* Search Results Dropdown */}
-                        {isSearchFocused && searchQuery.trim() !== "" && (
+                        {isSearchFocused && (
                             <div className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-xl border border-border rounded-xl shadow-2xl overflow-hidden z-50">
                                 {searchResults.length > 0 ? (
                                     <div className="py-2">
-                                        <div className="px-4 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest border-b border-border/50 mb-1">Markets</div>
+                                        <div className="px-4 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest border-b border-border/50 mb-1">
+                                            {searchQuery.trim() === "" ? "🔥 Popular Markets" : "Markets"}
+                                        </div>
                                         {searchResults.map(market => (
                                             <Link
                                                 key={market.id}
-                                                href={`/markets/${market.id}`}
+                                                href={`/market/${market.id}`}
                                                 onClick={() => {
                                                     setIsSearchFocused(false);
                                                     setSearchQuery("");
@@ -152,7 +147,7 @@ export function Navbar() {
                                     </div>
                                 ) : (
                                     <div className="px-4 py-8 text-center">
-                                        <p className="text-sm text-muted-foreground">No markets found for "{searchQuery}"</p>
+                                        <p className="text-sm text-muted-foreground">No markets found for &quot;{searchQuery}&quot;</p>
                                     </div>
                                 )}
                             </div>
@@ -170,10 +165,6 @@ export function Navbar() {
                             <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
                                 <Briefcase className="w-4 h-4" />
                                 Portfolio
-                            </Link>
-                            <Link href="/transparency" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
-                                <ActivityIcon className="w-4 h-4" />
-                                Activity
                             </Link>
                             <Link href="/invest" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
                                 <TrendingUp className="w-4 h-4" />
@@ -195,29 +186,8 @@ export function Navbar() {
                                 <WalletConnect />
                             ) : (
                                 <div className="flex items-center gap-4">
-                                    {/* Balance (Polymarket style) */}
+                                    {/* WalletConnect Only */}
                                     <div className="flex items-center gap-4">
-                                        <div className="flex items-center gap-2 mr-2">
-                                            <button
-                                                onClick={() => setIsBalanceHidden(!isBalanceHidden)}
-                                                className="text-slate-400 hover:text-white transition-colors"
-                                            >
-                                                {isBalanceHidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                            </button>
-                                            <div className="flex flex-col items-end hidden sm:flex">
-                                                <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Portfolio</span>
-                                                <span className="text-sm font-bold text-slate-200">
-                                                    {isBalanceHidden ? '***' : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(displayBalance)}
-                                                </span>
-                                            </div>
-                                            <div className="flex flex-col items-end hidden sm:flex">
-                                                <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Cash</span>
-                                                <span className="text-sm font-bold text-slate-200">
-                                                    {isBalanceHidden ? '***' : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(displayBalance)}
-                                                </span>
-                                            </div>
-                                        </div>
-
                                         <WalletConnect />
                                     </div>
 
@@ -235,29 +205,29 @@ export function Navbar() {
 
                                         {/* Dropdown Menu */}
                                         {isProfileOpen && (
-                                            <div className="absolute right-0 mt-2 w-72 rounded-xl border border-white/10 bg-surface-dark/95 backdrop-blur-xl shadow-2xl py-2 z-50 text-sm overflow-hidden flex flex-col">
+                                            <div className="absolute right-0 mt-2 w-72 rounded-xl border border-border bg-card/95 backdrop-blur-xl shadow-2xl py-2 z-50 text-sm overflow-hidden flex flex-col">
                                                 {/* Header */}
-                                                <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
+                                                <div className="px-4 py-3 border-b border-border flex items-center justify-between">
                                                     <div className="flex items-center gap-3">
                                                         <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-green-400 via-blue-500 to-purple-500 opacity-80" />
                                                         <div className="flex flex-col">
-                                                            <span className="font-bold text-white text-base">reflex_user</span>
-                                                            <span className="text-xs font-mono text-slate-400">
+                                                            <span className="font-bold text-foreground text-base">reflex_user</span>
+                                                            <span className="text-xs font-mono text-muted-foreground">
                                                                 {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '0x000...000'}
                                                                 <span className="material-symbols-outlined text-[10px] ml-1 opacity-50">content_copy</span>
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    <Link href="/dashboard" className="text-slate-400 hover:text-white transition-colors cursor-pointer z-50 p-1" onClick={() => setIsProfileOpen(false)}>
+                                                    <Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer z-50 p-1" onClick={() => setIsProfileOpen(false)}>
                                                         <Settings className="w-5 h-5 pointer-events-none" />
                                                     </Link>
                                                 </div>
 
                                                 {/* Top Switches / Actions */}
-                                                <div className="py-2 border-b border-white/5 flex flex-col gap-1">
-                                                    <div className="w-full px-4 py-1.5 flex items-center justify-between text-slate-300">
-                                                        <div className="flex items-center gap-3">
-                                                            <Moon className="w-4 h-4 text-slate-400" /> Dark mode
+                                                <div className="py-2 border-b border-border flex flex-col gap-1">
+                                                    <div className="w-full px-4 py-1.5 flex items-center justify-between text-muted-foreground">
+                                                        <div className="flex items-center gap-3 text-foreground">
+                                                            <Moon className="w-4 h-4 text-muted-foreground" /> Dark mode
                                                         </div>
                                                         <div className="scale-75 origin-right">
                                                             <ThemeToggle />
@@ -266,12 +236,12 @@ export function Navbar() {
                                                 </div>
 
                                                 {/* Links */}
-                                                <div className="py-2 border-b border-white/5">
-                                                    <Link href="/transparency" className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white" onClick={() => setIsProfileOpen(false)}>Activity</Link>
-                                                    <button className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white">Support</button>
-                                                    <Link href="/docs" className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white" onClick={() => setIsProfileOpen(false)}>Documentation</Link>
-                                                    <button className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white">Help Center</button>
-                                                    <button className="w-full px-4 py-1.5 flex text-left hover:bg-white/5 transition-colors text-slate-400 hover:text-white">Terms of Use</button>
+                                                <div className="py-2 border-b border-border">
+                                                    <Link href="/profile" className="w-full px-4 py-1.5 flex text-left hover:bg-accent transition-colors text-muted-foreground hover:text-foreground" onClick={() => setIsProfileOpen(false)}>My Profile</Link>
+                                                    <button className="w-full px-4 py-1.5 flex text-left hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">Support</button>
+                                                    <Link href="/docs" className="w-full px-4 py-1.5 flex text-left hover:bg-accent transition-colors text-muted-foreground hover:text-foreground" onClick={() => setIsProfileOpen(false)}>Documentation</Link>
+                                                    <button className="w-full px-4 py-1.5 flex text-left hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">Help Center</button>
+                                                    <button className="w-full px-4 py-1.5 flex text-left hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">Terms of Use</button>
                                                 </div>
 
                                                 {/* Footer Logging out */}
@@ -334,19 +304,8 @@ export function Navbar() {
                             ))}
                         </div>
                         {authenticated && (
-                            <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between">
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Balance</span>
-                                    <span className="text-lg font-bold text-foreground">
-                                        {isBalanceHidden ? '•••' : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(displayBalance)}
-                                    </span>
-                                </div>
-                                <button
-                                    onClick={() => setIsBalanceHidden(!isBalanceHidden)}
-                                    className="text-muted-foreground hover:text-foreground transition-colors p-2"
-                                >
-                                    {isBalanceHidden ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                </button>
+                            <div className="px-6 py-4 border-t border-border flex items-center justify-between">
+                                {/* Wallet context here if needed */}
                             </div>
                         )}
                     </div>

@@ -56,13 +56,13 @@ export function GlobalStats() {
         <div className="grid grid-cols-2 gap-4 mt-4">
             <div className="glass-panel p-5 rounded-xl flex flex-col gap-1 hover:border-primary/30 transition-colors group">
                 <span className="text-slate-500 text-xs font-mono uppercase tracking-wider">Total Value Locked</span>
-                <span className="text-2xl font-bold text-white group-hover:text-primary transition-colors">
+                <span className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
                     {formatCurrency(tvl)}
                 </span>
             </div>
             <div className="glass-panel p-5 rounded-xl flex flex-col gap-1 hover:border-neon-cyan/30 transition-colors group">
                 <span className="text-slate-500 text-xs font-mono uppercase tracking-wider">Active Protection</span>
-                <span className="text-2xl font-bold text-white group-hover:text-neon-cyan transition-colors">
+                <span className="text-2xl font-bold text-foreground group-hover:text-neon-cyan transition-colors">
                     {formatCurrency(payouts)}
                 </span>
             </div>
