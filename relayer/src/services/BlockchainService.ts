@@ -8,6 +8,7 @@ const ESCROW_ABI = [
     "function getPolicy(bytes32 _policyId) view returns (address policyholder, string apiTarget, uint256 premiumPaid, uint256 payoutAmount, uint256 expirationTime, bool isActive, bool isClaimed)",
     "event PolicyPurchased(bytes32 indexed policyId, address indexed policyholder, string apiTarget, uint256 premiumPaid, uint256 payoutAmount, uint256 expirationTime)",
     "function requestFlightStatus(bytes32 _policyId, string[] calldata _args) returns (bytes32)",
+    "function submitRelayerConsensus(bytes32 _policyId) external",
     "function authorizedRelayers(address _relayer) view returns (bool)",
     "function addRelayer(address _relayer) external"
 ];
@@ -145,6 +146,14 @@ export class BlockchainService {
         });
     }
 
+    async submitRelayerConsensus(policyId: string): Promise<string> {
+        return withRetry(async () => {
+            const tx = await this.escrow.submitRelayerConsensus(policyId);
+            const receipt = await tx.wait();
+            return receipt.hash;
+        });
+    }
+
     // ── Enterprise Product Methods ──
 
     async getActiveEnterprisePolicies(): Promise<EnterprisePolicy[]> {
@@ -202,12 +211,36 @@ export class BlockchainService {
         return false;
     }
 
+    async executeEnterpriseClaim(productName: string, policyId: string, actualIndex: number): Promise<string> {
+        const contract = this.enterpriseContracts.get(productName);
+        if (!contract) throw new Error(`Unknown product: ${productName}`);
+
+        return withRetry(async () => {
+            const tx = await contract.executeClaim(policyId, actualIndex);
+            const receipt = await tx.wait();
+            return receipt.hash;
+        });
+    }
+
     async expirePolicy(productName: string, policyId: string): Promise<string> {
         const contract = this.enterpriseContracts.get(productName);
         if (!contract) throw new Error(`Unknown product: ${productName}`);
 
         return withRetry(async () => {
             const tx = await contract.expirePolicy(policyId);
+            const receipt = await tx.wait();
+            return receipt.hash;
+        });
+    }
+
+    async submitExternalConsensus(productName: string, policyId: string, payout: string): Promise<string> {
+        const contract = this.enterpriseContracts.get(productName);
+        if (!contract) throw new Error(`Unknown product: ${productName}`);
+        if (!this.escrow) throw new Error("Escrow contract not initialized for consensus");
+
+        return withRetry(async () => {
+            const contractAddress = await contract.getAddress();
+            const tx = await this.escrow.submitExternalConsensus(contractAddress, policyId, payout);
             const receipt = await tx.wait();
             return receipt.hash;
         });
