@@ -38,6 +38,22 @@ export const ERC20_ABI = parseAbi([
 ]);
 
 // Agriculture, Energy, Catastrophe, and Maritime all follow similar patterns
+
+export const ESCROW_ABI = parseAbi([
+    "function getVoteDetails(bytes32 _policyId) view returns (uint256 currentVotes, uint256 required)",
+    "function submitRelayerConsensus(bytes32 _policyId) external",
+    "function submitExternalConsensus(address _product, bytes32 _policyId, uint256 _payout) external",
+    "function authorizedRelayers(address _relayer) view returns (bool)",
+    "function addAuthorizedRelayer(address _relayer) external",
+    "function removeAuthorizedRelayer(address _relayer) external",
+    "function updateQuorum(uint256 _newQuorum) external",
+    "function requiredQuorum() view returns (uint256)",
+    "event RelayerAdded(address relayer)",
+    "event RelayerRemoved(address relayer)",
+    "event QuorumUpdated(uint256 newQuorum)",
+    "function getUserPolicies(address _user) view returns (bytes32[])",
+    "function getPolicy(bytes32 _policyId) view returns (address policyholder, string memory apiTarget, uint256 premiumPaid, uint256 payoutAmount, uint256 expirationTime, bool isActive, bool isClaimed)"
+]);
 export const GENERIC_PRODUCT_ABI = parseAbi([
     "function quotePremium(uint256 expectedRiskBase) view returns (uint256)",
     "function purchasePolicy(string, uint256, uint256, uint256, uint256, uint256) external returns (bytes32)",

@@ -93,15 +93,27 @@ export const CATASTROPHE_ABI = GENERIC_PRODUCT_ABI;
 export const MARITIME_ABI = GENERIC_PRODUCT_ABI;
 
 export const CONTRACTS = {
-    ESCROW: "0xb8387c02a388387c02a388387c02a388387c02a388" as `0x${string}`,
+    ESCROW: "0x64ab02e78655f0dfda736200f28a96ba93c19942" as `0x${string}`,
     USDC: "0x5425890298aed601595a70AB815c96711a31Bc65" as `0x${string}`,
 
-    // Phase 72: Redeployed Enterprise Contracts (USDC flow fix + Keeper hooks)
-    LP_POOL: "0xb4741AD6436023f275fD1725B0Df1042dDFd44Cc" as `0x${string}`,
-    PRODUCT_FACTORY: "0xEDA58669214Ab2342bfD42f41FC8E4674931D72F" as `0x${string}`,
-    TRAVEL: "0x860f5d9e6A6F7C2A6dBe8c396CA5dc37f298f86b" as `0x${string}`,
-    AGRI: "0xA63CdC07ebC3B2deAF5faD45aabC35C2Dd86fF80" as `0x${string}`,
-    ENERGY: "0xc8392691CC8e09fBc34a17cbCfb607e6a9a6d663" as `0x${string}`,
-    CATASTROPHE: "0xaCbbeFe183Bff58FA57c99D0352d4cA1e720240A" as `0x${string}`,
-    MARITIME: "0xfC873105314170de85A043fc39F332e203DA7B1a" as `0x${string}`
+    // Phase 91: Mainnet Candidate Rollout
+    LP_POOL: "0xb60f052c279db25a068decf9e12d5b44673f0775" as `0x${string}`,
+    PRODUCT_FACTORY: "0x27d6efff0f9f48606641b8034772f0796a6e61e4" as `0x${string}`,
+    TRAVEL: "0xf8f72710f2e9cd46626193d52fe5e636c3717849" as `0x${string}`,
+    AGRI: "0x1170aeb2fcaddf9a0c4d3fb5c6a4d0181e85ede0" as `0x${string}`,
+    ENERGY: "0x5c3e14b7bacb12042ff5899c9cb47628146e677a" as `0x${string}`,
+    CATASTROPHE: "0xcfb14105c3ba4075e34495ebb829f220e6567271" as `0x${string}`,
+    MARITIME: "0xb9833d0a8676ae20c436e03d1de2cda0356bbac5" as `0x${string}`,
+    CROSS_CHAIN_RECEIVER: "0x89C6F7C2A6dbe8c396CA5dc37f298f86b" as `0x${string}`
+};
+
+// Chainlink CCIP Selectors and Routers
+export const CCIP_CONFIG = {
+    DESTINATION_CHAIN_SELECTOR: "14767482510784806043", // Avalanche Fuji
+    ROUTERS: {
+        "43113": "0xF694E193200268f9a4868e4Aa017A0118C9a8177", // Avalanche Fuji
+        "11155111": "0x0BF3dE8c5D3d8A2B34D2BEeB17ABfCeBaf363A59", // Sepolia
+        "421614": "0x2a13872f132646d705c879857d4715494d458568", // Arbitrum Sepolia
+        "84532": "0xD3b0651d97492A7E0427678083822afecbbDC67B", // Base Sepolia
+    }
 };
