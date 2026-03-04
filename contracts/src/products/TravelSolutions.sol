@@ -16,7 +16,7 @@ contract TravelSolutions is EIP712 {
     ReflexLiquidityPool public immutable pool;
     address public immutable owner;
 
-    uint256 public constant PROTOCOL_MARGIN = 500;
+    uint256 public constant PROTOCOL_MARGIN = 3000;
     uint256 public constant BPS_DENOMINATOR = 10000;
     uint256 public constant MAX_PAYOUT_CAP = 10_000_000e6;
     uint256 private _nonce;
