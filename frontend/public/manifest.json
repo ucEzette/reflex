@@ -1,0 +1,22 @@
+{
+    "name": "Reflex: Protection Market",
+    "short_name": "Reflex",
+    "description": "Parametric micro-insurance platform on Avalanche.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#050510",
+    "theme_color": "#800020",
+    "icons": [
+        {
+            "src": "/logoD.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/logoD.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
