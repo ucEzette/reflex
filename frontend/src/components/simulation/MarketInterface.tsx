@@ -189,10 +189,10 @@ export function MarketInterface() {
                 <div className="absolute -top-32 -right-32 w-64 h-64 bg-cyan-500/20 blur-[80px] rounded-full pointer-events-none" />
                 <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-primary/20 blur-[80px] rounded-full pointer-events-none" />
 
-                <h1 className="text-3xl font-black text-white mb-2 tracking-tighter mix-blend-plus-lighter">
+                <h1 className="text-3xl font-black text-foreground mb-2 tracking-tighter mix-blend-plus-lighter">
                     Flight Market
                 </h1>
-                <p className="text-slate-300 font-light mb-8 text-sm leading-relaxed drop-shadow-md">
+                <p className="text-foreground font-light mb-8 text-sm leading-relaxed drop-shadow-md">
                     Insure against delays and turbulence. Powered by <span className="text-cyan-400 font-mono font-bold">Chainlink Oracles</span>.
                 </p>
 
@@ -209,10 +209,10 @@ export function MarketInterface() {
                                 <span className="text-[10px] font-bold bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded-sm tracking-widest">PREMIUM</span>
                             </div>
                             <div className="flex items-end gap-2 mb-2">
-                                <span className="text-4xl font-bold text-white tracking-tighter">50.00</span>
+                                <span className="text-4xl font-bold text-foreground tracking-tighter">50.00</span>
                                 <span className="text-lg font-medium text-slate-500 mb-1.5">USDC</span>
                             </div>
-                            <p className="text-[11px] text-slate-500 leading-relaxed text-left">Guaranteed 24/7 monitoring via decentralized oracles. Immediate <span className="text-white font-bold">500.00 USDC payout</span> if departure delay exceeds 120 minutes or the flight is cancelled.</p>
+                            <p className="text-[11px] text-slate-500 leading-relaxed text-left">Guaranteed 24/7 monitoring via decentralized oracles. Immediate <span className="text-foreground font-bold">500.00 USDC payout</span> if departure delay exceeds 120 minutes or the flight is cancelled.</p>
 
                             <div className="mt-6">
                                 <div className="flex items-center gap-2 text-xs text-slate-400">
@@ -286,7 +286,7 @@ export function MarketInterface() {
                                     value={flightCode}
                                     onChange={(e) => setFlightCode(e.target.value.toUpperCase())}
                                     placeholder="e.g. AA100"
-                                    className={`w-full bg-white/5 border ${validationError ? 'border-red-500/50' : flightDetails ? 'border-cyan-500/50' : 'border-white/10'} rounded-lg text-white font-mono h-14 px-4 text-xl uppercase focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all font-bold placeholder:text-white/20 outline-none backdrop-blur-md`}
+                                    className={`w-full bg-white/5 border ${validationError ? 'border-red-500/50' : flightDetails ? 'border-cyan-500/50' : 'border-white/10'} rounded-lg text-foreground font-mono h-14 px-4 text-xl uppercase focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all font-bold placeholder:text-foreground/20 outline-none backdrop-blur-md`}
                                 />
                                 <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg pointer-events-none mix-blend-overlay"></div>
                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
@@ -309,21 +309,21 @@ export function MarketInterface() {
                         {flightDetails ? (
                             <div className="p-4 rounded-lg bg-surface-dark border border-white/10 relative overflow-hidden backdrop-blur-sm">
                                 <div className="flex items-center justify-between text-sm mb-4">
-                                    <span className="text-white font-medium filter drop-shadow-md">{flightDetails.airline}</span>
+                                    <span className="text-foreground font-medium filter drop-shadow-md">{flightDetails.airline}</span>
                                     <span className="text-cyan-400 font-mono text-xs font-bold tracking-wider">{flightDetails.status?.toUpperCase() || 'UNKNOWN'}</span>
                                 </div>
                                 <div className="flex items-center gap-4 text-xs">
                                     <div className="flex flex-col flex-1">
                                         <span className="text-slate-400 font-mono tracking-widest mb-1">DEP</span>
-                                        <span className="text-white font-bold text-2xl drop-shadow-md">{flightDetails.departure.iata}</span>
+                                        <span className="text-foreground font-bold text-2xl drop-shadow-md">{flightDetails.departure.iata}</span>
                                         <span className="text-cyan-400 font-mono tracking-wider mt-1">{formatTime(flightDetails.departure.scheduled)}</span>
                                     </div>
                                     <div className="flex-1 border-t border-dashed border-white/20 relative">
-                                        <span className="material-symbols-outlined text-white/50 text-sm absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/20 px-1 rounded-full px-2">flight_takeoff</span>
+                                        <span className="material-symbols-outlined text-foreground/50 text-sm absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/20 px-1 rounded-full px-2">flight_takeoff</span>
                                     </div>
                                     <div className="flex flex-col flex-1 text-right">
                                         <span className="text-slate-400 font-mono tracking-widest mb-1">ARR</span>
-                                        <span className="text-white font-bold text-2xl drop-shadow-md">{flightDetails.arrival.iata}</span>
+                                        <span className="text-foreground font-bold text-2xl drop-shadow-md">{flightDetails.arrival.iata}</span>
                                         <span className="text-cyan-400 font-mono tracking-wider mt-1">{formatTime(flightDetails.arrival.scheduled)}</span>
                                     </div>
                                 </div>
@@ -331,23 +331,23 @@ export function MarketInterface() {
                                 <div className="grid grid-cols-2 gap-y-3 gap-x-4 mt-4 pt-4 border-t border-white/10 text-[10px] uppercase font-mono tracking-wider">
                                     <div className="flex flex-col">
                                         <span className="text-slate-500 mb-0.5">Date</span>
-                                        <span className="text-slate-300">{flightDetails.flightDate || 'N/A'}</span>
+                                        <span className="text-foreground">{flightDetails.flightDate || 'N/A'}</span>
                                     </div>
                                     <div className="flex flex-col text-right">
                                         <span className="text-slate-500 mb-0.5">Aircraft</span>
-                                        <span className="text-slate-300">{flightDetails.aircraft || 'N/A'}</span>
+                                        <span className="text-foreground">{flightDetails.aircraft || 'N/A'}</span>
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-slate-500 mb-0.5">Dep. Info</span>
-                                        <span className="text-slate-300">{flightDetails.departure.terminal ? `T${flightDetails.departure.terminal}` : '---'} / Gate {flightDetails.departure.gate || '---'}</span>
+                                        <span className="text-foreground">{flightDetails.departure.terminal ? `T${flightDetails.departure.terminal}` : '---'} / Gate {flightDetails.departure.gate || '---'}</span>
                                     </div>
                                     <div className="flex flex-col text-right">
                                         <span className="text-slate-500 mb-0.5">Arr. Info</span>
-                                        <span className="text-slate-300">{flightDetails.arrival.terminal ? `T${flightDetails.arrival.terminal}` : '---'} / Gate {flightDetails.arrival.gate || '---'}</span>
+                                        <span className="text-foreground">{flightDetails.arrival.terminal ? `T${flightDetails.arrival.terminal}` : '---'} / Gate {flightDetails.arrival.gate || '---'}</span>
                                     </div>
                                     <div className="flex flex-col col-span-2">
                                         <span className="text-slate-500 mb-0.5">Timezones</span>
-                                        <span className="text-slate-300">{flightDetails.departure.timezone || 'Unknown'} ➔ {flightDetails.arrival.timezone || 'Unknown'}</span>
+                                        <span className="text-foreground">{flightDetails.departure.timezone || 'Unknown'} ➔ {flightDetails.arrival.timezone || 'Unknown'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -356,11 +356,11 @@ export function MarketInterface() {
                                 <div className="absolute inset-0 bg-gradient-to-r from-black/0 via-white/5 to-black/0 mix-blend-overlay pointer-events-none"></div>
                                 <div className="flex flex-col items-center">
                                     <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">Wind</span>
-                                    <span className="text-white font-mono font-semibold text-lg drop-shadow-md">{windSpeed.toFixed(0)} <span className="text-slate-500 text-xs">kts</span></span>
+                                    <span className="text-foreground font-mono font-semibold text-lg drop-shadow-md">{windSpeed.toFixed(0)} <span className="text-slate-500 text-xs">kts</span></span>
                                 </div>
                                 <div className="flex flex-col items-center border-x border-white/5">
                                     <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">Alt</span>
-                                    <span className="text-white font-mono font-semibold text-lg drop-shadow-md">{altitude.toFixed(0)} <span className="text-slate-500 text-xs">ft</span></span>
+                                    <span className="text-foreground font-mono font-semibold text-lg drop-shadow-md">{altitude.toFixed(0)} <span className="text-slate-500 text-xs">ft</span></span>
                                 </div>
                                 <div className="flex flex-col items-center">
                                     <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">Risk</span>
