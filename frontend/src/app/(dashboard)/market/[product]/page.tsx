@@ -30,6 +30,14 @@ const PRODUCT_ORACLE_MAP: Record<string, string> = {
     'prod-maritime': 'maritime'
 };
 
+const RISK_RATE_MAP: Record<string, number> = {
+    'prod-flight': 0.05,    // 5% default risk
+    'prod-agri': 0.10,      // 10% default risk
+    'prod-energy': 0.08,    // 8% default risk
+    'prod-cat': 0.02,       // 2% default risk
+    'prod-maritime': 0.06   // 6% default risk
+};
+
 export default function ProductDynamicPage({ params }: { params: { product: string } }) {
     const router = useRouter();
     const { address, isConnected } = useAccount();
@@ -102,11 +110,15 @@ export default function ProductDynamicPage({ params }: { params: { product: stri
                 product?.id === 'prod-cat' ? CONTRACTS.CATASTROPHE :
                     CONTRACTS.MARITIME;
 
+    // Calculate expected risk base dynamically for non-flight products
+    const riskRate = product ? RISK_RATE_MAP[product.id] || 0.05 : 0.05;
+    const expectedRiskBase = parseUnits((parseFloat(payoutInput || "0") * riskRate).toString(), 6);
+
     const { data: premiumQuote, isFetching: isQuoting } = useReadContract({
         address: targetContract,
         abi: product?.id === 'prod-flight' ? PRODUCT_ABI : GENERIC_PRODUCT_ABI,
         functionName: 'quotePremium',
-        args: product?.id === 'prod-flight' ? [BigInt(5), BigInt(100), parseUnits(payoutInput || "0", 6)] : [parseUnits("50", 6)],
+        args: product?.id === 'prod-flight' ? [BigInt(5), BigInt(100), parseUnits(payoutInput || "0", 6)] : [expectedRiskBase],
         query: { enabled: !!product && !!payoutInput && parseFloat(payoutInput) > 0 }
     });
 
@@ -135,7 +147,7 @@ export default function ProductDynamicPage({ params }: { params: { product: stri
                     address: targetContract,
                     abi: GENERIC_PRODUCT_ABI,
                     functionName: 'purchasePolicy',
-                    args: [zone || coordinates.lat || "ZONE-A", parseUnits(payoutInput, 6), BigInt(100), BigInt(50), parseUnits("50", 6), BigInt(selectedDuration.value)]
+                    args: [zone || coordinates.lat || "ZONE-A", parseUnits(payoutInput, 6), BigInt(100), BigInt(50), expectedRiskBase, BigInt(selectedDuration.value)]
                 });
             }
         } catch (err: any) {
@@ -151,7 +163,7 @@ export default function ProductDynamicPage({ params }: { params: { product: stri
     const calc = (product as any)?.calculationMethod;
 
     if (!mounted) return null;
-    if (!product) return <div className="min-h-screen flex items-center justify-center text-white">Product not found.</div>;
+    if (!product) return <div className="min-h-screen flex items-center justify-center text-foreground">Product not found.</div>;
 
     const Icon = IconMap[product.iconType] || Plane;
     const expiryDate = new Date(Date.now() + selectedDuration.value * 1000);
@@ -167,7 +179,7 @@ export default function ProductDynamicPage({ params }: { params: { product: stri
                     <Icon className="w-8 h-8" />
                 </div>
                 <div>
-                    <h1 className="text-3xl font-black text-white">{product.title}</h1>
+                    <h1 className="text-3xl font-black text-foreground">{product.title}</h1>
                     <p className="text-sm text-zinc-400 mt-1">{product.description}</p>
                 </div>
             </div>
@@ -176,26 +188,26 @@ export default function ProductDynamicPage({ params }: { params: { product: stri
                 {/* Left Column: Configuration */}
                 <div className="space-y-6">
                     <div className="bg-card border border-border rounded-xl p-6 space-y-6">
-                        <h3 className="text-lg font-bold text-white">Configure Parameters</h3>
+                        <h3 className="text-lg font-bold text-foreground">Configure Parameters</h3>
 
                         {product.id === 'prod-flight' && (
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2 col-span-2">
                                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Flight Number</label>
-                                    <input type="text" placeholder="EK202" value={flightId} onChange={e => setFlightId(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-primary outline-none" />
+                                    <input type="text" placeholder="EK202" value={flightId} onChange={e => setFlightId(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Departure Date</label>
                                     <div className="relative">
                                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                                        <input type="date" value={dateRange.start} onChange={e => setDateRange({ ...dateRange, start: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-white text-sm focus:border-primary outline-none" />
+                                        <input type="date" value={dateRange.start} onChange={e => setDateRange({ ...dateRange, start: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Arrival Date</label>
                                     <div className="relative">
                                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                                        <input type="date" value={dateRange.end} onChange={e => setDateRange({ ...dateRange, end: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-white text-sm focus:border-primary outline-none" />
+                                        <input type="date" value={dateRange.end} onChange={e => setDateRange({ ...dateRange, end: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
                                     </div>
                                 </div>
                             </div>
@@ -207,14 +219,14 @@ export default function ProductDynamicPage({ params }: { params: { product: stri
                                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Latitude</label>
                                     <div className="relative">
                                         <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                                        <input type="text" placeholder="34.0522" value={coordinates.lat} onChange={e => setCoordinates({ ...coordinates, lat: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-white text-sm focus:border-primary outline-none" />
+                                        <input type="text" placeholder="34.0522" value={coordinates.lat} onChange={e => setCoordinates({ ...coordinates, lat: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Longitude</label>
                                     <div className="relative">
                                         <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                                        <input type="text" placeholder="-118.2437" value={coordinates.lon} onChange={e => setCoordinates({ ...coordinates, lon: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-white text-sm focus:border-primary outline-none" />
+                                        <input type="text" placeholder="-118.2437" value={coordinates.lon} onChange={e => setCoordinates({ ...coordinates, lon: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
                                     </div>
                                 </div>
                             </div>
@@ -223,13 +235,13 @@ export default function ProductDynamicPage({ params }: { params: { product: stri
                         {(product.id === 'prod-agri' || product.id === 'prod-energy' || product.id === 'prod-maritime') && (
                             <div className="space-y-2">
                                 <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Target Zone / Port</label>
-                                <input type="text" placeholder={product.inputPlaceholder} value={zone} onChange={e => setZone(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-primary outline-none" />
+                                <input type="text" placeholder={product.inputPlaceholder} value={zone} onChange={e => setZone(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
                             </div>
                         )}
 
                         <div className="space-y-2">
                             <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex justify-between">Requested Max Payout (USDC)</label>
-                            <input type="number" value={payoutInput} onChange={e => setPayoutInput(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xl font-bold text-white focus:border-primary outline-none" />
+                            <input type="number" value={payoutInput} onChange={e => setPayoutInput(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xl font-bold text-foreground focus:border-primary outline-none" />
                         </div>
 
                         {/* Duration Selector */}
@@ -244,7 +256,7 @@ export default function ProductDynamicPage({ params }: { params: { product: stri
                                         onClick={() => setSelectedDuration(opt)}
                                         className={`py-2.5 rounded-lg text-sm font-bold transition-all ${selectedDuration.value === opt.value
                                             ? 'bg-primary text-white shadow-[0_0_12px_rgba(128,0,32,0.3)]'
-                                            : 'bg-white/5 text-zinc-400 border border-white/10 hover:border-primary/50 hover:text-white'}`}
+                                            : 'bg-white/5 text-zinc-400 border border-white/10 hover:border-primary/50 hover:text-foreground'}`}
                                     >
                                         {opt.short}
                                     </button>
@@ -259,7 +271,7 @@ export default function ProductDynamicPage({ params }: { params: { product: stri
                     {/* Oracle Data Panel */}
                     <div className="bg-card border border-border rounded-xl p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                            <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                                 <Satellite className="w-4 h-4 text-cyan-500" /> Live Oracle Feed
                             </h3>
                             <button onClick={fetchOracleData} className="text-xs text-zinc-500 hover:text-white transition-colors flex items-center gap-1">
@@ -281,7 +293,7 @@ export default function ProductDynamicPage({ params }: { params: { product: stri
                                     return (
                                         <div key={key} className="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0">
                                             <span className="text-[10px] text-zinc-500 uppercase tracking-wider">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                                            <span className="text-xs font-medium text-white">{String(value)}</span>
+                                            <span className="text-xs font-medium text-foreground">{String(value)}</span>
                                         </div>
                                     );
                                 })}
@@ -305,7 +317,7 @@ export default function ProductDynamicPage({ params }: { params: { product: stri
                 <div className="bg-card border border-border rounded-xl p-6 flex flex-col justify-between relative">
                     <div>
                         <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
-                            <h3 className="text-lg font-bold text-white">Underwriting Quote</h3>
+                            <h3 className="text-lg font-bold text-foreground">Underwriting Quote</h3>
                             <button onClick={() => setShowCalcInfo(!showCalcInfo)}><HelpCircle className={`w-5 h-5 cursor-pointer transition-colors ${showCalcInfo ? 'text-primary' : 'text-zinc-500 hover:text-white'}`} /></button>
                         </div>
 
@@ -341,7 +353,7 @@ export default function ProductDynamicPage({ params }: { params: { product: stri
                             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 <div className="text-center">
                                     <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Required Premium (USDC)</p>
-                                    <span className="text-6xl font-black text-white">${(Number(premiumQuote) / 1e6).toFixed(2)}</span>
+                                    <span className="text-6xl font-black text-foreground">${(Number(premiumQuote) / 1e6).toFixed(2)}</span>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
@@ -351,11 +363,11 @@ export default function ProductDynamicPage({ params }: { params: { product: stri
                                     </div>
                                     <div className="p-3 bg-white/5 rounded-xl border border-white/10">
                                         <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Duration</p>
-                                        <p className="text-sm font-bold text-white">{selectedDuration.label}</p>
+                                        <p className="text-sm font-bold text-foreground">{selectedDuration.label}</p>
                                     </div>
                                     <div className="p-3 bg-white/5 rounded-xl border border-white/10">
                                         <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Oracle Route</p>
-                                        <p className="text-sm font-bold text-white">Chainlink DON</p>
+                                        <p className="text-sm font-bold text-foreground">Chainlink DON</p>
                                     </div>
                                     <div className="p-3 bg-white/5 rounded-xl border border-white/10">
                                         <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Auto-Settlement</p>

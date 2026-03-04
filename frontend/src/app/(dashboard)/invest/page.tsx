@@ -321,7 +321,7 @@ export default function InvestDashboard() {
                             <div className="p-4 bg-primary/10 rounded-full">
                                 <UserCheck className="w-10 h-10 text-primary" />
                             </div>
-                            <h2 className="text-2xl font-black text-white">Institutional Onboarding</h2>
+                            <h2 className="text-2xl font-black text-foreground">Institutional Onboarding</h2>
                             <p className="text-zinc-400 text-sm">To provide liquidity, regulatory standards require a one-time Institutional KYC verification via Reflex Compliance Services.</p>
                         </div>
 
@@ -348,7 +348,7 @@ export default function InvestDashboard() {
                                 </button>
                                 <button
                                     onClick={() => setShowKycModal(false)}
-                                    className="w-full py-4 bg-white/5 text-zinc-500 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:text-white transition-all underline underline-offset-4"
+                                    className="w-full py-4 bg-white/5 text-zinc-500 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:text-foreground transition-all underline underline-offset-4"
                                 >
                                     Maybe Later
                                 </button>
@@ -363,13 +363,13 @@ export default function InvestDashboard() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-white">Underwriting Terminal</h1>
+                    <h1 className="text-3xl font-black text-foreground">Underwriting Terminal</h1>
                     <p className="text-sm text-zinc-400 mt-1">Provide USDC liquidity to back 100% collateralized institutional risk.</p>
                 </div>
                 <div className="flex items-center gap-6">
                     <div className="text-right">
                         <p className="text-[10px] text-zinc-500 uppercase font-bold">Your Liquidity Position</p>
-                        <p className="text-xl font-black text-white">{userShares ? formatUnits(userShares as bigint, 6) : "0.00"} USDC</p>
+                        <p className="text-xl font-black text-foreground">{userShares ? formatUnits(userShares as bigint, 6) : "0.00"} USDC</p>
                     </div>
                     <div className="h-10 w-px bg-white/10" />
                     <div className={`px-4 py-2 border rounded-xl flex items-center gap-2 transition-all duration-500 ${isKycVerified ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-orange-500/10 border-orange-500/20'}`}>
@@ -393,7 +393,7 @@ export default function InvestDashboard() {
                 {/* Left: Pool Overview Grid */}
                 <div className="xl:col-span-2 space-y-6">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-bold text-white">Risk Distributions</h2>
+                        <h2 className="text-xl font-bold text-foreground">Risk Distributions</h2>
                         <div className="flex items-center gap-2">
                             <span className="text-[10px] text-zinc-500 uppercase font-bold">Global Protocol Solvency:</span>
                             <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">100.00%</span>
@@ -415,7 +415,7 @@ export default function InvestDashboard() {
                                 >
                                     <div className="flex justify-between items-start mb-6">
                                         <div className="space-y-1">
-                                            <h3 className="font-black text-white group-hover:text-primary transition-colors">{pool.productTitle}</h3>
+                                            <h3 className="font-black text-foreground group-hover:text-primary transition-colors">{pool.productTitle}</h3>
                                             <div className="flex items-center gap-2">
                                                 <TrendingUp className="w-3 h-3 text-emerald-400" />
                                                 <span className="text-[11px] font-black text-emerald-400 uppercase tracking-tighter">
@@ -432,7 +432,7 @@ export default function InvestDashboard() {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <p className="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Active TVL</p>
-                                                <p className="font-bold text-white text-base">
+                                                <p className="font-bold text-foreground text-base">
                                                     {pool.id === "pool-1" && totalAssets ? `$${(Number(totalAssets) / 1e6).toFixed(2)}M` : `$${(pool.tvl / 1e6).toFixed(2)}M`}
                                                 </p>
                                             </div>
@@ -467,7 +467,7 @@ export default function InvestDashboard() {
                     {/* Performance History Section */}
                     <div className="bg-card border border-border rounded-2xl p-8 space-y-6">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                                 <Activity className="w-5 h-5 text-primary" /> Performance Analytics
                             </h3>
                             <div className="flex flex-wrap gap-4">
@@ -529,12 +529,12 @@ export default function InvestDashboard() {
                     {/* LP History Section */}
                     <div className="bg-card border border-border rounded-2xl p-8 space-y-6">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                                 <RefreshCcw className={`w-5 h-5 text-primary ${isLoadingHistory ? 'animate-spin' : ''}`} /> Liquidity History
                             </h3>
                             <button
                                 onClick={() => refetchBalance()} // Simple refresh trigger
-                                className="text-[10px] font-black text-zinc-500 hover:text-white transition-colors uppercase tracking-widest"
+                                className="text-[10px] font-black text-zinc-500 hover:text-foreground transition-colors uppercase tracking-widest"
                             >
                                 {isLoadingHistory ? 'Refreshing...' : 'Refresh History'}
                             </button>
@@ -569,7 +569,7 @@ export default function InvestDashboard() {
                                                         {item.type}
                                                     </span>
                                                 </td>
-                                                <td className="py-4 text-white font-mono font-bold">
+                                                <td className="py-4 text-foreground font-mono font-bold">
                                                     {Number(item.amount).toLocaleString()} USDC
                                                 </td>
                                                 <td className="py-4 text-right">
@@ -596,7 +596,7 @@ export default function InvestDashboard() {
                     <div className="bg-card border border-border rounded-2xl p-8 sticky top-24 overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
 
-                        <h3 className="text-lg font-black text-white mb-8 flex items-center gap-2">
+                        <h3 className="text-lg font-black text-foreground mb-8 flex items-center gap-2">
                             <Activity className="w-5 h-5 text-primary" /> Execution Engine
                         </h3>
 
@@ -623,7 +623,7 @@ export default function InvestDashboard() {
                                 <div className="p-4 bg-black/40 border border-white/5 rounded-xl flex items-center justify-between group hover:border-primary transition-colors">
                                     <div className="flex items-center gap-3">
                                         <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                                        <span className="text-sm font-black text-white">{selectedPool.productTitle}</span>
+                                        <span className="text-sm font-black text-foreground">{selectedPool.productTitle}</span>
                                     </div>
                                     <span className="text-xs text-primary font-black bg-primary/10 px-2 py-1 rounded">{selectedPool.apy}% APY</span>
                                 </div>
@@ -647,7 +647,7 @@ export default function InvestDashboard() {
                                         value={amount}
                                         onChange={(e) => setAmount(e.target.value)}
                                         placeholder="0.00"
-                                        className="w-full bg-black border border-white/10 rounded-2xl pl-12 pr-16 py-5 text-2xl font-black text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all font-mono"
+                                        className="w-full bg-black border border-white/10 rounded-2xl pl-12 pr-16 py-5 text-2xl font-black text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all font-mono"
                                     />
                                     <button onClick={() => setAmount(formattedBalance)} className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase text-primary bg-primary/10 px-3 py-1.5 rounded-lg hover:bg-primary hover:text-white transition-all">
                                         MAX
