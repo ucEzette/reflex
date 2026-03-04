@@ -22,8 +22,10 @@ abstract contract ReflexProduct {
 contract ProductFactory {
     ReflexLiquidityPool public pool;
     address public owner;
+    address[] public products;
 
     event ProductDeployed(string name, address productAddress);
+    event ProtocolPaused(address product);
 
     constructor(address _pool) {
         pool = ReflexLiquidityPool(_pool);
@@ -31,14 +33,25 @@ contract ProductFactory {
     }
 
     // Deploys a generic product and automatically authorizes it into the LP pool
-    // In a production environment, this would use CREATE2 or a precise proxy architecture
-    // For this scope, it authorizes the returned address.
     function authorizeProduct(string memory _name, address _product) external {
         require(msg.sender == owner, "Only owner");
 
         // Factory acts as the admin proxy to the pool
         pool.setAuthorizedProduct(_product, true);
+        products.push(_product);
 
         emit ProductDeployed(_name, _product);
+    }
+
+    /**
+     * @notice Emergency function to pause all products in the ecosystem.
+     * Revokes pool authorization for every product managed by this factory.
+     */
+    function emergencyPauseAllProducts() external {
+        require(msg.sender == owner, "Only owner");
+        for (uint256 i = 0; i < products.length; i++) {
+            pool.setAuthorizedProduct(products[i], false);
+            emit ProtocolPaused(products[i]);
+        }
     }
 }

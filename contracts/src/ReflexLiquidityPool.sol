@@ -280,8 +280,43 @@ contract ReflexLiquidityPool is
                     )
                 {} catch {}
             }
-
             usdc.safeTransfer(_policyholder, _actualPayout);
+        }
+    }
+
+    /**
+     * @notice Admin harvests the 10% performance fee on Aave yields
+     * Logic: If totalAssets > totalShares (basis), the delta is profit.
+     */
+    function harvestPerformanceFee() external onlyOwner nonReentrant {
+        uint256 _totalAssets = totalAssets();
+        if (_totalAssets <= totalShares) return;
+
+        uint256 profit = _totalAssets - totalShares;
+        uint256 performanceFee = (profit * PERFORMANCE_FEE_BPS) /
+            BPS_DENOMINATOR;
+
+        if (performanceFee > 0) {
+            // Withdraw fee from Aave - safe guarded
+            if (
+                address(aavePool) != address(0) &&
+                address(aavePool).code.length > 0
+            ) {
+                try
+                    aavePool.withdraw(
+                        address(usdc),
+                        performanceFee,
+                        protocolTreasury
+                    )
+                {} catch {
+                    // Fallback: transfer from local balance if Aave fails
+                    if (usdc.balanceOf(address(this)) >= performanceFee) {
+                        usdc.safeTransfer(protocolTreasury, performanceFee);
+                    }
+                }
+            } else {
+                usdc.safeTransfer(protocolTreasury, performanceFee);
+            }
         }
     }
 }
