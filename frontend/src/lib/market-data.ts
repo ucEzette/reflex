@@ -169,7 +169,7 @@ export const ALL_MARKETS: MarketDetail[] = [
         unit: "/ trip",
         icon: "ac_unit",
         iconBg: "bg-slate-300/20",
-        iconColor: "text-slate-300",
+        iconColor: "text-foreground",
         riskBase: "RISK-L7",
         bullet1: "Snowfall API Link",
         bullet2: "Resort Weather Truing",

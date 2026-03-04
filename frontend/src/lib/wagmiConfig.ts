@@ -18,7 +18,7 @@ export const config = createConfig({
         })
     ],
     transports: {
-        [avalancheFuji.id]: http("https://api.avax-test.network/ext/bc/C/rpc"),
+        [avalancheFuji.id]: http(),
     },
     ssr: false,
 });
