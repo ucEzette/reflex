@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, BarChart3, Activity, Shield, AlertTriangle, DollarSign, Layers, PieChart, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, BarChart3, Activity, Shield, AlertTriangle, DollarSign, Layers, PieChart, ArrowUpRight, ArrowDownRight, RefreshCcw, Zap, Lock, Unlock } from 'lucide-react';
 import { useAccount, useReadContract } from 'wagmi';
 import { CONTRACTS } from '@/lib/contracts';
 import { LIQUIDITY_POOL_ABI, ERC20_ABI } from '@/lib/enterprise_abis';
@@ -11,6 +11,12 @@ import {
     ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart as RechartsPie,
     Pie, Cell, Legend, ComposedChart
 } from 'recharts';
+import { GlobalRiskLeaderboard } from '@/components/analytics/GlobalRiskLeaderboard';
+import { ReportingSummary } from '@/components/analytics/ReportingSummary';
+import { GovernanceVoting } from '@/components/governance/GovernanceVoting';
+import { TreasuryAnalytics } from '@/components/governance/TreasuryAnalytics';
+import { AdminControl } from '@/components/governance/AdminControl';
+import { LiveOracleConsole } from '@/components/analytics/LiveOracleConsole';
 
 // ── Mock Analytics Data ──
 const RISK_FREE_RATE = 4.2; // Aave baseline APY
@@ -51,14 +57,14 @@ export default function AnalyticsPage() {
 
     // Live on-chain data
     const { data: totalAssets } = useReadContract({
-        address: CONTRACTS.LIQUIDITY_POOL as `0x${string}`,
+        address: CONTRACTS.LP_POOL as `0x${string}`,
         abi: LIQUIDITY_POOL_ABI,
         functionName: 'totalAssets',
         query: { enabled: mounted }
     });
 
     const { data: totalMaxPayouts } = useReadContract({
-        address: CONTRACTS.LIQUIDITY_POOL as `0x${string}`,
+        address: CONTRACTS.LP_POOL as `0x${string}`,
         abi: LIQUIDITY_POOL_ABI,
         functionName: 'totalMaxPayouts',
         query: { enabled: mounted }
@@ -314,28 +320,55 @@ export default function AnalyticsPage() {
                 </div>
             </div>
 
-            {/* ── Drawdown Events ── */}
-            <div className="bg-card border border-border rounded-xl p-6 mb-8">
-                <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-amber-500" />
-                    Drawdown Event Log
-                </h2>
-                <div className="space-y-3">
-                    {drawdownEvents.map((event, i) => (
-                        <div key={i} className="flex items-center justify-between p-4 bg-accent/20 border border-border/50 rounded-lg">
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
-                                    <TrendingDown className="w-5 h-5 text-red-500" />
+            {/* ── Drawdown Events & Leaderboard ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div className="bg-card border border-border rounded-xl p-6">
+                    <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
+                        <Activity className="w-5 h-5 text-amber-500" />
+                        Drawdown Event Log
+                    </h2>
+                    <div className="space-y-3">
+                        {drawdownEvents.map((event, i) => (
+                            <div key={i} className="flex items-center justify-between p-4 bg-accent/20 border border-border/50 rounded-lg">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
+                                        <TrendingDown className="w-5 h-5 text-red-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-foreground">{event.event}</p>
+                                        <p className="text-xs text-muted-foreground">{event.date} · {event.product}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-sm font-medium text-foreground">{event.event}</p>
-                                    <p className="text-xs text-muted-foreground">{event.date} · {event.product}</p>
-                                </div>
+                                <span className="text-lg font-bold text-red-500">{event.amount}%</span>
                             </div>
-                            <span className="text-lg font-bold text-red-500">{event.amount}%</span>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
+
+                <GlobalRiskLeaderboard />
+            </div>
+
+            {/* ── Treasury Oversight & Live Oracle ── */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-12">
+                <TreasuryAnalytics />
+                <div className="h-[500px]">
+                    <LiveOracleConsole />
+                </div>
+            </div>
+
+            {/* ── Admin Command Center (Owner only) ── */}
+            <div className="mb-12">
+                <AdminControl />
+            </div>
+
+            {/* ── Governance Forum ── */}
+            <div className="mb-12">
+                <GovernanceVoting />
+            </div>
+
+            {/* ── Institutional Reporting ── */}
+            <div className="mb-8">
+                <ReportingSummary />
             </div>
 
             {/* ── Risk Metrics Summary ── */}

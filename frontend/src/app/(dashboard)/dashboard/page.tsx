@@ -40,7 +40,7 @@ function PolicyCard({ policy }: { policy: UserPolicy }) {
                         <Icon className={`w-4 h-4 ${status.color}`} />
                     </div>
                     <div>
-                        <p className="text-sm font-bold text-white">{policy.productLabel}</p>
+                        <p className="text-sm font-bold text-foreground">{policy.productLabel}</p>
                         <p className="text-[10px] text-zinc-500 font-mono">{policy.policyId.slice(0, 10)}...{policy.policyId.slice(-6)}</p>
                     </div>
                 </div>
@@ -52,7 +52,7 @@ function PolicyCard({ policy }: { policy: UserPolicy }) {
             <div className="grid grid-cols-3 gap-3 mt-3">
                 <div>
                     <p className="text-[9px] text-zinc-600 uppercase tracking-wider font-bold">Premium</p>
-                    <p className="text-sm font-bold text-white">${(Number(policy.premium) / 1e6).toFixed(2)}</p>
+                    <p className="text-sm font-bold text-foreground">${(Number(policy.premium) / 1e6).toFixed(2)}</p>
                 </div>
                 <div>
                     <p className="text-[9px] text-zinc-600 uppercase tracking-wider font-bold">Max Payout</p>
@@ -62,7 +62,7 @@ function PolicyCard({ policy }: { policy: UserPolicy }) {
                     <p className="text-[9px] text-zinc-600 uppercase tracking-wider font-bold">
                         {policy.status === 0 ? 'Time Left' : 'Settled'}
                     </p>
-                    <p className={`text-sm font-bold ${isExpiringSoon ? 'text-amber-400' : 'text-white'}`}>
+                    <p className={`text-sm font-bold ${isExpiringSoon ? 'text-amber-400' : 'text-foreground'}`}>
                         {policy.status === 0 ? formatTimeLeft() : new Date(Number(policy.expiresAt) * 1000).toLocaleDateString()}
                     </p>
                 </div>
@@ -142,11 +142,11 @@ export default function UserDashboard() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div className="bg-card border border-border rounded-xl p-4">
                             <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Active Policies</p>
-                            <p className="text-2xl font-black text-white mt-1">{activePolicies.length}</p>
+                            <p className="text-2xl font-black text-foreground mt-1">{activePolicies.length}</p>
                         </div>
                         <div className="bg-card border border-border rounded-xl p-4">
                             <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Total Premiums</p>
-                            <p className="text-2xl font-black text-white mt-1">${(Number(totalPremiumsPaid) / 1e6).toFixed(2)}</p>
+                            <p className="text-2xl font-black text-foreground mt-1">${(Number(totalPremiumsPaid) / 1e6).toFixed(2)}</p>
                         </div>
                         <div className="bg-card border border-border rounded-xl p-4">
                             <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Payouts Won</p>
@@ -166,7 +166,7 @@ export default function UserDashboard() {
                                 onClick={() => setFilter(f)}
                                 className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${filter === f
                                     ? 'bg-primary text-white shadow-[0_0_12px_rgba(128,0,32,0.3)]'
-                                    : 'bg-white/5 text-zinc-500 border border-white/10 hover:text-white'}`}
+                                    : 'bg-white/5 text-zinc-500 border border-white/10 hover:text-foreground'}`}
                             >
                                 {f} {f === 'all' ? `(${policies.length})` :
                                     f === 'active' ? `(${activePolicies.length})` :
