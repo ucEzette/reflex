@@ -36,7 +36,7 @@ export default function Home() {
             {/* Headline */}
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.9] text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 drop-shadow-2xl">
               Micro-Insurance, <br />
-              <span className="text-white relative inline-block">
+              <span className="text-foreground relative inline-block">
                 Macro Speed.
                 <svg className="absolute -bottom-2 w-full h-3 text-primary" preserveAspectRatio="none" viewBox="0 0 100 10">
                   <path d="M0 5 Q 50 10 100 5" fill="none" stroke="currentColor" strokeWidth="4" />
@@ -65,17 +65,20 @@ export default function Home() {
               <a href="/docs" className="dexter-btn-container w-52 relative z-30" style={{ '--btn-color': '#475569' } as React.CSSProperties}>
                 <button className="dexter-btn !min-w-[200px] !min-h-[50px] !px-6 !py-3 !rounded-xl opacity-90 hover:opacity-100" type="button">
                   <span className="dexter-btn-drawer dexter-transition-top !text-[11px]">DOCS</span>
-                  <span className="dexter-btn-text flex items-center gap-2 !text-lg !text-white/90"><span className="material-symbols-outlined text-[20px]">description</span> Whitepaper</span>
+                  <span className="dexter-btn-text flex items-center gap-2 !text-lg !text-foreground/90"><span className="material-symbols-outlined text-[20px]">description</span> Whitepaper</span>
                   <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
                   <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
                   <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
                   <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
-                  <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[11px] !text-white/80">learn more</span>
+                  <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[11px] !text-foreground/80">learn more</span>
                 </button>
               </a>
             </div>
 
-            {/* Stats Row Removed per request */}
+            {/* Global Stats Row */}
+            <div className="mt-8 animate-fade-in" style={{ animationDelay: "0.8s" }}>
+              <GlobalStats />
+            </div>
           </div>
 
 
@@ -85,7 +88,7 @@ export default function Home() {
         <section id="markets" className="w-full max-w-7xl mx-auto px-6 py-12 xl:py-16 relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">Active Markets</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Active Markets</h2>
               <p className="text-slate-400">Select a risk category to insure against.</p>
             </div>
             <a href="#" className="text-primary hover:text-primary/80 font-bold flex items-center gap-1">
@@ -97,9 +100,9 @@ export default function Home() {
             <div className="homepage-card-3d">
               {ALL_MARKETS.map((market) => (
                 <div key={market.id} className="card-item group">
-                  <a href={market.id === 'flight' ? `/markets/flight` : `/markets/${market.id}`} className="absolute inset-0 z-20"><span className="sr-only">View {market.title}</span></a>
+                  <a href={`/market/${market.id}`} className="absolute inset-0 z-20"><span className="sr-only">View {market.title}</span></a>
                   <span className={`material-symbols-outlined text-4xl group-hover:scale-125 transition-transform drop-shadow-lg ${market.iconColor}`}>{market.icon}</span>
-                  <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest mt-2 text-center px-1 drop-shadow-md group-hover:text-white transition-colors">{market.title}</span>
+                  <span className="text-[9px] font-bold text-foreground uppercase tracking-widest mt-2 text-center px-1 drop-shadow-md group-hover:text-foreground transition-colors">{market.title}</span>
                 </div>
               ))}
             </div>
@@ -110,7 +113,7 @@ export default function Home() {
         <section id="how-it-works" className="relative w-full max-w-[1440px] mx-auto px-6 lg:px-20 pb-16">
           {/* Section Title */}
           <div className="text-center mb-16 lg:mb-0">
-            <h2 className="font-display text-4xl font-bold tracking-tight text-white md:text-6xl lg:text-7xl">
+            <h2 className="font-display text-4xl font-bold tracking-tight text-foreground md:text-6xl lg:text-7xl">
               Insurance at the <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">
                 Speed of Code
@@ -125,15 +128,15 @@ export default function Home() {
             <div className="glass-group">
               <div className="glass-panel" data-text="1. Lock Premium" style={{ '--r': '-15' } as React.CSSProperties}>
                 <span className="material-symbols-outlined">lock</span>
-                <p className="text-slate-300 text-sm px-6 text-center leading-relaxed font-light mt-4 mb-6">Smart contract escrows your $5 USDC instantly in a secure vault.</p>
+                <p className="text-foreground text-sm px-6 text-center leading-relaxed font-light mt-4 mb-6">Smart contract escrows your $5 USDC instantly in a secure vault.</p>
               </div>
               <div className="glass-panel" data-text="2. Verification" style={{ '--r': '5' } as React.CSSProperties}>
                 <span className="material-symbols-outlined text-neon-cyan drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]">link</span>
-                <p className="text-slate-300 text-sm px-4 text-center leading-relaxed font-light mt-4 mb-6">A Decentralized Oracle Network queries aviation data and achieves consensus on the delay.</p>
+                <p className="text-foreground text-sm px-4 text-center leading-relaxed font-light mt-4 mb-6">A Decentralized Oracle Network queries aviation data and achieves consensus on the delay.</p>
               </div>
               <div className="glass-panel" data-text="3. Instant Payout" style={{ '--r': '25' } as React.CSSProperties}>
                 <span className="material-symbols-outlined text-primary drop-shadow-[0_0_8px_rgba(231,64,67,0.8)]">bolt</span>
-                <p className="text-slate-300 text-sm px-6 text-center leading-relaxed font-light mt-4 mb-6">Avalanche Teleporter enables cross-subnet settlement in sub-seconds.</p>
+                <p className="text-foreground text-sm px-6 text-center leading-relaxed font-light mt-4 mb-6">Avalanche Teleporter enables cross-subnet settlement in sub-seconds.</p>
               </div>
             </div>
           </div>
@@ -149,7 +152,7 @@ export default function Home() {
                   <span className="material-symbols-outlined text-[14px]">verified_user</span>
                   Chainlink Verified
                 </div>
-                <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-white">
+                <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-foreground">
                   Flight Delay <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-rose-400 to-neon-cyan">
                     Insurance Terminal
@@ -176,7 +179,7 @@ export default function Home() {
                         <span className="material-symbols-outlined text-[16px]">payments</span>
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-slate-200">Payout: 50 USDC</span>
+                        <span className="text-sm font-medium text-foreground">Payout: 50 USDC</span>
                         <span className="text-xs text-slate-500">Flight UA928 • 2m ago</span>
                       </div>
                     </div>
@@ -188,7 +191,7 @@ export default function Home() {
                         <span className="material-symbols-outlined text-[16px]">security</span>
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-slate-200">Policy Created</span>
+                        <span className="text-sm font-medium text-foreground">Policy Created</span>
                         <span className="text-xs text-slate-500">Flight BA145 • 5m ago</span>
                       </div>
                     </div>
@@ -214,7 +217,7 @@ export default function Home() {
         <section className="w-full bg-surface-dark/30 border-y border-white/5 py-24 relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center gap-16">
             <div className="flex-1 space-y-8">
-              <h2 className="text-4xl font-bold text-white leading-tight">
+              <h2 className="text-4xl font-bold text-foreground leading-tight">
                 Powered by <span className="text-neon-cyan">Chainlink</span> DONs
               </h2>
               <p className="text-slate-400 text-lg leading-relaxed">
@@ -226,7 +229,7 @@ export default function Home() {
                     <span className="material-symbols-outlined">lock</span>
                   </div>
                   <div>
-                    <h4 className="text-white font-bold mb-1">Private Data Handling</h4>
+                    <h4 className="text-foreground font-bold mb-1">Private Data Handling</h4>
                     <p className="text-sm text-slate-400">Your personal data never leaves the secure enclave.</p>
                   </div>
                 </div>
@@ -235,7 +238,7 @@ export default function Home() {
                     <span className="material-symbols-outlined">bolt</span>
                   </div>
                   <div>
-                    <h4 className="text-white font-bold mb-1">Avalanche Subnets</h4>
+                    <h4 className="text-foreground font-bold mb-1">Avalanche Subnets</h4>
                     <p className="text-sm text-slate-400">Dedicated high-throughput infrastructure for insurance events.</p>
                   </div>
                 </div>
@@ -251,7 +254,7 @@ export default function Home() {
                     <span className="material-symbols-outlined text-5xl text-primary">verified_user</span>
                   </div>
                   <div className="text-center">
-                    <div className="text-white font-mono text-sm mb-1">Status: VERIFIED</div>
+                    <div className="text-foreground font-mono text-sm mb-1">Status: VERIFIED</div>
                     <div className="text-neon-cyan font-mono text-xs">Block #23948102</div>
                   </div>
                 </div>
@@ -272,7 +275,7 @@ export default function Home() {
         {/* ═══ CTA SECTION ═══ */}
         <section className="py-20 bg-background-dark relative z-10">
           <div className="max-w-4xl mx-auto px-6 text-center">
-            <h2 className="text-3xl md:text-5xl font-display font-bold text-white mb-6">Ready to secure your future?</h2>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground mb-6">Ready to secure your future?</h2>
             <p className="text-slate-400 mb-10 max-w-xl mx-auto">
               Connect your wallet and explore available micro-insurance pools powered by Reflex.
             </p>
@@ -291,12 +294,12 @@ export default function Home() {
               <a href="/docs" className="dexter-btn-container w-48 relative z-30" style={{ '--btn-color': '#475569' } as React.CSSProperties}>
                 <button className="dexter-btn !min-w-[180px] !min-h-[44px] !px-4 !py-2 opacity-90 hover:opacity-100" type="button">
                   <span className="dexter-btn-drawer dexter-transition-top">DOCS</span>
-                  <span className="dexter-btn-text flex items-center gap-2 !text-base !text-white/90">Documentation</span>
+                  <span className="dexter-btn-text flex items-center gap-2 !text-base !text-foreground/90">Documentation</span>
                   <svg className="dexter-btn-corner" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
                   <svg className="dexter-btn-corner" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
                   <svg className="dexter-btn-corner" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
                   <svg className="dexter-btn-corner" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
-                  <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[10px] !text-white/80">learn more</span>
+                  <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[10px] !text-foreground/80">learn more</span>
                 </button>
               </a>
             </div>
@@ -304,39 +307,6 @@ export default function Home() {
         </section>
       </main>
 
-      {/* ── Footer ── */}
-      <footer className="relative z-10 bg-background-dark border-t border-white/5 py-12">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex flex-col gap-2 items-center md:items-start">
-              <div className="flex items-center text-white font-bold text-xl">
-                <img
-                  src="/logoD.png"
-                  alt="Reflex Logo"
-                  className="h-8 w-auto"
-                />
-              </div>
-              <p className="text-slate-500 text-sm">© 2024 Reflex. Built on Avalanche.</p>
-            </div>
-            <div className="flex gap-8">
-              <a className="text-slate-400 hover:text-white transition-colors" href="#">Privacy Policy</a>
-              <a className="text-slate-400 hover:text-white transition-colors" href="#">Terms of Service</a>
-              <a className="text-slate-400 hover:text-white transition-colors" href="#">Docs</a>
-            </div>
-            <div className="flex gap-4">
-              <a className="w-10 h-10 rounded-full bg-surface-dark border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-primary/50 transition-all" href="#">
-                <span className="material-symbols-outlined text-lg">public</span>
-              </a>
-              <a className="w-10 h-10 rounded-full bg-surface-dark border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-primary/50 transition-all" href="#">
-                <span className="material-symbols-outlined text-lg">hub</span>
-              </a>
-              <a className="w-10 h-10 rounded-full bg-surface-dark border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-primary/50 transition-all" href="#">
-                <span className="material-symbols-outlined text-lg">mail</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
