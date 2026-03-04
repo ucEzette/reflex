@@ -38,7 +38,7 @@ export function Footer() {
                     <div>
                         <h4 className="font-bold text-sm mb-6 uppercase tracking-widest text-muted-foreground">Protocol</h4>
                         <ul className="space-y-4">
-                            <li><Link href="/market" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Markets Explorer</Link></li>
+                            <li><Link href="/markets" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Markets Explorer</Link></li>
                             <li><Link href="/invest" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Liquidity Pools</Link></li>
                             <li><Link href="/transparency" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Transparency Feed</Link></li>
                             <li><Link href="/analytics" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Risk Analytics</Link></li>
@@ -50,9 +50,9 @@ export function Footer() {
                         <h4 className="font-bold text-sm mb-6 uppercase tracking-widest text-muted-foreground">Developers</h4>
                         <ul className="space-y-4">
                             <li><Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Terminal className="w-3 h-3" /> Documentation</Link></li>
-                            <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Github className="w-3 h-3" /> GitHub Org</a></li>
-                            <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Globe className="w-3 h-3" /> API Reference</a></li>
-                            <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Shield className="w-3 h-3" /> Bug Bounty</a></li>
+                            <li><a href="https://github.com/ucEzette/reflex" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Github className="w-3 h-3" /> GitHub Org</a></li>
+                            <li><Link href="/docs#api" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Globe className="w-3 h-3" /> API Reference</Link></li>
+                            <li><Link href="/docs#security" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Shield className="w-3 h-3" /> Bug Bounty</Link></li>
                             <li><a href="mailto:support@reflex.finance" className="text-sm text-primary hover:text-primary/80 transition-colors flex items-center gap-2 font-bold"><Activity className="w-3 h-3" /> Report Issue</a></li>
                         </ul>
                     </div>
@@ -60,11 +60,6 @@ export function Footer() {
                     {/* Stats / Status */}
                     <div className="p-6 bg-accent/30 rounded-2xl border border-border flex flex-col justify-between">
                         <div>
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Mainnet Ready</span>
-                            </div>
-                            <p className="text-xs text-muted-foreground">All contracts audited by OZ. Oracles monitored by 27 independent nodes.</p>
                         </div>
                         <div className="mt-6 pt-6 border-t border-border/50">
                             <span className="text-[10px] text-muted-foreground uppercase font-medium">TVL Protected</span>

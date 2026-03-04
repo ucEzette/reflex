@@ -20,7 +20,7 @@ export function FiatOnRamp() {
             themeColor: '#e74043',
             widgetHeight: '650px',
             widgetWidth: '450px',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // @ts-ignore
         } as any);
 
         transak.init();
