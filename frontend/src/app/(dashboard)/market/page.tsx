@@ -6,6 +6,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { generateMarketProducts } from '@/lib/mockState';
 import { MarketProduct } from '@/types/core';
+import { OnboardingTour } from '@/components/ui/OnboardingTour';
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -59,6 +60,7 @@ export default function CoverageMarketplace() {
 
     return (
         <div className="min-h-screen bg-background flex flex-col lg:flex-row pb-12">
+            <OnboardingTour />
 
             {/* Sidebar Filters (Protection Market Style) */}
             <aside className="w-full lg:w-64 shrink-0 lg:border-r border-border p-4 lg:p-6 space-y-8 sticky top-16 h-fit lg:h-[calc(100vh-64px)] overflow-y-auto">
@@ -157,6 +159,16 @@ export default function CoverageMarketplace() {
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground font-medium mr-2">{filtered.length} markets found</span>
+                        <button
+                            onClick={() => {
+                                localStorage.removeItem('reflex_onboarding_seen');
+                                window.location.reload();
+                            }}
+                            className="p-2 bg-accent border border-border rounded-lg text-muted-foreground hover:text-foreground transition-all flex items-center gap-2"
+                        >
+                            <Info className="h-4 w-4" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline-block">Guide</span>
+                        </button>
                         <button className="p-2 bg-accent border border-border rounded-lg text-muted-foreground hover:text-foreground transition-all">
                             <Share2 className="h-4 w-4" />
                         </button>
@@ -180,7 +192,7 @@ function ProductTooltip({ product, onClose }: { product: MarketProduct, onClose:
     const tip = product.tooltipSummary;
     if (!tip) return null;
     return (
-        <div className="absolute inset-0 z-50 bg-[#0a0a0a] border border-white/10 rounded-xl p-5 flex flex-col justify-between" style={{ transform: 'translate3d(0, 0, 150px)' }} onClick={(e) => e.stopPropagation()}>
+        <div className="absolute inset-0 z-50 bg-zinc-950 border border-white/10 rounded-xl p-5 flex flex-col justify-between shadow-2xl" style={{ transform: 'translate3d(0, 0, 150px)', backfaceVisibility: 'hidden' }} onClick={(e) => e.stopPropagation()}>
             <div>
                 <div className="flex items-center justify-between mb-4">
                     <span className="text-[10px] font-black uppercase tracking-widest text-primary">{product.title}</span>
@@ -262,7 +274,7 @@ function SemanticProductCard({ product }: { product: MarketProduct }) {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             placeholder={product.inputPlaceholder}
-                            className="w-full bg-black/30 border border-white/20 rounded-xl py-2 px-3 text-xs text-white placeholder:text-white/60 focus:outline-none focus:border-white/50 transition-all font-medium"
+                            className="w-full bg-black/30 border border-white/20 rounded-xl py-2 px-3 text-xs text-foreground placeholder:text-foreground/60 focus:outline-none focus:border-white/50 transition-all font-medium"
                             onClick={(e) => e.stopPropagation()}
                         />
                     </div>
@@ -271,11 +283,11 @@ function SemanticProductCard({ product }: { product: MarketProduct }) {
                 {/* Bottom Actions Area */}
                 <div className="market3d-bottom">
                     {isQuoting ? (
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-white/90 animate-pulse uppercase tracking-wider mx-auto w-full justify-center">
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-foreground/90 animate-pulse uppercase tracking-wider mx-auto w-full justify-center">
                             <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> Calculating...
                         </div>
                     ) : quote ? (
-                        <div className="flex items-center justify-between w-full h-full text-white">
+                        <div className="flex items-center justify-between w-full h-full text-foreground">
                             <span className="text-xl font-black">
                                 {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(quote)}
                             </span>
@@ -310,7 +322,7 @@ function SemanticProductCard({ product }: { product: MarketProduct }) {
                     <span className="market3d-circle market3d-circle3"></span>
                     <span className="market3d-circle market3d-circle4"></span>
                     <span className="market3d-circle market3d-circle5">
-                        <Icon className="w-5 h-5 text-white" />
+                        <Icon className="w-5 h-5 text-foreground" />
                     </span>
                 </div>
             </div>

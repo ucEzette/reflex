@@ -1,8 +1,9 @@
 "use client";
 
 import React from 'react';
-import { Shield, Activity, DollarSign } from 'lucide-react';
+import { Shield, Activity, DollarSign, Landmark } from 'lucide-react';
 import { PolicyCard } from '@/components/dashboard/PolicyCard';
+import { PortfolioPerformanceChart } from '@/components/dashboard/PortfolioPerformanceChart';
 import { useActivePolicies, useOracleFeed } from '@/hooks/dashboard';
 
 export default function CommandCenter() {
@@ -10,48 +11,80 @@ export default function CommandCenter() {
     const { data: logs, isLoading: logsLoading } = useOracleFeed();
 
     const activeCount = policies?.filter(p => p.status === 'Active').length || 0;
-    const tvl = "$4,521,000"; 
+    const tvl = "$4,521,000";
     const claimsPaid = "$124,500";
+    const totalPremiums = "$15,200";
 
     return (
         <div className="min-h-screen p-6 lg:p-12 space-y-8 max-w-7xl mx-auto">
-            <header className="mb-10">
-                <h1 className="text-3xl font-bold text-white tracking-tight">Command Center</h1>
-                <p className="text-slate-400 mt-2">Manage your parametric risk portfolio</p>
+            <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-foreground tracking-tight">Command Center</h1>
+                    <p className="text-slate-400 mt-2">Manage your parametric risk portfolio</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="px-4 py-2 bg-zinc-900 border border-white/5 rounded-xl">
+                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest block">Portfolio Value</span>
+                        <span className="text-lg font-bold text-foreground">$4,660,700.00</span>
+                    </div>
+                </div>
             </header>
 
             {/* Stats Overview */}
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 <StatCard title="Total Covered (TVL)" value={tvl} icon={<Shield className="text-primary w-5 h-5" />} trend="+12.5%" />
-                <StatCard title="Claims Paid" value={claimsPaid} icon={<DollarSign className="text-emerald-500 w-5 h-5" />} trend="+4.2%" />
+                <StatCard title="Total Premiums" value={totalPremiums} icon={<DollarSign className="text-amber-500 w-5 h-5" />} trend="+1.2%" />
+                <StatCard title="Claims Settled" value={claimsPaid} icon={<Shield className="text-emerald-500 w-5 h-5" />} trend="+4.2%" />
                 <StatCard title="Active Policies" value={activeCount.toString()} icon={<Activity className="text-blue-500 w-5 h-5" />} trend="+2" />
+                <StatCard title="Governance Power" value="450.2k" icon={<Landmark className="text-purple-500 w-5 h-5" />} trend="Top 5%" />
             </section>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Active Policy List */}
-                <section className="lg:col-span-8 space-y-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <h2 className="text-xl font-bold text-white">Your Policies</h2>
-                        <button className="text-xs font-medium text-primary hover:text-primary-dark transition-colors">View All</button>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {policiesLoading ? (
-                            Array.from({ length: 4 }).map((_, i) => <PolicySkeleton key={i} />)
-                        ) : policies?.length === 0 ? (
-                            <div className="col-span-2 p-12 text-center border border-dashed border-white/10 rounded-2xl">
-                                <p className="text-slate-500">No active policies found.</p>
+                {/* Insights Area */}
+                <section className="lg:col-span-8 space-y-8">
+                    {/* Performance Chart */}
+                    <div className="bg-black/40 border border-white/5 rounded-3xl p-8 backdrop-blur-xl">
+                        <div className="flex items-center justify-between mb-8">
+                            <div>
+                                <h2 className="text-xl font-bold text-foreground">Portfolio Performance</h2>
+                                <p className="text-sm text-slate-500">Historical growth of your protection assets</p>
                             </div>
-                        ) : (
-                            policies?.map(policy => (
-                                <PolicyCard key={policy.id} policy={policy} />
-                            ))
-                        )}
+                            <div className="flex gap-2">
+                                {['1W', '1M', '3M', '1Y', 'ALL'].map((range) => (
+                                    <button key={range} className={`px-3 py-1 rounded-lg text-[10px] font-bold border transition-all ${range === '1Y' ? 'bg-primary border-primary text-white' : 'bg-white/5 border-white/5 text-slate-500 hover:text-white'}`}>
+                                        {range}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <PortfolioPerformanceChart />
+                    </div>
+
+                    {/* Active Policy List */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <h2 className="text-xl font-bold text-foreground">Your Policies</h2>
+                            <button className="text-xs font-medium text-primary hover:text-primary-dark transition-colors">View All</button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {policiesLoading ? (
+                                Array.from({ length: 4 }).map((_, i) => <PolicySkeleton key={i} />)
+                            ) : policies?.length === 0 ? (
+                                <div className="col-span-2 p-12 text-center border border-dashed border-white/10 rounded-2xl">
+                                    <p className="text-slate-500">No active policies found.</p>
+                                </div>
+                            ) : (
+                                policies?.map(policy => (
+                                    <PolicyCard key={policy.id} policy={policy} />
+                                ))
+                            )}
+                        </div>
                     </div>
                 </section>
 
                 {/* Recent Activity Feed */}
                 <section className="lg:col-span-4 bg-black/40 border border-white/5 rounded-2xl p-6 backdrop-blur-xl h-fit">
-                    <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                    <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
                         <Activity className="w-4 h-4 text-emerald-500" /> Network Activity
                     </h2>
                     <div className="space-y-6">
@@ -72,7 +105,7 @@ export default function CommandCenter() {
                                     <div className={`w-2 h-2 mt-1.5 rounded-full z-10 shrink-0 ${log.status === 'Success' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : log.status === 'Reverted' ? 'bg-amber-500' : 'bg-blue-500'}`} />
                                     <div>
                                         <div className="flex items-baseline gap-2">
-                                            <span className="text-xs font-bold text-slate-300">{log.target}</span>
+                                            <span className="text-xs font-bold text-foreground">{log.target}</span>
                                             <span className="text-[10px] text-slate-500">{new Date(log.timestamp).toLocaleTimeString()}</span>
                                         </div>
                                         <p className="text-xs text-slate-400 mt-1 leading-relaxed">{log.message}</p>
@@ -95,7 +128,7 @@ function StatCard({ title, value, icon, trend }: { title: string, value: string,
                 <div className="p-2 bg-white/5 rounded-xl">{icon}</div>
             </div>
             <div className="flex items-baseline gap-3">
-                <span className="text-2xl font-bold text-white tracking-tight">{value}</span>
+                <span className="text-2xl font-bold text-foreground tracking-tight">{value}</span>
                 <span className={`text-xs font-medium ${trend.startsWith('+') ? 'text-emerald-400' : 'text-primary'}`}>{trend}</span>
             </div>
         </div>
