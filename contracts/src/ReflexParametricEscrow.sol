@@ -61,6 +61,9 @@ contract ReflexParametricEscrow is
 
     // Multi-Relayer Authorized Network
     mapping(address => bool) public authorizedRelayers;
+    uint256 public requiredQuorum;
+    mapping(bytes32 => mapping(address => bool)) public hasVoted;
+    mapping(bytes32 => uint256) public voteCount;
 
     // ─── Events ───────────────────────────────────────────────────────
 
@@ -107,6 +110,8 @@ contract ReflexParametricEscrow is
     error TransferFailed();
     error InvalidProof();
     error UnexpectedRequestID();
+    error AlreadyVoted();
+    error QuorumNotReached();
 
     // ─── Modifiers ────────────────────────────────────────────────────
 
@@ -137,7 +142,8 @@ contract ReflexParametricEscrow is
         address _usdc,
         bytes32 _reflexL1ChainId,
         address _protocolTreasury,
-        address _initialOwner
+        address _initialOwner,
+        uint256 _requiredQuorum
     ) public initializer {
         __Ownable_init(_initialOwner);
         // Both UUPSUpgradeable and ReentrancyGuard in OZ v5 are stateless
@@ -147,6 +153,7 @@ contract ReflexParametricEscrow is
         usdc = IERC20(_usdc);
         reflexL1ChainId = _reflexL1ChainId;
         protocolTreasury = _protocolTreasury;
+        requiredQuorum = _requiredQuorum;
     }
 
     // ─── UUPS Required Override ──────────────────────────────────────
@@ -319,6 +326,58 @@ contract ReflexParametricEscrow is
         if (policy.isClaimed) revert PolicyAlreadyClaimed();
         if (!_verifyZkProof(zkProof)) revert InvalidProof();
 
+        _executePayout(policyId);
+    }
+
+    function submitRelayerConsensus(
+        bytes32 _policyId
+    ) external onlyAuthorizedRelayer nonReentrant {
+        Policy storage policy = policies[_policyId];
+        if (!policy.isActive) revert PolicyNotActive();
+        if (policy.isClaimed) revert PolicyAlreadyClaimed();
+        if (hasVoted[_policyId][msg.sender]) revert AlreadyVoted();
+
+        hasVoted[_policyId][msg.sender] = true;
+        voteCount[_policyId]++;
+
+        if (voteCount[_policyId] >= requiredQuorum) {
+            _executePayout(_policyId);
+        }
+    }
+
+    /**
+     * @notice Relayers vote on a dispute for an external product (e.g. Agriculture)
+     * @param _product The address of the product contract
+     * @param _policyId The internal ID of the policy in that contract
+     * @param _payout The agreed payout value to release
+     */
+    function submitExternalConsensus(
+        address _product,
+        bytes32 _policyId,
+        uint256 _payout
+    ) external onlyAuthorizedRelayer nonReentrant {
+        bytes32 voteKey = keccak256(abi.encodePacked(_product, _policyId));
+        if (hasVoted[voteKey][msg.sender]) revert AlreadyVoted();
+
+        hasVoted[voteKey][msg.sender] = true;
+        voteCount[voteKey]++;
+
+        if (voteCount[voteKey] >= requiredQuorum) {
+            // Trigger payout on the external product contract
+            // We assume the product contract has a 'submitConsensusClaim' function
+            (bool success, ) = _product.call(
+                abi.encodeWithSignature(
+                    "submitConsensusClaim(bytes32,uint256)",
+                    _policyId,
+                    _payout
+                )
+            );
+            require(success, "External payout trigger failed");
+        }
+    }
+
+    function _executePayout(bytes32 _policyId) internal {
+        Policy storage policy = policies[_policyId];
         policy.isClaimed = true;
         policy.isActive = false;
 
@@ -329,7 +388,7 @@ contract ReflexParametricEscrow is
         );
         if (!success) revert TransferFailed();
 
-        emit PolicyClaimed(policyId, policy.policyholder, policy.payoutAmount);
+        emit PolicyClaimed(_policyId, policy.policyholder, policy.payoutAmount);
     }
 
     function expirePolicy(bytes32 _policyId) external {
@@ -376,6 +435,12 @@ contract ReflexParametricEscrow is
         );
     }
 
+    function getVoteDetails(
+        bytes32 _policyId
+    ) external view returns (uint256 currentVotes, uint256 required) {
+        return (voteCount[_policyId], requiredQuorum);
+    }
+
     // ─── Admin Functions ──────────────────────────────────────────────
 
     function setProtocolTreasury(address _newTreasury) external onlyOwner {
@@ -402,6 +467,10 @@ contract ReflexParametricEscrow is
 
     function removeRelayer(address _relayer) external onlyOwner {
         authorizedRelayers[_relayer] = false;
+    }
+
+    function setQuorum(uint256 _newQuorum) external onlyOwner {
+        requiredQuorum = _newQuorum;
     }
 
     // ─── Internal Functions ───────────────────────────────────────────
@@ -448,21 +517,7 @@ contract ReflexParametricEscrow is
         if (isDelayed) {
             Policy storage policy = policies[policyId];
             if (policy.isActive && !policy.isClaimed) {
-                policy.isClaimed = true;
-                policy.isActive = false;
-
-                bool success = usdc.transferFrom(
-                    protocolTreasury,
-                    policy.policyholder,
-                    policy.payoutAmount
-                );
-                if (success) {
-                    emit PolicyClaimed(
-                        policyId,
-                        policy.policyholder,
-                        policy.payoutAmount
-                    );
-                }
+                _executePayout(policyId);
             }
         }
     }
