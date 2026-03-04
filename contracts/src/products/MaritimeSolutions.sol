@@ -87,6 +87,30 @@ contract MaritimeSolutions {
         return policyId;
     }
 
+    address public consensusManager;
+
+    // ...
+
+    function setConsensusManager(address _manager) external {
+        require(msg.sender == owner, "Only owner");
+        consensusManager = _manager;
+    }
+
+    function submitConsensusClaim(bytes32 _id, uint256 _actualPayout) external {
+        require(
+            msg.sender == consensusManager,
+            "Only authorized consensus manager"
+        );
+        MaritimePolicy storage pol = policies[_id];
+        require(pol.status == 0, "Not active");
+
+        pol.status = 1;
+        // Pushing consensus payout value
+        pool.releasePayout(pol.maxPayout, _actualPayout, pol.policyholder);
+        emit PolicyClaimed(_id, _actualPayout);
+        _removeFromActive(_id);
+    }
+
     function executeClaim(bytes32 _id, uint256 _actualWindSpeed) external {
         require(msg.sender == owner, "Only authorized oracle");
         MaritimePolicy storage pol = policies[_id];
