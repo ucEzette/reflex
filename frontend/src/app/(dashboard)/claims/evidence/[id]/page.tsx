@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { ESCROW_ABI, CONTRACTS } from "@/lib/contracts";
 import { Shield, Upload, FileText, AlertCircle, CheckCircle, ArrowLeft, Info, Gavel, Activity } from "lucide-react";
@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { IpfsService } from "@/services/ipfs";
 
 export default function EvidenceSubmissionPage({ params }: { params: { id: string } }) {
-    const { id } = useParams();
+    const id = params.id;
     const router = useRouter();
     const { address, isConnected } = useAccount();
 
