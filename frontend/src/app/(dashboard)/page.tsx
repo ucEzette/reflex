@@ -4,11 +4,11 @@ import React from 'react';
 import { Shield, Activity, DollarSign, Landmark } from 'lucide-react';
 import { PolicyCard } from '@/components/dashboard/PolicyCard';
 import { PortfolioPerformanceChart } from '@/components/dashboard/PortfolioPerformanceChart';
-import { useActivePolicies, useOracleFeed } from '@/hooks/dashboard';
-
 export default function CommandCenter() {
-    const { data: policies, isLoading: policiesLoading } = useActivePolicies();
-    const { data: logs, isLoading: logsLoading } = useOracleFeed();
+    const policies: any[] = [];
+    const policiesLoading = false;
+    const logs: any[] = [];
+    const logsLoading = false;
 
     const activeCount = policies?.filter(p => p.status === 'Active').length || 0;
     const tvl = "$4,521,000";
