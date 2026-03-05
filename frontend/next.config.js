@@ -1,12 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    typescript: {
-        ignoreBuildErrors: true,
+    output: 'standalone',
+    experimental: {
+        outputFileTracingExcludes: {
+            '*': [
+                '**/*export-detail.json',
+                '.next/export-detail.json',
+                'export-detail.json',
+            ],
+        },
     },
-    eslint: {
-        ignoreDuringBuilds: true,
-    },
+    typescript: { ignoreBuildErrors: true },
+    eslint: { ignoreDuringBuilds: true },
     trailingSlash: false,
 };
-
 module.exports = nextConfig;
