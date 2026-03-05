@@ -15,6 +15,7 @@ const nextConfig = {
                 '.next/export/500.html',
                 'export/500.html',
                 '500.html',
+                '**/.next/cache/**/*',
             ],
         },
     },
