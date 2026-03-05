@@ -73,12 +73,12 @@ export function useUserPolicies() {
 
                             // Read current policy status from contract
                             try {
-                                const data = await client.readContract({
+                                const data = (await client.readContract({
                                     address: config.contract,
                                     abi: config.isTravel ? PRODUCT_ABI : GENERIC_PRODUCT_ABI,
                                     functionName: 'policies' as any,
                                     args: [policyId],
-                                }) as any[];
+                                })) as unknown as any[];
 
                                 if (!data || !data[0]) continue;
 

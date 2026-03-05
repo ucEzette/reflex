@@ -1,77 +1,5 @@
-import { ActivePolicy, OracleFeedLog, TreasuryMetrics, MarketProduct } from '../types/market';
+import { MarketProduct } from '../types/market';
 import { CONTRACTS } from './contracts';
-
-export const generateMockPolicies = (): ActivePolicy[] => [
-    {
-        id: "POL-X89B-4412",
-        type: "Flight",
-        status: "Monitoring",
-        premium: 50,
-        payout: 500,
-        purchaseDate: new Date(Date.now() - 86400000).toISOString(),
-        expiration: new Date(Date.now() + 86400000 * 2).toISOString(),
-        context: "UA123: In Air - 5m Late",
-        oracleData: {
-            lastCheck: new Date(Date.now() - 300000).toISOString(),
-            rawPayload: "{ status: 'Active', delay: 5, source: 'FlightAware' }"
-        }
-    },
-    {
-        id: "POL-C77A-9901",
-        type: "Cloud",
-        status: "Risk Detected",
-        premium: 150,
-        payout: 3000,
-        purchaseDate: new Date(Date.now() - 86400000 * 5).toISOString(),
-        expiration: new Date(Date.now() + 86400000 * 25).toISOString(),
-        context: "AWS us-east-1: Elevated Error Rates",
-        oracleData: {
-            lastCheck: new Date(Date.now() - 60000).toISOString(),
-            rawPayload: "{ region: 'us-east-1', errors: '+15%', source: 'DownDetector' }"
-        }
-    },
-    {
-        id: "POL-W22F-1188",
-        type: "Web3",
-        status: "Claim Triggered",
-        premium: 20,
-        payout: 100,
-        purchaseDate: new Date(Date.now() - 86400000 * 15).toISOString(),
-        expiration: new Date().toISOString(),
-        context: "Gas > 150 Gwei for 3 Blocks",
-        oracleData: {
-            lastCheck: new Date().toISOString(),
-            rawPayload: "{ network: 'Ethereum', gwei: 165, blocks: 3, source: 'Etherscan' }"
-        }
-    }
-];
-
-export const generateOracleLogs = (): OracleFeedLog[] => [
-    {
-        id: "LOG-A19",
-        requestID: "REQ-998",
-        target: "Flight UA123",
-        status: "Success",
-        timestamp: new Date(Date.now() - 15000).toISOString(),
-        message: "Status: In Air (5m Late). No automatic trigger required."
-    },
-    {
-        id: "LOG-A18",
-        requestID: "REQ-997",
-        target: "AWS us-east-1",
-        status: "Pending",
-        timestamp: new Date(Date.now() - 45000).toISOString(),
-        message: "Elevated API errors detected. Querying secondary consensus node."
-    },
-    {
-        id: "LOG-A17",
-        requestID: "REQ-996",
-        target: "ETH Gas Tracker",
-        status: "Reverted",
-        timestamp: new Date(Date.now() - 120000).toISOString(),
-        message: "Gas spike confirmed. Triggering Payout Module: POL-W22F-1188."
-    }
-];
 
 export const generateMarketProducts = (): MarketProduct[] => [
     {
@@ -87,17 +15,18 @@ export const generateMarketProducts = (): MarketProduct[] => [
             oracle: "FlightAware AeroAPI via Chainlink DON",
             riskModel: "Binary trigger — delay ≥ 120 min = full payout",
             settlement: "USDC on Avalanche C-Chain",
-            premiumRange: "$5 – $25 USDC per flight",
+            premiumRange: "$15 – $120 USDC per flight (2.5× loading)",
             trigger: "Arrival delay exceeds 120 minutes or cancellation"
         },
         calculationMethod: {
-            formula: "Premium = P(delay) × MaxPayout × (1 + ProtocolMargin)",
+            formula: "Premium = P(delay) × MaxPayout × LoadingFactor × (1 + ProtocolMargin)",
             variables: [
-                "P(delay) — Historical delay probability for the route (5–15%)",
-                "MaxPayout — User-selected coverage cap (e.g. $100 USDC)",
-                "ProtocolMargin — Fixed 10% fee for LP reserve contribution"
+                "P(delay) — Historical delay probability for the route (FlightAware)",
+                "MaxPayout — User-selected coverage cap (e.g. $1000 USDC)",
+                "LoadingFactor — 2.5× actuarial loading for capital reserves",
+                "ProtocolMargin — 30% fee for LP reserve contribution"
             ],
-            example: "Route with 8% delay rate, $100 payout → $100 × 0.08 × 1.10 = $8.80 premium"
+            example: "Route with 3.3% delay rate, $1000 payout → $1000 × 0.083 × 1.30 = $107.90 premium"
         }
     },
     {
@@ -206,18 +135,3 @@ export const generateMarketProducts = (): MarketProduct[] => [
         }
     }
 ];
-
-export const generateTreasuryMetrics = (): TreasuryMetrics[] => {
-    const data: TreasuryMetrics[] = [];
-    const now = Date.now();
-    for (let i = 30; i >= 0; i--) {
-        data.push({
-            timestamp: new Date(now - (i * 86400000)).toISOString().split('T')[0],
-            tvl: 5000000 + (Math.random() * 200000) + ((30 - i) * 15000),
-            claimsPaid: 250000 + ((30 - i) * 5000) + (Math.random() * 4000),
-            activePolicies: 1200 + ((30 - i) * 20),
-            efficiencyRatio: 8.5 + (Math.random() * 2)
-        });
-    }
-    return data;
-};
