@@ -22,13 +22,13 @@ export function Footer() {
                             The internet of value needs a safety net. Reflex provides hyper-efficient, parametric coverage for the most volatile real-world risks.
                         </p>
                         <div className="flex items-center gap-4">
-                            <a href="#" className="p-2 bg-accent/50 rounded-lg hover:text-primary transition-colors border border-border">
+                            <a href="https://x.com/ReflexProtocol" target="_blank" rel="noopener noreferrer" className="p-2 bg-accent/50 rounded-lg hover:text-primary transition-colors border border-border">
                                 <Twitter className="w-4 h-4" />
                             </a>
-                            <a href="#" className="p-2 bg-accent/50 rounded-lg hover:text-primary transition-colors border border-border">
+                            <a href="https://github.com/ucEzette/reflex" target="_blank" rel="noopener noreferrer" className="p-2 bg-accent/50 rounded-lg hover:text-primary transition-colors border border-border">
                                 <Github className="w-4 h-4" />
                             </a>
-                            <a href="#" className="p-2 bg-accent/50 rounded-lg hover:text-primary transition-colors border border-border">
+                            <a href="/analytics" className="p-2 bg-accent/50 rounded-lg hover:text-primary transition-colors border border-border">
                                 <Activity className="w-4 h-4" />
                             </a>
                         </div>
@@ -38,9 +38,9 @@ export function Footer() {
                     <div>
                         <h4 className="font-bold text-sm mb-6 uppercase tracking-widest text-muted-foreground">Protocol</h4>
                         <ul className="space-y-4">
-                            <li><Link href="/markets" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Markets Explorer</Link></li>
+                            <li><Link href="/market" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Markets Explorer</Link></li>
                             <li><Link href="/invest" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Liquidity Pools</Link></li>
-                            <li><Link href="/transparency" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Transparency Feed</Link></li>
+                            <li><Link href="/docs#oracle-flow" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Transparency Feed</Link></li>
                             <li><Link href="/analytics" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Risk Analytics</Link></li>
                         </ul>
                     </div>
@@ -51,7 +51,7 @@ export function Footer() {
                         <ul className="space-y-4">
                             <li><Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Terminal className="w-3 h-3" /> Documentation</Link></li>
                             <li><a href="https://github.com/ucEzette/reflex" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Github className="w-3 h-3" /> GitHub Org</a></li>
-                            <li><Link href="/docs#api" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Globe className="w-3 h-3" /> API Reference</Link></li>
+                            <li><Link href="/docs#contracts" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Globe className="w-3 h-3" /> API Reference</Link></li>
                             <li><Link href="/docs#security" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"><Shield className="w-3 h-3" /> Bug Bounty</Link></li>
                             <li><a href="mailto:support@reflex.finance" className="text-sm text-primary hover:text-primary/80 transition-colors flex items-center gap-2 font-bold"><Activity className="w-3 h-3" /> Report Issue</a></li>
                         </ul>

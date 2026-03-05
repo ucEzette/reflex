@@ -7,40 +7,9 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { VerletBackground } from "@/components/VerletBackground";
 import { Toaster } from "sonner";
 
-export const metadata: Metadata = {
-  title: "Reflex | Parametric Protection Market on Avalanche",
-  description:
-    "Reflex is a decentralized protection market built on Avalanche. Instantly insure against flight delays, crop failures, and climate risks with 24/7 oracle monitoring.",
-  keywords: ["Reflex", "Protection Market", "Parametric Insurance", "Avalanche", "Blockchain Insurance", "Flight Delay Insurance", "DeFi"],
-  authors: [{ name: "Reflex Protocol Team" }],
-  openGraph: {
-    title: "Reflex | Parametric Protection Market on Avalanche",
-    description: "Insure your life's edges. Instant payouts, zero claims adjusters, powered by Chainlink.",
-    url: "https://reflex.finance",
-    siteName: "Reflex",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Reflex Dashboard Preview",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Reflex | Parametric Micro-Insurance on Avalanche",
-    description: "The first parametric insurance layer for the internet of value. Powered by Avalanche.",
-    images: ["/twitter-card.png"],
-  },
-  icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-32x32.png",
-    apple: "/apple-touch-icon.png",
-  },
-};
+import { constructMetadata } from "@/lib/metadata";
+
+export const metadata = constructMetadata();
 
 export default function RootLayout({
   children,

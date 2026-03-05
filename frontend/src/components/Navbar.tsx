@@ -76,7 +76,7 @@ export function Navbar() {
         { href: "/market", label: "Markets", icon: <BarChart3 className="w-5 h-5" /> },
         { href: "/dashboard", label: "Portfolio", icon: <Briefcase className="w-5 h-5" /> },
         { href: "/invest", label: "Invest", icon: <TrendingUp className="w-5 h-5" /> },
-        { href: "/analytics", label: "Analytics", icon: <BarChart3 className="w-5 h-5" /> },
+        { href: "/analytics", label: "Analytics", icon: <ActivityIcon className="w-5 h-5" /> },
         { href: "/docs", label: "Docs", icon: <FileText className="w-5 h-5" /> },
     ];
 
