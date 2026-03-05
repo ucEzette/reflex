@@ -14,14 +14,14 @@ export function GlobalStats() {
     }, []);
 
     const { data: totalAssets } = useReadContract({
-        address: CONTRACTS.LIQUIDITY_POOL as `0x${string}`,
+        address: CONTRACTS.LP_POOL as `0x${string}`,
         abi: LIQUIDITY_POOL_ABI,
         functionName: 'totalAssets',
         query: { enabled: mounted }
     });
 
     const { data: totalMaxPayouts } = useReadContract({
-        address: CONTRACTS.LIQUIDITY_POOL as `0x${string}`,
+        address: CONTRACTS.LP_POOL as `0x${string}`,
         abi: LIQUIDITY_POOL_ABI,
         functionName: 'totalMaxPayouts',
         query: { enabled: mounted }

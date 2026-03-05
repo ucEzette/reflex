@@ -1,10 +1,10 @@
+import "./globals.css";
 import { Metadata } from "next";
 import { Providers } from "@/components/Providers";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { VerletBackground } from "@/components/VerletBackground";
-import "./globals.css";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
@@ -71,13 +71,15 @@ export default function RootLayout({
       <body className="bg-slate-50 text-slate-900 dark:bg-background-dark dark:text-slate-100 font-display selection:bg-primary selection:text-white overflow-x-hidden transition-colors duration-500">
         <Providers>
           <VerletBackground />
-          <Navbar />
-          <ErrorBoundary>
-            <main className="min-h-screen">
-              {children}
-            </main>
-          </ErrorBoundary>
-          <Footer />
+          <div className="relative z-10 flex flex-col min-h-screen">
+            <Navbar />
+            <ErrorBoundary>
+              <main className="flex-1">
+                {children}
+              </main>
+            </ErrorBoundary>
+            <Footer />
+          </div>
         </Providers>
         <Toaster position="bottom-right" theme="dark" />
       </body>
