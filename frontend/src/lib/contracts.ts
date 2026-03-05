@@ -93,17 +93,17 @@ export const CATASTROPHE_ABI = GENERIC_PRODUCT_ABI;
 export const MARITIME_ABI = GENERIC_PRODUCT_ABI;
 
 export const CONTRACTS = {
-    ESCROW: "0x64ab02e78655f0dfda736200f28a96ba93c19942" as `0x${string}`,
+    ESCROW: "0x6b37b0fc861b0fa22242ec92c25f2643876e4fbf" as `0x${string}`,
     USDC: "0x5425890298aed601595a70AB815c96711a31Bc65" as `0x${string}`,
 
-    // Phase 91: Mainnet Candidate Rollout
-    LP_POOL: "0xb60f052c279db25a068decf9e12d5b44673f0775" as `0x${string}`,
-    PRODUCT_FACTORY: "0x27d6efff0f9f48606641b8034772f0796a6e61e4" as `0x${string}`,
-    TRAVEL: "0xf8f72710f2e9cd46626193d52fe5e636c3717849" as `0x${string}`,
-    AGRI: "0x1170aeb2fcaddf9a0c4d3fb5c6a4d0181e85ede0" as `0x${string}`,
-    ENERGY: "0x5c3e14b7bacb12042ff5899c9cb47628146e677a" as `0x${string}`,
-    CATASTROPHE: "0xcfb14105c3ba4075e34495ebb829f220e6567271" as `0x${string}`,
-    MARITIME: "0xb9833d0a8676ae20c436e03d1de2cda0356bbac5" as `0x${string}`,
+    // Phase 97: Redeployment with PROTOCOL_MARGIN=3000 (30%)
+    LP_POOL: "0x4e70e0c76499876d575650fe73a397570aaf17e5" as `0x${string}`,
+    PRODUCT_FACTORY: "0x90d97d7bac01bc2504c6d2d81ffbc7254339db70" as `0x${string}`,
+    TRAVEL: "0xea8f12bfed818cbf45715783c95d47c90b2e6b42" as `0x${string}`,
+    AGRI: "0x708ad64cc8d70f0be380ca725ff8989836b5451a" as `0x${string}`,
+    ENERGY: "0x2e7b9ac02f629aa62e7009f0fa5ee040c250d266" as `0x${string}`,
+    CATASTROPHE: "0x8782f5d44f4d14a082595b7e2b1941cb5b8be86d" as `0x${string}`,
+    MARITIME: "0x4fe5833da6ba27a28dc7a921ba300ea8e831d85d" as `0x${string}`,
     CROSS_CHAIN_RECEIVER: "0x89C6F7C2A6dbe8c396CA5dc37f298f86b" as `0x${string}`
 };
 
