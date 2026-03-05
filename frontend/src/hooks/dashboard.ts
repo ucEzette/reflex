@@ -1,33 +1,26 @@
-import { useQuery } from '@tanstack/react-query';
-import { mockPolicies, mockOracleLogs, mockTreasuryStats } from '../lib/mockData';
+import { useReadContract, useReadContracts } from 'wagmi';
+import { CONTRACTS } from '../lib/contracts';
+import { LIQUIDITY_POOL_ABI, ERC20_ABI } from '../lib/enterprise_abis';
+import { formatUnits } from 'viem';
 
-export function useActivePolicies() {
-    return useQuery({
-        queryKey: ['policies'],
-        queryFn: async () => {
-            await new Promise(resolve => setTimeout(resolve, 800)); // Simulate delay
-            return mockPolicies;
-        }
-    });
-}
+// Real on-chain data hooks — replacing all mock data
 
-export function useOracleFeed() {
-    return useQuery({
-        queryKey: ['oracleLogs'],
-        queryFn: async () => {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            return mockOracleLogs;
-        },
-        refetchInterval: 5000 // Polling
+export function usePoolMetrics() {
+    const { data: totalAssets } = useReadContract({
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalAssets',
     });
-}
 
-export function useTreasuryStats() {
-    return useQuery({
-        queryKey: ['treasuryStats'],
-        queryFn: async () => {
-            await new Promise(resolve => setTimeout(resolve, 600));
-            return mockTreasuryStats;
-        }
+    const { data: totalMaxPayouts } = useReadContract({
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalMaxPayouts',
     });
+
+    const tvl = totalAssets ? Number(formatUnits(totalAssets as bigint, 6)) : 0;
+    const payouts = totalMaxPayouts ? Number(formatUnits(totalMaxPayouts as bigint, 6)) : 0;
+    const utilization = tvl > 0 ? (payouts / tvl) * 100 : 0;
+
+    return { tvl, payouts, utilization };
 }
