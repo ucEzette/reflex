@@ -15,7 +15,7 @@ const treasuryData = [
 ];
 
 const reserveAllocation = [
-    { name: 'Claims Buffer', value: 4500000, color: '#e74043' },
+    { name: 'Claims Buffer', value: 4500000, color: '#800020' },
     { name: 'Aave aUSDC', value: 8200000, color: '#22c55e' },
     { name: 'Protocol Treasury', value: 1200000, color: '#8b5cf6' },
     { name: 'Operational Fund', value: 300000, color: '#f59e0b' },
@@ -98,8 +98,8 @@ export function TreasuryAnalytics() {
                             <AreaChart data={treasuryData}>
                                 <defs>
                                     <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#e74043" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#e74043" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#800020" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#800020" stopOpacity={0} />
                                     </linearGradient>
                                     <linearGradient id="colorYield" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#22c55e" stopOpacity={0.1} />
@@ -113,7 +113,7 @@ export function TreasuryAnalytics() {
                                     contentStyle={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12 }}
                                     itemStyle={{ fontSize: 12 }}
                                 />
-                                <Area type="monotone" dataKey="revenue" stroke="#e74043" strokeWidth={2} fillOpacity={1} fill="url(#colorRev)" name="Protocol Fees" />
+                                <Area type="monotone" dataKey="revenue" stroke="#800020" strokeWidth={2} fillOpacity={1} fill="url(#colorRev)" name="Protocol Fees" />
                                 <Area type="monotone" dataKey="yield" stroke="#22c55e" strokeWidth={2} fillOpacity={1} fill="url(#colorYield)" name="Aave Yield" />
                             </AreaChart>
                         </ResponsiveContainer>

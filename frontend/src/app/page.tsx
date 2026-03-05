@@ -135,7 +135,7 @@ export default function Home() {
                 <p className="text-foreground text-sm px-4 text-center leading-relaxed font-light mt-4 mb-6">A Decentralized Oracle Network queries aviation data and achieves consensus on the delay.</p>
               </div>
               <div className="glass-panel" data-text="3. Instant Payout" style={{ '--r': '25' } as React.CSSProperties}>
-                <span className="material-symbols-outlined text-primary drop-shadow-[0_0_8px_rgba(231,64,67,0.8)]">bolt</span>
+                <span className="material-symbols-outlined text-primary drop-shadow-[0_0_8px_var(--primary)]">bolt</span>
                 <p className="text-foreground text-sm px-6 text-center leading-relaxed font-light mt-4 mb-6">Avalanche Teleporter enables cross-subnet settlement in sub-seconds.</p>
               </div>
             </div>
