@@ -1,4 +1,4 @@
-import ClientPage from './client';
+import ClientPage from './AnalyticsClient';
 
 export default function AnalyticsServerPage() {
     return <ClientPage />;
