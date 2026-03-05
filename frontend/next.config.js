@@ -1,7 +1,15 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // We remove output: 'standalone' as Vercel's native builder 
-    // is better optimized for Next.js when not using custom containers.
+    // Standard standalone output for Vercel monorepo compatibility
+    output: 'standalone',
+
+    experimental: {
+        // Essential for Vercel build to find dependencies in monorepo subfolders
+        // Points to the repository root
+        outputFileTracingRoot: path.join(__dirname, '../'),
+    },
 
     typescript: {
         ignoreBuildErrors: true,
@@ -9,7 +17,6 @@ const nextConfig = {
     eslint: {
         ignoreDuringBuilds: true,
     },
-    // Ensure trailing slashes are consistent
     trailingSlash: false,
 };
 
