@@ -1,5 +1,5 @@
-import ClientPage from './DashboardClient';
+import CommandCenterClient from './CommandCenterClientComponent';
 
-export default function DashboardServerPage() {
-    return <ClientPage />;
+export default function CommandCenterPage() {
+    return <CommandCenterClient />;
 }

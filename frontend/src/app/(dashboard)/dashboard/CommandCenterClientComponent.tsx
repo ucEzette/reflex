@@ -5,7 +5,7 @@ import { Shield, Activity, DollarSign, Landmark } from 'lucide-react';
 import { PolicyCard } from '@/components/dashboard/PolicyCard';
 import { PortfolioPerformanceChart } from '@/components/dashboard/PortfolioPerformanceChart';
 
-export default function CommandCenterClient() {
+export default function CommandCenterClientComponent() {
     const policies: any[] = [];
     const policiesLoading = false;
     const logs: any[] = [];
