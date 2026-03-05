@@ -10,7 +10,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: "#800020",
+        primary: {
+          DEFAULT: "#800020",
+          foreground: "var(--primary-foreground)",
+        },
         "primary-dark": "#4A0404",
         "background-dark": "#0B0E14",
         "surface-dark": "#161b22",
@@ -18,6 +21,35 @@ const config: Config = {
         midnight: "#111625",
         "glass-border": "rgba(255, 255, 255, 0.08)",
         "glass-surface": "rgba(255, 255, 255, 0.03)",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        card: {
+          DEFAULT: "var(--card)",
+          foreground: "var(--card-foreground)",
+        },
+        popover: {
+          DEFAULT: "var(--popover)",
+          foreground: "var(--popover-foreground)",
+        },
+        secondary: {
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
+        },
+        muted: {
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
+        },
+        accent: {
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
+        },
+        destructive: {
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--destructive-foreground)",
+        },
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "var(--ring)",
       },
       fontFamily: {
         display: ["'Open Sauce Sans'", "sans-serif"],
