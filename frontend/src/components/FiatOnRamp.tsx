@@ -17,7 +17,7 @@ export function FiatOnRamp() {
             networks: 'avalanche',
             defaultNetwork: 'avalanche',
             walletAddress: address || '',
-            themeColor: '#e74043',
+            themeColor: '#800020',
             widgetHeight: '650px',
             widgetWidth: '450px',
             // @ts-ignore

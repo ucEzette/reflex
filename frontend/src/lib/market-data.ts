@@ -1,6 +1,7 @@
 export type MarketDetail = {
     id: string;
     title: string;
+    category: string;
     description: string;
     price: string;
     unit: string;
@@ -26,6 +27,7 @@ export const ALL_MARKETS: MarketDetail[] = [
     {
         id: "flight",
         title: "Travel Solutions",
+        category: "travel",
         description: "Binary flight delay insurance — automatic payout on delays exceeding 120 minutes.",
         price: "~$5 USDC",
         unit: "/ flight",
@@ -49,6 +51,7 @@ export const ALL_MARKETS: MarketDetail[] = [
     {
         id: "agriculture",
         title: "Agriculture Index",
+        category: "agri",
         description: "Cumulative rainfall insurance with linear payout scaling from Strike to Exit index.",
         price: "~$50 USDC",
         unit: "/ season",
@@ -72,6 +75,7 @@ export const ALL_MARKETS: MarketDetail[] = [
     {
         id: "energy",
         title: "Energy Solutions",
+        category: "energy",
         description: "Heating/Cooling Degree Day insurance — tick-based payout on temperature extremes.",
         price: "~$100 USDC",
         unit: "/ season",
@@ -95,6 +99,7 @@ export const ALL_MARKETS: MarketDetail[] = [
     {
         id: "catastrophe",
         title: "Catastrophe Proximity",
+        category: "catastrophe",
         description: "Seismic event insurance with tiered payouts based on epicenter distance.",
         price: "~$200 USDC",
         unit: "/ event",
@@ -118,6 +123,7 @@ export const ALL_MARKETS: MarketDetail[] = [
     {
         id: "maritime",
         title: "Maritime Solutions",
+        category: "maritime",
         description: "Port wind speed insurance — binary payout when wind exceeds the strike threshold.",
         price: "~$150 USDC",
         unit: "/ voyage",
@@ -141,6 +147,7 @@ export const ALL_MARKETS: MarketDetail[] = [
     {
         id: "heat-wave",
         title: "Utility Subsidy",
+        category: "weather",
         description: "Heatwave protection triggering on NOAA temperature indexes.",
         price: "$100 USDC",
         unit: "/ wave",
@@ -164,6 +171,7 @@ export const ALL_MARKETS: MarketDetail[] = [
     {
         id: "powder-protect",
         title: "Ski Trip Guarantee",
+        category: "weather",
         description: "Snowfall deficit coverage for winter resorts.",
         price: "$500 USDC",
         unit: "/ trip",
@@ -187,6 +195,7 @@ export const ALL_MARKETS: MarketDetail[] = [
     {
         id: "peg-shield",
         title: "Stablecoin De-Peg",
+        category: "ecommerce",
         description: "USDT/USDC tail-risk protection for DeFi treasuries.",
         price: "Dynamic",
         unit: "payout",
@@ -210,6 +219,7 @@ export const ALL_MARKETS: MarketDetail[] = [
     {
         id: "sun-yield",
         title: "Solar Energy Hedge",
+        category: "energy",
         description: "Solar farm irradiance output smoothing.",
         price: "$100 USDC",
         unit: "/ month",
@@ -233,6 +243,7 @@ export const ALL_MARKETS: MarketDetail[] = [
     {
         id: "freight-wait",
         title: "Supply Chain Delay",
+        category: "logistics",
         description: "Maritime freight demurrage and port-congestion hedge.",
         price: "$200 USDC",
         unit: "/ day",
