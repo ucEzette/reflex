@@ -9,6 +9,12 @@ const nextConfig = {
         // Essential for Vercel build to find dependencies in monorepo subfolders
         // Points to the repository root
         outputFileTracingRoot: path.join(__dirname, '../'),
+        // Explicitly exclude the phantom export manifest to prevent nft tracing crashes on Vercel
+        outputFileTracingExcludes: {
+            '*': [
+                '**/.next/export-detail.json',
+            ],
+        },
     },
 
     typescript: {
