@@ -49,7 +49,7 @@ export const ALL_MARKETS: MarketDetail[] = [
         rules: "1. Policy must be purchased at least 2 hours prior to scheduled departure. 2. Resolves 'DELAYED' if official arrival exceeds schedule by 120+ minutes or cancellation. 3. Binary payout — full maxPayout on trigger, zero otherwise."
     },
     {
-        id: "agriculture",
+        id: "agri",
         title: "Agriculture Index",
         category: "agri",
         description: "Cumulative rainfall insurance with linear payout scaling from Strike to Exit index.",
@@ -97,7 +97,7 @@ export const ALL_MARKETS: MarketDetail[] = [
         rules: "1. Payout = (actualDegree - strike) × tickValue, capped at maxPayout. 2. No payout if actual is below strike. 3. Auto-expires via Chainlink Keepers. 4. Maximum policy cap: $10M."
     },
     {
-        id: "catastrophe",
+        id: "cat",
         title: "Catastrophe Proximity",
         category: "catastrophe",
         description: "Seismic event insurance with tiered payouts based on epicenter distance.",

@@ -21,11 +21,11 @@ export interface UserPolicy {
 }
 
 const PRODUCT_CONFIGS = [
-    { key: 'prod-flight', label: 'Travel Solutions', contract: CONTRACTS.TRAVEL, icon: 'Plane', isTravel: true },
-    { key: 'prod-agri', label: 'Agriculture Index', contract: CONTRACTS.AGRI, icon: 'CloudRain', isTravel: false },
-    { key: 'prod-energy', label: 'Energy Solutions', contract: CONTRACTS.ENERGY, icon: 'Zap', isTravel: false },
-    { key: 'prod-cat', label: 'Catastrophe Proximity', contract: CONTRACTS.CATASTROPHE, icon: 'Flame', isTravel: false },
-    { key: 'prod-maritime', label: 'Maritime Solutions', contract: CONTRACTS.MARITIME, icon: 'Anchor', isTravel: false },
+    { key: 'flight', label: 'Travel Solutions', contract: CONTRACTS.TRAVEL, icon: 'Plane', isTravel: true },
+    { key: 'agri', label: 'Agriculture Index', contract: CONTRACTS.AGRI, icon: 'CloudRain', isTravel: false },
+    { key: 'energy', label: 'Energy Solutions', contract: CONTRACTS.ENERGY, icon: 'Zap', isTravel: false },
+    { key: 'cat', label: 'Catastrophe Proximity', contract: CONTRACTS.CATASTROPHE, icon: 'Flame', isTravel: false },
+    { key: 'maritime', label: 'Maritime Solutions', contract: CONTRACTS.MARITIME, icon: 'Anchor', isTravel: false },
 ] as const;
 
 const policyCreatedEvent = parseAbiItem('event PolicyCreated(bytes32 id, address indexed holder, uint256 premium, uint256 maxPayout, uint256 expiresAt)');

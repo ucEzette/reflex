@@ -22,11 +22,11 @@ const performanceData = [
 ];
 
 const mockPools: PoolMetrics[] = [
-    { id: "pool-1", productId: "prod-flight", productTitle: "Travel Solutions", tvl: 4500000, apy: 14.2, baseAaveApy: 4.2, riskPremiumApy: 10.0, utilization: 65, maxPayouts: 2925000 },
-    { id: "pool-2", productId: "prod-agri", productTitle: "Agriculture Solutions", tvl: 8200000, apy: 18.5, baseAaveApy: 4.2, riskPremiumApy: 14.3, utilization: 82, maxPayouts: 6724000 },
-    { id: "pool-3", productId: "prod-energy", productTitle: "Energy Solutions", tvl: 5100000, apy: 12.8, baseAaveApy: 4.2, riskPremiumApy: 8.6, utilization: 45, maxPayouts: 2295000 },
-    { id: "pool-4", productId: "prod-cat", productTitle: "Wildfire & Reinsurance", tvl: 12500000, apy: 22.4, baseAaveApy: 4.2, riskPremiumApy: 18.2, utilization: 98, maxPayouts: 12250000 },
-    { id: "pool-5", productId: "prod-maritime", productTitle: "Maritime Solutions", tvl: 3600000, apy: 15.1, baseAaveApy: 4.2, riskPremiumApy: 10.9, utilization: 58, maxPayouts: 2088000 }
+    { id: "pool-1", productId: "flight", productTitle: "Travel Solutions", tvl: 4500000, apy: 14.2, baseAaveApy: 4.2, riskPremiumApy: 10.0, utilization: 65, maxPayouts: 2925000 },
+    { id: "pool-2", productId: "agri", productTitle: "Agriculture Solutions", tvl: 8200000, apy: 18.5, baseAaveApy: 4.2, riskPremiumApy: 14.3, utilization: 82, maxPayouts: 6724000 },
+    { id: "pool-3", productId: "energy", productTitle: "Energy Solutions", tvl: 5100000, apy: 12.8, baseAaveApy: 4.2, riskPremiumApy: 8.6, utilization: 45, maxPayouts: 2295000 },
+    { id: "pool-4", productId: "cat", productTitle: "Wildfire & Reinsurance", tvl: 12500000, apy: 22.4, baseAaveApy: 4.2, riskPremiumApy: 18.2, utilization: 98, maxPayouts: 12250000 },
+    { id: "pool-5", productId: "maritime", productTitle: "Maritime Solutions", tvl: 3600000, apy: 15.1, baseAaveApy: 4.2, riskPremiumApy: 10.9, utilization: 58, maxPayouts: 2088000 }
 ];
 
 export function InvestDashboardClient() {
