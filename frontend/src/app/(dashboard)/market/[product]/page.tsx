@@ -27,28 +27,28 @@ const DURATION_OPTIONS = [
 ];
 
 const PRODUCT_ORACLE_MAP: Record<string, string> = {
-    'prod-flight': 'flight',
-    'prod-agri': 'agri',
-    'prod-energy': 'energy',
-    'prod-cat': 'cat',
-    'prod-maritime': 'maritime'
+    'flight': 'flight',
+    'agri': 'agri',
+    'energy': 'energy',
+    'cat': 'cat',
+    'maritime': 'maritime'
 };
 
 const PRODUCT_BG_MAP: Record<string, string> = {
-    'prod-flight': '/travel.jpg',
-    'prod-agri': '/agriculture.jpg',
-    'prod-energy': '/energy.jpg',
-    'prod-cat': '/catastrophe.jpg',
-    'prod-maritime': '/maritime.jpg'
+    'flight': '/travel.jpg',
+    'agri': '/agriculture.jpg',
+    'energy': '/energy.jpg',
+    'cat': '/catastrophe.jpg',
+    'maritime': '/maritime.jpg'
 };
 
 // Fallback risk rates used only when oracle data is unavailable
 const DEFAULT_RISK_RATES: Record<string, number> = {
-    'prod-flight': 0.05,
-    'prod-agri': 0.10,
-    'prod-energy': 0.08,
-    'prod-cat': 0.02,
-    'prod-maritime': 0.06
+    'flight': 0.05,
+    'agri': 0.10,
+    'energy': 0.08,
+    'cat': 0.02,
+    'maritime': 0.06
 };
 
 // Insurance loading factor: multiplier on expected loss to ensure underwriter profitability
@@ -75,9 +75,9 @@ export default function ProductMarketPage({ params }: { params: { product: strin
 
     // Derive dynamic risk from oracle data
     const dynamicRisk = React.useMemo(() => {
-        if (!product || !oracleData) return { nDelayed: 5, nTotal: 100, riskRate: DEFAULT_RISK_RATES[product?.id || 'prod-flight'] || 0.05 };
+        if (!product || !oracleData) return { nDelayed: 5, nTotal: 100, riskRate: DEFAULT_RISK_RATES[product?.id || 'flight'] || 0.05 };
 
-        if (product.id === 'prod-flight' && oracleData.riskStats) {
+        if (product.id === 'flight' && oracleData.riskStats) {
             // Apply insurance loading factor to nDelayed for actuarial soundness
             const rawDelayed = oracleData.riskStats.nDelayed || 5;
             const loadedDelayed = Math.ceil(rawDelayed * INSURANCE_LOADING_FACTOR);
@@ -101,14 +101,14 @@ export default function ProductMarketPage({ params }: { params: { product: strin
     }, [product, oracleData]);
 
     // Flight-specific: validity, insurability check and auto-duration
-    const flightValid = product?.id === 'prod-flight' ? (oracleData?.isValid !== false) : true;
-    const flightInsurable = product?.id === 'prod-flight' ? (oracleData?.isInsurable !== false && flightValid) : true;
+    const flightValid = product?.id === 'flight' ? (oracleData?.isValid !== false) : true;
+    const flightInsurable = product?.id === 'flight' ? (oracleData?.isInsurable !== false && flightValid) : true;
     const flightStatusLabel = oracleData?.flightStatusLabel || 'Scheduled';
     const flightAutoDuration = oracleData?.autoDurationSeconds || null;
     const flightScheduledArrival = oracleData?.scheduledArrival || null;
 
     // For flights, use auto-duration; for others, use manual selection
-    const effectiveDuration = (product?.id === 'prod-flight' && flightAutoDuration)
+    const effectiveDuration = (product?.id === 'flight' && flightAutoDuration)
         ? flightAutoDuration
         : selectedDuration.value;
 
@@ -135,17 +135,17 @@ export default function ProductMarketPage({ params }: { params: { product: strin
         setIsLoadingOracle(true);
         try {
             const queryParams = new URLSearchParams();
-            if (product.id === 'prod-flight' && flightId) queryParams.set('flightId', flightId);
-            if (product.id === 'prod-agri' && zone) queryParams.set('zone', zone);
-            if (product.id === 'prod-energy') {
+            if (product.id === 'flight' && flightId) queryParams.set('flightId', flightId);
+            if (product.id === 'agri' && zone) queryParams.set('zone', zone);
+            if (product.id === 'energy') {
                 if (coordinates.lat) queryParams.set('lat', coordinates.lat);
                 if (coordinates.lon) queryParams.set('lon', coordinates.lon);
             }
-            if (product.id === 'prod-cat') {
+            if (product.id === 'cat') {
                 if (coordinates.lat) queryParams.set('lat', coordinates.lat);
                 if (coordinates.lon) queryParams.set('lon', coordinates.lon);
             }
-            if (product.id === 'prod-maritime') {
+            if (product.id === 'maritime') {
                 if (coordinates.lat) queryParams.set('lat', coordinates.lat);
                 if (coordinates.lon) queryParams.set('lon', coordinates.lon);
             }
@@ -161,10 +161,10 @@ export default function ProductMarketPage({ params }: { params: { product: strin
     };
 
     // Contract Interactions
-    const targetContract = product?.id === 'prod-flight' ? CONTRACTS.TRAVEL :
-        product?.id === 'prod-agri' ? CONTRACTS.AGRI :
-            product?.id === 'prod-energy' ? CONTRACTS.ENERGY :
-                product?.id === 'prod-cat' ? CONTRACTS.CATASTROPHE :
+    const targetContract = product?.id === 'flight' ? CONTRACTS.TRAVEL :
+        product?.id === 'agri' ? CONTRACTS.AGRI :
+            product?.id === 'energy' ? CONTRACTS.ENERGY :
+                product?.id === 'cat' ? CONTRACTS.CATASTROPHE :
                     CONTRACTS.MARITIME;
 
     // Calculate expected risk base from oracle-derived dynamic risk
@@ -175,9 +175,9 @@ export default function ProductMarketPage({ params }: { params: { product: strin
 
     const { data: premiumQuote, isFetching: isQuoting } = useReadContract({
         address: targetContract,
-        abi: product?.id === 'prod-flight' ? PRODUCT_ABI : GENERIC_PRODUCT_ABI,
+        abi: product?.id === 'flight' ? PRODUCT_ABI : GENERIC_PRODUCT_ABI,
         functionName: 'quotePremium',
-        args: product?.id === 'prod-flight'
+        args: product?.id === 'flight'
             ? [BigInt(dynamicRisk.nDelayed), BigInt(dynamicRisk.nTotal), parseUnits(payoutInput || "0", 6)]
             : [expectedRiskBase],
         query: { enabled: !!product && !!payoutInput && parseFloat(payoutInput) > 0 && flightInsurable && flightValid }
@@ -196,7 +196,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
     const handlePurchase = async () => {
         if (!isConnected) return toast.error("Connect wallet first");
         try {
-            if (product?.id === 'prod-flight') {
+            if (product?.id === 'flight') {
                 if (!flightInsurable) return toast.error("This flight cannot be insured — it has already departed or landed.");
                 writeContract({
                     address: CONTRACTS.TRAVEL,
@@ -272,7 +272,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                         <div className="bg-card border border-border rounded-xl p-6 space-y-6">
                             <h3 className="text-lg font-bold text-foreground">Configure Parameters</h3>
 
-                            {product.id === 'prod-flight' && (
+                            {product.id === 'flight' && (
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2 col-span-2">
                                         <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Flight Number</label>
@@ -327,7 +327,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                             </div>
 
                             {/* Duration Selector — hidden for flights (auto-computed from schedule) */}
-                            {product.id === 'prod-flight' ? (
+                            {product.id === 'flight' ? (
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
                                         <Clock className="w-3 h-3" /> Policy Duration (Auto)
@@ -449,7 +449,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                             )}
 
                             {/* Flight Not Found Banner */}
-                            {product.id === 'prod-flight' && oracleData && !flightValid && (
+                            {product.id === 'flight' && oracleData && !flightValid && (
                                 <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-5 mb-6 text-center space-y-2">
                                     <div className="flex items-center justify-center gap-2">
                                         <AlertTriangle className="w-5 h-5 text-amber-400" />
@@ -465,7 +465,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                             )}
 
                             {/* Flight Status Gating Banner */}
-                            {product.id === 'prod-flight' && flightValid && !flightInsurable && (
+                            {product.id === 'flight' && flightValid && !flightInsurable && (
                                 <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5 mb-6 text-center space-y-2">
                                     <div className="flex items-center justify-center gap-2">
                                         <Plane className="w-5 h-5 text-red-400" />
@@ -485,7 +485,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                                     <RefreshCcw className="w-8 h-8 text-primary animate-spin" />
                                     <p className="text-xs text-zinc-500 uppercase tracking-widest font-black">Sourcing Premium...</p>
                                 </div>
-                            ) : (product.id === 'prod-flight' && !flightInsurable) ? null : premiumQuote ? (
+                            ) : (product.id === 'flight' && !flightInsurable) ? null : premiumQuote ? (
                                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                     <div className="text-center">
                                         <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Required Premium (USDC)</p>
@@ -500,7 +500,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                                         <div className="p-3 bg-white/5 rounded-xl border border-white/10">
                                             <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Duration</p>
                                             <p className="text-sm font-bold text-foreground">
-                                                {product.id === 'prod-flight' && flightScheduledArrival
+                                                {product.id === 'flight' && flightScheduledArrival
                                                     ? `Until ${new Date(flightScheduledArrival).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} + 6h`
                                                     : selectedDuration.label}
                                             </p>
@@ -525,14 +525,14 @@ export default function ProductMarketPage({ params }: { params: { product: strin
 
                         <button
                             onClick={handlePurchase}
-                            disabled={!premiumQuote || isSubmitting || isWaiting || (product.id === 'prod-flight' && !flightInsurable)}
+                            disabled={!premiumQuote || isSubmitting || isWaiting || (product.id === 'flight' && !flightInsurable)}
                             className={`w-full mt-8 py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-2
-                            ${isWaiting ? 'bg-zinc-700 text-zinc-400' : (product.id === 'prod-flight' && !flightInsurable) ? 'bg-red-900/30 text-red-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_20px_rgba(16,185,129,0.3)]'}
+                            ${isWaiting ? 'bg-zinc-700 text-zinc-400' : (product.id === 'flight' && !flightInsurable) ? 'bg-red-900/30 text-red-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_20px_rgba(16,185,129,0.3)]'}
                             disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             {isWaiting ? <><RefreshCcw className="w-4 h-4 animate-spin" /> Confirming...</> :
                                 isSubmitting ? <><RefreshCcw className="w-4 h-4 animate-spin" /> Sourcing...</> :
-                                    (product.id === 'prod-flight' && !flightInsurable) ? <>Flight Not Insurable</> :
+                                    (product.id === 'flight' && !flightInsurable) ? <>Flight Not Insurable</> :
                                         <><CheckCircle2 className="w-4 h-4" /> Finalize Policy</>}
                         </button>
                     </div>

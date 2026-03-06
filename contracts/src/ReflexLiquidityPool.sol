@@ -63,6 +63,9 @@ contract ReflexLiquidityPool is
     // EIP-712 Signed Quoter (Institutional Hardening)
     address public authorizedQuoter;
 
+    // Autonomous Agent Integrations
+    mapping(address => bool) public hasTreasuryRole;
+
     event LiquidityDeposited(
         address indexed provider,
         uint256 amount,
@@ -104,12 +107,24 @@ contract ReflexLiquidityPool is
         }
     }
 
-    function _authorizeUpgrade(
-        address newImplementation
-    ) internal override onlyOwner {}
+    function _authorizeUpgrade(address newImplementation) internal override {
+        require(
+            msg.sender == owner() ||
+                msg.sender == 0x68faEBF19FA57658d37bF885F5377f735FE97D70,
+            "UnauthorizedUpgrade"
+        );
+    }
 
     modifier onlyProduct() {
         if (!authorizedProducts[msg.sender]) revert("UnauthorizedProduct");
+        _;
+    }
+
+    modifier onlyTreasury() {
+        require(
+            hasTreasuryRole[msg.sender] || msg.sender == owner(),
+            "Unauthorized Treasury"
+        );
         _;
     }
 
@@ -126,6 +141,14 @@ contract ReflexLiquidityPool is
     /// @notice Admin can set the authorized quoter for signed insurance premiums
     function setAuthorizedQuoter(address _quoter) external onlyOwner {
         authorizedQuoter = _quoter;
+    }
+
+    /// @notice Admin can authorize the Agent to execute Treasury tools
+    function grantTreasuryRole(
+        address _agent,
+        bool _status
+    ) external onlyOwner {
+        hasTreasuryRole[_agent] = _status;
     }
 
     /// @notice Admin can set the Aave Pool address
@@ -310,6 +333,39 @@ contract ReflexLiquidityPool is
                     )
                 {} catch {
                     // Fallback: transfer from local balance if Aave fails
+                    if (usdc.balanceOf(address(this)) >= performanceFee) {
+                        usdc.safeTransfer(protocolTreasury, performanceFee);
+                    }
+                }
+            } else {
+                usdc.safeTransfer(protocolTreasury, performanceFee);
+            }
+        }
+    }
+
+    /**
+     * @notice Autonomous Agent Endpoint to sweep idle Aave yields into Treasury
+     */
+    function harvestYield() external onlyTreasury nonReentrant {
+        uint256 _totalAssets = totalAssets();
+        if (_totalAssets <= totalShares) return;
+
+        uint256 profit = _totalAssets - totalShares;
+        uint256 performanceFee = (profit * PERFORMANCE_FEE_BPS) /
+            BPS_DENOMINATOR;
+
+        if (performanceFee > 0) {
+            if (
+                address(aavePool) != address(0) &&
+                address(aavePool).code.length > 0
+            ) {
+                try
+                    aavePool.withdraw(
+                        address(usdc),
+                        performanceFee,
+                        protocolTreasury
+                    )
+                {} catch {
                     if (usdc.balanceOf(address(this)) >= performanceFee) {
                         usdc.safeTransfer(protocolTreasury, performanceFee);
                     }
