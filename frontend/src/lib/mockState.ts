@@ -3,7 +3,7 @@ import { CONTRACTS } from './contracts';
 
 export const generateMarketProducts = (): MarketProduct[] => [
     {
-        id: "prod-flight",
+        id: "flight",
         title: "Travel Solutions",
         category: "Travel",
         description: "Binary delayed triggers executing direct linear compensation.",
@@ -30,7 +30,7 @@ export const generateMarketProducts = (): MarketProduct[] => [
         }
     },
     {
-        id: "prod-agri",
+        id: "agri",
         title: "Agriculture Solutions",
         category: "Agriculture",
         description: "Rainfall/Drought cumulative index scaling dynamically from Strike to Exit.",
@@ -56,7 +56,7 @@ export const generateMarketProducts = (): MarketProduct[] => [
         }
     },
     {
-        id: "prod-energy",
+        id: "energy",
         title: "Energy Solutions",
         category: "Energy",
         description: "Degree Days index protection calculating base deviation tick limits.",
@@ -82,7 +82,7 @@ export const generateMarketProducts = (): MarketProduct[] => [
         }
     },
     {
-        id: "prod-cat",
+        id: "cat",
         title: "Wildfire & Parametric Reinsurance",
         category: "Catastrophe",
         description: "Haversine off-chain Oracle tier mapping using absolute epicenter radii.",
@@ -109,7 +109,7 @@ export const generateMarketProducts = (): MarketProduct[] => [
         }
     },
     {
-        id: "prod-maritime",
+        id: "maritime",
         title: "Maritime Solutions",
         category: "Maritime",
         description: "Absolute Windspeed/Wave limits protecting against port-closure logistics failure.",
