@@ -4,6 +4,18 @@ import { AviationStackService } from "./services/AviationStackService";
 import { BlockchainService } from "./services/BlockchainService";
 import { PolicyInfo } from "./types";
 import { logger } from "./utils/logger";
+import { ReflexAutonomousAgent } from "./agent/agent";
+
+// Polyfill for Array.prototype.with (required for Node < 18.19.0)
+if (!(Array.prototype as any).with) {
+    (Array.prototype as any).with = function (this: any[], index: number, value: any) {
+        if (index < 0) index += this.length;
+        if (index < 0 || index >= this.length) throw new RangeError("Invalid index");
+        const result = [...this];
+        result[index] = value;
+        return result;
+    };
+}
 
 async function processPolicy(
     policy: PolicyInfo,
@@ -138,6 +150,7 @@ async function main() {
         config.rpcUrl,
         config.privateKey,
         config.escrowAddress,
+        config.liquidityPool,
         {
             travel: config.travelContract,
             agri: config.agriContract,
@@ -146,6 +159,13 @@ async function main() {
             maritime: config.maritimeContract,
         }
     );
+
+    // Initialize and start the Autonomous Agent
+    const agent = new ReflexAutonomousAgent(blockchain);
+    // Give it a moment to init WDK wallet before starting loop
+    setTimeout(() => {
+        agent.monitorEcosystem().catch(err => logger.error({ err }, "Agent loop failed"));
+    }, 5000);
 
     console.log(`[Relayer] Operator Wallet: ${blockchain.getWalletAddress()}`);
     console.log(`[Relayer] Poll Interval: ${config.pollIntervalSeconds}s`);

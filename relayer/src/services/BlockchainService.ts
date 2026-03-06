@@ -40,6 +40,14 @@ const TRAVEL_ABI = [
     "event PolicyExpired(bytes32 id)"
 ];
 
+const POOL_ABI = [
+    "function totalAssets() view returns (uint256)",
+    "function totalShares() view returns (uint256)",
+    "function harvestYield() external",
+    "function usdc() view returns (address)",
+    "function protocolTreasury() view returns (address)"
+];
+
 export interface EnterprisePolicy {
     policyId: string;
     contractAddress: string;
@@ -56,12 +64,14 @@ export class BlockchainService {
     private readonly provider: ethers.JsonRpcProvider;
     private readonly signer: ethers.Wallet;
     private readonly escrow: ethers.Contract;
+    private readonly liquidityPool: ethers.Contract;
     private readonly enterpriseContracts: Map<string, ethers.Contract> = new Map();
 
     constructor(
         rpcUrl: string,
         privateKey: string,
         private readonly escrowAddress: string,
+        private readonly poolAddress: string,
         enterpriseAddresses?: {
             travel: string;
             agri: string;
@@ -77,6 +87,12 @@ export class BlockchainService {
             this.escrow = new ethers.Contract(escrowAddress, ESCROW_ABI, this.signer);
         } else {
             this.escrow = null as any;
+        }
+
+        if (poolAddress) {
+            this.liquidityPool = new ethers.Contract(poolAddress, POOL_ABI, this.signer);
+        } else {
+            this.liquidityPool = null as any;
         }
 
         // Initialize enterprise contracts
@@ -244,6 +260,20 @@ export class BlockchainService {
             const receipt = await tx.wait();
             return receipt.hash;
         });
+    }
+
+    async getPoolStats(): Promise<{ totalAssets: bigint, totalShares: bigint, profit: bigint }> {
+        if (!this.liquidityPool) return { totalAssets: 0n, totalShares: 0n, profit: 0n };
+
+        const assets = BigInt(await this.liquidityPool.totalAssets());
+        const shares = BigInt(await this.liquidityPool.totalShares());
+        const profit = assets > shares ? assets - shares : 0n;
+
+        return {
+            totalAssets: assets,
+            totalShares: shares,
+            profit
+        };
     }
 
     getWalletAddress(): string {
