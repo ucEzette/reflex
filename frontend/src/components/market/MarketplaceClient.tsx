@@ -14,7 +14,7 @@ const categories = [
     { id: 'energy', label: 'Energy', icon: Zap },
     { id: 'maritime', label: 'Maritime', icon: Anchor },
     { id: 'logistics', label: 'Logistics', icon: Truck },
-    { id: 'ecommerce', label: 'E-Commerce', icon: ShoppingBag },
+    { id: 'ecommerce', label: 'Ecommerce', icon: ShoppingBag },
     { id: 'weather', label: 'Weather', icon: Droplets },
     { id: 'health', label: 'Health', icon: HeartPulse },
     { id: 'property', label: 'Property', icon: Building2 },

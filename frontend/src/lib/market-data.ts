@@ -28,8 +28,8 @@ export const ALL_MARKETS: MarketDetail[] = [
         id: "flight",
         title: "Travel Solutions",
         category: "travel",
-        description: "Binary flight delay insurance — automatic payout on delays exceeding 120 minutes.",
-        price: "~$5 USDC",
+        description: "Binary flight delay protection providing automated settlement once historical arrival latencies exceed one hundred twenty minutes.",
+        price: "$5 USDC",
         unit: "/ flight",
         icon: "flight_takeoff",
         iconBg: "bg-blue-500/20",
@@ -45,15 +45,15 @@ export const ALL_MARKETS: MarketDetail[] = [
             riskPremium: "5%",
             maxPayout: "$100 USDC",
         },
-        about: "This parametric insurance policy automatically triggers if your registered commercial flight is delayed by more than 120 minutes past scheduled arrival. The smart contract is wired directly to the FlightAware AeroAPI via a Chainlink Decentralized Oracle Network. On qualifying delay, your USDC payout is routed directly to your wallet — no claims needed.",
-        rules: "1. Policy must be purchased at least 2 hours prior to scheduled departure. 2. Resolves 'DELAYED' if official arrival exceeds schedule by 120+ minutes or cancellation. 3. Binary payout — full maxPayout on trigger, zero otherwise."
+        about: "This parametric protection protocol activates automatically when a registered commercial flight suffers an arrival delay exceeding one hundred twenty minutes. The infrastructure utilizes the FlightAware AeroAPI and a Decentralized Oracle Network to ensure mathematical certainty in settlement. Upon verification of the delay event, capital is routed directly to the policyholder with no administrative claims process required.",
+        rules: "1. Policy acquisition must occur at least two hours before scheduled departure. 2. Resolution evaluates as Triggered if official arrival exceeds the schedule by two hours or in the event of cancellation. 3. Binary settlement provides the full maximum payout upon trigger and zero otherwise."
     },
     {
         id: "agri",
         title: "Agriculture Index",
         category: "agri",
-        description: "Cumulative rainfall insurance with linear payout scaling from Strike to Exit index.",
-        price: "~$50 USDC",
+        description: "Cumulative precipitation protection with linear liquidity scaling between designated Strike and Exit index thresholds.",
+        price: "$50 USDC",
         unit: "/ season",
         icon: "grass",
         iconBg: "bg-green-500/20",
@@ -69,22 +69,22 @@ export const ALL_MARKETS: MarketDetail[] = [
             riskPremium: "5%",
             maxPayout: "Up to $10,000 USDC",
         },
-        about: "Farmers and agricultural businesses can hedge against drought or excess rainfall using cumulative index-based insurance. Set a strike index (normal conditions) and exit index (catastrophe threshold). If the actual rainfall index falls between strike and exit, payout scales linearly. Below exit = full payout. Above strike = zero payout. Powered by NOAA weather data via Chainlink DON.",
-        rules: "1. Strike must exceed exit index. 2. Payout linearly interpolated between strike and exit thresholds. 3. Chainlink Keepers auto-expire policies past their duration window. 4. Maximum payout capped at $10M per policy."
+        about: "Agricultural producers can hedge against atmospheric moisture volatility using this cumulative index protection. The protocol monitors rainfall data from the NOAA Climate API to determine regional hydration levels. Liquidity settlement scales linearly as the actual rainfall index moves between the Strike and Exit thresholds, providing a precise financial buffer against drought or flooding events.",
+        rules: "1. The Strike threshold must be mathematically greater than the Exit index. 2. Settlement scales linearly as the index moves between defined boundaries. 3. Smart contract automation handles expiration and settlement windows. 4. Maximum aggregate exposure is capped at ten million dollars per policy holder."
     },
     {
         id: "energy",
         title: "Energy Solutions",
         category: "energy",
-        description: "Heating/Cooling Degree Day insurance — tick-based payout on temperature extremes.",
-        price: "~$100 USDC",
+        description: "Heating and Cooling Degree Day protection with tick based settlement on verified temperature extremes.",
+        price: "$100 USDC",
         unit: "/ season",
         icon: "bolt",
         iconBg: "bg-amber-500/20",
         iconColor: "text-amber-400",
         riskBase: "ENERGY-ENT",
         bullet1: "OpenWeatherMap Oracle",
-        bullet2: "Degree-Day Tick Payout",
+        bullet2: "Degree Day Tick Payout",
         rgb: "245, 158, 11",
         marketData: {
             resolutionSource: "OpenWeatherMap API",
@@ -93,15 +93,15 @@ export const ALL_MARKETS: MarketDetail[] = [
             riskPremium: "5%",
             maxPayout: "Up to $50,000 USDC",
         },
-        about: "Energy producers and consumers can hedge against temperature-driven demand spikes. Each degree above the strike threshold adds a fixed tick value to the payout. For example: if strike = 100 HDD, tick = $10 USDC, and actual = 150 HDD, payout = 50 ticks × $10 = $500. Payout is capped at maxPayout. Designed for utilities, data centers, and industrial operators with temperature-sensitive costs.",
-        rules: "1. Payout = (actualDegree - strike) × tickValue, capped at maxPayout. 2. No payout if actual is below strike. 3. Auto-expires via Chainlink Keepers. 4. Maximum policy cap: $10M."
+        about: "Utility providers and industrial operators utilize this protocol to hedge against temperature driven demand volatility. Each degree deviation from the Strike threshold triggers a fixed tick value in USDC settlement. This product allows energy stakeholders to smooth their revenue curves against unexpected seasonable temperature fluctuations using OpenWeatherMap data feeds.",
+        rules: "1. Settlement equals the product of degree deviation and tick value, capped at the maximum payout. 2. No settlement occurs if the actual temperature remains within Strike boundaries. 3. Automated expiration logic is executed via decentralized automation nodes."
     },
     {
         id: "cat",
         title: "Catastrophe Proximity",
         category: "catastrophe",
-        description: "Seismic event insurance with tiered payouts based on epicenter distance.",
-        price: "~$200 USDC",
+        description: "Seismic event protection with tiered liquidity release based on epicenter proximity to secured coordinates.",
+        price: "$200 USDC",
         unit: "/ event",
         icon: "earthquake",
         iconBg: "bg-red-500/20",
@@ -117,15 +117,15 @@ export const ALL_MARKETS: MarketDetail[] = [
             riskPremium: "5%",
             maxPayout: "Up to $100,000 USDC",
         },
-        about: "Property owners, businesses, and municipalities near fault lines can insure against seismic events. Specify your coordinates and two tier radii. If an earthquake epicenter falls within Tier 1 (closest), you receive 100% of maxPayout. Within Tier 2, you receive 50%. Beyond Tier 2, no payout. Distance calculated from USGS earthquake data via Chainlink DON.",
-        rules: "1. Two-tier payout: <Tier1 radius = 100%, <Tier2 radius = 50%, beyond = 0%. 2. Distance measured in meters from policy coordinates. 3. Auto-expires via Chainlink Keepers. 4. Maximum policy cap: $10M."
+        about: "Property owners and municipalities near active fault lines can utilize this seismic risk protocol. Upon detection of a qualifying earthquake by the USGS, the contract calculates the distance between the epicenter and the insured coordinates. Liquidity is released in tiers, with closer proximities receiving higher percentages of the maximum payout to cover immediate structural remediation costs.",
+        rules: "1. Tier one proximity receives one hundred percent of payout while tier two receives fifty percent. 2. Distance is measured in meters from the provided coordinates to the verified epicenter. 3. Policy parameters are immutably locked at the time of purchase."
     },
     {
         id: "maritime",
         title: "Maritime Solutions",
         category: "maritime",
-        description: "Port wind speed insurance — binary payout when wind exceeds the strike threshold.",
-        price: "~$150 USDC",
+        description: "Port wind speed protection providing binary settlement when sustained velocities exceed the strike threshold.",
+        price: "$150 USDC",
         unit: "/ voyage",
         icon: "sailing",
         iconBg: "bg-indigo-500/20",
@@ -141,14 +141,14 @@ export const ALL_MARKETS: MarketDetail[] = [
             riskPremium: "5%",
             maxPayout: "Up to $50,000 USDC",
         },
-        about: "Shipping companies, port operators, and importers can insure against extreme wind conditions that cause port closures, vessel delays, and cargo damage. Set a wind speed strike (e.g., 34 knots — gale force). If the oracle reports wind speed at the target port exceeding the strike, the full maxPayout is released. Powered by Stormglass.io marine weather data via Chainlink DON.",
-        rules: "1. Binary trigger: wind >= strike = 100% payout, below strike = 0%. 2. Wind speed measured in knots at the designated port. 3. Auto-expires via Chainlink Keepers. 4. Maximum policy cap: $10M."
+        about: "Cargo operators and port authorities utilize this maritime protocol to hedge against extreme wind events that disrupt docking and logistics operations. By monitoring the Stormglass.io marine data network, the contract verifies when wind speeds at the designated port exceed safety thresholds. Upon verification, the contract triggers a binary liquidity release to offset operational delays and demurrage costs.",
+        rules: "1. Binary settlement triggers at one hundred percent when wind speed equals or exceeds the strike. 2. Wind velocities are measured in knots at the specific port coordinates. 3. Automation nodes handle the truing process after the voyage window concludes."
     },
     {
         id: "heat-wave",
         title: "Utility Subsidy",
         category: "weather",
-        description: "Heatwave protection triggering on NOAA temperature indexes.",
+        description: "Extreme heat protection triggering on verified NOAA temperature indexes for industrial cooling stability.",
         price: "$100 USDC",
         unit: "/ wave",
         icon: "thermostat",
@@ -165,14 +165,14 @@ export const ALL_MARKETS: MarketDetail[] = [
             riskPremium: "15%",
             maxPayout: "$1,000 USDC",
         },
-        about: "Extreme summer temperatures lead to massive, unpredictable spikes in electricity bills for industrial cooled warehouses, server farms, and residential consumers alike. This parametric contract offers a clean financial hedge against the weather. By monitoring NOAA temperature reporting stations in your ZIP code, the policy triggers a cash injection the moment a 'Heatwave' (e.g., 3 consecutive days over 100°F) is mathematically verified.",
-        rules: "1. Strike temperature and duration parameters set at execution. 2. Resolves 'TRIGGERED' based exclusively on primary reporting station data, ignoring micro-climates. 3. Premium dynamically priced based on historical climate models for the target area."
+        about: "Prolonged extreme temperatures cause massive volatility in electricity expenditure for temperature sensitive industrial facilities. This protocol offers a dedicated financial hedge against these events. By monitoring NOAA reporting stations, the contract verifies the onset of a heatwave and releases liquidity to subsidize increased cooling and utility costs for the operator.",
+        rules: "1. Strike temperature and duration parameters are set at the time of contract execution. 2. Resolution is based exclusively on primary reporting station data. 3. Premiums are dynamically calculated based on historical climate models for the target geography."
     },
     {
         id: "powder-protect",
         title: "Ski Trip Guarantee",
         category: "weather",
-        description: "Snowfall deficit coverage for winter resorts.",
+        description: "Snowfall base depth protection for alpine resort destinations using verified weather data.",
         price: "$500 USDC",
         unit: "/ trip",
         icon: "ac_unit",
@@ -189,14 +189,14 @@ export const ALL_MARKETS: MarketDetail[] = [
             riskPremium: "20%",
             maxPayout: "$5,000 USDC",
         },
-        about: "Booking a $10,000 ski trip months in advance carries the massive risk of encountering a barren, snowless mountain. Powder Protect allows tourists to hedge their vacation investment. If the aggregate accumulated snowfall at the target resort over the 14 days preceding your arrival falls below the historical baseline (e.g., < 12 inches base depth), the smart contract refunds your lift tickets and lodging costs via stablecoin.",
-        rules: "1. Policy strictly bounded to the official API base-depth measurements of the designated resort. 2. Resolves 'DEFICIT' at 08:00 AM local time on the arrival date. 3. Cannot be purchased within 10 days of the trip."
+        about: "Travelers can protect their winter destination investments against unfavorable snow conditions. Powder Protect allows participants to hedge their vacation costs against a lack of snowfall. If the verified base depth at the resort falls below the historical baseline preceding arrival, the smart contract settles the policy value in USDC to mitigate lost utility and travel expenses.",
+        rules: "1. Policy resolution is strictly bounded to the official API base depth measurements. 2. Settlement occurs at eight in the morning locale time on the arrival date. 3. Protection must be acquired at least ten days before the scheduled trip."
     },
     {
         id: "peg-shield",
-        title: "Stablecoin De-Peg",
+        title: "Stablecoin Depeg",
         category: "ecommerce",
-        description: "USDT/USDC tail-risk protection for DeFi treasuries.",
+        description: "Automated tail risk protection for stablecoin assets utilizing Chainlink price references.",
         price: "Dynamic",
         unit: "payout",
         icon: "currency_exchange",
@@ -204,7 +204,7 @@ export const ALL_MARKETS: MarketDetail[] = [
         iconColor: "text-emerald-400",
         riskBase: "RISK-L8",
         bullet1: "Chainlink USD Feeds",
-        bullet2: "Tail-Risk Protection",
+        bullet2: "Tail Risk Protection",
         rgb: "16, 185, 129",
         marketData: {
             resolutionSource: "Chainlink Price Feeds",
@@ -213,14 +213,14 @@ export const ALL_MARKETS: MarketDetail[] = [
             riskPremium: "1.5%",
             maxPayout: "100% of Covered TVL",
         },
-        about: "In the wake of algorithmic stablecoin collapses and banking crises, 'stable' assets are never entirely without risk. Peg Shield operates as a decentralized Credit Default Swap. Treasuries deposit multi-million dollar premiums to protect massive stablecoin positions. If the primary stablecoin (e.g., USDT) falls below $0.95 against the USD reference rate for longer than a 2-hour TWAP, the protocol pays out 1:1 using heavily collateralized, isolated risk pools.",
-        rules: "1. De-peg must be sustained over the TWAP duration to filter out flash-crashes. 2. Payouts are sourced from isolated, over-collateralized counter-party pools. 3. Resolves 'DEFAULT' automatically if the Chainlink feed confirms the breach."
+        about: "Peg Shield functions as a decentralized credit default swap for digital assets. Large treasuries can utilize this protocol to protect massive stablecoin positions against extreme market volatility. If the primary stablecoin falls below the reference rate for a sustained duration, the protocol releases liquidity from isolated risk pools to restore the value for the covered participant.",
+        rules: "1. The de-peg event must be sustained over a specific duration to filter out transient volatility. 2. Payouts are sourced from isolated and over-collateralized counter-party liquidity pools. 3. Resolution is triggered automatically when price feeds verify the breach."
     },
     {
         id: "sun-yield",
         title: "Solar Energy Hedge",
         category: "energy",
-        description: "Solar farm irradiance output smoothing.",
+        description: "Solar farm irradiance output smoothing for predictable renewable energy revenue generation.",
         price: "$100 USDC",
         unit: "/ month",
         icon: "solar_power",
@@ -231,20 +231,20 @@ export const ALL_MARKETS: MarketDetail[] = [
         bullet2: "Output Smoothing",
         rgb: "234, 179, 8",
         marketData: {
-            resolutionSource: "Solcast / ECMWF",
+            resolutionSource: "Solcast and ECMWF",
             oracleNode: "Chainlink DON",
             settlement: "USDC on Avalanche",
             riskPremium: "9%",
             maxPayout: "$2,500 USDC",
         },
-        about: "Commercial solar farms require predictable megawatt generation to satisfy debt obligations. Prolonged overcast weather patterns can destroy monthly yield. By utilizing satellite-derived Direct Normal Irradiance (DNI) data pushed on-chain, this parametric instrument issues payouts when sunlight falls 15% or more below the 10-year historical average for the farm's geographic sector. This completely flattens volatile revenue curves for renewable energy operators.",
-        rules: "1. Resolves 'UNDER_PERFORMING' based on aggregate monthly DNI data. 2. Validated against multi-source satellite irradiance endpoints. 3. Premium dynamically mapped to local atmospheric volatility models."
+        about: "Renewable energy operators utilize this protocol to flatten revenue volatility caused by cloud cover and low solar irradiance. By integrating satellite derived irradiance data on chain, the instrument provides automated payouts when sunlight levels fall below established historical averages for a specific farm location, ensuring consistent cash flow for debt service and operations.",
+        rules: "1. The protocol resolves as underperforming based on aggregate monthly irradiance data. 2. Data is validated against multiple satellite weather endpoints. 3. Pricing is mapped to local atmospheric volatility models."
     },
     {
         id: "freight-wait",
         title: "Supply Chain Delay",
         category: "logistics",
-        description: "Maritime freight demurrage and port-congestion hedge.",
+        description: "Maritime freight demurrage and port congestion hedging for international trade logistics.",
         price: "$200 USDC",
         unit: "/ day",
         icon: "directions_boat",
@@ -261,7 +261,7 @@ export const ALL_MARKETS: MarketDetail[] = [
             riskPremium: "6%",
             maxPayout: "$10,000 USDC",
         },
-        about: "When container ships idle outside congested ports (like Long Beach or Rotterdam), importers are hit with catastrophic demurrage (late/holding) fees that destroy product margins. Freight Wait utilizes absolute GPS positioning via maritime AIS systems. If the target vessel drops anchor in a designated congestion zone outside the port for more than 48 hours past scheduled berthing, the contract automatically releases daily liquidity to cover the importer's fines.",
-        rules: "1. Vessel IMO tracking number legally bound to the hash at purchase. 2. Resolves 'DEMURRAGE' triggered by consecutive stationary geofence polling over 48 hours. 3. Payouts increment strictly per 24 hours delayed."
+        about: "Importers and logistics operators can hedge against port congestion and demurrage fines using absolute vessel tracking data. Freight Wait monitors maritime AIS systems to verify when cargo vessels are stationary in congestion zones. If berthing is delayed beyond the scheduled window, the protocol automatically releases liquidity to cover daily holding fees and operational disruptions.",
+        rules: "1. Vessel tracking numbers are immutably bound to the policy at the time of purchase. 2. Resolution is triggered by consecutive stationary geofence polling over forty eight hours. 3. Payouts increment based on twenty four hour delay blocks."
     }
 ];
