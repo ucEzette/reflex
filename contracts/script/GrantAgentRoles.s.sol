@@ -13,12 +13,12 @@ import "../src/ReflexParametricEscrow.sol";
 contract GrantAgentRoles is Script {
     // Current Fuji Deployment Addresses (March 2026) - Corrected Checksums
     address public constant LIQUIDITY_POOL =
-        0x518362015D85ACd360413da1f7eb1a391410AF70;
-    address public constant ESCROW = 0xaab7AD99551765568C4a84A9bDB852527c4aCB2f;
+        0xbcFEeaEA01b9DDd2F8A1092676681c6B52DBE81C;
+    address public constant ESCROW = 0x6b37b0FC861B0Fa22242eC92C25F2643876E4fbf;
 
     // Generated Agent WDK Wallet Address
     address public constant AGENT_ADDRESS =
-        0x2fb454025BF4790050f6B49B48e7510037c6aEA3;
+        0x6681207e844f1f4A9083d7739D3afebF9c5BF951;
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
@@ -30,13 +30,23 @@ contract GrantAgentRoles is Script {
         console.log("Granting Agent roles...");
         console.log("Agent:", AGENT_ADDRESS);
 
+        /*
         // Grant TREASURY_ROLE on LiquidityPool
-        pool.grantTreasuryRole(AGENT_ADDRESS, true);
-        console.log("Granted TREASURY_ROLE on Pool");
+        try pool.grantTreasuryRole(AGENT_ADDRESS, true) {
+            console.log("Granted TREASURY_ROLE on Pool");
+        } catch {
+            console.log(
+                "FAILED to grant TREASURY_ROLE on Pool (likely ownership mismatch)"
+            );
+        }
+        */
 
         // Grant KEEPER_ROLE on Escrow
-        escrow.grantKeeperRole(AGENT_ADDRESS, true);
-        console.log("Granted KEEPER_ROLE on Escrow");
+        try escrow.grantKeeperRole(AGENT_ADDRESS, true) {
+            console.log("Granted KEEPER_ROLE on Escrow");
+        } catch {
+            console.log("FAILED to grant KEEPER_ROLE on Escrow");
+        }
 
         vm.stopBroadcast();
     }

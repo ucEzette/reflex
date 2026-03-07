@@ -97,13 +97,13 @@ export const CONTRACTS = {
     USDC: "0x5425890298aed601595a70AB815c96711a31Bc65" as `0x${string}`,
 
     // Phase 97: Redeployment with PROTOCOL_MARGIN=3000 (30%)
-    LP_POOL: "0x4e70e0c76499876d575650fe73a397570aaf17e5" as `0x${string}`,
-    PRODUCT_FACTORY: "0x90d97d7bac01bc2504c6d2d81ffbc7254339db70" as `0x${string}`,
-    TRAVEL: "0xea8f12bfed818cbf45715783c95d47c90b2e6b42" as `0x${string}`,
-    AGRI: "0x708ad64cc8d70f0be380ca725ff8989836b5451a" as `0x${string}`,
-    ENERGY: "0x2e7b9ac02f629aa62e7009f0fa5ee040c250d266" as `0x${string}`,
-    CATASTROPHE: "0x8782f5d44f4d14a082595b7e2b1941cb5b8be86d" as `0x${string}`,
-    MARITIME: "0x4fe5833da6ba27a28dc7a921ba300ea8e831d85d" as `0x${string}`,
+    LP_POOL: "0xbcfeeaea01b9ddd2f8a1092676681c6b52dbe81c" as `0x${string}`,
+    PRODUCT_FACTORY: "0x870268aafe40b15f6bf14d42c435e6d2c7b660fe" as `0x${string}`,
+    TRAVEL: "0x54eb96ee828c3c3201ff5419ad5cbff4b2d482b6" as `0x${string}`,
+    AGRI: "0x2b9ad5fb816f0ea3cd605495634dbe851ebdb240" as `0x${string}`,
+    ENERGY: "0x2062932817121290f6bb7ff87f20eeb40ce52179" as `0x${string}`,
+    CATASTROPHE: "0x7c1dfcd03c2ba97c13309a36e46ef20ddf869b61" as `0x${string}`,
+    MARITIME: "0x237660db78797fbe77373db803b3325aa51cd04a" as `0x${string}`,
     CROSS_CHAIN_RECEIVER: "0x89C6F7C2A6dbe8c396CA5dc37f298f86b" as `0x${string}`
 };
 
