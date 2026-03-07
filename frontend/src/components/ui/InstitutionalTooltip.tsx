@@ -37,7 +37,7 @@ export function InstitutionalTooltip({
         >
             {children || (
                 <div className="p-1 rounded-md hover:bg-white/5 transition-colors cursor-help">
-                    <Info className="w-4 h-4 text-zinc-500" />
+                    <Info className="w-4 h-4 text-zinc-500 animate-blink-soft" />
                 </div>
             )}
 

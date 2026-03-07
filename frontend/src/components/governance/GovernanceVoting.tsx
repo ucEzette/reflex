@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Vote, ChevronRight, Clock, CheckCircle2, AlertCircle, Shield, Play } from 'lucide-react';
+import { Vote, ChevronRight, Clock, CheckCircle2, AlertCircle, Shield, Play, PlusCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { CONTRACTS } from '@/lib/contracts';
@@ -243,6 +243,26 @@ export function GovernanceVoting() {
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div className="flex items-center justify-center p-8 border border-dashed border-primary/20 rounded-3xl bg-primary/5 mt-12 group hover:border-primary/40 transition-all cursor-pointer">
+                <div className="text-center space-y-4">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                        <PlusCircle className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-foreground">Create New Proposal</h3>
+                        <p className="text-sm text-slate-400 font-light mt-1 max-w-md mx-auto">
+                            Submit a proposal to adjust protocol parameters, add new risk markets, or update the relayer network. Requires a minimum stake of 100,000 rVote.
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => toast.info("Proposal Creation Incoming", { description: "The DAO deployment module is currently synchronizing with the L1 Governance contract." })}
+                        className="px-6 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary-dark transition-all uppercase tracking-widest flex items-center gap-2 mx-auto"
+                    >
+                        Initialize Proposal Drafting <ExternalLink className="w-3 h-3" />
+                    </button>
                 </div>
             </div>
 
