@@ -60,7 +60,7 @@ export function MarketplaceClient() {
                 </div>
                 <h1 className="text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-tight">
                     Instant Parametric <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-amber-500">Protection Layer</span>
+                    <span className="text-primary">Protection Layer</span>
                 </h1>
                 <p className="text-slate-400 text-lg leading-relaxed">
                     Browse and activate real-time protection protocols for global industrial risks.

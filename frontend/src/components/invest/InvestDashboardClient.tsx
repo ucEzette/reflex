@@ -36,10 +36,6 @@ export function InvestDashboardClient() {
     const { address, isConnected } = useAccount();
     const { connectors, connectAsync } = useConnect();
 
-    // Compliance State
-    const [isKycVerified, setIsKycVerified] = useState(false);
-    const [showKycModal, setShowKycModal] = useState(false);
-    const [kycProgress, setKycProgress] = useState(0);
 
     // Deposit Form State
     const [selectedPool, setSelectedPool] = useState<PoolMetrics>(mockPools[0]);
@@ -53,8 +49,6 @@ export function InvestDashboardClient() {
 
     useEffect(() => {
         setMounted(true);
-        const storedKyc = localStorage.getItem('reflex_kyc_verified');
-        if (storedKyc === 'true') setIsKycVerified(true);
     }, []);
 
     // Contract Reads
@@ -101,7 +95,7 @@ export function InvestDashboardClient() {
     const needsApproval = actionType === "deposit" && usdcAllowance !== undefined && amount && parseUnits(amount, 6) > (usdcAllowance as bigint);
 
     const handleTransaction = async () => {
-        console.log("Initiating transaction...", { actionType, amount, isKycVerified, needsApproval });
+        console.log("Initiating transaction...", { actionType, amount, needsApproval });
 
         if (!isConnected) {
             toast.info("Connecting wallet...");
@@ -116,13 +110,6 @@ export function InvestDashboardClient() {
                 }
             }
             return toast.error("No wallet provider detected.");
-        }
-
-        // Compliance Check
-        if (actionType === "deposit" && !isKycVerified) {
-            console.log("KYC Required - opening modal");
-            setShowKycModal(true);
-            return;
         }
 
         if (!amount || parseFloat(amount) <= 0) {
@@ -214,24 +201,6 @@ export function InvestDashboardClient() {
         }
     };
 
-    const runKyc = () => {
-        console.log("Starting mock KYC flow...");
-        setKycProgress(1);
-        const interval = setInterval(() => {
-            setKycProgress(p => {
-                if (p >= 100) {
-                    clearInterval(interval);
-                    setIsKycVerified(true);
-                    localStorage.setItem('reflex_kyc_verified', 'true');
-                    toast.success("Institutional KYC Verified");
-                    setTimeout(() => setShowKycModal(false), 1000);
-                    return 100;
-                }
-                return p + 10;
-            });
-        }, 100);
-    };
-
     useEffect(() => {
         if (isTxSuccess) {
             if (isApproving) {
@@ -313,55 +282,6 @@ export function InvestDashboardClient() {
     return (
         <div className="min-h-screen bg-background p-4 md:p-8 space-y-8 max-w-[1400px] mx-auto pb-20">
 
-            {/* KYC Modal */}
-            {showKycModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-                    <div className="bg-card border border-white/10 rounded-3xl p-8 max-w-md w-full space-y-6 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-[80px] -translate-y-1/2 translate-x-1/2" />
-
-                        <div className="flex flex-col items-center text-center space-y-4">
-                            <div className="p-4 bg-primary/10 rounded-full">
-                                <UserCheck className="w-10 h-10 text-primary" />
-                            </div>
-                            <h2 className="text-2xl font-black text-foreground">Institutional Onboarding</h2>
-                            <p className="text-zinc-400 text-sm">To provide liquidity, regulatory standards require a one-time Institutional KYC verification via Reflex Compliance Services.</p>
-                        </div>
-
-                        {kycProgress > 0 ? (
-                            <div className="space-y-4">
-                                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-primary">
-                                    <span>Scanning Global Lists...</span>
-                                    <span>{kycProgress}%</span>
-                                </div>
-                                <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-primary transition-all duration-300"
-                                        style={{ width: `${kycProgress}%` }}
-                                    />
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="space-y-4 pt-4">
-                                <button
-                                    onClick={runKyc}
-                                    className="w-full py-4 bg-primary text-white font-black uppercase tracking-widest text-sm rounded-2xl hover:bg-primary/90 transition-all shadow-[0_10px_30px_rgba(128,0,32,0.4)]"
-                                >
-                                    Verify Identity
-                                </button>
-                                <button
-                                    onClick={() => setShowKycModal(false)}
-                                    className="w-full py-4 bg-white/5 text-zinc-500 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:text-foreground transition-all underline underline-offset-4"
-                                >
-                                    Maybe Later
-                                </button>
-                            </div>
-                        )}
-
-                        <p className="text-[9px] text-center text-zinc-600 font-bold uppercase tracking-tighter">Powered by Quadrata & Reflex Protocol</p>
-                    </div>
-                </div>
-            )}
-
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -374,19 +294,6 @@ export function InvestDashboardClient() {
                         <p className="text-xl font-black text-foreground">{userShares ? formatUnits(userShares as bigint, 6) : "0.00"} USDC</p>
                     </div>
                     <div className="h-10 w-px bg-white/10" />
-                    <div className={`px-4 py-2 border rounded-xl flex items-center gap-2 transition-all duration-500 ${isKycVerified ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-orange-500/10 border-orange-500/20'}`}>
-                        {isKycVerified ? (
-                            <>
-                                <Verified className="w-5 h-5 text-emerald-500" />
-                                <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">KYC VERIFIED</span>
-                            </>
-                        ) : (
-                            <>
-                                <Lock className="w-5 h-5 text-orange-500" />
-                                <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">KYC REQUIRED</span>
-                            </>
-                        )}
-                    </div>
                 </div>
             </div>
 
@@ -405,31 +312,32 @@ export function InvestDashboardClient() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {mockPools.map(pool => {
                             const isSelected = selectedPool.id === pool.id;
+                            const poolTvl = totalAssets ? Number(formatUnits(totalAssets as bigint, 6)) / 5 : pool.tvl / 1000000; // Distribute real TVL or scale mock down
                             const utilization = pool.id === "pool-4" ? 98 : (globalUtilization > 0 ? globalUtilization : pool.utilization);
                             const isCapped = utilization >= 95;
                             const marketData = ALL_MARKETS.find(m => m.id === pool.productId);
 
                             return (
-                                <div
-                                    key={pool.id}
-                                    onClick={() => setSelectedPool(pool)}
-                                    className={`bg-card border rounded-2xl p-6 cursor-pointer transition-all duration-300 relative overflow-hidden group
-                                        ${isSelected ? 'border-primary ring-1 ring-primary/50 bg-primary/5' : 'border-border hover:border-zinc-700'}`}
-                                >
-                                    <div className="flex justify-between items-start mb-6">
-                                        <div className="space-y-1">
-                                            <div className="flex items-center gap-2">
-                                                <h3 className="font-black text-foreground group-hover:text-primary transition-colors">{pool.productTitle}</h3>
-                                                <InstitutionalTooltip
-                                                    title="Risk Methodology"
-                                                    content={marketData?.about || "This pool facilitates capital for real-world risk mitigation using parametric smart contracts."}
-                                                />
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <TrendingUp className="w-3 h-3 text-emerald-400" />
-                                                <span className="text-[11px] font-black text-emerald-400 uppercase tracking-tighter">
-                                                    {pool.apy}% Blended Yield
+                                <div key={pool.id} className="relative bg-zinc-900/40 backdrop-blur-md border border-white/5 rounded-3xl p-6 hover:border-emerald-500/20 transition-all group">
+                                    <div className="flex items-start justify-between mb-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                                                <span className="material-symbols-outlined text-2xl">
+                                                    {pool.productId === 'flight' ? 'flight' : pool.productId === 'agri' ? 'agriculture' : pool.productId === 'energy' ? 'bolt' : pool.productId === 'cat' ? 'thunderstorm' : 'directions_boat'}
                                                 </span>
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-xl font-black text-foreground">${poolTvl.toFixed(2)}{totalAssets ? '' : 'M+'}</p>
+                                                    <InstitutionalTooltip
+                                                        title="Risk Methodology"
+                                                        content={pool.productId === 'flight' ? "Institutional-grade flight delay protection utilizing real-time aviation data oracles for instant consensus and high-fidelity parametric settlement." : pool.productId === 'agri' ? "Comprehensive agricultural yield protection utilizing high-resolution satellite imagery and multi-spectral sensors to verify crop health and environmental stress factors." : "Institutional-grade parametric protection utilizing high-frequency environmental data and multisig-verified oracle feeds."}
+                                                        position="top"
+                                                    />
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-primary italic">Reflex Protocol</span>
+                                                </div>
                                             </div>
                                         </div>
                                         <div className={`p-2 rounded-lg ${isSelected ? 'bg-primary text-white' : 'bg-white/5 text-zinc-500'}`}>
@@ -687,9 +595,8 @@ export function InvestDashboardClient() {
                                     isSubmitting ? (isApproving ? 'Approving...' : 'Confirming...') :
                                         isTxSuccess ? <><CheckCircle2 className="w-5 h-5" /> SUCCEEDED</> :
                                             !isConnected ? <><Layers className="w-4 h-4" /> CONNECT WALLET</> :
-                                                (!isKycVerified && actionType === 'deposit') ? <><Lock className="w-4 h-4" /> VERIFY IDENTITY</> :
-                                                    !amount ? <><DollarSign className="w-4 h-4" /> ENTER AMOUNT</> :
-                                                        (actionType === 'deposit' ? (needsApproval ? 'APPROVE USDC' : 'INITIATE DEPOSIT') : 'REQUEST WITHDRAWAL')}
+                                                !amount ? <><DollarSign className="w-4 h-4" /> ENTER AMOUNT</> :
+                                                    (actionType === 'deposit' ? (needsApproval ? 'APPROVE USDC' : 'INITIATE DEPOSIT') : 'REQUEST WITHDRAWAL')}
                             </button>
                         </div>
 

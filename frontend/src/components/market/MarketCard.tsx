@@ -11,7 +11,7 @@ interface MarketCardProps {
 export function MarketCard({ product }: MarketCardProps) {
     return (
         <div className="parent live-market group">
-            <div className={`card-3d !h-[420px] bg-gradient-to-br border-white/5`}>
+            <div className={`card-3d !h-[400px] bg-zinc-900 border-white/5`}>
                 <div className="glass !inset-0 !rounded-3xl border border-white/10 flex flex-col p-8 justify-between relative">
                     {/* Background Decorative Element - Moved inside a clipped container if needed, but for now just allowing pop-outs */}
                     <div className="absolute -right-8 -top-8 w-32 h-32 bg-primary/20 blur-3xl rounded-full group-hover:bg-primary/40 transition-all duration-500 pointer-events-none" />
@@ -61,10 +61,10 @@ export function MarketCard({ product }: MarketCardProps) {
                             href={`/market/${product.id}`}
                             className="dexter-btn-container relative z-30"
                         >
-                            <button className="dexter-btn !w-full !min-h-[50px] !rounded-xl" type="button">
+                            <button className="dexter-btn !w-full !min-h-[44px] !rounded-xl" type="button">
                                 <span className="dexter-btn-drawer dexter-transition-top !text-[10px]">RESERVE CAP</span>
-                                <span className="dexter-btn-text flex items-center justify-center gap-2 w-full">
-                                    Insure <ArrowRight className="w-4 h-4" />
+                                <span className="dexter-btn-text flex items-center justify-center gap-2 w-full !text-sm">
+                                    Buy Policy <ArrowRight className="w-3.5 h-3.5" />
                                 </span>
                                 <svg className="dexter-btn-corner !w-[32px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
                                 <svg className="dexter-btn-corner !w-[32px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>

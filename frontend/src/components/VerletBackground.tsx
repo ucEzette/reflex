@@ -81,14 +81,13 @@ export function VerletBackground() {
         // --- Particles ---
         const COUNT = 80;
         const particles: Particle[] = [];
-        const links: Link[] = [];
         const FOV = 800;
-        const FRICTION = 0.985;
+        const FRICTION = 0.99; // Less friction for smoother glide
 
         for (let i = 0; i < COUNT; i++) {
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.acos(2 * Math.random() - 1);
-            const rad = 200 + Math.random() * 200;
+            const rad = 250 + Math.random() * 300;
 
             const x = W / 2 + rad * Math.sin(phi) * Math.cos(theta);
             const y = H / 2 + rad * Math.sin(phi) * Math.sin(theta);
@@ -97,30 +96,9 @@ export function VerletBackground() {
             particles.push({
                 x, y, z,
                 ox: x, oy: y, oz: z,
-                r: 2 + Math.random() * 3,
+                r: 1 + Math.random() * 2, // Smaller, more star-like
                 m: 0.8 + Math.random() * 0.4,
             });
-        }
-
-        // Connect nearest neighbors
-        for (let i = 0; i < COUNT; i++) {
-            const dists: { idx: number; d: number }[] = [];
-            for (let j = 0; j < COUNT; j++) {
-                if (i === j) continue;
-                const dx = particles[i].x - particles[j].x;
-                const dy = particles[i].y - particles[j].y;
-                const dz = particles[i].z - particles[j].z;
-                dists.push({ idx: j, d: Math.sqrt(dx * dx + dy * dy + dz * dz) });
-            }
-            dists.sort((a, b) => a.d - b.d);
-
-            for (let k = 0; k < 3; k++) {
-                const j = dists[k].idx;
-                // Avoid duplicates
-                if (!links.some(l => (l.a === i && l.b === j) || (l.a === j && l.b === i))) {
-                    links.push({ a: i, b: j, len: dists[k].d, stiff: 0.015 });
-                }
-            }
         }
 
         // --- Animation Loop ---
@@ -128,8 +106,8 @@ export function VerletBackground() {
             // IMPORTANT: set transform fresh every frame to avoid scale compounding
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-            // Clear
-            ctx.fillStyle = '#0B0E14';
+            // Clear with slightly darker, deeper space color
+            ctx.fillStyle = '#06080C';
             ctx.fillRect(0, 0, W, H);
 
             const time = performance.now() * 0.0004;
@@ -160,7 +138,7 @@ export function VerletBackground() {
                 const cx = W / 2;
                 const rx = p.x - cx;
                 const rz = p.z;
-                const ang = 0.0012;
+                const ang = 0.0008; // Slower rotation
                 p.x = rx * Math.cos(ang) - rz * Math.sin(ang) + cx;
                 p.z = rx * Math.sin(ang) + rz * Math.cos(ang);
 
@@ -186,81 +164,38 @@ export function VerletBackground() {
                 }
             }
 
-            // 2. Constraint resolution
-            for (let iter = 0; iter < 3; iter++) {
-                for (let i = 0; i < links.length; i++) {
-                    const l = links[i];
-                    const pa = particles[l.a];
-                    const pb = particles[l.b];
-                    const dx = pa.x - pb.x;
-                    const dy = pa.y - pb.y;
-                    const dz = pa.z - pb.z;
-                    const d = Math.sqrt(dx * dx + dy * dy + dz * dz) || 0.001;
-                    const diff = (l.len - d) / d * l.stiff;
-                    const tmass = pa.m + pb.m;
-
-                    const ox = dx * diff;
-                    const oy = dy * diff;
-                    const oz = dz * diff;
-
-                    pa.x += ox * (pb.m / tmass);
-                    pa.y += oy * (pb.m / tmass);
-                    pa.z += oz * (pb.m / tmass);
-                    pb.x -= ox * (pa.m / tmass);
-                    pb.y -= oy * (pa.m / tmass);
-                    pb.z -= oz * (pa.m / tmass);
-                }
-            }
-
-            // 3. Render links (sorted by depth)
-            const projected: { x1: number; y1: number; x2: number; y2: number; avgZ: number }[] = [];
-            for (let i = 0; i < links.length; i++) {
-                const pa = particles[links[i].a];
-                const pb = particles[links[i].b];
-                const s1 = FOV / (FOV + pa.z);
-                const s2 = FOV / (FOV + pb.z);
-                projected.push({
-                    x1: (pa.x - W / 2) * s1 + W / 2,
-                    y1: (pa.y - H / 2) * s1 + H / 2,
-                    x2: (pb.x - W / 2) * s2 + W / 2,
-                    y2: (pb.y - H / 2) * s2 + H / 2,
-                    avgZ: (pa.z + pb.z) / 2,
-                });
-            }
-            projected.sort((a, b) => b.avgZ - a.avgZ);
-
-            ctx.lineCap = 'round';
-            ctx.lineWidth = 1.2;
-
-            for (let i = 0; i < projected.length; i++) {
-                const l = projected[i];
-                if (l.avgZ < -600) continue;
-                const fade = Math.max(0, Math.min(1, 1 - (l.avgZ + 400) / 1200));
-                if (fade <= 0) continue;
-
-                const useCyan = Math.sin(l.avgZ * 0.012 + time) > 0;
-                ctx.beginPath();
-                ctx.moveTo(l.x1, l.y1);
-                ctx.lineTo(l.x2, l.y2);
-                ctx.strokeStyle = useCyan
-                    ? `rgba(0, 240, 255, ${fade * 0.2})`
-                    : `rgba(128, 0, 32, ${fade * 0.3})`;
-                ctx.stroke();
+            // 2. Render subtle stars/galaxy dust in background
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            for (let i = 0; i < 150; i++) {
+                const x = (Math.sin(i * 123.456) * 0.5 + 0.5) * W;
+                const y = (Math.cos(i * 654.321) * 0.5 + 0.5) * H;
+                ctx.fillRect(x, y, 1, 1);
             }
 
             // 4. Render glowing nodes
             for (let i = 0; i < COUNT; i++) {
                 const p = particles[i];
-                if (p.z > 250 || p.z < -350) continue;
+                if (p.z > 400 || p.z < -500) continue;
                 const scale = FOV / (FOV + p.z);
                 const x = (p.x - W / 2) * scale + W / 2;
                 const y = (p.y - H / 2) * scale + H / 2;
-                const fade = Math.max(0, Math.min(1, 1 - (p.z + 400) / 1200));
+                const fade = Math.max(0, Math.min(1, 1 - (p.z + 500) / 1000));
 
+                const colorShift = Math.sin(time + i) * 0.5 + 0.5;
                 ctx.beginPath();
-                ctx.arc(x, y, p.r * scale * 2.5, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(0, 240, 255, ${fade * 0.35})`;
+                ctx.arc(x, y, p.r * scale * 1.5, 0, Math.PI * 2);
+                ctx.fillStyle = colorShift > 0.5
+                    ? `rgba(0, 240, 255, ${fade * 0.4})`
+                    : `rgba(255, 255, 255, ${fade * 0.6})`;
                 ctx.fill();
+
+                // Bloom
+                if (fade > 0.5) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, p.r * scale * 4, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(0, 240, 255, ${fade * 0.05})`;
+                    ctx.fill();
+                }
             }
 
             rafRef.current = requestAnimationFrame(animate);
