@@ -4,17 +4,130 @@ import React from 'react';
 import { Shield, Activity, DollarSign, Landmark } from 'lucide-react';
 import { PolicyCard } from '@/components/dashboard/PolicyCard';
 import { PortfolioPerformanceChart } from '@/components/dashboard/PortfolioPerformanceChart';
+import { useAccount, useReadContract, usePublicClient } from 'wagmi';
+import { CONTRACTS } from '@/lib/contracts';
+import { ESCROW_ABI, LIQUIDITY_POOL_ABI } from '@/lib/enterprise_abis';
+import { formatUnits } from 'viem';
+import { useState, useEffect } from 'react';
 
 export function CommandCenterClient() {
-    const policies: any[] = [];
-    const policiesLoading = false;
-    const logs: any[] = [];
-    const logsLoading = false;
+    const { address } = useAccount();
+    const publicClient = usePublicClient();
+    const [policies, setPolicies] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [logs, setLogs] = useState<any[]>([]);
+    const [logsLoading, setLogsLoading] = useState(true);
 
-    const activeCount = policies?.filter(p => p.status === 'Active').length || 0;
-    const tvl = "$4,521,000";
-    const claimsPaid = "$124,500";
-    const totalPremiums = "$15,200";
+    // Fetch Global Stats
+    const { data: totalAssets } = useReadContract({
+        address: CONTRACTS.LP_POOL,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalAssets',
+    });
+
+    const { data: totalMaxPayouts } = useReadContract({
+        address: CONTRACTS.LP_POOL,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalMaxPayouts',
+    });
+
+    const { data: policyIds } = useReadContract({
+        address: CONTRACTS.ESCROW,
+        abi: ESCROW_ABI,
+        functionName: 'getUserPolicies',
+        args: [address as `0x${string}`],
+        query: { enabled: !!address }
+    });
+
+    useEffect(() => {
+        const fetchPolicyDetails = async () => {
+            if (!address || !policyIds || !publicClient) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const details = await Promise.all(
+                    (policyIds as `0x${string}`[]).map(async (id) => {
+                        const data = await publicClient.readContract({
+                            address: CONTRACTS.ESCROW,
+                            abi: ESCROW_ABI,
+                            functionName: 'getPolicy',
+                            args: [id]
+                        });
+                        return { id, data };
+                    })
+                );
+                setPolicies(details);
+            } catch (err) {
+                console.error("Error fetching policy details:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPolicyDetails();
+    }, [address, policyIds, publicClient]);
+
+    useEffect(() => {
+        const fetchLogs = async () => {
+            if (!publicClient) return;
+            setLogsLoading(true);
+            try {
+                const [purchaseLogs, claimLogs] = await Promise.all([
+                    publicClient.getLogs({
+                        address: CONTRACTS.ESCROW,
+                        event: ESCROW_ABI.find(x => x.type === 'event' && x.name === 'PolicyPurchased') as any,
+                        fromBlock: BigInt(0), // Restricted by time/block in production
+                    }),
+                    publicClient.getLogs({
+                        address: CONTRACTS.ESCROW,
+                        event: ESCROW_ABI.find(x => x.type === 'event' && x.name === 'PolicyClaimed') as any,
+                        fromBlock: BigInt(0),
+                    })
+                ]);
+
+                const formattedLogs = [
+                    ...purchaseLogs.map(log => ({
+                        id: log.transactionHash,
+                        target: (log.args as any).apiTarget || "Policy Purchased",
+                        status: "Success",
+                        timestamp: Date.now(), // Real block timestamp would be better but requires more calls
+                        message: `New policy issued for ${formatUnits((log.args as any).premiumPaid, 6)} USDC premium.`
+                    })),
+                    ...claimLogs.map(log => ({
+                        id: log.transactionHash,
+                        target: "Claim Settled",
+                        status: "Success",
+                        timestamp: Date.now(),
+                        message: `Parametric payout of ${formatUnits((log.args as any).payoutAmount, 6)} USDC executed.`
+                    }))
+                ].sort((a, b) => b.timestamp - a.timestamp);
+
+                setLogs(formattedLogs);
+            } catch (err) {
+                console.error("Error fetching logs:", err);
+            } finally {
+                setLogsLoading(false);
+            }
+        };
+
+        fetchLogs();
+    }, [publicClient]);
+
+    const activeCount = policies.filter(p => p.data[5]).length; // p.data[5] is isActive
+    const tvlValue = totalAssets ? `$${(Number(formatUnits(totalAssets as bigint, 6)) / 1e6).toFixed(1)}M` : "$0.0M";
+    const payoutValue = totalMaxPayouts ? `$${(Number(formatUnits(totalMaxPayouts as bigint, 6)) / 1e6).toFixed(1)}M` : "$0.0M";
+
+    // Calculate personal stats
+    const totalPersonalCoverage = policies.reduce((acc, p) => acc + Number(formatUnits(p.data[3], 6)), 0);
+    const totalPersonalPremiums = policies.reduce((acc, p) => acc + Number(formatUnits(p.data[2], 6)), 0);
+
+    // Original stats, updated to use new data
+    const tvl = tvlValue;
+    const claimsPaid = payoutValue; // Assuming totalMaxPayouts represents claims paid or potential claims
+    const totalPremiums = `$${totalPersonalPremiums.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
 
     return (
         <div className="min-h-screen p-6 lg:p-12 space-y-8 max-w-7xl mx-auto">
@@ -68,15 +181,19 @@ export function CommandCenterClient() {
                             <button className="text-xs font-medium text-primary hover:text-primary-dark transition-colors">View All</button>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {policiesLoading ? (
+                            {loading ? (
                                 Array.from({ length: 4 }).map((_, i) => <PolicySkeleton key={i} />)
-                            ) : policies?.length === 0 ? (
+                            ) : policies.length === 0 ? (
                                 <div className="col-span-2 p-12 text-center border border-dashed border-white/10 rounded-2xl">
                                     <p className="text-slate-500">No active policies found.</p>
                                 </div>
                             ) : (
-                                policies?.map(policy => (
-                                    <PolicyCard key={policy.id} policy={policy} />
+                                policies.map(policy => (
+                                    <PolicyCard
+                                        key={policy.id}
+                                        policyId={policy.id}
+                                        policyData={policy.data}
+                                    />
                                 ))
                             )}
                         </div>

@@ -7,65 +7,95 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+    return twMerge(clsx(inputs));
 }
 
+import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { CONTRACTS } from '@/lib/contracts';
+import { ESCROW_ABI } from '@/lib/enterprise_abis';
+import { formatUnits } from 'viem';
+import { toast } from 'sonner';
+
 const iconMap = {
-    Flight: Plane,
-    Cloud: Cloud,
-    Weather: CloudRain,
-    Energy: Zap
+    'Travel': Plane,
+    'Agriculture': Cloud,
+    'Weather': CloudRain,
+    'Energy': Zap,
+    'Catastrophe': Zap,
+    'Maritime': Plane
 };
 
 interface PolicyCardProps {
-    policy: Policy;
-    onClick?: () => void;
+    policyId: `0x${string}`;
+    policyData: [address: string, apiTarget: string, premiumPaid: bigint, payoutAmount: bigint, expirationTime: bigint, isActive: boolean, isClaimed: boolean];
+    onActionSuccess?: () => void;
 }
 
-export function PolicyCard({ policy, onClick }: PolicyCardProps) {
-    const Icon = iconMap[policy.type];
-    
-    const isClaimable = policy.status === 'Claimable';
-    const isActive = policy.status === 'Active';
+export function PolicyCard({ policyId, policyData, onActionSuccess }: PolicyCardProps) {
+    const [policyholder, apiTarget, premiumPaid, payoutAmount, expirationTime, isActive, isClaimed] = policyData;
+
+    // Determine type from apiTarget or storage (mocking type detection for now)
+    const type = apiTarget.includes('UAL') || apiTarget.includes('BA') ? 'Travel' :
+        apiTarget.includes('MATO') ? 'Agriculture' : 'Energy';
+    const Icon = iconMap[type] || Plane;
+
+    // In parametric insurance, claimable state usually depends on oracle data.
+    // For this UI, we'll assume if it's expired and not claimed, and theoretically met conditions (mock logic for now)
+    // In production, we'd check an `isTriggered` state or similar.
+    const isExpired = Number(expirationTime) * 1000 < Date.now();
+    const status = isClaimed ? 'Claimed' : (!isActive ? 'Expired' : (isExpired ? 'Claimable' : 'Active'));
+
+    const { writeContract, data: hash } = useWriteContract();
+    const { isLoading: isWaiting } = useWaitForTransactionReceipt({ hash });
+
+    const handleClaim = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        writeContract({
+            address: CONTRACTS.ESCROW,
+            abi: ESCROW_ABI,
+            functionName: 'submitRelayerConsensus', // In the current Escrow, this triggers the check/payout
+            args: [policyId],
+        });
+        toast.info("Submitting Consensus Request...", { description: "Verifying parametric trigger with relayer network." });
+    };
 
     return (
-        <article 
-            onClick={onClick}
+        <article
             className={cn(
-                "group relative overflow-hidden rounded-2xl border bg-black/40 backdrop-blur-xl p-5 transition-all hover:bg-black/60 cursor-pointer",
-                isClaimable ? "border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.15)]" : "border-white/5 shadow-lg",
-                isActive ? "hover:border-primary/30" : ""
+                "group relative overflow-hidden rounded-2xl border bg-black/40 backdrop-blur-xl p-5 transition-all hover:bg-black/60",
+                status === 'Claimable' ? "border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.15)]" : "border-white/5 shadow-lg",
+                status === 'Active' ? "hover:border-primary/30" : ""
             )}
         >
             <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
                     <div className={cn(
                         "p-2.5 rounded-xl border",
-                        isClaimable ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" :
-                        isActive ? "bg-primary/10 border-primary/20 text-primary" :
-                        "bg-slate-800/50 border-slate-700 text-slate-400"
+                        status === 'Claimable' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" :
+                            status === 'Active' ? "bg-primary/10 border-primary/20 text-primary" :
+                                "bg-slate-800/50 border-slate-700 text-slate-400"
                     )}>
                         <Icon className="w-5 h-5" />
                     </div>
                     <div>
-                        <h3 className="font-bold text-foreground tracking-tight">{policy.metadata.flightNumber || policy.metadata.serviceName || policy.metadata.location}</h3>
-                        <p className="text-xs text-slate-400 font-mono">{policy.id}</p>
+                        <h3 className="font-bold text-foreground tracking-tight">{apiTarget}</h3>
+                        <p className="text-[10px] text-slate-400 font-mono">{policyId.slice(0, 18)}...</p>
                     </div>
                 </div>
-                <StatusBadge status={policy.status} />
+                <StatusBadge status={status as any} />
             </div>
 
             <div className="space-y-3">
                 <div className="flex justify-between items-baseline">
                     <span className="text-sm text-slate-400">Coverage</span>
                     <span className="text-lg font-bold text-foreground tracking-tight">
-                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(policy.payout).replace('$', '')} <span className="text-xs text-slate-500 font-medium">USDC</span>
+                        {formatUnits(payoutAmount, 6)} <span className="text-xs text-slate-500 font-medium">USDC</span>
                     </span>
                 </div>
                 <div className="flex justify-between items-baseline">
                     <span className="text-sm text-slate-400">Premium</span>
                     <span className="text-sm font-medium text-foreground">
-                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(policy.premium).replace('$', '')} <span className="text-[10px] text-slate-500">USDC</span>
+                        {formatUnits(premiumPaid, 6)} <span className="text-[10px] text-slate-500">USDC</span>
                     </span>
                 </div>
             </div>
@@ -73,11 +103,14 @@ export function PolicyCard({ policy, onClick }: PolicyCardProps) {
             <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs text-slate-500">
                     <Clock className="w-3.5 h-3.5" />
-                    <span>Expires {new Date(policy.expiration).toLocaleDateString()}</span>
+                    <span>{status === 'Claimed' ? 'Settled' : (isExpired ? 'Expired' : `Expires ${new Date(Number(expirationTime) * 1000).toLocaleDateString()}`)}</span>
                 </div>
-                {isClaimable && (
-                    <button className="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-lg hover:bg-emerald-400/20 transition-colors">
-                        Claim Now
+                {status === 'Claimable' && (
+                    <button
+                        onClick={handleClaim}
+                        className="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-lg hover:bg-emerald-400/20 transition-colors"
+                    >
+                        {isWaiting ? 'Processing...' : 'Execute Claim'}
                     </button>
                 )}
             </div>
@@ -86,7 +119,7 @@ export function PolicyCard({ policy, onClick }: PolicyCardProps) {
 }
 
 function StatusBadge({ status }: { status: Policy['status'] }) {
-    switch(status) {
+    switch (status) {
         case 'Active':
             return (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold text-emerald-500 uppercase tracking-widest border border-emerald-500/20">
