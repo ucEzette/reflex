@@ -2,6 +2,7 @@ import React from 'react';
 import { Shield, ArrowRight, Activity, Info } from 'lucide-react';
 import { MarketDetail } from '@/lib/market-data';
 import Link from 'next/link';
+import { InstitutionalTooltip } from '@/components/ui/InstitutionalTooltip';
 
 interface MarketCardProps {
     product: MarketDetail;
@@ -17,13 +18,19 @@ export function MarketCard({ product }: MarketCardProps) {
 
                     <div>
                         <div className="flex justify-between items-start mb-6">
-                            <div className={`p-4 rounded-2xl bg-white/5 border border-white/10 group-hover:scale-110 transition-transform duration-500`} title="Protection Category">
+                            <div className={`p-4 rounded-2xl bg-white/5 border border-white/10 group-hover:scale-110 transition-transform duration-500`}>
                                 <span className={`material-symbols-outlined text-4xl ${product.iconColor}`}>{product.icon}</span>
                             </div>
-                            <div className="text-right" title={product.about}>
-                                <div className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-primary/10 hover:border-primary/20 transition-all cursor-help">
-                                    <Info className="w-5 h-5 text-slate-400" />
-                                </div>
+                            <div className="text-right">
+                                <InstitutionalTooltip
+                                    title="Risk Attribution"
+                                    content={product.about}
+                                    position="left"
+                                >
+                                    <div className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-primary/10 hover:border-primary/20 transition-all cursor-help">
+                                        <Info className="w-5 h-5 text-slate-400" />
+                                    </div>
+                                </InstitutionalTooltip>
                             </div>
                         </div>
 
@@ -33,14 +40,19 @@ export function MarketCard({ product }: MarketCardProps) {
                         </p>
 
                         <div className="space-y-3">
-                            <div className="flex items-center gap-3 text-xs text-slate-400 p-2 rounded-lg bg-white/5 border border-transparent group-hover:border-white/5 transition-all" title="Verified Oracle Network monitoring this risk">
-                                <Activity className="w-3.5 h-3.5 text-primary" />
-                                <span>{product.bullet1}</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-xs text-slate-400 p-2 rounded-lg bg-white/5 border border-transparent group-hover:border-white/5 transition-all" title="Settlement trigger and security parameter">
-                                <Shield className="w-3.5 h-3.5 text-emerald-500" />
-                                <span>{product.bullet2}</span>
-                            </div>
+                            <InstitutionalTooltip title="Verification Engine" content={`This risk is continuously monitored by the ${product.bullet1}. Settlement is mathematically verified non-custodially.`}>
+                                <div className="w-full flex items-center gap-3 text-xs text-slate-400 p-2 rounded-lg bg-white/5 border border-transparent group-hover:border-white/5 transition-all">
+                                    <Activity className="w-3.5 h-3.5 text-primary" />
+                                    <span>{product.bullet1}</span>
+                                </div>
+                            </InstitutionalTooltip>
+
+                            <InstitutionalTooltip title="Settlement Parameter" content={`The policy uses a ${product.bullet2} logic. Payouts are triggered instantly upon oracle validation of the risk event.`}>
+                                <div className="w-full flex items-center gap-3 text-xs text-slate-400 p-2 rounded-lg bg-white/5 border border-transparent group-hover:border-white/5 transition-all">
+                                    <Shield className="w-3.5 h-3.5 text-emerald-500" />
+                                    <span>{product.bullet2}</span>
+                                </div>
+                            </InstitutionalTooltip>
                         </div>
                     </div>
 

@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { PoolMetrics } from '@/types/market';
-import { DollarSign, ShieldCheck, TrendingUp, Layers, Activity, AlertTriangle, CheckCircle2, RefreshCcw, ArrowUpRight, ArrowDownLeft, Lock, Verified, UserCheck } from 'lucide-react';
+import { DollarSign, ShieldCheck, TrendingUp, Layers, Activity, Lock, ExternalLink, Shield, Info, ArrowUpRight, ArrowDownRight, Search, Filter, ChevronRight, CheckCircle2, AlertCircle, Clock, Zap, UserCheck, Verified, RefreshCcw, ArrowDownLeft, AlertTriangle } from 'lucide-react';
+import { InstitutionalTooltip } from '@/components/ui/InstitutionalTooltip';
+import { ALL_MARKETS } from '@/lib/market-data';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useConnect, usePublicClient } from 'wagmi';
 import { CONTRACTS } from '@/lib/contracts';
 import { LIQUIDITY_POOL_ABI, ERC20_ABI } from '@/lib/enterprise_abis';
@@ -405,6 +407,7 @@ export function InvestDashboardClient() {
                             const isSelected = selectedPool.id === pool.id;
                             const utilization = pool.id === "pool-4" ? 98 : (globalUtilization > 0 ? globalUtilization : pool.utilization);
                             const isCapped = utilization >= 95;
+                            const marketData = ALL_MARKETS.find(m => m.id === pool.productId);
 
                             return (
                                 <div
@@ -415,7 +418,13 @@ export function InvestDashboardClient() {
                                 >
                                     <div className="flex justify-between items-start mb-6">
                                         <div className="space-y-1">
-                                            <h3 className="font-black text-foreground group-hover:text-primary transition-colors">{pool.productTitle}</h3>
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="font-black text-foreground group-hover:text-primary transition-colors">{pool.productTitle}</h3>
+                                                <InstitutionalTooltip
+                                                    title="Risk Methodology"
+                                                    content={marketData?.about || "This pool facilitates capital for real-world risk mitigation using parametric smart contracts."}
+                                                />
+                                            </div>
                                             <div className="flex items-center gap-2">
                                                 <TrendingUp className="w-3 h-3 text-emerald-400" />
                                                 <span className="text-[11px] font-black text-emerald-400 uppercase tracking-tighter">
