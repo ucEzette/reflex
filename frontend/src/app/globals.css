@@ -260,6 +260,22 @@
   animation: shimmer 1.5s infinite;
 }
 
+@keyframes blink-soft {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.animate-blink-soft {
+  animation: blink-soft 2s ease-in-out infinite;
+}
+
 /* ── Selection ── */
 ::selection {
   background: var(--primary);
@@ -340,11 +356,46 @@
   transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.logo.ruby .circle1 { width: 160px; transform: translate3d(0, 0, 25px); top: 10px; right: 10px; }
-.logo.ruby .circle2 { width: 130px; transform: translate3d(0, 0, 50px); top: 15px; right: 15px; transition-delay: 0.1s; }
-.logo.ruby .circle3 { width: 100px; transform: translate3d(0, 0, 75px); top: 20px; right: 20px; transition-delay: 0.2s; }
-.logo.ruby .circle4 { width: 70px; transform: translate3d(0, 0, 100px); top: 25px; right: 25px; transition-delay: 0.3s; }
-.logo.ruby .circle5 { width: 45px; transform: translate3d(0, 0, 125px); top: 32px; right: 32px; display: grid; place-content: center; transition-delay: 0.4s; }
+.logo.ruby .circle1 {
+  width: 160px;
+  transform: translate3d(0, 0, 25px);
+  top: 10px;
+  right: 10px;
+}
+
+.logo.ruby .circle2 {
+  width: 130px;
+  transform: translate3d(0, 0, 50px);
+  top: 15px;
+  right: 15px;
+  transition-delay: 0.1s;
+}
+
+.logo.ruby .circle3 {
+  width: 100px;
+  transform: translate3d(0, 0, 75px);
+  top: 20px;
+  right: 20px;
+  transition-delay: 0.2s;
+}
+
+.logo.ruby .circle4 {
+  width: 70px;
+  transform: translate3d(0, 0, 100px);
+  top: 25px;
+  right: 25px;
+  transition-delay: 0.3s;
+}
+
+.logo.ruby .circle5 {
+  width: 45px;
+  transform: translate3d(0, 0, 125px);
+  top: 32px;
+  right: 32px;
+  display: grid;
+  place-content: center;
+  transition-delay: 0.4s;
+}
 
 /* Hover State */
 .parent.live-market:hover {
@@ -354,16 +405,27 @@
 
 .parent.live-market:hover .card-3d.ruby {
   transform: rotate3d(1, 1, 0, 25deg) scale(1.08);
-  box-shadow: 
+  box-shadow:
     rgba(230, 0, 38, 0.5) 40px 60px 50px -30px,
     rgba(230, 0, 38, 0.3) 0px 50px 70px -10px,
     0 0 60px rgba(230, 0, 38, 0.2);
 }
 
-.parent.live-market:hover .card-3d.ruby .logo.ruby .circle2 { transform: translate3d(0, 0, 70px); }
-.parent.live-market:hover .card-3d.ruby .logo.ruby .circle3 { transform: translate3d(0, 0, 100px); }
-.parent.live-market:hover .card-3d.ruby .logo.ruby .circle4 { transform: translate3d(0, 0, 130px); }
-.parent.live-market:hover .card-3d.ruby .logo.ruby .circle5 { transform: translate3d(0, 0, 160px); }
+.parent.live-market:hover .card-3d.ruby .logo.ruby .circle2 {
+  transform: translate3d(0, 0, 70px);
+}
+
+.parent.live-market:hover .card-3d.ruby .logo.ruby .circle3 {
+  transform: translate3d(0, 0, 100px);
+}
+
+.parent.live-market:hover .card-3d.ruby .logo.ruby .circle4 {
+  transform: translate3d(0, 0, 130px);
+}
+
+.parent.live-market:hover .card-3d.ruby .logo.ruby .circle5 {
+  transform: translate3d(0, 0, 160px);
+}
 
 /* ── Uiverse Glass Group ── */
 .glass-group {

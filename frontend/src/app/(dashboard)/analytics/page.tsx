@@ -56,10 +56,27 @@ export default function AnalyticsPage() {
         { label: 'Now', tvl: liveTvlM, utilization: liveUtilization, payouts: livePayoutsM }
     ];
 
-    // Product distribution (equal split placeholder until per-product contracts report)
+    // Product active policy counts
+    const { data: travelCount } = useReadContract({ address: CONTRACTS.TRAVEL as `0x${string}`, abi: LIQUIDITY_POOL_ABI, functionName: 'getActivePolicyCount', query: { enabled: mounted } });
+    const { data: agriCount } = useReadContract({ address: CONTRACTS.AGRI as `0x${string}`, abi: LIQUIDITY_POOL_ABI, functionName: 'getActivePolicyCount', query: { enabled: mounted } });
+    const { data: energyCount } = useReadContract({ address: CONTRACTS.ENERGY as `0x${string}`, abi: LIQUIDITY_POOL_ABI, functionName: 'getActivePolicyCount', query: { enabled: mounted } });
+    const { data: catastropheCount } = useReadContract({ address: CONTRACTS.CATASTROPHE as `0x${string}`, abi: LIQUIDITY_POOL_ABI, functionName: 'getActivePolicyCount', query: { enabled: mounted } });
+    const { data: maritimeCount } = useReadContract({ address: CONTRACTS.MARITIME as `0x${string}`, abi: LIQUIDITY_POOL_ABI, functionName: 'getActivePolicyCount', query: { enabled: mounted } });
+
+    const counts = [
+        Number(travelCount || 0),
+        Number(agriCount || 0),
+        Number(energyCount || 0),
+        Number(catastropheCount || 0),
+        Number(maritimeCount || 0)
+    ];
+
+    const totalPolicies = counts.reduce((a, b) => a + b, 0);
+
+    // Product distribution based on active policy counts — real on-chain data
     const productBreakdown = PRODUCT_NAMES.map((name, i) => ({
         name,
-        tvl: liveTvlM / 5,
+        value: counts[i],
         color: PIE_COLORS[i]
     }));
 
@@ -168,10 +185,10 @@ export default function AnalyticsPage() {
                         <BarChart data={liveChartData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                             <XAxis dataKey="label" stroke="rgba(255,255,255,0.3)" fontSize={12} />
-                            <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} tickFormatter={(v) => `$${v}M`} />
+                            <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} tickFormatter={(v) => `$${v.toLocaleString()}`} />
                             <RechartsTooltip contentStyle={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8 }} />
-                            <Bar dataKey="tvl" fill="#800020" name="TVL ($M)" radius={[4, 4, 0, 0]} />
-                            <Bar dataKey="payouts" fill="#f59e0b" name="Payouts ($M)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="tvl" fill="#800020" name="TVL" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="payouts" fill="#f59e0b" name="Payouts" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                     {liveTVL === 0 && (
@@ -183,17 +200,17 @@ export default function AnalyticsPage() {
 
                 {/* TVL by Product (Pie Chart) */}
                 <div className="bg-card border border-border rounded-xl p-6">
-                    <InstitutionalTooltip title="TVL by Product" content="Shows the diversification of liquidity across different parametric risk sectors (Travel, Agri, Energy, etc.).">
+                    <InstitutionalTooltip title="Market Participation" content="Shows the distribution of active protection policies across different parametric risk sectors.">
                         <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2 cursor-help">
-                            TVL by Product
+                            Market Participation
                             <Info className="w-4 h-4 text-zinc-500" />
                         </h2>
                     </InstitutionalTooltip>
                     <ResponsiveContainer width="100%" height={240}>
                         <RechartsPie>
                             <Pie
-                                data={liveTVL > 0 ? productBreakdown : [{ name: 'Empty', tvl: 1, color: '#333' }]}
-                                dataKey="tvl"
+                                data={totalPolicies > 0 ? productBreakdown : [{ name: 'Empty', value: 1, color: '#1a1a1a' }]}
+                                dataKey="value"
                                 nameKey="name"
                                 cx="50%"
                                 cy="50%"
@@ -201,7 +218,7 @@ export default function AnalyticsPage() {
                                 innerRadius={55}
                                 paddingAngle={3}
                             >
-                                {(liveTVL > 0 ? productBreakdown : [{ name: 'Empty', tvl: 1, color: '#333' }]).map((entry, index) => (
+                                {(totalPolicies > 0 ? productBreakdown : [{ name: 'Empty', value: 1, color: '#1a1a1a' }]).map((entry, index) => (
                                     <Cell key={index} fill={entry.color} />
                                 ))}
                             </Pie>
@@ -215,7 +232,7 @@ export default function AnalyticsPage() {
                                     <div className="w-3 h-3 rounded-full" style={{ background: p.color }} />
                                     <span className="text-muted-foreground">{p.name}</span>
                                 </div>
-                                <span className="text-foreground font-medium">${p.tvl.toFixed(2)}M</span>
+                                <span className="text-foreground font-medium">{p.value} {p.value === 1 ? 'Policy' : 'Policies'}</span>
                             </div>
                         ))}
                     </div>

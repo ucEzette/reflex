@@ -17,11 +17,48 @@ import {
     Info
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useReadContract } from 'wagmi';
+import { CONTRACTS } from '@/lib/contracts';
+import { LIQUIDITY_POOL_ABI, ESCROW_ABI } from '@/lib/enterprise_abis';
+import { formatUnits } from 'viem';
+import { useEffect } from 'react';
 
 export function AdminControl() {
+    const [mounted, setMounted] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const [isHarvesting, setIsHarvesting] = useState(false);
     const [isManagingRelayers, setIsManagingRelayers] = useState(false);
+
+    useEffect(() => { setMounted(true); }, []);
+
+    // Live on-chain metrics
+    const { data: totalAssets } = useReadContract({
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalAssets',
+        query: { enabled: mounted }
+    });
+
+    const { data: totalMaxPayouts } = useReadContract({
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalMaxPayouts',
+        query: { enabled: mounted }
+    });
+
+    const { data: totalShares } = useReadContract({
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalShares',
+        query: { enabled: mounted }
+    });
+
+    const { data: requiredQuorum } = useReadContract({
+        address: CONTRACTS.ESCROW as `0x${string}`,
+        abi: ESCROW_ABI,
+        functionName: 'requiredQuorum',
+        query: { enabled: mounted }
+    });
 
     const handleTogglePause = () => {
         setIsPaused(!isPaused);
@@ -127,19 +164,25 @@ export function AdminControl() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                     <div>
                         <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Total TVL</p>
-                        <p className="text-xl font-bold text-foreground">$45,204,182</p>
+                        <p className="text-xl font-bold text-foreground">
+                            {mounted ? `$${(Number(formatUnits(totalAssets || 0n, 6))).toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "$0"}
+                        </p>
                     </div>
                     <div>
                         <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Utilization Rate</p>
-                        <p className="text-xl font-bold text-foreground">42.8%</p>
-                    </div>
-                    <div>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Unclaimed Fees</p>
-                        <p className="text-xl font-bold text-emerald-400">$2.4k</p>
+                        <p className="text-xl font-bold text-foreground">
+                            {mounted && totalAssets && totalAssets > 0n ? `${((Number(totalMaxPayouts || 0n) / Number(totalAssets)) * 100).toFixed(1)}%` : "0.0%"}
+                        </p>
                     </div>
                     <div>
                         <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Active Quorum</p>
-                        <p className="text-xl font-bold text-foreground">2 / 3</p>
+                        <p className="text-xl font-bold text-foreground">{mounted ? `${requiredQuorum?.toString() || '0'} / 3` : "0 / 3"}</p>
+                    </div>
+                    <div>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Unclaimed Fees</p>
+                        <p className="text-xl font-bold text-emerald-400">
+                            {mounted ? `$${(Number(formatUnits((totalAssets || 0n) > (totalShares || 0n) ? (totalAssets! - totalShares!) : 0n, 6)) * 0.1).toFixed(2)}` : "$0.00"}
+                        </p>
                     </div>
                 </div>
             </div>

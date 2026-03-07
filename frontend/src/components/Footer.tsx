@@ -2,8 +2,23 @@
 
 import Link from "next/link";
 import { Twitter, Github, Linkedin, Globe, Shield, Terminal, Activity } from "lucide-react";
+import { useReadContract } from "wagmi";
+import { CONTRACTS } from "@/lib/contracts";
+import { LIQUIDITY_POOL_ABI } from "@/lib/enterprise_abis";
+import { formatUnits } from "viem";
+import { useState, useEffect } from "react";
 
 export function Footer() {
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
+
+    const { data: totalAssets } = useReadContract({
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalAssets',
+        query: { enabled: mounted }
+    });
+
     return (
         <footer className="w-full bg-[#030406] border-t border-white/5 mt-20 relative overflow-hidden">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-30" />
@@ -58,13 +73,23 @@ export function Footer() {
                         </ul>
                     </div>
 
-                    {/* Stats / Status */}
                     <div className="p-8 bg-white/[0.02] rounded-3xl border border-white/5 flex flex-col justify-between group hover:border-primary/20 transition-all">
                         <div>
                         </div>
                         <div className="mt-6 pt-6 border-t border-white/5">
                             <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">TVL Protected</span>
-                            <p className="text-3xl font-black text-white mt-1">$12.4M+</p>
+                            <p className="text-3xl font-black text-white mt-1">
+                                {mounted ? (
+                                    (() => {
+                                        const assets = Number(formatUnits(totalAssets || 0n, 6));
+                                        if (assets >= 1_000_000) return `$${(assets / 1_000_000).toFixed(1)}M+`;
+                                        if (assets >= 1_000) return `$${(assets / 1_000).toFixed(1)}K+`;
+                                        return `$${assets.toLocaleString()}`;
+                                    })()
+                                ) : (
+                                    "$0"
+                                )}
+                            </p>
                         </div>
                     </div>
                 </div>
