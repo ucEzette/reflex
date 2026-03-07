@@ -64,6 +64,20 @@ export default function DocsPage() {
                                 <p className="text-foreground leading-relaxed font-light text-lg">
                                     Reflex is a decentralized <strong>Protection Market</strong> for Parametric Micro-Insurance. By utilizing immutable smart contracts and high-fidelity oracle data, Reflex eliminates the friction, costs, and subjectivity of traditional insurance claims processing.
                                 </p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                                    <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                                        <h4 className="text-primary font-bold text-sm mb-2">The Problem</h4>
+                                        <p className="text-[11px] text-slate-400 leading-relaxed italic">
+                                            Traditional insurance ignores small daily losses under $50 because their administrative overhead costs more than the payout itself—leaving consumers unprotected against high-frequency, low-severity risks.
+                                        </p>
+                                    </div>
+                                    <div className="p-4 bg-primary/10 rounded-xl border border-primary/20">
+                                        <h4 className="text-primary font-bold text-sm mb-2">The Reflex Solution</h4>
+                                        <p className="text-[11px] text-slate-100 leading-relaxed">
+                                            We replace human adjusters with <strong>Chainlink Oracle Networks</strong>. If the data says a flight is delayed 120 minutes, the contract pays out instantly. No claims forms, no waiting, no arguments.
+                                        </p>
+                                    </div>
+                                </div>
                                 <blockquote className="border-l-2 border-primary/30 pl-6 py-2 italic text-slate-400 font-light text-sm">
                                     &quot;In a Protection Market, the code is the contract, and the data is the adjuster.&quot;
                                 </blockquote>
@@ -318,26 +332,55 @@ export default function DocsPage() {
                         <section id="oracle-flow" className="scroll-mt-32">
                             <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
                                 <span className="material-symbols-outlined text-cyan-400 text-4xl">device_hub</span>
-                                Oracle Data Flow
+                                Oracle Data Flow & Tech Stack
                             </h2>
-                            <div className="glass-panel p-8 rounded-2xl space-y-6">
-                                <p className="text-slate-400 font-light leading-relaxed">The end-to-end pipeline from real-world event to on-chain settlement:</p>
-                                <div className="flex flex-col gap-3">
-                                    {[
-                                        { step: "1", label: "External API", desc: "FlightAware, NOAA, USGS, OpenWeather push real-time data", color: "blue" },
-                                        { step: "2", label: "Relayer Service", desc: "Off-chain Node.js service polls APIs, formats payloads, validates thresholds", color: "purple" },
-                                        { step: "3", label: "Chainlink DON", desc: "Multi-node consensus verifies the data payload via zkTLS proofs", color: "amber" },
-                                        { step: "4", label: "On-Chain Callback", desc: "executeClaim() called on the product contract with verified data", color: "red" },
-                                        { step: "5", label: "Settlement", desc: "LP Pool releases USDC to policyholder via releasePayout()", color: "emerald" },
-                                    ].map((s) => (
-                                        <div key={s.step} className={`flex items-center gap-4 p-4 bg-${s.color}-500/5 rounded-xl border border-${s.color}-500/10`}>
-                                            <div className={`w-8 h-8 rounded-full bg-${s.color}-500/20 flex items-center justify-center text-${s.color}-400 font-black text-xs shrink-0`}>{s.step}</div>
-                                            <div>
-                                                <p className="text-xs text-foreground font-bold">{s.label}</p>
-                                                <p className="text-[10px] text-slate-500">{s.desc}</p>
-                                            </div>
+                            <div className="glass-panel p-8 rounded-2xl space-y-10">
+                                <div className="space-y-4">
+                                    <h3 className="text-xl font-bold text-foreground">The "How It Was Made" Architecture</h3>
+                                    <p className="text-slate-400 font-light leading-relaxed text-sm">
+                                        Reflex is built using a modern, event-driven stack designed for high availability and cryptographic integrity. Every component is chosen to minimize trust and maximize performance.
+                                    </p>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="space-y-2">
+                                            <h4 className="text-cyan-400 font-bold text-xs uppercase tracking-widest">Frontend (The Interface)</h4>
+                                            <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-4">
+                                                Built with <strong>Next.js 14</strong> and <strong>Tailwind CSS</strong>. We use <strong>Framer Motion</strong> to achieve our signature 3D Shiny Ruby aesthetic. This isn't just a skin; it's a reactive HUD for risk management.
+                                            </p>
                                         </div>
-                                    ))}
+                                        <div className="space-y-2">
+                                            <h4 className="text-purple-400 font-bold text-xs uppercase tracking-widest">On-Chain (The L1)</h4>
+                                            <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-4">
+                                                Developed in <strong>Solidity 0.8.24</strong> using <strong>Foundry</strong>. We utilize <strong>OpenZeppelin's UUPS</strong> standards for upgradability and secure, capital-efficient vaults integrated with <strong>Aave v3</strong>.
+                                            </p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <h4 className="text-amber-400 font-bold text-xs uppercase tracking-widest">Relayer (The Orchestrator)</h4>
+                                            <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-4">
+                                                A high-speed <strong>Node.js</strong> service that manages EIP-712 quote signing, API proxying, and cross-chain teleporter monitoring. It bridges the gap between Web2 data and Web3 execution.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6 pt-10 border-t border-white/5">
+                                    <h3 className="text-xl font-bold text-foreground italic">Settlement Pipeline</h3>
+                                    <div className="flex flex-col gap-3">
+                                        {[
+                                            { step: "1", label: "External Data Capture", desc: "Our Relayer polls industry-standard APIs like FlightAware (AeroAPI), NOAA GHCND, and OpenWeatherMap.", color: "blue" },
+                                            { step: "2", label: "Risk Simulation", desc: "The Relayer performs off-chain risk calculations to provide instant, EIP-712 signed premium quotes to the user.", color: "purple" },
+                                            { step: "3", label: "Chainlink DON Consensus", desc: "For payout verification, multiple DON nodes verify the external data payload using zkTLS or standard oracle proofs.", color: "amber" },
+                                            { step: "4", label: "On-Chain Validation", desc: "The Parametric Product contract verifies the oracle's signature and the data integrity via our internal Verification Engine.", color: "red" },
+                                            { step: "5", label: "Atomic Disbursement", desc: "The LP Pool releases the reserved Max Payout directly to the policyholder's address without any user intervention.", color: "emerald" },
+                                        ].map((s) => (
+                                            <div key={s.step} className={`flex items-center gap-4 p-4 bg-${s.color}-500/5 rounded-xl border border-${s.color}-500/10`}>
+                                                <div className={`w-8 h-8 rounded-full bg-${s.color}-500/20 flex items-center justify-center text-${s.color}-400 font-black text-xs shrink-0`}>{s.step}</div>
+                                                <div>
+                                                    <p className="text-xs text-foreground font-bold">{s.label}</p>
+                                                    <p className="text-[10px] text-slate-500">{s.desc}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </section>
@@ -407,13 +450,13 @@ export default function DocsPage() {
                             <div className="glass-panel p-8 rounded-2xl space-y-4">
                                 <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-4">Avalanche Fuji Testnet (Chain ID: 43113)</p>
                                 {[
-                                    { name: "ReflexLiquidityPool", addr: "0xb4741AD6436023f275fD1725B0Df1042dDFd44Cc" },
-                                    { name: "ProductFactory", addr: "0xEDA58669214Ab2342bfD42f41FC8E4674931D72F" },
-                                    { name: "TravelSolutions", addr: "0x860f5d9e6A6F7C2A6dBe8c396CA5dc37f298f86b" },
-                                    { name: "AgricultureIndex", addr: "0xA63CdC07ebC3B2deAF5faD45aabC35C2Dd86fF80" },
-                                    { name: "EnergySolutions", addr: "0xc8392691CC8e09fBc34a17cbCfb607e6a9a6d663" },
-                                    { name: "CatastropheProximity", addr: "0xaCbbeFe183Bff58FA57c99D0352d4cA1e720240A" },
-                                    { name: "MaritimeSolutions", addr: "0xfC873105314170de85A043fc39F332e203DA7B1a" },
+                                    { name: "ReflexLiquidityPool", addr: "0xbcfeeaea01b9ddd2f8a1092676681c6b52dbe81c" },
+                                    { name: "ProductFactory", addr: "0x870268aafe40b15f6bf14d42c435e6d2c7b660fe" },
+                                    { name: "TravelSolutions", addr: "0x54eb96ee828c3c3201ff5419ad5cbff4b2d482b6" },
+                                    { name: "AgricultureIndex", addr: "0x2b9ad5fb816f0ea3cd605495634dbe851ebdb240" },
+                                    { name: "EnergySolutions", addr: "0x2062932817121290f6bb7ff87f20eeb40ce52179" },
+                                    { name: "CatastropheProximity", addr: "0x7c1dfcd03c2ba97c13309a36e46ef20ddf869b61" },
+                                    { name: "MaritimeSolutions", addr: "0x237660db78797fbe77373db803b3325aa51cd04a" },
                                     { name: "USDC (Mock)", addr: "0x5425890298aed601595a70AB815c96711a31Bc65" },
                                 ].map((c) => (
                                     <div key={c.name} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">

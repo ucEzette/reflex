@@ -266,156 +266,104 @@
   color: white;
 }
 
-/* ── Uiverse Card (3D Glass) ── */
-.parent {
+/* ── Uiverse Card (3D Shiny Ruby) ── */
+.parent.live-market {
   width: 100%;
-  height: 420px;
-  perspective: 1000px;
+  height: 440px;
+  perspective: 1200px;
   position: relative;
   z-index: 1;
   transition: z-index 0.5s step-start;
 }
 
-.card-3d {
+.card-3d.ruby {
   height: 100%;
-  border-radius: 24px;
-  background: linear-gradient(135deg, rgb(148, 25, 41) 0%, rgb(81, 9, 21) 100%);
-  transition: all 0.5s ease-in-out;
+  border-radius: 40px;
+  background: linear-gradient(135deg, #e60026 0%, #800020 100%);
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
   transform-style: preserve-3d;
-  box-shadow: rgba(0, 0, 0, 0) 40px 50px 25px -40px, rgba(0, 0, 0, 0.2) 0px 25px 25px -5px;
+  box-shadow: rgba(128, 0, 32, 0) 40px 50px 25px -40px, rgba(128, 0, 32, 0.3) 0px 25px 25px -5px;
+  cursor: pointer;
 }
 
-.glass {
-  transform-style: preserve-3d;
-  position: absolute;
-  inset: 6px;
-  border-radius: 20px;
-  border-top-right-radius: 100%;
-  background: linear-gradient(0deg, rgba(11, 15, 25, 0.4) 0%, rgba(11, 15, 25, 0.8) 100%);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transform: translate3d(0px, 0px, 20px);
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.5s ease-in-out;
-}
-
-.content {
-  padding: 40px 60px 0px 24px;
-  transform: translate3d(0, 0, 30px);
-}
-
-.bottom {
-  padding: 10px 12px;
+.glass.ruby {
   transform-style: preserve-3d;
   position: absolute;
-  bottom: 20px;
-  left: 20px;
-  right: 20px;
+  inset: 10px;
+  border-radius: 35px;
+  border-top-right-radius: 90%;
+  background: linear-gradient(0deg, rgba(20, 10, 15, 0.6) 0%, rgba(20, 10, 15, 0.9) 100%);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  transform: translate3d(0px, 0px, 30px);
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.content.ruby {
+  padding: 40px 40px 0px 32px;
+  transform: translate3d(0, 0, 45px);
+}
+
+.bottom.ruby {
+  padding: 20px 32px;
+  transform-style: preserve-3d;
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  transform: translate3d(0, 0, 30px);
+  transform: translate3d(0, 0, 45px);
 }
 
-.logo {
+.logo.ruby {
   position: absolute;
   right: 0;
   top: 0;
   transform-style: preserve-3d;
 }
 
-.logo .circle {
+.logo.ruby .circle {
   display: block;
   position: absolute;
   aspect-ratio: 1;
   border-radius: 50%;
   top: 0;
   right: 0;
-  box-shadow: rgba(0, 0, 0, 0.2) -10px 10px 20px 0px;
+  box-shadow: rgba(0, 0, 0, 0.4) -15px 15px 30px 0px;
   -webkit-backdrop-filter: blur(5px);
   backdrop-filter: blur(5px);
-  background: rgba(255, 255, 255, 0.05);
-  transition: all 0.5s ease-in-out;
+  background: rgba(230, 0, 38, 0.15);
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.logo .circle1 {
-  width: 140px;
-  transform: translate3d(0, 0, 15px);
-  top: 8px;
-  right: 8px;
-}
+.logo.ruby .circle1 { width: 160px; transform: translate3d(0, 0, 25px); top: 10px; right: 10px; }
+.logo.ruby .circle2 { width: 130px; transform: translate3d(0, 0, 50px); top: 15px; right: 15px; transition-delay: 0.1s; }
+.logo.ruby .circle3 { width: 100px; transform: translate3d(0, 0, 75px); top: 20px; right: 20px; transition-delay: 0.2s; }
+.logo.ruby .circle4 { width: 70px; transform: translate3d(0, 0, 100px); top: 25px; right: 25px; transition-delay: 0.3s; }
+.logo.ruby .circle5 { width: 45px; transform: translate3d(0, 0, 125px); top: 32px; right: 32px; display: grid; place-content: center; transition-delay: 0.4s; }
 
-.logo .circle2 {
-  width: 110px;
-  transform: translate3d(0, 0, 30px);
-  top: 10px;
-  right: 10px;
-  -webkit-backdrop-filter: blur(1px);
-  backdrop-filter: blur(1px);
-  transition-delay: 0.2s;
-}
-
-.logo .circle3 {
-  width: 80px;
-  transform: translate3d(0, 0, 45px);
-  top: 17px;
-  right: 17px;
-  transition-delay: 0.4s;
-}
-
-.logo .circle4 {
-  width: 50px;
-  transform: translate3d(0, 0, 60px);
-  top: 23px;
-  right: 23px;
-  transition-delay: 0.6s;
-}
-
-.logo .circle5 {
-  width: 40px;
-  transform: translate3d(0, 0, 75px);
-  top: 28px;
-  right: 28px;
-  display: grid;
-  place-content: center;
-  transition-delay: 0.8s;
-}
-
-/* Hover Adjustments */
+/* Hover State */
 .parent.live-market:hover {
   z-index: 50;
   transition: z-index 0s step-start;
 }
 
-.parent.live-market:hover .card-3d {
-  transform: rotate3d(1, 1, 0, 15deg) scale(1.05);
-  box-shadow:
-    rgba(128, 0, 32, 0.4) 30px 50px 50px -30px,
-    rgba(128, 0, 32, 0.2) 0px 40px 60px -10px,
-    0 0 40px rgba(128, 0, 32, 0.1);
+.parent.live-market:hover .card-3d.ruby {
+  transform: rotate3d(1, 1, 0, 25deg) scale(1.08);
+  box-shadow: 
+    rgba(230, 0, 38, 0.5) 40px 60px 50px -30px,
+    rgba(230, 0, 38, 0.3) 0px 50px 70px -10px,
+    0 0 60px rgba(230, 0, 38, 0.2);
 }
 
-.parent.live-market:hover .card-3d .bottom .social-buttons-container .social-button {
-  transform: translate3d(0, 0, 40px);
-  box-shadow: rgba(0, 0, 0, 0.2) -5px 20px 10px 0px;
-}
-
-.parent.live-market:hover .card-3d .logo .circle2 {
-  transform: translate3d(0, 0, 45px);
-}
-
-.parent.live-market:hover .card-3d .logo .circle3 {
-  transform: translate3d(0, 0, 60px);
-}
-
-.parent.live-market:hover .card-3d .logo .circle4 {
-  transform: translate3d(0, 0, 75px);
-}
-
-.parent.live-market:hover .card-3d .logo .circle5 {
-  transform: translate3d(0, 0, 90px);
-}
+.parent.live-market:hover .card-3d.ruby .logo.ruby .circle2 { transform: translate3d(0, 0, 70px); }
+.parent.live-market:hover .card-3d.ruby .logo.ruby .circle3 { transform: translate3d(0, 0, 100px); }
+.parent.live-market:hover .card-3d.ruby .logo.ruby .circle4 { transform: translate3d(0, 0, 130px); }
+.parent.live-market:hover .card-3d.ruby .logo.ruby .circle5 { transform: translate3d(0, 0, 160px); }
 
 /* ── Uiverse Glass Group ── */
 .glass-group {

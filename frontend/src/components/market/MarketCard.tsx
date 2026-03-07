@@ -11,71 +11,74 @@ interface MarketCardProps {
 export function MarketCard({ product }: MarketCardProps) {
     return (
         <div className="parent live-market group">
-            <div className={`card-3d !h-[400px] bg-zinc-900 border-white/5`}>
-                <div className="glass !inset-0 !rounded-3xl border border-white/10 flex flex-col p-8 justify-between relative">
-                    {/* Background Decorative Element - Moved inside a clipped container if needed, but for now just allowing pop-outs */}
-                    <div className="absolute -right-8 -top-8 w-32 h-32 bg-primary/20 blur-3xl rounded-full group-hover:bg-primary/40 transition-all duration-500 pointer-events-none" />
+            <Link href={`/market/${product.id}`} className="card-3d ruby block">
+                <div className="glass ruby">
+                    {/* 3D Decorative Circles */}
+                    <div className="logo ruby">
+                        <div className="circle circle1" />
+                        <div className="circle circle2" />
+                        <div className="circle circle3" />
+                        <div className="circle circle4" />
+                        <div className="circle circle5">
+                            <span className="material-symbols-outlined text-white text-xl">{product.icon}</span>
+                        </div>
+                    </div>
 
-                    <div>
-                        <div className="flex justify-between items-start mb-6">
-                            <div className={`p-4 rounded-2xl bg-white/5 border border-white/10 group-hover:scale-110 transition-transform duration-500`}>
-                                <span className={`material-symbols-outlined text-4xl ${product.iconColor}`}>{product.icon}</span>
+                    <div className="content ruby">
+                        <div className="mb-4">
+                            <div className="flex justify-between items-start">
+                                <span className={`text-[10px] font-black uppercase tracking-[0.3em] text-rose-400 opacity-60`}>
+                                    {product.category}
+                                </span>
                             </div>
-                            <div className="text-right">
+                            <div className="flex justify-between items-start mt-1">
+                                <h3 className="text-2xl font-bold text-white leading-tight group-hover:text-rose-200 transition-colors">
+                                    {product.title}
+                                </h3>
                                 <InstitutionalTooltip
                                     title="Risk Attribution"
                                     content={product.about}
-                                    position="left"
+                                    position="bottom"
                                 >
-                                    <div className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-primary/10 hover:border-primary/20 transition-all cursor-help">
-                                        <Info className="w-5 h-5 text-slate-400" />
+                                    <div className="p-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-help shrink-0 ml-2 animate-blink-soft">
+                                        <Info className="w-4 h-4 text-rose-200/50" />
                                     </div>
                                 </InstitutionalTooltip>
                             </div>
                         </div>
 
-                        <h3 className="text-2xl font-bold text-foreground mb-3 leading-tight">{product.title}</h3>
-                        <p className="text-slate-400 text-sm leading-relaxed mb-6 font-light">
+                        <p className="text-rose-100/60 text-sm leading-relaxed mb-6 font-light line-clamp-2 pr-4">
                             {product.description}
                         </p>
 
-                        <div className="space-y-3">
-                            <InstitutionalTooltip title="Verification Engine" content={`This risk is continuously monitored by the ${product.bullet1}. Settlement is mathematically verified non-custodially.`}>
-                                <div className="w-full flex items-center gap-3 text-xs text-slate-400 p-2 rounded-lg bg-white/5 border border-transparent group-hover:border-white/5 transition-all">
-                                    <Activity className="w-3.5 h-3.5 text-primary" />
+                        <div className="space-y-2 relative z-50">
+                            <InstitutionalTooltip title="Verification Engine" content={`This risk is continuously monitored by the ${product.bullet1}.`}>
+                                <div className="flex items-center gap-2.5 text-[11px] text-rose-100/50 hover:text-rose-100 transition-colors">
+                                    <Activity className="w-3.5 h-3.5 text-rose-400" />
                                     <span>{product.bullet1}</span>
                                 </div>
                             </InstitutionalTooltip>
 
-                            <InstitutionalTooltip title="Settlement Parameter" content={`The policy uses a ${product.bullet2} logic. Payouts are triggered instantly upon oracle validation of the risk event.`}>
-                                <div className="w-full flex items-center gap-3 text-xs text-slate-400 p-2 rounded-lg bg-white/5 border border-transparent group-hover:border-white/5 transition-all">
-                                    <Shield className="w-3.5 h-3.5 text-emerald-500" />
+                            <InstitutionalTooltip title="Settlement Parameter" content={`The policy uses a ${product.bullet2} logic.`}>
+                                <div className="flex items-center gap-2.5 text-[11px] text-rose-100/50 hover:text-rose-100 transition-colors">
+                                    <Shield className="w-3.5 h-3.5 text-emerald-400" />
                                     <span>{product.bullet2}</span>
                                 </div>
                             </InstitutionalTooltip>
                         </div>
                     </div>
 
-                    <div className="mt-8">
-                        <Link
-                            href={`/market/${product.id}`}
-                            className="dexter-btn-container relative z-30"
-                        >
-                            <button className="dexter-btn !w-full !min-h-[44px] !rounded-xl" type="button">
-                                <span className="dexter-btn-drawer dexter-transition-top !text-[10px]">RESERVE CAP</span>
-                                <span className="dexter-btn-text flex items-center justify-center gap-2 w-full !text-sm">
-                                    Buy Policy <ArrowRight className="w-3.5 h-3.5" />
-                                </span>
-                                <svg className="dexter-btn-corner !w-[32px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
-                                <svg className="dexter-btn-corner !w-[32px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
-                                <svg className="dexter-btn-corner !w-[32px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
-                                <svg className="dexter-btn-corner !w-[32px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
-                                <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[10px] uppercase tracking-widest">{product.price} Premium</span>
-                            </button>
-                        </Link>
+                    <div className="bottom ruby">
+                        <div className="flex flex-col">
+                            <span className="text-[12px] font-black uppercase tracking-[0.2em] text-rose-400">Buy Policy</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-white/30 group-hover:text-white transition-all duration-300">
+                            <span className="text-[10px] font-black uppercase tracking-widest">Details</span>
+                            <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                        </div>
                     </div>
                 </div>
-            </div>
+            </Link>
         </div>
     );
 }

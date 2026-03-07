@@ -10,6 +10,18 @@ import { Search, Wallet, User, Activity as ActivityIcon, BarChart3, Briefcase, C
 import { useState, useRef, useEffect } from "react";
 import { ALL_MARKETS, MarketDetail } from "@/lib/market-data";
 
+const warriorAvatars = [
+    '/avatars/warrior1.png',
+    '/avatars/warrior2.png',
+    '/avatars/warrior3.png',
+];
+
+const getWarriorAvatar = (address?: string) => {
+    if (!address) return warriorAvatars[0];
+    const charCodeSum = address.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return warriorAvatars[charCodeSum % warriorAvatars.length];
+};
+
 export function Navbar() {
     const { address, isConnected: authenticated, connector } = useAccount();
     const { disconnect } = useDisconnect();
@@ -198,8 +210,11 @@ export function Navbar() {
                                             className="h-9 w-9 flex items-center justify-center rounded-full bg-gradient-to-tr from-green-400 via-blue-500 to-purple-500 p-0.5 hover:ring-2 ring-[#2490ff] ring-offset-2 ring-offset-background transition-all"
                                         >
                                             <div className="w-full h-full bg-background rounded-full flex items-center justify-center overflow-hidden">
-                                                {/* Gradient Avatar placeholder */}
-                                                <div className="w-full h-full bg-gradient-to-tr from-green-400 via-blue-500 to-purple-500 opacity-80" />
+                                                <img
+                                                    src={getWarriorAvatar(address)}
+                                                    alt="Warrior Avatar"
+                                                    className="w-full h-full object-cover"
+                                                />
                                             </div>
                                         </button>
 
@@ -209,7 +224,17 @@ export function Navbar() {
                                                 {/* Header */}
                                                 <div className="px-4 py-3 border-b border-border flex items-center justify-between">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-green-400 via-blue-500 to-purple-500 opacity-80" />
+                                                        <div className="h-10 w-10 rounded-full overflow-hidden border border-border">
+                                                            <img
+                                                                src={getWarriorAvatar(address)}
+                                                                alt="Warrior Avatar"
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    // Fallback to gradient if image fails
+                                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                                }}
+                                                            />
+                                                        </div>
                                                         <div className="flex flex-col">
                                                             <span className="font-bold text-foreground text-base">reflex_user</span>
                                                             <span className="text-xs font-mono text-muted-foreground">
