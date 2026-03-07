@@ -263,6 +263,7 @@ export function Navbar() {
                                                 {/* Links */}
                                                 <div className="py-2 border-b border-border">
                                                     <Link href="/profile" className="w-full px-4 py-1.5 flex text-left hover:bg-accent transition-colors text-muted-foreground hover:text-foreground" onClick={() => setIsProfileOpen(false)}>My Profile</Link>
+                                                    <Link href="/admin" className="w-full px-4 py-1.5 flex text-left hover:bg-accent transition-colors text-primary font-bold hover:text-primary transition-colors" onClick={() => setIsProfileOpen(false)}>Admin Panel</Link>
                                                     <button className="w-full px-4 py-1.5 flex text-left hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">Support</button>
                                                     <Link href="/docs" className="w-full px-4 py-1.5 flex text-left hover:bg-accent transition-colors text-muted-foreground hover:text-foreground" onClick={() => setIsProfileOpen(false)}>Documentation</Link>
                                                     <button className="w-full px-4 py-1.5 flex text-left hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">Help Center</button>

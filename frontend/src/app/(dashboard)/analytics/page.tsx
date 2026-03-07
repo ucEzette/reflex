@@ -14,9 +14,8 @@ import {
 import { GlobalRiskLeaderboard } from '@/components/analytics/GlobalRiskLeaderboard';
 import { ReportingSummary } from '@/components/analytics/ReportingSummary';
 import { GovernanceVoting } from '@/components/governance/GovernanceVoting';
-import { TreasuryAnalytics } from '@/components/governance/TreasuryAnalytics';
-import { AdminControl } from '@/components/governance/AdminControl';
-import { LiveOracleConsole } from '@/components/analytics/LiveOracleConsole';
+import { InstitutionalTooltip } from '@/components/ui/InstitutionalTooltip';
+import { Info } from 'lucide-react';
 
 // ── On-Chain Derived Analytics ──
 // No mock data — all values come from contract reads or are derived from on-chain state
@@ -82,7 +81,12 @@ export default function AnalyticsPage() {
                 {/* TVL */}
                 <div className="bg-card border border-border rounded-xl p-5">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total Value Locked</span>
+                        <InstitutionalTooltip title="TVL" content="Total Value Locked. The total amount of USDC currently held in the liquidity pool to collateralize risk.">
+                            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1.5 cursor-help">
+                                Total Value Locked
+                                <Info className="w-3 h-3 opacity-40" />
+                            </span>
+                        </InstitutionalTooltip>
                         <DollarSign className="w-4 h-4 text-emerald-500" />
                     </div>
                     <div className="text-2xl font-bold text-foreground">${liveTVL > 0 ? liveTVL.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '0.00'}</div>
@@ -95,7 +99,12 @@ export default function AnalyticsPage() {
                 {/* Outstanding Payouts */}
                 <div className="bg-card border border-border rounded-xl p-5">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Outstanding Payouts</span>
+                        <InstitutionalTooltip title="Outstanding Payouts" content="Active Liability. The maximum potential USDC payout for all active, non-expired protection policies.">
+                            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1.5 cursor-help">
+                                Outstanding Payouts
+                                <Info className="w-3 h-3 opacity-40" />
+                            </span>
+                        </InstitutionalTooltip>
                         <AlertTriangle className="w-4 h-4 text-amber-500" />
                     </div>
                     <div className="text-2xl font-bold text-foreground">${livePayouts > 0 ? livePayouts.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '0.00'}</div>
@@ -107,7 +116,12 @@ export default function AnalyticsPage() {
                 {/* Capital Utilization */}
                 <div className="bg-card border border-border rounded-xl p-5">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Capital Utilization</span>
+                        <InstitutionalTooltip title="Capital Utilization" content="Efficiency Ratio. The percentage of the pool currently being used to underwrite active risk.">
+                            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1.5 cursor-help">
+                                Capital Utilization
+                                <Info className="w-3 h-3 opacity-40" />
+                            </span>
+                        </InstitutionalTooltip>
                         <Layers className="w-4 h-4 text-cyan-500" />
                     </div>
                     <div className="text-2xl font-bold text-foreground">{liveUtilization.toFixed(1)}%</div>
@@ -120,7 +134,12 @@ export default function AnalyticsPage() {
                 {/* Available Capacity */}
                 <div className="bg-card border border-border rounded-xl p-5">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Available Capacity</span>
+                        <InstitutionalTooltip title="Available Capacity" content="Free Liquid Capacity. The amount of USDC available to underwrite additional new protection policies.">
+                            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1.5 cursor-help">
+                                Available Capacity
+                                <Info className="w-3 h-3 opacity-40" />
+                            </span>
+                        </InstitutionalTooltip>
                         <Unlock className="w-4 h-4 text-primary" />
                     </div>
                     <div className="text-2xl font-bold text-foreground">${(liveTVL - livePayouts) > 0 ? (liveTVL - livePayouts).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '0.00'}</div>
@@ -135,7 +154,12 @@ export default function AnalyticsPage() {
                 {/* Pool Health — Bar Chart (2/3 width) */}
                 <div className="lg:col-span-2 bg-card border border-border rounded-xl p-6">
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-lg font-bold text-foreground">Real-Time Pool Health</h2>
+                        <InstitutionalTooltip title="Pool Health Chart" content="Visualizes the relationship between the total assets in the pool and the current outstanding liabilities (active policies).">
+                            <h2 className="text-lg font-bold text-foreground flex items-center gap-2 cursor-help">
+                                Real-Time Pool Health
+                                <Info className="w-4 h-4 text-zinc-500" />
+                            </h2>
+                        </InstitutionalTooltip>
                         <span className="text-xs text-emerald-500 font-medium flex items-center gap-1">
                             <Zap className="w-3 h-3" /> Live On-Chain
                         </span>
@@ -144,7 +168,7 @@ export default function AnalyticsPage() {
                         <BarChart data={liveChartData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                             <XAxis dataKey="label" stroke="rgba(255,255,255,0.3)" fontSize={12} />
-                            <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} />
+                            <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} tickFormatter={(v) => `$${v}M`} />
                             <RechartsTooltip contentStyle={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8 }} />
                             <Bar dataKey="tvl" fill="#800020" name="TVL ($M)" radius={[4, 4, 0, 0]} />
                             <Bar dataKey="payouts" fill="#f59e0b" name="Payouts ($M)" radius={[4, 4, 0, 0]} />
@@ -159,7 +183,12 @@ export default function AnalyticsPage() {
 
                 {/* TVL by Product (Pie Chart) */}
                 <div className="bg-card border border-border rounded-xl p-6">
-                    <h2 className="text-lg font-bold text-foreground mb-6">TVL by Product</h2>
+                    <InstitutionalTooltip title="TVL by Product" content="Shows the diversification of liquidity across different parametric risk sectors (Travel, Agri, Energy, etc.).">
+                        <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2 cursor-help">
+                            TVL by Product
+                            <Info className="w-4 h-4 text-zinc-500" />
+                        </h2>
+                    </InstitutionalTooltip>
                     <ResponsiveContainer width="100%" height={240}>
                         <RechartsPie>
                             <Pie
@@ -195,10 +224,13 @@ export default function AnalyticsPage() {
 
             {/* ── Pool State Summary ── */}
             <div className="bg-card border border-border rounded-xl p-6 mb-8">
-                <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5 text-primary" />
-                    Live Pool State
-                </h2>
+                <InstitutionalTooltip title="Live Pool State Summary" content="A breakdown of the current smart contract variables governing the protocol's solvency and underwriting limits.">
+                    <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2 cursor-help">
+                        <BarChart3 className="w-5 h-5 text-primary" />
+                        Live Pool State
+                        <Info className="w-4 h-4 text-zinc-500 opacity-50" />
+                    </h2>
+                </InstitutionalTooltip>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center p-4 bg-accent/20 rounded-xl border border-border/50">
                         <p className="text-2xl font-bold text-foreground">${liveTVL.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
@@ -222,10 +254,13 @@ export default function AnalyticsPage() {
             {/* ── Claim Events & Leaderboard ── */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <div className="bg-card border border-border rounded-xl p-6">
-                    <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
-                        <Activity className="w-5 h-5 text-amber-500" />
-                        Claim Event Log
-                    </h2>
+                    <InstitutionalTooltip title="Claim Event Log" content="A real-time history of all on-chain settlement events, including automated payouts and manual dispute resolutions.">
+                        <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2 cursor-help">
+                            <Activity className="w-5 h-5 text-amber-500" />
+                            Claim Event Log
+                            <Info className="w-4 h-4 text-zinc-500 opacity-50" />
+                        </h2>
+                    </InstitutionalTooltip>
                     <div className="flex flex-col items-center justify-center py-12 text-center">
                         <Shield className="w-10 h-10 text-emerald-500/30 mb-3" />
                         <p className="text-sm text-muted-foreground">No claim events recorded on-chain</p>
@@ -233,29 +268,34 @@ export default function AnalyticsPage() {
                     </div>
                 </div>
 
-                <GlobalRiskLeaderboard />
-            </div>
-
-            {/* ── Treasury Oversight & Live Oracle ── */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-12">
-                <TreasuryAnalytics />
-                <div className="h-[500px]">
-                    <LiveOracleConsole />
+                <div className="relative group/leaderboard">
+                    <InstitutionalTooltip
+                        title="Global Risk Leaderboard"
+                        content="Ranks the top liquidity providers and institutional entities based on their contribution to the protocol's risk capacity."
+                        className="absolute right-6 top-6 z-10"
+                    />
+                    <GlobalRiskLeaderboard />
                 </div>
             </div>
 
-            {/* ── Admin Command Center (Owner only) ── */}
-            <div className="mb-12">
-                <AdminControl />
-            </div>
 
             {/* ── Governance Forum ── */}
-            <div className="mb-12">
+            <div className="mb-12 relative group/gov">
+                <InstitutionalTooltip
+                    title="Governance Forum"
+                    content="The decentralized voting hub where LPs can propose and vote on protocol parameters like fees, products, and quorum thresholds."
+                    className="absolute right-8 top-8 z-10"
+                />
                 <GovernanceVoting />
             </div>
 
             {/* ── Institutional Reporting ── */}
-            <div className="mb-8">
+            <div className="mb-8 relative group/report">
+                <InstitutionalTooltip
+                    title="Institutional Reporting"
+                    content="Enables the generation of compliant audit logs and performance snapshots for institutional risk disclosure."
+                    className="absolute right-8 top-8 z-10"
+                />
                 <ReportingSummary />
             </div>
 

@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
-import { DollarSign, TrendingUp, Landmark, Shield, ArrowUpRight, ArrowDownRight, Activity } from 'lucide-react';
+import { InstitutionalTooltip } from '@/components/ui/InstitutionalTooltip';
+import { DollarSign, TrendingUp, Landmark, Shield, ArrowUpRight, ArrowDownRight, Activity, Info } from 'lucide-react';
 
 const treasuryData = [
     { month: 'Sep', revenue: 45000, yield: 12000, claims: 5000 },
@@ -32,10 +33,13 @@ export function TreasuryAnalytics() {
         <div className="space-y-8">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
-                        <Landmark className="w-6 h-6 text-emerald-400" />
-                        DAO Treasury Oversight
-                    </h2>
+                    <InstitutionalTooltip title="DAO Treasury Oversight" content="Provides transparency into protocol revenue, administrative reserves, and secondary yield performance from Aave V3.">
+                        <h2 className="text-2xl font-bold text-foreground flex items-center gap-3 cursor-help">
+                            <Landmark className="w-6 h-6 text-emerald-400" />
+                            DAO Treasury Oversight
+                            <Info className="w-4 h-4 text-zinc-500 opacity-50" />
+                        </h2>
+                    </InstitutionalTooltip>
                     <p className="text-slate-400 text-sm mt-1">Real-time transparency into protocol revenue, reserves, and yield performance.</p>
                 </div>
                 <div className="flex items-center gap-4">

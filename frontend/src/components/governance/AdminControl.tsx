@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { InstitutionalTooltip } from '@/components/ui/InstitutionalTooltip';
 import {
     ShieldAlert,
     TrendingUp,
@@ -12,7 +13,8 @@ import {
     Zap,
     Lock,
     Unlock,
-    Shield
+    Shield,
+    Info
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -45,10 +47,13 @@ export function AdminControl() {
     return (
         <div className="bg-black/40 border border-white/5 rounded-3xl p-8 backdrop-blur-xl space-y-8">
             <div>
-                <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
-                    <ShieldAlert className="w-6 h-6 text-red-500" />
-                    Protocol Command Center
-                </h2>
+                <InstitutionalTooltip title="Protocol Command Center" content="High-privileged terminal for emergency management, yield harvesting, and controlling the decentralized relayer quorum.">
+                    <h2 className="text-2xl font-bold text-foreground flex items-center gap-3 cursor-help">
+                        <ShieldAlert className="w-6 h-6 text-red-500" />
+                        Protocol Command Center
+                        <Info className="w-4 h-4 text-zinc-500 opacity-50" />
+                    </h2>
+                </InstitutionalTooltip>
                 <p className="text-slate-400 text-sm mt-1">High-privileged administrative controls for protocol governance and emergency management.</p>
             </div>
 
