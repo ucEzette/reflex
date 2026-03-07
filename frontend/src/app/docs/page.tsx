@@ -8,7 +8,7 @@ export default function DocsPage() {
             <div className="max-w-5xl w-full relative z-10 flex flex-col gap-12">
                 <div className="space-y-4">
                     <h1 className="text-5xl md:text-7xl font-black text-foreground tracking-tighter leading-tight drop-shadow-2xl text-center md:text-left">
-                        Protocol <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">Manual</span>
+                        Protocol <span className="text-primary">Manual</span>
                     </h1>
                     <p className="text-slate-400 text-xl font-light max-w-3xl leading-relaxed mx-auto md:mx-0 text-center md:text-left">
                         An industry-standard guide to the Reflex Parametric Architecture, Liquidity Dynamics, and the Event-Driven Settlement Engine.

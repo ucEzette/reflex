@@ -40,8 +40,8 @@ export function GlobalStats() {
         </div>
     );
 
-    const tvl = totalAssets ? Number(formatUnits(totalAssets as bigint, 6)) : 12450000;
-    const payouts = totalMaxPayouts ? Number(formatUnits(totalMaxPayouts as bigint, 6)) : 450000;
+    const tvl = totalAssets ? Number(formatUnits(totalAssets as bigint, 6)) : 0;
+    const payouts = totalMaxPayouts ? Number(formatUnits(totalMaxPayouts as bigint, 6)) : 0;
 
     const formatCurrency = (val: number) => {
         return new Intl.NumberFormat('en-US', {

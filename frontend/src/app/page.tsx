@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState, useRef } from "react";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { PolicyDashboard } from "@/components/PolicyDashboard";
 import { ActivePolicies } from "@/components/ActivePolicies";
 import { ALL_MARKETS } from "@/lib/market-data";
@@ -5,23 +9,34 @@ import { GlobalStats } from "@/components/GlobalStats";
 
 /* ═══════════════════════════════════════════
    REFLEX L1 — Scrollytelling Landing Page
-   Combines four Stitch screens into one
-   unified, interactive experience.
    ═══════════════════════════════════════════ */
 
 export default function Home() {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX / window.innerWidth - 0.5, y: e.clientY / window.innerHeight - 0.5 });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-hidden">
       {/* ── Background Elements ── */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-grid-pattern opacity-[0.07]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background-dark/50 to-background-dark" />
-        <div className="particle w-2 h-2 top-1/4 left-1/4 animate-float" style={{ animationDelay: "0s" }} />
-        <div className="particle w-3 h-3 top-3/4 left-1/3 animate-float" style={{ animationDelay: "1s" }} />
-        <div className="particle w-1 h-1 top-1/3 right-1/4 animate-float" style={{ animationDelay: "2s" }} />
-        <div className="particle w-4 h-4 bottom-1/4 right-1/3 animate-float" style={{ animationDelay: "3s" }} />
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-primary/10 blur-[120px] rounded-full mix-blend-screen" />
-        <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-neon-cyan/5 blur-[100px] rounded-full mix-blend-screen" />
+      <div className="fixed inset-0 z-0 overflow-hidden">
+        <motion.div
+          className="absolute inset-[-5%] bg-cover bg-center bg-no-repeat opacity-40"
+          style={{
+            backgroundImage: "url('/agriculture.jpg')",
+            x: useSpring(mousePos.x * -20, { stiffness: 100, damping: 30 }),
+            y: useSpring(mousePos.y * -20, { stiffness: 100, damping: 30 }),
+            scale: 1.05
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background-dark/20 via-background-dark/80 to-background-dark" />
+        <div className="absolute inset-0 bg-black/40" />
       </div>
 
       {/* ── Navigation removed (now in layout) ── */}
@@ -34,9 +49,9 @@ export default function Home() {
             {/* Badge Removed per request */}
 
             {/* Headline */}
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.9] text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 drop-shadow-2xl">
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.9] text-white drop-shadow-2xl">
               Micro-Insurance, <br />
-              <span className="text-foreground relative inline-block">
+              <span className="text-primary relative inline-block">
                 Macro Speed.
                 <svg className="absolute -bottom-2 w-full h-3 text-primary" preserveAspectRatio="none" viewBox="0 0 100 10">
                   <path d="M0 5 Q 50 10 100 5" fill="none" stroke="currentColor" strokeWidth="4" />
@@ -51,7 +66,7 @@ export default function Home() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 mt-4 w-full justify-center">
-              <a href="#dashboard" className="dexter-btn-container w-52 relative z-30">
+              <a href="/market" className="dexter-btn-container w-52 relative z-30">
                 <button className="dexter-btn !min-w-[200px] !min-h-[50px] !px-6 !py-3 !rounded-xl" type="button">
                   <span className="dexter-btn-drawer dexter-transition-top !text-[11px]">DAPP</span>
                   <span className="dexter-btn-text flex items-center gap-2 !text-lg">Launch App <span className="material-symbols-outlined text-[20px]">arrow_forward</span></span>
@@ -115,7 +130,7 @@ export default function Home() {
           <div className="text-center mb-16 lg:mb-0">
             <h2 className="font-display text-4xl font-bold tracking-tight text-foreground md:text-6xl lg:text-7xl">
               Insurance at the <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">
+              <span className="text-primary">
                 Speed of Code
               </span>
             </h2>
@@ -154,7 +169,7 @@ export default function Home() {
                 </div>
                 <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-foreground">
                   Flight Delay <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-rose-400 to-neon-cyan">
+                  <span className="text-neon-cyan">
                     Insurance Terminal
                   </span>
                 </h2>
@@ -280,7 +295,7 @@ export default function Home() {
               Connect your wallet and explore available micro-insurance pools powered by Reflex.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="#dashboard" className="dexter-btn-container w-48 relative z-30">
+              <a href="/market" className="dexter-btn-container w-48 relative z-30">
                 <button className="dexter-btn !min-w-[180px] !min-h-[44px] !px-4 !py-2" type="button">
                   <span className="dexter-btn-drawer dexter-transition-top">DAPP</span>
                   <span className="dexter-btn-text flex items-center gap-2 !text-base">Launch App <span className="material-symbols-outlined text-[18px]">arrow_forward</span></span>
