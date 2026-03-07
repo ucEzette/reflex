@@ -207,23 +207,31 @@ export default function AnalyticsPage() {
                         </h2>
                     </InstitutionalTooltip>
                     <ResponsiveContainer width="100%" height={240}>
-                        <RechartsPie>
-                            <Pie
-                                data={totalPolicies > 0 ? productBreakdown : [{ name: 'Empty', value: 1, color: '#1a1a1a' }]}
-                                dataKey="value"
-                                nameKey="name"
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={90}
-                                innerRadius={55}
-                                paddingAngle={3}
-                            >
-                                {(totalPolicies > 0 ? productBreakdown : [{ name: 'Empty', value: 1, color: '#1a1a1a' }]).map((entry, index) => (
-                                    <Cell key={index} fill={entry.color} />
-                                ))}
-                            </Pie>
-                            <RechartsTooltip contentStyle={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }} />
-                        </RechartsPie>
+                        {totalPolicies > 0 ? (
+                            <RechartsPie>
+                                <Pie
+                                    data={productBreakdown}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    cx="50%"
+                                    cy="50%"
+                                    outerRadius={90}
+                                    innerRadius={55}
+                                    paddingAngle={3}
+                                >
+                                    {productBreakdown.map((entry, index) => (
+                                        <Cell key={index} fill={entry.color} />
+                                    ))}
+                                </Pie>
+                                <RechartsTooltip contentStyle={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }} />
+                            </RechartsPie>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full text-center px-4">
+                                <Activity className="w-8 h-8 text-primary/40 mb-3 animate-pulse" />
+                                <p className="text-sm text-muted-foreground">Institutional Liquidity Pools are currently synchronizing...</p>
+                                <p className="text-[10px] text-zinc-500 mt-1 uppercase tracking-tighter">Waiting for live on-chain policy count</p>
+                            </div>
+                        )}
                     </ResponsiveContainer>
                     <div className="mt-4 space-y-2">
                         {productBreakdown.map((p, i) => (

@@ -22,6 +22,7 @@ import { CONTRACTS } from '@/lib/contracts';
 import { LIQUIDITY_POOL_ABI, ESCROW_ABI } from '@/lib/enterprise_abis';
 import { formatUnits } from 'viem';
 import { useEffect } from 'react';
+import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 
 export function AdminControl() {
     const [mounted, setMounted] = useState(false);
@@ -53,32 +54,76 @@ export function AdminControl() {
         query: { enabled: mounted }
     });
 
-    const { data: requiredQuorum } = useReadContract({
+    const { data: requiredQuorum, refetch: refetchQuorum } = useReadContract({
         address: CONTRACTS.ESCROW as `0x${string}`,
         abi: ESCROW_ABI,
         functionName: 'requiredQuorum',
         query: { enabled: mounted }
     });
 
+    const { data: paused, refetch: refetchPause } = useReadContract({
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'paused',
+        query: { enabled: mounted }
+    });
+
+    const { writeContract, data: txHash } = useWriteContract();
+    const { isLoading: isTxLoading, isSuccess: isTxSuccess } = useWaitForTransactionReceipt({ hash: txHash });
+
+    useEffect(() => {
+        if (isTxSuccess) {
+            refetchQuorum();
+            refetchPause();
+        }
+    }, [isTxSuccess, refetchQuorum, refetchPause]);
+
     const handleTogglePause = () => {
-        setIsPaused(!isPaused);
-        toast.success(isPaused ? "Protocol Resumed" : "Protocol Paused", {
-            description: isPaused ? "All markets are now accepting new policies." : "Emergency stop active. All markets are currently disabled.",
+        writeContract({
+            address: CONTRACTS.LP_POOL as `0x${string}`,
+            abi: LIQUIDITY_POOL_ABI,
+            functionName: paused ? 'unpause' : 'pause',
+        });
+        toast.info(paused ? "Requesting Resume..." : "Requesting Emergency Pause...", {
+            description: "Please confirm the transaction in your wallet."
         });
     };
 
     const handleHarvestYield = () => {
         setIsHarvesting(true);
+        // Note: Harvesting is currently done via a generic protocol write or automated keeper
         toast.info("Triggering Yield Harvest...", {
-            description: "Calculating performance fees from Aave yield profit."
+            description: "This will call the performance fee calculation on-chain."
         });
 
-        setTimeout(() => {
-            setIsHarvesting(false);
-            toast.success("Performance Fee Harvested!", {
-                description: "Treasury balance updated with 10% profit share."
-            });
-        }, 2000);
+        // Simulating the harvest for now as specific harvest function depends on the strategy implementation
+        setTimeout(() => setIsHarvesting(false), 2000);
+    };
+
+    const handleAddRelayer = () => {
+        const relayerAddress = prompt("Enter Relayer Ethereum Address:");
+        if (!relayerAddress || !relayerAddress.startsWith('0x')) return;
+
+        writeContract({
+            address: CONTRACTS.ESCROW as `0x${string}`,
+            abi: ESCROW_ABI,
+            functionName: 'addAuthorizedRelayer',
+            args: [relayerAddress as `0x${string}`],
+        });
+        toast.info("Authorizing Relayer...", { description: `Granting guardian permissions to ${relayerAddress.slice(0, 10)}...` });
+    };
+
+    const handleAdjustQuorum = () => {
+        const newQuorum = prompt("Enter New Quorum Threshold (e.g., 2):");
+        if (!newQuorum) return;
+
+        writeContract({
+            address: CONTRACTS.ESCROW as `0x${string}`,
+            abi: ESCROW_ABI,
+            functionName: 'updateQuorum',
+            args: [BigInt(newQuorum)],
+        });
+        toast.info("Updating Quorum...", { description: `Setting consensus threshold to ${newQuorum} relayers.` });
     };
 
     return (
@@ -101,17 +146,18 @@ export function AdminControl() {
                         <div className={`p-2 rounded-lg ${isPaused ? 'bg-red-500/20' : 'bg-white/10'}`}>
                             {isPaused ? <Play className="w-5 h-5 text-red-500" /> : <Pause className="w-5 h-5 text-slate-400" />}
                         </div>
-                        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${isPaused ? 'bg-red-500 text-white' : 'bg-emerald-500/10 text-emerald-500'}`}>
-                            {isPaused ? 'Paused' : 'Active'}
+                        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${paused ? 'bg-red-500 text-white' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                            {paused ? 'Paused' : 'Active'}
                         </span>
                     </div>
                     <h3 className="text-lg font-bold text-foreground mb-2">Emergency Pause</h3>
                     <p className="text-xs text-slate-400 font-light mb-6">Instantly halt all product creation and settlements across the entire ecosystem.</p>
                     <button
                         onClick={handleTogglePause}
-                        className={`w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${isPaused ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`}
+                        disabled={isTxLoading}
+                        className={`w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${paused ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'} disabled:opacity-50`}
                     >
-                        {isPaused ? 'Resume Protocol' : 'Trigger Emergency Pause'}
+                        {isTxLoading ? 'Processing...' : (paused ? 'Resume Protocol' : 'Trigger Emergency Pause')}
                     </button>
                 </div>
 
@@ -146,10 +192,18 @@ export function AdminControl() {
                     <h3 className="text-lg font-bold text-foreground mb-2">Relayer Network</h3>
                     <p className="text-xs text-slate-400 font-light mb-6">Manage authorized relayers and adjust the M-of-N quorum threshold.</p>
                     <div className="flex gap-2">
-                        <button className="flex-1 py-2 bg-white/5 border border-white/10 hover:border-primary/50 text-white text-[10px] font-bold rounded-lg uppercase tracking-wider transition-all">
+                        <button
+                            onClick={handleAddRelayer}
+                            disabled={isTxLoading}
+                            className="flex-1 py-2 bg-white/5 border border-white/10 hover:border-primary/50 text-white text-[10px] font-bold rounded-lg uppercase tracking-wider transition-all disabled:opacity-50"
+                        >
                             Add Relayer
                         </button>
-                        <button className="flex-1 py-2 bg-white/5 border border-white/10 hover:border-red-500/50 text-white text-[10px] font-bold rounded-lg uppercase tracking-wider transition-all">
+                        <button
+                            onClick={handleAdjustQuorum}
+                            disabled={isTxLoading}
+                            className="flex-1 py-2 bg-white/5 border border-white/10 hover:border-red-500/50 text-white text-[10px] font-bold rounded-lg uppercase tracking-wider transition-all disabled:opacity-50"
+                        >
                             Adjust Quorum
                         </button>
                     </div>

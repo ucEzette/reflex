@@ -4,13 +4,7 @@ import { CONTRACTS } from '@/lib/contracts';
 import { LIQUIDITY_POOL_ABI } from '@/lib/enterprise_abis';
 import { formatUnits } from 'viem';
 
-const leaderData = [
-    { rank: 1, name: "Global Agri Fund", type: "Institutional LP", tvl: "$4.2M", yield: "18.5%", icon: "agriculture", stake: "28%", utilization: "82%" },
-    { rank: 2, name: "Nexus Reinsurance", type: "Validator", tvl: "$3.8M", yield: "19.2%", icon: "shield", stake: "25%", utilization: "91%" },
-    { rank: 3, name: "Climate Alpha", type: "Market Maker", tvl: "$2.5M", yield: "15.4%", icon: "thermostat", stake: "16%", utilization: "45%" },
-    { rank: 4, name: "Marine Capital", type: "Institutional LP", tvl: "$1.8M", yield: "14.2%", icon: "sailing", stake: "12%", utilization: "58%" },
-    { rank: 5, name: "0x71a...f2e", type: "Retail LP", tvl: "$840K", yield: "22.1%", icon: "person", stake: "5%", utilization: "95%" },
-];
+const leaderData: any[] = []; // Mock entities removed
 
 export function GlobalRiskLeaderboard() {
     const { data: totalAssets } = useReadContract({
@@ -73,7 +67,16 @@ export function GlobalRiskLeaderboard() {
                                     </div>
                                 </div>
                             </td>
-                            <td className="py-4 px-4 text-right font-mono text-foreground font-medium">100%</td>
+                            <td className="py-4 px-4 text-right font-mono text-foreground font-medium">
+                                {totalAssets ? (
+                                    (() => {
+                                        const assets = Number(formatUnits(totalAssets as bigint, 6));
+                                        if (assets >= 1_000_000) return `$${(assets / 1_000_000).toFixed(1)}M`;
+                                        if (assets >= 1_000) return `$${(assets / 1_000).toFixed(1)}K`;
+                                        return `$${assets.toLocaleString(undefined, { maximumFractionDigits: 1 })}`;
+                                    })()
+                                ) : '$0'}
+                            </td>
                             <td className="py-4 px-4 text-right">
                                 <div className="flex items-center justify-end gap-2">
                                     <div className="w-12 bg-accent/30 rounded-full h-1">
@@ -88,12 +91,16 @@ export function GlobalRiskLeaderboard() {
                             <td className="py-4 px-4 text-right">
                                 <div className="flex items-center justify-end gap-1.5 text-emerald-500 font-bold">
                                     <TrendingUp className="w-3 h-3" />
-                                    ${liveTVL.toFixed(1)}M
+                                    {(() => {
+                                        if (liveTVL >= 1_000_000) return `$${(liveTVL / 1_000_000).toFixed(1)}M`;
+                                        if (liveTVL >= 1_000) return `$${(liveTVL / 1_000).toFixed(1)}K`;
+                                        return `$${liveTVL.toLocaleString(undefined, { maximumFractionDigits: 1 })}`;
+                                    })()}
                                 </div>
                             </td>
                         </tr>
 
-                        {leaderData.map((item, idx) => (
+                        {leaderData.length > 0 && leaderData.map((item, idx) => (
                             <tr key={idx} className="hover:bg-accent/20 transition-colors group">
                                 <td className="py-4 px-4 text-left">
                                     <div className={`w-6 h-6 rounded-md flex items-center justify-center font-bold font-mono text-xs ${idx === 0 ? "bg-primary text-white" :
