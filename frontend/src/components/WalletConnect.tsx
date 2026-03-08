@@ -11,12 +11,13 @@ import { createWallet } from "thirdweb/wallets";
 const TARGET_CHAIN_ID = avalancheFuji.id;
 const TARGET_CHAIN_NAME = "Avalanche Fuji";
 
+// FIXED: Removed "injected" and added "walletConnect" for universal EVM access
 const WALLETS = [
     createWallet("app.core.extension"),
     createWallet("io.metamask"),
     createWallet("com.coinbase.wallet"),
     createWallet("me.rainbow"),
-    createWallet("injected"),
+    createWallet("walletConnect"), 
 ];
 
 export function WalletConnect() {
