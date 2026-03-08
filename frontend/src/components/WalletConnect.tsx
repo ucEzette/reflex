@@ -5,11 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import { avalancheFuji } from "wagmi/chains";
 import { toast } from "sonner";
 import { ConnectButton } from "thirdweb/react";
-import { createThirdwebClient } from "thirdweb";
-
-const client = createThirdwebClient({
-    clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
-});
+import { client } from "../lib/thirdweb";
 
 const TARGET_CHAIN_ID = avalancheFuji.id;
 const TARGET_CHAIN_NAME = "Avalanche Fuji";

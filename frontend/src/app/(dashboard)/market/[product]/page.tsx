@@ -6,17 +6,19 @@ export const dynamic = "force-dynamic";
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { generateMarketProducts } from '@/lib/mockState';
-import { MarketProduct } from '@/types/market';
-import { Plane, CloudRain, Zap, Flame, Anchor, ArrowLeft, HelpCircle, Activity, Globe, Calendar, Wind, RefreshCcw, CheckCircle2, Clock, Radio, Satellite, Shield, AlertTriangle } from 'lucide-react';
+import { generateMarketProducts } from '../../../../lib/mockState';
+import { MarketProduct } from '../../../../types/market';
+import { Plane, CloudRain, Zap, Flame, Anchor, ArrowLeft, HelpCircle, Activity, Globe, Calendar, RefreshCcw, CheckCircle2, Clock, Radio, Satellite, Shield, AlertTriangle } from 'lucide-react';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { CONTRACTS } from '@/lib/contracts';
-import { GENERIC_PRODUCT_ABI, PRODUCT_ABI } from '@/lib/enterprise_abis';
+import { CONTRACTS } from '../../../../lib/contracts';
+import { GENERIC_PRODUCT_ABI, PRODUCT_ABI } from '../../../../lib/enterprise_abis';
 import { parseUnits } from 'viem';
 import { toast } from 'sonner';
-import { createThirdwebClient, getContract, prepareContractCall } from "thirdweb";
+import { getContract, prepareContractCall, defineChain } from "thirdweb";
+import { client } from "../../../../lib/thirdweb";
 import { useSendTransaction } from "thirdweb/react";
-import { IDKitWidget, VerificationLevel, ISuccessResult } from '@worldcoin/idkit';
+import { IDKitWidget, VerificationLevel } from '@worldcoin/idkit';
+import type { ISuccessResult } from '@worldcoin/idkit';
 
 const IconMap: Record<string, React.ElementType> = {
     Plane, CloudRain, Zap, Flame, Anchor
@@ -58,8 +60,6 @@ const DEFAULT_RISK_RATES: Record<string, number> = {
 // Accounts for capital reserves, adverse selection, admin costs, and profit margin
 const INSURANCE_LOADING_FACTOR = 2.5;
 
-const client = createThirdwebClient({ clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "" });
-
 export default function ProductMarketPage({ params }: { params: { product: string } }) {
     const router = useRouter();
     const { address, isConnected } = useAccount();
@@ -67,8 +67,14 @@ export default function ProductMarketPage({ params }: { params: { product: strin
     const [product, setProduct] = useState<MarketProduct | null>(null);
 
     // World ID / Hackathon States
-    const [worldIDProof, setWorldIDProof] = useState<WorldIDProof | null>(null);
+    const [worldIDProof, setWorldIDProof] = useState<ISuccessResult | null>(null);
     const [isHumanVerified, setIsHumanVerified] = useState(false);
+
+    const handleWorldIDSuccess = (result: ISuccessResult) => {
+        setWorldIDProof(result);
+        setIsHumanVerified(true);
+        toast.success("Humanness verified via World ID");
+    };
 
     // Form states
     const [payoutInput, setPayoutInput] = useState("");
@@ -204,11 +210,6 @@ export default function ProductMarketPage({ params }: { params: { product: strin
 
     const { mutate: sendThirdwebTx, isPending: isThirdwebSubmitting } = useSendTransaction();
 
-    const handleWorldIDSuccess = (result: ISuccessResult) => {
-        setWorldIDProof(result as any);
-        setIsHumanVerified(true);
-        toast.success("Humanness verified via World ID");
-    };
 
     const handlePurchase = async () => {
         if (!isConnected) return toast.error("Connect wallet first");
@@ -224,10 +225,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
             const tx = prepareContractCall({
                 contract: getContract({
                     client,
-                    chain: {
-                        id: 43113, // Fuji
-                        rpc: "https://api.avax-test.network/ext/bc/C/rpc"
-                    },
+                    chain: defineChain(43113),
                     address: targetContract as `0x${string}`,
                     abi: abi as any
                 }),
@@ -566,7 +564,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                                         onSuccess={handleWorldIDSuccess}
                                         verification_level={VerificationLevel.Device}
                                     >
-                                        {({ open }) => (
+                                        {({ open }: { open: () => void }) => (
                                             <button
                                                 onClick={open}
                                                 className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 transition-all font-bold text-sm text-white shadow-xl group"
