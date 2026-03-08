@@ -1,8 +1,13 @@
+# Foundry
 /out
 /cache
+/broadcast
+
+# Environment/Secrets
 .env
-broadcast/
-/
-/lib/
-/broadcast/
-.env
+.env.*
+!.env.example
+
+# Dependencies
+# We do NOT ignore /lib/ because submodules must be tracked as gitlinks for CI
+# Individual submodule folders are handled by .gitmodules

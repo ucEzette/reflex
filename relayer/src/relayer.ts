@@ -190,6 +190,21 @@ async function main() {
         await monitorEnterprise(blockchain, weatherService);
     });
 
+    // ─── Health Check Server (Render/Cloud Support) ───
+    const PORT = process.env.PORT || 8080;
+    const http = await import("http");
+    http.createServer((req, res) => {
+        if (req.url === "/health" || req.url === "/") {
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ status: "live", wallet: blockchain.getWalletAddress() }));
+        } else {
+            res.writeHead(404);
+            res.end();
+        }
+    }).listen(PORT, () => {
+        console.log(`[Relayer] Health check server listening on port ${PORT}`);
+    });
+
     console.log(`\n[Relayer] Service active. Monitoring all products + Weather Oracles...`);
 }
 
