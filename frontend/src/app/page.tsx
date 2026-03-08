@@ -35,8 +35,8 @@ export default function Home() {
             scale: 1.05
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background-dark/20 via-background-dark/80 to-background-dark" />
-        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background-dark/10 via-background-dark/40 to-background-dark/80" />
+        <div className="absolute inset-0 bg-black/20" />
       </div>
 
       {/* ── Navigation removed (now in layout) ── */}
