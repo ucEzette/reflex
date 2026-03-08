@@ -1,9 +1,9 @@
 import { http, createConfig } from "wagmi";
-import { avalancheFuji } from "wagmi/chains";
-import { injected, walletConnect } from "wagmi/connectors";
+import { avalancheFuji, avalanche, sepolia, arbitrumSepolia, baseSepolia } from "wagmi/chains";
+import { injected, walletConnect, coinbaseWallet } from "wagmi/connectors";
 
 export const config = createConfig({
-    chains: [avalancheFuji],
+    chains: [avalancheFuji, avalanche, sepolia, arbitrumSepolia, baseSepolia],
     connectors: [
         injected({
             target: {
@@ -15,10 +15,17 @@ export const config = createConfig({
         walletConnect({
             projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
             showQrModal: true
-        })
+        }),
+        coinbaseWallet({
+            appName: 'Reflex',
+        }),
     ],
     transports: {
         [avalancheFuji.id]: http(process.env.NEXT_PUBLIC_RPC_URL || "https://api.avax-test.network/ext/bc/C/rpc"),
+        [avalanche.id]: http(),
+        [sepolia.id]: http(),
+        [arbitrumSepolia.id]: http(),
+        [baseSepolia.id]: http(),
     },
     ssr: false,
 });

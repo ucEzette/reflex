@@ -93,7 +93,7 @@ export const CATASTROPHE_ABI = GENERIC_PRODUCT_ABI;
 export const MARITIME_ABI = GENERIC_PRODUCT_ABI;
 
 export const CONTRACTS = {
-    ESCROW: "0x6b37b0fc861b0fa22242ec92c25f2643876e4fbf" as `0x${string}`,
+    ESCROW: "0xd8218d83e4fe4927aff7bcd0bed316a3c39be7b4" as `0x${string}`,
     USDC: "0x5425890298aed601595a70AB815c96711a31Bc65" as `0x${string}`,
 
     // Phase 97: Redeployment with PROTOCOL_MARGIN=3000 (30%)
@@ -112,7 +112,7 @@ export const CONTRACTS = {
     ENERGY: "0x2062932817121290f6bb7ff87f20eeb40ce52179" as `0x${string}`,
     CATASTROPHE: "0x7c1dfcd03c2ba97c13309a36e46ef20ddf869b61" as `0x${string}`,
     MARITIME: "0x237660db78797fbe77373db803b3325aa51cd04a" as `0x${string}`,
-    CROSS_CHAIN_RECEIVER: "0x89C6F7C2A6dbe8c396CA5dc37f298f86b" as `0x${string}`
+    CROSS_CHAIN_RECEIVER: "0xc7a297de87890728453daa240a8373d7d5cee90b" as `0x${string}`
 };
 
 export const POOLS = [

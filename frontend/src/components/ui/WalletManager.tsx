@@ -92,7 +92,7 @@ export function WalletManager() {
                     </div>
                     <h3 className="text-xl font-bold text-foreground mb-4">Switch to Avalanche Fuji</h3>
                     <button
-                        onClick={() => switchChain(defineChain(TARGET_CHAIN_ID))}
+                        onClick={() => switchChain({ chainId: TARGET_CHAIN_ID })}
                         className="w-full bg-amber-500 text-white py-2 rounded-xl font-bold text-sm hover:bg-amber-600 transition-all flex items-center justify-center gap-2"
                     >
                         <RefreshCcw className="w-4 h-4" />
