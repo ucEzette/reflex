@@ -97,15 +97,76 @@ export const CONTRACTS = {
     USDC: "0x5425890298aed601595a70AB815c96711a31Bc65" as `0x${string}`,
 
     // Phase 97: Redeployment with PROTOCOL_MARGIN=3000 (30%)
+    // Institutional Sector Isolated Pools
+    LP_TRAVEL: "0xd352d2D35d20791301c5A10Fd847849C5b8f453c" as `0x${string}`,
+    LP_AGRI: "0xCb4C97087ed4C858281C39Df44aE0997561FFe8C" as `0x${string}`,
+    LP_ENERGY: "0xe8b7B01B2b4ec0f400f37F2D894e3654F05852F6" as `0x${string}`,
+    LP_CAT: "0x9d803A3066C858d714c4F5eE286eaa6249d451aB" as `0x${string}`,
+    LP_MARITIME: "0x6586035D5e39e30bf37445451b43EEaEeAa1405a" as `0x${string}`,
+
+    // Previous global addresses kept for backward compatibility if needed
     LP_POOL: "0xbcfeeaea01b9ddd2f8a1092676681c6b52dbe81c" as `0x${string}`,
     PRODUCT_FACTORY: "0x870268aafe40b15f6bf14d42c435e6d2c7b660fe" as `0x${string}`,
-    TRAVEL: "0x54eb96ee828c3c3201ff5419ad5cbff4b2d482b6" as `0x${string}`,
-    AGRI: "0x2b9ad5fb816f0ea3cd605495634dbe851ebdb240" as `0x${string}`,
+    TRAVEL: "0x26b8fbf92E1063CaEffBA70EC8F86Fc3d76E7911" as `0x${string}`,
+    AGRI: "0x05dE694A7ff32c9D41d4FF5FD9e89c77fd6E8BAC" as `0x${string}`,
     ENERGY: "0x2062932817121290f6bb7ff87f20eeb40ce52179" as `0x${string}`,
     CATASTROPHE: "0x7c1dfcd03c2ba97c13309a36e46ef20ddf869b61" as `0x${string}`,
     MARITIME: "0x237660db78797fbe77373db803b3325aa51cd04a" as `0x${string}`,
     CROSS_CHAIN_RECEIVER: "0x89C6F7C2A6dbe8c396CA5dc37f298f86b" as `0x${string}`
 };
+
+export const POOLS = [
+    {
+        id: 'travel',
+        name: 'Reflex Travel Protection Pool',
+        description: 'Yield from flight delay and cancellation premiums. Capital isolated for travel disruptions.',
+        address: CONTRACTS.LP_TRAVEL,
+        sector: 'Travel',
+        color: 'text-primary',
+        borderColor: 'border-primary/20',
+        icon: 'flight'
+    },
+    {
+        id: 'agriculture',
+        name: 'Reflex Agriculture Yield Pool',
+        description: 'Parametric drought and yield protection for global food security.',
+        address: CONTRACTS.LP_AGRI,
+        sector: 'Agriculture',
+        color: 'text-emerald-400',
+        borderColor: 'border-emerald-500/20',
+        icon: 'agriculture'
+    },
+    {
+        id: 'energy',
+        name: 'Reflex Energy Volatility Pool',
+        description: 'Hedging solutions for renewable energy fluctuations and extreme price volatility.',
+        address: CONTRACTS.LP_ENERGY,
+        sector: 'Energy',
+        color: 'text-amber-400',
+        borderColor: 'border-amber-500/20',
+        icon: 'bolt'
+    },
+    {
+        id: 'catastrophe',
+        name: 'Reflex Catastrophe & Reinsurance',
+        description: 'High-yield secondary market for wildfire, hurricane, and seismic risk.',
+        address: CONTRACTS.LP_CAT,
+        sector: 'Catastrophe',
+        color: 'text-rose-500',
+        borderColor: 'border-rose-500/20',
+        icon: 'warning'
+    },
+    {
+        id: 'maritime',
+        name: 'Reflex Maritime Logistics Vault',
+        description: 'Liquidity for shipping delay and cargo damage protection across global trade routes.',
+        address: CONTRACTS.LP_MARITIME,
+        sector: 'Maritime',
+        color: 'text-blue-400',
+        borderColor: 'border-blue-500/20',
+        icon: 'sailing'
+    }
+];
 
 // Chainlink CCIP Selectors and Routers
 export const CCIP_CONFIG = {

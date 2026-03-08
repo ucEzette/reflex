@@ -6,12 +6,13 @@ import { DollarSign, ShieldCheck, TrendingUp, Layers, Activity, Lock, ExternalLi
 import { InstitutionalTooltip } from '@/components/ui/InstitutionalTooltip';
 import { ALL_MARKETS } from '@/lib/market-data';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useConnect, usePublicClient } from 'wagmi';
-import { CONTRACTS } from '@/lib/contracts';
+import { CONTRACTS, POOLS } from '@/lib/contracts';
 import { LIQUIDITY_POOL_ABI, ERC20_ABI } from '@/lib/enterprise_abis';
 import { parseUnits, formatUnits } from 'viem';
 import { toast } from 'sonner';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { avalancheFuji } from 'wagmi/chains';
+import { cn } from '@/lib/utils';
 
 const performanceData = [
     { date: '2024-02-23', tvl: 4.2, yield: 12.1, utilization: 45 },
@@ -23,13 +24,7 @@ const performanceData = [
     { date: '2024-03-01', tvl: 6.2, yield: 15.1, utilization: 68 },
 ];
 
-const mockPools: PoolMetrics[] = [
-    { id: "pool-1", productId: "flight", productTitle: "Travel Solutions", tvl: 4500000, apy: 14.2, baseAaveApy: 4.2, riskPremiumApy: 10.0, utilization: 65, maxPayouts: 2925000 },
-    { id: "pool-2", productId: "agri", productTitle: "Agriculture Solutions", tvl: 8200000, apy: 18.5, baseAaveApy: 4.2, riskPremiumApy: 14.3, utilization: 82, maxPayouts: 6724000 },
-    { id: "pool-3", productId: "energy", productTitle: "Energy Solutions", tvl: 5100000, apy: 12.8, baseAaveApy: 4.2, riskPremiumApy: 8.6, utilization: 45, maxPayouts: 2295000 },
-    { id: "pool-4", productId: "cat", productTitle: "Wildfire & Reinsurance", tvl: 12500000, apy: 22.4, baseAaveApy: 4.2, riskPremiumApy: 18.2, utilization: 98, maxPayouts: 12250000 },
-    { id: "pool-5", productId: "maritime", productTitle: "Maritime Solutions", tvl: 3600000, apy: 15.1, baseAaveApy: 4.2, riskPremiumApy: 10.9, utilization: 58, maxPayouts: 2088000 }
-];
+// No mock pools needed. using REAL POOLS from contracts.ts
 
 export function InvestDashboardClient() {
     const [mounted, setMounted] = useState(false);
@@ -37,10 +32,12 @@ export function InvestDashboardClient() {
     const { connectors, connectAsync } = useConnect();
 
 
-    // Deposit Form State
-    const [selectedPool, setSelectedPool] = useState<PoolMetrics>(mockPools[0]);
+    // Pool Selection & Forms
+    const [selectedPool, setSelectedPool] = useState(POOLS[0]);
     const [amount, setAmount] = useState("");
     const [actionType, setActionType] = useState<"deposit" | "withdraw">("deposit");
+    const [isScheduled, setIsScheduled] = useState(false);
+    const [withdrawalDate, setWithdrawalDate] = useState("");
 
     // History State
     const publicClient = usePublicClient();
@@ -52,20 +49,20 @@ export function InvestDashboardClient() {
     }, []);
 
     // Contract Reads
-    const { data: totalAssets } = useReadContract({
-        address: CONTRACTS.LP_POOL,
+    const { data: totalAssets, refetch: refetchAssets } = useReadContract({
+        address: selectedPool.address,
         abi: LIQUIDITY_POOL_ABI,
         functionName: 'totalAssets',
     });
 
-    const { data: totalMaxPayouts } = useReadContract({
-        address: CONTRACTS.LP_POOL,
+    const { data: totalMaxPayouts, refetch: refetchPayouts } = useReadContract({
+        address: selectedPool.address,
         abi: LIQUIDITY_POOL_ABI,
         functionName: 'totalMaxPayouts',
     });
 
-    const { data: userShares } = useReadContract({
-        address: CONTRACTS.LP_POOL,
+    const { data: userShares, refetch: refetchShares } = useReadContract({
+        address: selectedPool.address,
         abi: LIQUIDITY_POOL_ABI,
         functionName: 'lpShares',
         args: address ? [address] : undefined,
@@ -82,7 +79,21 @@ export function InvestDashboardClient() {
         address: CONTRACTS.USDC,
         abi: ERC20_ABI,
         functionName: 'allowance',
-        args: address ? [address, CONTRACTS.LP_POOL] : undefined,
+        args: address ? [address, selectedPool.address] : undefined,
+    });
+
+    const { data: intentAmount, refetch: refetchIntentAmount } = useReadContract({
+        address: selectedPool.address,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'withdrawalIntentAmount',
+        args: address ? [address] : undefined,
+    });
+
+    const { data: intentTimestamp, refetch: refetchIntentTimestamp } = useReadContract({
+        address: selectedPool.address,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'withdrawalIntentTimestamp',
+        args: address ? [address] : undefined,
     });
 
     // Contract Writes
@@ -131,36 +142,46 @@ export function InvestDashboardClient() {
             if (actionType === "deposit") {
                 if (needsApproval) {
                     setIsApproving(true);
-                    console.log("Step 1: Approving USDC", value.toString());
                     toast.loading("Requesting USDC Approval...", { id: "tx" });
                     await writeContractAsync({
                         ...txConfig,
                         address: CONTRACTS.USDC,
                         abi: ERC20_ABI,
                         functionName: 'approve',
-                        args: [CONTRACTS.LP_POOL, value]
+                        args: [selectedPool.address, value]
                     });
                 } else {
-                    console.log("Step 2: Depositing USDC", value.toString());
-                    toast.loading("Confirming Deposit...", { id: "tx" });
+                    toast.loading(`Depositing to ${selectedPool.sector} Pool...`, { id: "tx" });
                     await writeContractAsync({
                         ...txConfig,
-                        address: CONTRACTS.LP_POOL,
+                        address: selectedPool.address,
                         abi: LIQUIDITY_POOL_ABI,
                         functionName: 'depositLiquidity',
                         args: [value]
                     });
                 }
             } else {
-                console.log("Withdrawing USDC", value.toString());
-                toast.loading("Confirming Withdrawal...", { id: "tx" });
-                await writeContractAsync({
-                    ...txConfig,
-                    address: CONTRACTS.LP_POOL,
-                    abi: LIQUIDITY_POOL_ABI,
-                    functionName: 'withdrawLiquidity',
-                    args: [value]
-                });
+                const message = isScheduled ? `Scheduling Withdrawal for ${withdrawalDate}` : "Confirming Withdrawal...";
+                toast.loading(message, { id: "tx" });
+
+                if (isScheduled) {
+                    const unlockTime = Math.floor(new Date(withdrawalDate).getTime() / 1000);
+                    await writeContractAsync({
+                        ...txConfig,
+                        address: selectedPool.address,
+                        abi: LIQUIDITY_POOL_ABI,
+                        functionName: 'scheduleWithdrawal',
+                        args: [value, BigInt(unlockTime)]
+                    });
+                } else {
+                    await writeContractAsync({
+                        ...txConfig,
+                        address: selectedPool.address,
+                        abi: LIQUIDITY_POOL_ABI,
+                        functionName: 'withdrawLiquidity',
+                        args: [value]
+                    });
+                }
             }
         } catch (err: any) {
             console.error("Transaction Error:", err);
@@ -204,14 +225,16 @@ export function InvestDashboardClient() {
     useEffect(() => {
         if (isTxSuccess) {
             if (isApproving) {
-                console.log("Approval Success");
                 toast.success("USDC Approved!", { id: "tx" });
                 setIsApproving(false);
                 refetchAllowance();
             } else {
-                console.log("Transaction Success");
                 toast.success(`${actionType === 'deposit' ? 'Deposit' : 'Withdrawal'} successful!`, { id: "tx" });
                 setAmount("");
+                refetchAssets();
+                refetchPayouts();
+                refetchShares();
+                refetchBalance();
             }
         }
         if (isTxError) {
@@ -228,13 +251,13 @@ export function InvestDashboardClient() {
             try {
                 const [depositLogs, withdrawLogs] = await Promise.all([
                     publicClient.getLogs({
-                        address: CONTRACTS.LP_POOL,
+                        address: selectedPool.address,
                         event: LIQUIDITY_POOL_ABI.find(x => x.type === 'event' && x.name === 'LiquidityDeposited') as any,
                         args: { provider: address },
                         fromBlock: BigInt(0)
                     }),
                     publicClient.getLogs({
-                        address: CONTRACTS.LP_POOL,
+                        address: selectedPool.address,
                         event: LIQUIDITY_POOL_ABI.find(x => x.type === 'event' && x.name === 'LiquidityWithdrawn') as any,
                         args: { provider: address },
                         fromBlock: BigInt(0)
@@ -272,7 +295,7 @@ export function InvestDashboardClient() {
             }
         };
         fetchHistory();
-    }, [address, publicClient, isTxSuccess]);
+    }, [address, publicClient, isTxSuccess, selectedPool.address]);
 
     if (!mounted) return null;
 
@@ -297,10 +320,10 @@ export function InvestDashboardClient() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
                 {/* Left: Pool Overview Grid */}
-                <div className="xl:col-span-2 space-y-6">
+                <div className="lg:col-span-8 space-y-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-bold text-foreground">Risk Distributions</h2>
                         <div className="flex items-center gap-2">
@@ -310,68 +333,60 @@ export function InvestDashboardClient() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {mockPools.map(pool => {
+                        {POOLS.map(pool => {
                             const isSelected = selectedPool.id === pool.id;
-                            const poolTvl = totalAssets ? Number(formatUnits(totalAssets as bigint, 6)) / 5 : pool.tvl / 1000000; // Distribute real TVL or scale mock down
-                            const utilization = pool.id === "pool-4" ? 98 : (globalUtilization > 0 ? globalUtilization : pool.utilization);
+                            const utilization = totalAssets && totalMaxPayouts && isSelected ? (Number(totalMaxPayouts) * 100) / Number(totalAssets) : 15.5;
                             const isCapped = utilization >= 95;
-                            const marketData = ALL_MARKETS.find(m => m.id === pool.productId);
 
                             return (
-                                <div key={pool.id} className="relative bg-zinc-900/40 backdrop-blur-md border border-white/5 rounded-3xl p-6 hover:border-emerald-500/20 transition-all group">
+                                <div
+                                    key={pool.id}
+                                    onClick={() => setSelectedPool(pool)}
+                                    className={cn(
+                                        "relative cursor-pointer bg-zinc-900/40 backdrop-blur-md border rounded-3xl p-6 transition-all group",
+                                        isSelected ? "border-primary shadow-[0_0_20px_rgba(128,0,32,0.1)]" : "border-white/5 hover:border-white/10"
+                                    )}
+                                >
                                     <div className="flex items-start justify-between mb-6">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                                            <div className={cn("w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center", pool.color)}>
                                                 <span className="material-symbols-outlined text-2xl">
-                                                    {pool.productId === 'flight' ? 'flight' : pool.productId === 'agri' ? 'agriculture' : pool.productId === 'energy' ? 'bolt' : pool.productId === 'cat' ? 'thunderstorm' : 'directions_boat'}
+                                                    {pool.icon}
                                                 </span>
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <p className="text-xl font-black text-foreground">${poolTvl.toFixed(2)}{totalAssets ? '' : 'M+'}</p>
+                                                    <p className="text-xl font-black text-foreground">{pool.sector}</p>
                                                     <InstitutionalTooltip
-                                                        title="Risk Methodology"
-                                                        content={pool.productId === 'flight' ? "Institutional-grade flight delay protection utilizing real-time aviation data oracles for instant consensus and high-fidelity parametric settlement." : pool.productId === 'agri' ? "Comprehensive agricultural yield protection utilizing high-resolution satellite imagery and multi-spectral sensors to verify crop health and environmental stress factors." : "Institutional-grade parametric protection utilizing high-frequency environmental data and multisig-verified oracle feeds."}
+                                                        title={`${pool.sector} Security`}
+                                                        content={`This vault strictly supports the ${pool.sector} insurance product line. Funds are protected via collateral isolation.`}
                                                         position="top"
                                                     />
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-primary italic">Reflex Protocol</span>
-                                                </div>
+                                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-tight">{pool.name}</p>
                                             </div>
                                         </div>
-                                        <div className={`p-2 rounded-lg ${isSelected ? 'bg-primary text-white' : 'bg-white/5 text-zinc-500'}`}>
-                                            <Layers className="w-4 h-4" />
+                                        <div className={cn("p-2 rounded-lg transition-colors", isSelected ? 'bg-primary text-white' : 'bg-white/5 text-zinc-500')}>
+                                            <Shield className="w-4 h-4" />
                                         </div>
                                     </div>
 
-                                    <div className="space-y-5">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <p className="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Active TVL</p>
-                                                <p className="font-bold text-foreground text-base">
-                                                    {pool.id === "pool-1" && totalAssets ? `$${(Number(totalAssets) / 1e6).toFixed(2)}M` : `$${(pool.tvl / 1e6).toFixed(2)}M`}
-                                                </p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Cap Exposure</p>
-                                                <p className="font-bold text-zinc-300 text-sm">
-                                                    {pool.id === "pool-1" && totalMaxPayouts ? `$${(Number(totalMaxPayouts) / 1e6).toFixed(2)}M` : `$${(pool.maxPayouts / 1e6).toFixed(2)}M`}
-                                                </p>
-                                            </div>
-                                        </div>
+                                    <div className="space-y-4">
+                                        <p className="text-xs text-zinc-400 leading-relaxed font-medium">
+                                            {pool.description}
+                                        </p>
 
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-center text-[10px]">
-                                                <span className="text-zinc-500 font-bold uppercase tracking-wider">Utilization</span>
-                                                <span className={`font-black ${isCapped ? "text-orange-500" : "text-emerald-500"}`}>
-                                                    {utilization.toFixed(1)}%
+                                                <span className="text-zinc-500 font-bold uppercase">Utilization Rate</span>
+                                                <span className={cn("font-black", utilization > 80 ? "text-orange-500" : "text-emerald-500")}>
+                                                    {isSelected ? utilization.toFixed(1) : "--"}%
                                                 </span>
                                             </div>
                                             <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
                                                 <div
-                                                    className={`h-full rounded-full transition-all duration-1000 ${isCapped ? 'bg-orange-500' : 'bg-primary'}`}
-                                                    style={{ width: `${utilization}%` }}
+                                                    className={cn("h-full rounded-full transition-all duration-1000", isSelected ? 'bg-primary' : 'bg-zinc-800')}
+                                                    style={{ width: isSelected ? `${utilization}%` : '5%' }}
                                                 />
                                             </div>
                                         </div>
@@ -509,7 +524,7 @@ export function InvestDashboardClient() {
                 </div>
 
                 {/* Right: Action Interface Form */}
-                <div className="xl:col-span-1">
+                <div className="lg:col-span-4 lg:sticky lg:top-24">
                     <div className="bg-card border border-border rounded-2xl p-8 sticky top-24 overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
 
@@ -540,9 +555,9 @@ export function InvestDashboardClient() {
                                 <div className="p-4 bg-black/40 border border-white/5 rounded-xl flex items-center justify-between group hover:border-primary transition-colors">
                                     <div className="flex items-center gap-3">
                                         <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                                        <span className="text-sm font-black text-foreground">{selectedPool.productTitle}</span>
+                                        <span className="text-sm font-black text-foreground">{selectedPool.sector} Protection</span>
                                     </div>
-                                    <span className="text-xs text-primary font-black bg-primary/10 px-2 py-1 rounded">{selectedPool.apy}% APY</span>
+                                    <span className="text-xs text-primary font-black bg-primary/10 px-2 py-1 rounded">12.4% APY</span>
                                 </div>
                             </div>
 
@@ -580,6 +595,49 @@ export function InvestDashboardClient() {
                                         Get Test USDC (Faucet)
                                     </button>
                                 )}
+                                {actionType === "withdraw" && (
+                                    <div className="p-4 bg-zinc-900/40 border border-white/5 rounded-2xl space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Clock className="w-4 h-4 text-primary" />
+                                                <span className="text-xs font-bold text-foreground text-[10px] uppercase tracking-widest">Scheduled Withdrawal</span>
+                                            </div>
+                                            <button
+                                                onClick={() => setIsScheduled(!isScheduled)}
+                                                className={cn("w-10 h-5 rounded-full transition-all relative", isScheduled ? "bg-primary" : "bg-zinc-700")}
+                                            >
+                                                <div className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all", isScheduled ? "left-5.5" : "left-0.5")} />
+                                            </button>
+                                        </div>
+                                        {isScheduled && (
+                                            <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                <p className="text-[9px] text-zinc-500 font-medium leading-relaxed italic">
+                                                    Set a target date to signal your exit. This help the protocol manage capital buffers.
+                                                </p>
+                                                <input
+                                                    type="date"
+                                                    value={withdrawalDate}
+                                                    onChange={(e) => setWithdrawalDate(e.target.value)}
+                                                    className="w-full bg-black border border-white/10 rounded-xl px-4 py-2 text-xs font-bold text-foreground focus:border-primary focus:outline-none"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                {isConnected && intentTimestamp && Number(intentTimestamp) > 0 && (
+                                    <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-start gap-3">
+                                        <AlertCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-primary">On-Chain Intent Detected</p>
+                                            <p className="text-xs text-zinc-300 font-bold">
+                                                Active scheduling for <span className="text-foreground">{formatUnits((intentAmount as bigint) || BigInt(0), 6)} shares</span>.
+                                            </p>
+                                            <p className="text-[10px] text-zinc-500 font-medium italic" id="intent-lock-text">
+                                                Locked until: {new Date(Number(intentTimestamp) * 1000).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <button
@@ -610,7 +668,7 @@ export function InvestDashboardClient() {
                             </div>
                             <div className="flex justify-between text-xs font-bold">
                                 <span className="text-zinc-500">Underwriting Risk Premium</span>
-                                <span className="text-emerald-400 font-mono">+{selectedPool.riskPremiumApy}%</span>
+                                <span className="text-emerald-400 font-mono">+12.4%</span>
                             </div>
                         </div>
                     </div>
