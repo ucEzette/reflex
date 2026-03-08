@@ -1,12 +1,14 @@
-import { useActiveAccount, useReadContract, useSendTransaction, useContractEvents } from "thirdweb/react";
-import { getContract, defineChain, prepareContractCall, readContract, prepareEvent } from "thirdweb";
-import { client } from "@/lib/thirdweb";
+"use client";
+import React, { useState, useEffect } from "react";
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useWatchContractEvent } from "wagmi";
 import { CONTRACTS, POOLS } from '@/lib/contracts';
 import { LIQUIDITY_POOL_ABI, ERC20_ABI } from '@/lib/enterprise_abis';
 import { parseUnits, formatUnits } from 'viem';
 import { toast } from 'sonner';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { cn } from '@/lib/utils';
+import { Trophy, Users, Activity, Shield, TrendingUp, Award, RefreshCcw, ArrowUpRight, ArrowDownLeft, DollarSign, Clock, AlertCircle, CheckCircle2, Layers } from 'lucide-react';
+import { InstitutionalTooltip } from '@/components/ui/InstitutionalTooltip';
 
 const performanceData = [
     { date: '2024-02-23', tvl: 4.2, yield: 12.1, utilization: 45 },
@@ -22,9 +24,7 @@ const performanceData = [
 
 export function InvestDashboardClient() {
     const [mounted, setMounted] = useState(false);
-    const account = useActiveAccount();
-    const address = account?.address;
-    const isConnected = !!account;
+    const { address, isConnected } = useAccount();
 
     // Pool Selection & Forms
     const [selectedPool, setSelectedPool] = useState(POOLS[0]);
@@ -41,84 +41,115 @@ export function InvestDashboardClient() {
         setMounted(true);
     }, []);
 
-    const chain = defineChain(43113);
-    const poolContract = getContract({ client, chain, address: selectedPool.address as string, abi: LIQUIDITY_POOL_ABI as any });
-    const usdcContract = getContract({ client, chain, address: CONTRACTS.USDC as string, abi: ERC20_ABI as any });
-
     // Contract Reads
-    const totalAssetsQuery = useReadContract({
-        contract: poolContract,
-        method: 'totalAssets',
-        params: [],
+    const { data: totalAssets, refetch: refetchAssets } = useReadContract({
+        address: selectedPool.address as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalAssets',
+        query: { enabled: mounted }
     });
-    const totalAssets = totalAssetsQuery.data;
-    const refetchAssets = totalAssetsQuery.refetch;
 
-    const totalMaxPayoutsQuery = useReadContract({
-        contract: poolContract,
-        method: 'totalMaxPayouts',
-        params: [],
+    const { data: totalMaxPayouts, refetch: refetchPayouts } = useReadContract({
+        address: selectedPool.address as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalMaxPayouts',
+        query: { enabled: mounted }
     });
-    const totalMaxPayouts = totalMaxPayoutsQuery.data;
-    const refetchPayouts = totalMaxPayoutsQuery.refetch;
 
-    const userSharesQuery = useReadContract({
-        contract: poolContract,
-        method: 'lpShares',
-        params: address ? [address] : undefined,
+    const { data: userShares, refetch: refetchShares } = useReadContract({
+        address: selectedPool.address as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'lpShares',
+        args: address ? [address] : undefined,
+        query: { enabled: mounted && !!address }
     });
-    const userShares = userSharesQuery.data;
-    const refetchShares = userSharesQuery.refetch;
 
-    const usdcBalanceQuery = useReadContract({
-        contract: usdcContract,
-        method: 'balanceOf',
-        params: address ? [address] : undefined,
+    const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
+        address: CONTRACTS.USDC as `0x${string}`,
+        abi: ERC20_ABI,
+        functionName: 'balanceOf',
+        args: address ? [address] : undefined,
+        query: { enabled: mounted && !!address }
     });
-    const usdcBalance = usdcBalanceQuery.data;
-    const refetchBalance = usdcBalanceQuery.refetch;
 
-    const usdcAllowanceQuery = useReadContract({
-        contract: usdcContract,
-        method: 'allowance',
-        params: address ? [address, selectedPool.address] : undefined,
+    const { data: usdcAllowance, refetch: refetchAllowance } = useReadContract({
+        address: CONTRACTS.USDC as `0x${string}`,
+        abi: ERC20_ABI,
+        functionName: 'allowance',
+        args: address ? [address, selectedPool.address as `0x${string}`] : undefined,
+        query: { enabled: mounted && !!address }
     });
-    const usdcAllowance = usdcAllowanceQuery.data;
-    const refetchAllowance = usdcAllowanceQuery.refetch;
 
-    const intentAmountQuery = useReadContract({
-        contract: poolContract,
-        method: 'withdrawalIntentAmount',
-        params: address ? [address] : undefined,
+    const { data: intentAmount, refetch: refetchIntentAmount } = useReadContract({
+        address: selectedPool.address as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'withdrawalIntentAmount',
+        args: address ? [address] : undefined,
+        query: { enabled: mounted && !!address }
     });
-    const intentAmount = intentAmountQuery.data;
-    const refetchIntentAmount = intentAmountQuery.refetch;
 
-    const intentTimestampQuery = useReadContract({
-        contract: poolContract,
-        method: 'withdrawalIntentTimestamp',
-        params: address ? [address] : undefined,
+    const { data: intentTimestamp, refetch: refetchIntentTimestamp } = useReadContract({
+        address: selectedPool.address as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'withdrawalIntentTimestamp',
+        args: address ? [address] : undefined,
+        query: { enabled: mounted && !!address }
     });
-    const intentTimestamp = intentTimestampQuery.data;
-    const refetchIntentTimestamp = intentTimestampQuery.refetch;
 
     // Contract Writes
-    const { mutate: sendThirdwebTx, isPending: isTxPending } = useSendTransaction();
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isTxSuccess, setIsTxSuccess] = useState(false);
+    const { writeContract, data: hash, error: writeError, isPending: isWritePending } = useWriteContract();
+    const { isLoading: isTxConfirming, isSuccess: isTxSuccess, error: confirmError } = useWaitForTransactionReceipt({ hash });
+
+    const isTxPending = isWritePending || isTxConfirming;
 
     const [isApproving, setIsApproving] = useState(false);
     const [isMinting, setIsMinting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false); // Keep for UI state management
 
     const needsApproval = actionType === "deposit" && usdcAllowance !== undefined && amount && parseUnits(amount, 6) > (usdcAllowance as bigint);
+
+    useEffect(() => {
+        if (isTxConfirming) {
+            toast.loading("Confirming transaction...", { id: "tx" });
+        } else if (isTxSuccess) {
+            if (isApproving) {
+                toast.success("USDC Approved!", { id: "tx" });
+                setIsApproving(false);
+                refetchAllowance();
+            } else {
+                toast.success(`${actionType === 'deposit' ? 'Deposit' : 'Withdrawal'} successful!`, { id: "tx" });
+                setAmount("");
+                refetchAssets();
+                refetchPayouts();
+                refetchShares();
+                refetchBalance();
+                refetchIntentAmount();
+                refetchIntentTimestamp();
+                setIsSubmitting(false);
+            }
+        } else if (confirmError) {
+            console.error("Transaction Confirmation Error:", confirmError);
+            toast.error(confirmError.message || "Transaction failed during confirmation", { id: "tx" });
+            setIsApproving(false);
+            setIsSubmitting(false);
+        }
+    }, [isTxConfirming, isTxSuccess, confirmError, isApproving, actionType, refetchAllowance, refetchAssets, refetchPayouts, refetchShares, refetchBalance, refetchIntentAmount, refetchIntentTimestamp]);
+
+    useEffect(() => {
+        if (writeError) {
+            console.error("Transaction Write Error:", writeError);
+            toast.error(writeError.message || "Transaction failed to send", { id: "tx" });
+            setIsApproving(false);
+            setIsSubmitting(false);
+        }
+    }, [writeError]);
+
 
     const handleTransaction = async () => {
         console.log("Initiating transaction...", { actionType, amount, needsApproval });
 
-        if (!isConnected) {
-            return toast.error("Connect wallet via 'Reflex Gateway' to secure liquidity.", {
-                description: "Re-connect your wallet using the top-right button to enable smart execution."
-            });
+        if (!isConnected || !address) {
+            return toast.error("Connect wallet to secure liquidity.");
         }
 
         if (!amount || parseFloat(amount) <= 0) {
@@ -129,27 +160,28 @@ export function InvestDashboardClient() {
 
         // Pre-flight balance check
         if (actionType === "deposit" && usdcBalance !== undefined && value > (usdcBalance as bigint)) {
-            return toast.error(`Insufficient USDC balance. You need ${amount} USDC but only have ${formatUnits(usdcBalance as bigint, 6)} USDC.`);
+            return toast.error(`Insufficient USDC balance.`);
         }
 
         try {
-            let tx;
             if (actionType === "deposit") {
                 if (needsApproval) {
                     setIsApproving(true);
                     toast.loading("Requesting USDC Approval...", { id: "tx" });
-                    tx = prepareContractCall({
-                        contract: usdcContract,
-                        method: 'approve',
-                        params: [selectedPool.address as `0x${string}`, value]
+                    writeContract({
+                        address: CONTRACTS.USDC as `0x${string}`,
+                        abi: ERC20_ABI,
+                        functionName: 'approve',
+                        args: [selectedPool.address as `0x${string}`, value]
                     });
                 } else {
                     setIsSubmitting(true);
                     toast.loading(`Depositing to ${selectedPool.sector} Pool...`, { id: "tx" });
-                    tx = prepareContractCall({
-                        contract: poolContract,
-                        method: 'depositLiquidity',
-                        params: [value]
+                    writeContract({
+                        address: selectedPool.address as `0x${string}`,
+                        abi: LIQUIDITY_POOL_ABI,
+                        functionName: 'depositLiquidity',
+                        args: [value]
                     });
                 }
             } else {
@@ -159,127 +191,74 @@ export function InvestDashboardClient() {
 
                 if (isScheduled) {
                     const unlockTime = Math.floor(new Date(withdrawalDate).getTime() / 1000);
-                    tx = prepareContractCall({
-                        contract: poolContract,
-                        method: 'scheduleWithdrawal',
-                        params: [value, BigInt(unlockTime)]
+                    writeContract({
+                        address: selectedPool.address as `0x${string}`,
+                        abi: LIQUIDITY_POOL_ABI,
+                        functionName: 'scheduleWithdrawal',
+                        args: [value, BigInt(unlockTime)]
                     });
                 } else {
-                    tx = prepareContractCall({
-                        contract: poolContract,
-                        method: 'withdrawLiquidity',
-                        params: [value]
+                    writeContract({
+                        address: selectedPool.address as `0x${string}`,
+                        abi: LIQUIDITY_POOL_ABI,
+                        functionName: 'withdrawLiquidity',
+                        args: [value]
                     });
                 }
             }
-
-            if (tx) {
-                sendThirdwebTx(tx, {
-                    onSuccess: () => {
-                        if (isApproving) {
-                            toast.success("USDC Approved!", { id: "tx" });
-                            setIsApproving(false);
-                            refetchAllowance();
-                        } else {
-                            toast.success(`${actionType === 'deposit' ? 'Deposit' : 'Withdrawal'} successful!`, { id: "tx" });
-                            setAmount("");
-                            refetchAssets();
-                            refetchPayouts();
-                            refetchShares();
-                            refetchBalance();
-                            setIsSubmitting(false);
-                        }
-                    },
-                    onError: (err) => {
-                        console.error("Transaction Error:", err);
-                        const msg = err.message || "Transaction failed";
-                        toast.error(msg, { id: "tx" });
-                        setIsApproving(false);
-                        setIsSubmitting(false);
-                    }
-                });
-            }
         } catch (err: any) {
-            console.error("Transaction Preparation Error:", err);
             toast.error(err.message || "Transaction failed");
-            setIsApproving(false);
             setIsSubmitting(false);
+            setIsApproving(false);
         }
     };
 
     const handleMint = async () => {
         if (!address) return;
         setIsMinting(true);
-        toast.loading("Minting 1000 Test USDC...", { id: "mint" });
-        try {
-            const tx = prepareContractCall({
-                contract: usdcContract,
-                method: 'mint',
-                params: [address, parseUnits("1000", 6)]
-            });
-            sendThirdwebTx(tx, {
-                onSuccess: () => {
-                    toast.success("Minting successful! Refreshing balance...", { id: "mint" });
-                    setTimeout(() => refetchBalance(), 2000);
-                },
-                onError: (err) => {
-                    console.error("Mint Error:", err);
-                    toast.error("Minting failed. Standard USDC doesn't support public minting. Please use official Fuji Faucet.", { id: "mint" });
-                }
-            });
-        } catch (err: any) {
-            console.error("Mint Preparation Error:", err);
-            toast.error("Minting failed", { id: "mint" });
-        } finally {
-            setIsMinting(false);
-        }
+        writeContract({
+            address: CONTRACTS.USDC,
+            abi: ERC20_ABI,
+            functionName: 'mint',
+            args: [address, parseUnits("1000", 6)],
+        });
     };
 
-    const depositEvent = prepareEvent({
-        signature: "event LiquidityDeposited(address indexed provider, uint256 amount, uint256 shares)"
-    });
-    const withdrawEvent = prepareEvent({
-        signature: "event LiquidityWithdrawn(address indexed provider, uint256 amount, uint256 shares)"
-    });
-
-    const depositEventsQuery = useContractEvents({
-        contract: poolContract,
-        events: [depositEvent],
-    });
-    const withdrawEventsQuery = useContractEvents({
-        contract: poolContract,
-        events: [withdrawEvent],
-    });
-
-    useEffect(() => {
-        if (!address) return;
-
-        const processEvents = () => {
-            const deposits = (depositEventsQuery.data || [])
-                .filter((e: any) => e.args.provider.toLowerCase() === address.toLowerCase())
-                .map((e: any) => ({
-                    id: e.transactionHash,
+    useWatchContractEvent({
+        address: selectedPool.address as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        eventName: 'LiquidityDeposited',
+        onLogs: (logs) => {
+            const userLogs = logs.filter(l => (l.args as any).provider?.toLowerCase() === address?.toLowerCase());
+            if (userLogs.length > 0) {
+                setHistory(prev => [...userLogs.map(l => ({
+                    id: l.transactionHash,
                     type: 'deposit',
-                    amount: formatUnits(e.args.amount, 6),
-                    timestamp: Date.now(), // Simplified
-                    hash: e.transactionHash
-                }));
+                    amount: formatUnits((l.args as any).amount, 6),
+                    timestamp: Date.now(),
+                    hash: l.transactionHash
+                })), ...prev].slice(0, 50));
+            }
+        },
+    });
 
-            const withdrawals = (withdrawEventsQuery.data || [])
-                .filter((e: any) => e.args.provider.toLowerCase() === address.toLowerCase())
-                .map((e: any) => ({
-                    id: e.transactionHash,
+    useWatchContractEvent({
+        address: selectedPool.address as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        eventName: 'LiquidityWithdrawn',
+        onLogs: (logs) => {
+            const userLogs = logs.filter(l => (l.args as any).provider?.toLowerCase() === address?.toLowerCase());
+            if (userLogs.length > 0) {
+                setHistory(prev => [...userLogs.map(l => ({
+                    id: l.transactionHash,
                     type: 'withdraw',
-                    amount: formatUnits(e.args.amount, 6),
-                    timestamp: Date.now(), // Simplified
-                    hash: e.transactionHash
-                }));
-
-            setHistory([...deposits, ...withdrawals].sort((a, b) => b.timestamp - a.timestamp));
-        };
-
-        processEvents();
-    }, [address, depositEventsQuery.data, withdrawEventsQuery.data]);
+                    amount: formatUnits((l.args as any).amount, 6),
+                    timestamp: Date.now(),
+                    hash: l.transactionHash
+                })), ...prev].slice(0, 50));
+            }
+        },
+    });
 
     if (!mounted) return null;
 

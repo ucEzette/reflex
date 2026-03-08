@@ -1,7 +1,6 @@
+"use client";
 import React, { useEffect, useState } from 'react';
-import { useReadContract } from 'thirdweb/react';
-import { getContract, defineChain } from 'thirdweb';
-import { client } from '@/lib/thirdweb';
+import { useReadContract } from 'wagmi';
 import { CONTRACTS } from '@/lib/contracts';
 import { LIQUIDITY_POOL_ABI } from '@/lib/enterprise_abis';
 import { formatUnits } from 'viem';
@@ -13,22 +12,19 @@ export function GlobalStats() {
         setMounted(true);
     }, []);
 
-    const chain = defineChain(43113);
-    const contract = getContract({ client, chain, address: CONTRACTS.LP_POOL as string, abi: LIQUIDITY_POOL_ABI as any });
-
-    const totalAssetsQuery = useReadContract({
-        contract,
-        method: 'totalAssets',
-        params: [],
+    const { data: totalAssets } = useReadContract({
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalAssets',
+        query: { enabled: mounted }
     });
-    const totalAssets = totalAssetsQuery.data;
 
-    const totalMaxPayoutsQuery = useReadContract({
-        contract,
-        method: 'totalMaxPayouts',
-        params: [],
+    const { data: totalMaxPayouts } = useReadContract({
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalMaxPayouts',
+        query: { enabled: mounted }
     });
-    const totalMaxPayouts = totalMaxPayoutsQuery.data;
 
     if (!mounted) return (
         <div className="grid grid-cols-2 gap-4 mt-4">

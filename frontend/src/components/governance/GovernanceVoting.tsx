@@ -1,8 +1,10 @@
-import { useActiveAccount, useReadContract, useSendTransaction } from "thirdweb/react";
-import { getContract, defineChain, prepareContractCall } from "thirdweb";
-import { client } from "@/lib/thirdweb";
+"use client";
+import React, { useState, useEffect } from 'react';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { CONTRACTS } from '@/lib/contracts';
 import { ESCROW_ABI } from '@/lib/enterprise_abis';
+import { toast } from 'sonner';
+import { Vote, Clock, CheckCircle2, Shield, AlertCircle, PlusCircle, ExternalLink, ChevronRight, Play } from 'lucide-react';
 
 interface Proposal {
     id: string;
@@ -49,40 +51,40 @@ const MOCK_PROPOSALS: Proposal[] = [
 ];
 
 export function GovernanceVoting() {
-    const account = useActiveAccount();
-    const address = account?.address;
-    const isConnected = !!account;
+    const { address, isConnected } = useAccount();
 
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [hasVoted, setHasVoted] = useState<Record<string, boolean>>({});
 
     // For mockup purposes, we'll hardcode a disputed policy ID
-    // In production, this would be fetched from a sub-graph querying PolicyDisputed events
     const DISPUTED_POLICY = "0xf72a9b3d4e8c1...e45f8c1";
     const TARGET = "UAL123";
     const EVIDENCE_CID = "bafybeig...geba";
 
-    const chain = defineChain(43113);
-    const contract = getContract({ client, chain, address: CONTRACTS.ESCROW as string, abi: ESCROW_ABI as any });
-
-    const voteDetailsQuery = useReadContract({
-        contract,
-        method: 'getVoteDetails',
-        params: [DISPUTED_POLICY as `0x${string}`],
-        queryOptions: { enabled: !!address }
+    const { data: voteDetails, refetch: refetchVotes } = useReadContract({
+        address: CONTRACTS.ESCROW as `0x${string}`,
+        abi: ESCROW_ABI,
+        functionName: 'getVoteDetails',
+        args: [DISPUTED_POLICY as `0x${string}`],
+        query: { enabled: !!address }
     });
-    const voteDetails = voteDetailsQuery.data as any[];
-    const refetchVotes = voteDetailsQuery.refetch;
 
-    const authorizedRelayersQuery = useReadContract({
-        contract,
-        method: 'authorizedRelayers',
-        params: address ? [address] : undefined,
-        queryOptions: { enabled: !!address }
+    const { data: isRelayer } = useReadContract({
+        address: CONTRACTS.ESCROW as `0x${string}`,
+        abi: ESCROW_ABI,
+        functionName: 'authorizedRelayers',
+        args: address ? [address] : undefined,
+        query: { enabled: !!address }
     });
-    const isRelayer = authorizedRelayersQuery.data as boolean;
 
-    const { mutate: sendTransaction, isPending: isSubmitLoading } = useSendTransaction();
+    const { writeContract, data: hash, isPending: isSubmitLoading } = useWriteContract();
+    const { isLoading: isTxConfirming, isSuccess: isTxSuccess } = useWaitForTransactionReceipt({ hash });
+
+    useEffect(() => {
+        if (isTxSuccess) {
+            refetchVotes();
+        }
+    }, [isTxSuccess]);
 
     const handleVote = (id: string, support: boolean) => {
         setHasVoted(prev => ({ ...prev, [id]: true }));
@@ -97,25 +99,16 @@ export function GovernanceVoting() {
             return;
         }
 
-        const tx = prepareContractCall({
-            contract,
-            method: 'submitRelayerConsensus',
-            params: [DISPUTED_POLICY as `0x${string}`],
-        });
-
-        sendTransaction(tx, {
-            onSuccess: () => {
-                toast.success("Consensus Vote Submitted!", { description: "Your relayer signature has been added to the quorum." });
-                refetchVotes();
-            },
-            onError: (err) => {
-                toast.error("Transaction failed", { description: err.message });
-            }
+        writeContract({
+            address: CONTRACTS.ESCROW as `0x${string}`,
+            abi: ESCROW_ABI,
+            functionName: 'submitRelayerConsensus',
+            args: [DISPUTED_POLICY as `0x${string}`],
         });
     };
 
-    const currentVotes = voteDetails ? Number(voteDetails[0]) : 0;
-    const requiredQuorum = voteDetails ? Number(voteDetails[1]) : 2;
+    const currentVotes = voteDetails ? Number((voteDetails as readonly any[])[0]) : 0;
+    const requiredQuorum = voteDetails ? Number((voteDetails as readonly any[])[1]) : 2;
 
 
     return (

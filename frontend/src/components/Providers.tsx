@@ -20,11 +20,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return (
         <WagmiProvider config={config}>
             <QueryClientProvider client={queryClient}>
-                <ThirdwebProvider>
-                    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-                        {children}
-                    </ThemeProvider>
-                </ThirdwebProvider>
+                <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+                    {children}
+                </ThemeProvider>
             </QueryClientProvider>
         </WagmiProvider>
     );

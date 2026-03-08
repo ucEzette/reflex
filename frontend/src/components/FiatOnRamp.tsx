@@ -1,11 +1,10 @@
 "use client";
 
 import { Transak } from "@transak/transak-sdk";
-import { useActiveAccount } from "thirdweb/react";
+import { useAccount } from "wagmi";
 
 export function FiatOnRamp() {
-    const account = useActiveAccount();
-    const address = account?.address;
+    const { address } = useAccount();
 
     const launchTransak = () => {
         const transak = new Transak({
