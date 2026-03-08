@@ -14,6 +14,9 @@ import { CONTRACTS } from '@/lib/contracts';
 import { GENERIC_PRODUCT_ABI, PRODUCT_ABI } from '@/lib/enterprise_abis';
 import { parseUnits } from 'viem';
 import { toast } from 'sonner';
+import { createThirdwebClient, getContract, prepareContractCall } from "thirdweb";
+import { useSendTransaction } from "thirdweb/react";
+import { IDKitWidget, VerificationLevel, ISuccessResult } from '@worldcoin/idkit';
 
 const IconMap: Record<string, React.ElementType> = {
     Plane, CloudRain, Zap, Flame, Anchor
@@ -55,11 +58,17 @@ const DEFAULT_RISK_RATES: Record<string, number> = {
 // Accounts for capital reserves, adverse selection, admin costs, and profit margin
 const INSURANCE_LOADING_FACTOR = 2.5;
 
+const client = createThirdwebClient({ clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "" });
+
 export default function ProductMarketPage({ params }: { params: { product: string } }) {
     const router = useRouter();
     const { address, isConnected } = useAccount();
     const [mounted, setMounted] = useState(false);
     const [product, setProduct] = useState<MarketProduct | null>(null);
+
+    // World ID / Hackathon States
+    const [worldIDProof, setWorldIDProof] = useState<WorldIDProof | null>(null);
+    const [isHumanVerified, setIsHumanVerified] = useState(false);
 
     // Form states
     const [payoutInput, setPayoutInput] = useState("");
@@ -193,25 +202,49 @@ export default function ProductMarketPage({ params }: { params: { product: strin
     const { writeContract, data: hash, isPending: isSubmitting } = useWriteContract();
     const { isLoading: isWaiting } = useWaitForTransactionReceipt({ hash });
 
+    const { mutate: sendThirdwebTx, isPending: isThirdwebSubmitting } = useSendTransaction();
+
+    const handleWorldIDSuccess = (result: ISuccessResult) => {
+        setWorldIDProof(result as any);
+        setIsHumanVerified(true);
+        toast.success("Humanness verified via World ID");
+    };
+
     const handlePurchase = async () => {
         if (!isConnected) return toast.error("Connect wallet first");
+        if (!isHumanVerified) return toast.error("Please verify your humanness with World ID first");
+
         try {
-            if (product?.id === 'flight') {
-                if (!flightInsurable) return toast.error("This flight cannot be insured — it has already departed or landed.");
-                writeContract({
-                    address: CONTRACTS.TRAVEL,
-                    abi: PRODUCT_ABI,
-                    functionName: 'purchasePolicy',
-                    args: [flightId || "REF-001", parseUnits(payoutInput, 6), BigInt(dynamicRisk.nDelayed), BigInt(dynamicRisk.nTotal), BigInt(effectiveDuration), "0x" as `0x${string}`]
-                });
-            } else {
-                writeContract({
-                    address: targetContract,
-                    abi: GENERIC_PRODUCT_ABI,
-                    functionName: 'purchasePolicy',
-                    args: [zone || coordinates.lat || "ZONE-A", parseUnits(payoutInput, 6), BigInt(100), BigInt(50), expectedRiskBase, BigInt(effectiveDuration)]
-                });
-            }
+            const abi = product?.id === 'flight' ? PRODUCT_ABI : GENERIC_PRODUCT_ABI;
+            const args = product?.id === 'flight'
+                ? [flightId || "REF-001", parseUnits(payoutInput, 6), BigInt(dynamicRisk.nDelayed), BigInt(dynamicRisk.nTotal), BigInt(effectiveDuration), "0x" as `0x${string}`]
+                : [zone || coordinates.lat || "ZONE-A", parseUnits(payoutInput, 6), BigInt(100), BigInt(50), expectedRiskBase, BigInt(effectiveDuration)];
+
+            // Orchestrate through thirdweb for gasless execution
+            const tx = prepareContractCall({
+                contract: getContract({
+                    client,
+                    chain: {
+                        id: 43113, // Fuji
+                        rpc: "https://api.avax-test.network/ext/bc/C/rpc"
+                    },
+                    address: targetContract as `0x${string}`,
+                    abi: abi as any
+                }),
+                method: "purchasePolicy",
+                params: args
+            });
+
+            sendThirdwebTx(tx, {
+                onSuccess: (txHash) => {
+                    toast.success("Policy finalized gaslessly!");
+                    console.log("[CRE] Gasless orchestration success:", txHash);
+                },
+                onError: (err) => {
+                    toast.error(`Transaction failed: ${err.message}`);
+                }
+            });
+
         } catch (err: any) {
             toast.error(err.message || "Execution failed");
         }
@@ -523,18 +556,59 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                             )}
                         </div>
 
-                        <button
-                            onClick={handlePurchase}
-                            disabled={!premiumQuote || isSubmitting || isWaiting || (product.id === 'flight' && !flightInsurable)}
-                            className={`w-full mt-8 py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-2
-                            ${isWaiting ? 'bg-zinc-700 text-zinc-400' : (product.id === 'flight' && !flightInsurable) ? 'bg-red-900/30 text-red-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_20px_rgba(16,185,129,0.3)]'}
-                            disabled:opacity-50 disabled:cursor-not-allowed`}
-                        >
-                            {isWaiting ? <><RefreshCcw className="w-4 h-4 animate-spin" /> Confirming...</> :
-                                isSubmitting ? <><RefreshCcw className="w-4 h-4 animate-spin" /> Sourcing...</> :
-                                    (product.id === 'flight' && !flightInsurable) ? <>Flight Not Insurable</> :
-                                        <><CheckCircle2 className="w-4 h-4" /> Finalize Policy</>}
-                        </button>
+                        <div className="space-y-4">
+                            {/* World ID Verification Widget */}
+                            {!isHumanVerified ? (
+                                <div className="space-y-3">
+                                    <IDKitWidget
+                                        app_id="app_staging_reflex"
+                                        action="purchase_policy"
+                                        onSuccess={handleWorldIDSuccess}
+                                        verification_level={VerificationLevel.Device}
+                                    >
+                                        {({ open }) => (
+                                            <button
+                                                onClick={open}
+                                                className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 transition-all font-bold text-sm text-white shadow-xl group"
+                                            >
+                                                <div className="w-6 h-6 flex items-center justify-center bg-white rounded-full p-1 group-hover:scale-110 transition-transform">
+                                                    <Image src="/world-id.svg" alt="World ID" width={16} height={16} />
+                                                </div>
+                                                Verify Humanness with World ID
+                                            </button>
+                                        )}
+                                    </IDKitWidget>
+
+                                    {/* Testnet Bypass */}
+                                    <button
+                                        onClick={() => {
+                                            setIsHumanVerified(true);
+                                            toast.info("Testnet Bypass: Humanness verified manually");
+                                        }}
+                                        className="w-full text-[10px] text-zinc-600 hover:text-primary transition-colors uppercase tracking-[0.2em] font-black py-1"
+                                    >
+                                        [ Dev: Bypass Verification ]
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs uppercase tracking-widest">
+                                    <CheckCircle2 className="w-4 h-4" /> Humanness Verified
+                                </div>
+                            )}
+
+                            <button
+                                onClick={handlePurchase}
+                                disabled={!premiumQuote || isSubmitting || isWaiting || isThirdwebSubmitting || (product.id === 'flight' && !flightInsurable)}
+                                className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-2
+                                ${isWaiting || isThirdwebSubmitting ? 'bg-zinc-700 text-zinc-400' : (product.id === 'flight' && !flightInsurable) ? 'bg-red-900/30 text-red-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_20px_rgba(16,185,129,0.3)]'}
+                                disabled:opacity-50 disabled:cursor-not-allowed`}
+                            >
+                                {isWaiting || isThirdwebSubmitting ? <><RefreshCcw className="w-4 h-4 animate-spin" /> Confirming...</> :
+                                    isSubmitting ? <><RefreshCcw className="w-4 h-4 animate-spin" /> Sourcing...</> :
+                                        (product.id === 'flight' && !flightInsurable) ? <>Flight Not Insurable</> :
+                                            <><CheckCircle2 className="w-4 h-4" /> Finalize Policy (Gasless)</>}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -4,6 +4,12 @@ import { useAccount, useConnect, useDisconnect, useSwitchChain } from "wagmi";
 import { useState, useRef, useEffect } from "react";
 import { avalancheFuji } from "wagmi/chains";
 import { toast } from "sonner";
+import { ConnectButton } from "thirdweb/react";
+import { createThirdwebClient } from "thirdweb";
+
+const client = createThirdwebClient({
+    clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
+});
 
 const TARGET_CHAIN_ID = avalancheFuji.id;
 const TARGET_CHAIN_NAME = "Avalanche Fuji";
@@ -126,7 +132,20 @@ export function WalletConnect() {
             {isOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-surface-dark border border-white/10 rounded-xl shadow-2xl overflow-hidden py-2 z-50">
                     <div className="px-4 py-2 text-[10px] font-mono text-slate-500 uppercase tracking-widest border-b border-white/5 mb-2">
-                        Select Wallet Provider
+                        Smart Login (Gasless)
+                    </div>
+                    <div className="px-2 pb-2 border-b border-white/5 mb-2">
+                        <ConnectButton
+                            client={client}
+                            theme={"dark"}
+                            connectButton={{
+                                className: "!w-full !bg-primary !text-white !rounded-lg !py-2 !h-auto !text-xs !font-bold hover:!opacity-90 transition-all",
+                                label: "Email / Social / Gasless"
+                            }}
+                        />
+                    </div>
+                    <div className="px-4 py-2 text-[10px] font-mono text-slate-500 uppercase tracking-widest border-b border-white/5 mb-2">
+                        External Wallets
                     </div>
                     {connectors.map((connector) => (
                         <button
