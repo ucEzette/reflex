@@ -9,14 +9,12 @@ import Image from 'next/image';
 import { generateMarketProducts } from '../../../../lib/mockState';
 import { MarketProduct } from '../../../../types/market';
 import { Plane, CloudRain, Zap, Flame, Anchor, ArrowLeft, HelpCircle, Activity, Globe, Calendar, RefreshCcw, CheckCircle2, Clock, Radio, Satellite, Shield, AlertTriangle } from 'lucide-react';
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { CONTRACTS } from '../../../../lib/contracts';
-import { GENERIC_PRODUCT_ABI, PRODUCT_ABI } from '../../../../lib/enterprise_abis';
-import { parseUnits } from 'viem';
-import { toast } from 'sonner';
+import { useReadContract, useSendTransaction, useActiveAccount } from "thirdweb/react";
+import { client } from "@/lib/thirdweb";
 import { getContract, prepareContractCall, defineChain } from "thirdweb";
-import { client } from "../../../../lib/thirdweb";
-import { useSendTransaction, useActiveAccount } from "thirdweb/react";
+import { parseUnits, formatUnits } from "viem";
+import { toast } from "sonner";
+import { CONTRACTS, PRODUCT_ABI, GENERIC_PRODUCT_ABI } from "@/lib/contracts";
 import { IDKitWidget, VerificationLevel } from '@worldcoin/idkit';
 import type { ISuccessResult } from '@worldcoin/idkit';
 
@@ -62,8 +60,8 @@ const INSURANCE_LOADING_FACTOR = 2.5;
 
 export default function ProductMarketPage({ params }: { params: { product: string } }) {
     const router = useRouter();
-    const { address, isConnected } = useAccount();
     const activeAccount = useActiveAccount();
+    const isConnected = !!activeAccount;
     const [mounted, setMounted] = useState(false);
     const [product, setProduct] = useState<MarketProduct | null>(null);
 
@@ -177,11 +175,18 @@ export default function ProductMarketPage({ params }: { params: { product: strin
     };
 
     // Contract Interactions
-    const targetContract = product?.id === 'flight' ? CONTRACTS.TRAVEL :
+    const targetContractAddress = product?.id === 'flight' ? CONTRACTS.TRAVEL :
         product?.id === 'agri' ? CONTRACTS.AGRI :
             product?.id === 'energy' ? CONTRACTS.ENERGY :
                 product?.id === 'cat' ? CONTRACTS.CATASTROPHE :
                     CONTRACTS.MARITIME;
+
+    const contract = getContract({
+        client,
+        chain: defineChain(43113),
+        address: targetContractAddress as string,
+        abi: (product?.id === 'flight' ? PRODUCT_ABI : GENERIC_PRODUCT_ABI) as any
+    });
 
     // Calculate expected risk base from oracle-derived dynamic risk
     const expectedRiskBase = parseUnits(
@@ -189,28 +194,24 @@ export default function ProductMarketPage({ params }: { params: { product: strin
         6
     );
 
-    const { data: premiumQuote, isFetching: isQuoting } = useReadContract({
-        address: targetContract,
-        abi: product?.id === 'flight' ? PRODUCT_ABI : GENERIC_PRODUCT_ABI,
-        functionName: 'quotePremium',
-        args: product?.id === 'flight'
-            ? [BigInt(dynamicRisk.nDelayed), BigInt(dynamicRisk.nTotal), parseUnits(payoutInput || "0", 6)]
-            : [expectedRiskBase],
-        query: { enabled: !!product && !!payoutInput && parseFloat(payoutInput) > 0 && flightInsurable && flightValid }
+    const premiumQuoteQuery = useReadContract({
+        contract,
+        method: "quotePremium",
+        params: product?.id === 'flight'
+            ? [BigInt(dynamicRisk.nDelayed), BigInt(dynamicRisk.nTotal), parseUnits(payoutInput || "0", 6)] as const
+            : [expectedRiskBase] as const,
+    } as any);
+    const premiumQuote = premiumQuoteQuery.data as bigint | undefined;
+    const isQuoting = premiumQuoteQuery.isLoading;
+
+    const activePolicyCountQuery = useReadContract({
+        contract,
+        method: "getActivePolicyCount",
+        params: [],
     });
+    const activePolicyCount = activePolicyCountQuery.data as bigint | undefined;
 
-    const { data: activePolicyCount } = useReadContract({
-        address: targetContract,
-        abi: GENERIC_PRODUCT_ABI,
-        functionName: 'getActivePolicyCount',
-        query: { enabled: !!product && mounted }
-    });
-
-    const { writeContract, data: hash, isPending: isSubmitting } = useWriteContract();
-    const { isLoading: isWaiting } = useWaitForTransactionReceipt({ hash });
-
-    const { mutate: sendThirdwebTx, isPending: isThirdwebSubmitting } = useSendTransaction();
-
+    const { mutate: sendThirdwebTx, isPending: isThirdwebSubmitting, data: txReceipt } = useSendTransaction();
 
     const handlePurchase = async () => {
         if (!isConnected || !activeAccount) {
@@ -221,19 +222,13 @@ export default function ProductMarketPage({ params }: { params: { product: strin
         if (!isHumanVerified) return toast.error("Please verify your humanness with World ID first");
 
         try {
-            const abi = product?.id === 'flight' ? PRODUCT_ABI : GENERIC_PRODUCT_ABI;
             const args = product?.id === 'flight'
                 ? [flightId || "REF-001", parseUnits(payoutInput, 6), BigInt(dynamicRisk.nDelayed), BigInt(dynamicRisk.nTotal), BigInt(effectiveDuration), "0x" as `0x${string}`]
                 : [zone || coordinates.lat || "ZONE-A", parseUnits(payoutInput, 6), BigInt(100), BigInt(50), expectedRiskBase, BigInt(effectiveDuration)];
 
             // Orchestrate through thirdweb for gasless execution
             const tx = prepareContractCall({
-                contract: getContract({
-                    client,
-                    chain: defineChain(43113),
-                    address: targetContract as `0x${string}`,
-                    abi: abi as any
-                }),
+                contract,
                 method: "purchasePolicy",
                 params: args
             });
@@ -255,8 +250,8 @@ export default function ProductMarketPage({ params }: { params: { product: strin
     };
 
     useEffect(() => {
-        if (hash) toast.success("Policy broadcasted!");
-    }, [hash]);
+        if (txReceipt) toast.success("Policy broadcasted!");
+    }, [txReceipt]);
 
     const [showCalcInfo, setShowCalcInfo] = useState(false);
     const calc = (product as any)?.calculationMethod;
@@ -602,15 +597,14 @@ export default function ProductMarketPage({ params }: { params: { product: strin
 
                             <button
                                 onClick={handlePurchase}
-                                disabled={!premiumQuote || isSubmitting || isWaiting || isThirdwebSubmitting || (product.id === 'flight' && !flightInsurable)}
+                                disabled={!premiumQuote || isThirdwebSubmitting || (product.id === 'flight' && !flightInsurable)}
                                 className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-2
-                                ${isWaiting || isThirdwebSubmitting ? 'bg-zinc-700 text-zinc-400' : (product.id === 'flight' && !flightInsurable) ? 'bg-red-900/30 text-red-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_20px_rgba(16,185,129,0.3)]'}
+                                ${isThirdwebSubmitting ? 'bg-zinc-700 text-zinc-400' : (product.id === 'flight' && !flightInsurable) ? 'bg-red-900/30 text-red-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_20px_rgba(16,185,129,0.3)]'}
                                 disabled:opacity-50 disabled:cursor-not-allowed`}
                             >
-                                {isWaiting || isThirdwebSubmitting ? <><RefreshCcw className="w-4 h-4 animate-spin" /> Confirming...</> :
-                                    isSubmitting ? <><RefreshCcw className="w-4 h-4 animate-spin" /> Sourcing...</> :
-                                        (product.id === 'flight' && !flightInsurable) ? <>Flight Not Insurable</> :
-                                            <><CheckCircle2 className="w-4 h-4" /> Finalize Policy (Gasless)</>}
+                                {isThirdwebSubmitting ? <><RefreshCcw className="w-4 h-4 animate-spin" /> Confirming...</> :
+                                    (product.id === 'flight' && !flightInsurable) ? <>Flight Not Insurable</> :
+                                        <><CheckCircle2 className="w-4 h-4" /> Finalize Policy (Gasless)</>}
                             </button>
                         </div>
                     </div>

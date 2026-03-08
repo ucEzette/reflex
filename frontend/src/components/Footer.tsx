@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { Twitter, Github, Linkedin, Globe, Shield, Terminal, Activity } from "lucide-react";
-import { useReadContract } from "wagmi";
-import { CONTRACTS } from "@/lib/contracts";
-import { LIQUIDITY_POOL_ABI } from "@/lib/enterprise_abis";
+import { useReadContract } from "thirdweb/react";
+import { client } from "@/lib/thirdweb";
+import { getContract, defineChain } from "thirdweb";
+import { CONTRACTS, LP_POOL_ABI } from "@/lib/contracts";
 import { formatUnits } from "viem";
 import { useState, useEffect } from "react";
 
@@ -12,12 +13,19 @@ export function Footer() {
     const [mounted, setMounted] = useState(false);
     useEffect(() => { setMounted(true); }, []);
 
-    const { data: totalAssets } = useReadContract({
-        address: CONTRACTS.LP_POOL as `0x${string}`,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'totalAssets',
-        query: { enabled: mounted }
+    const contract = getContract({
+        client,
+        chain: defineChain(43113),
+        address: CONTRACTS.LP_POOL,
+        abi: LP_POOL_ABI as any
     });
+
+    const totalAssetsQuery = useReadContract({
+        contract,
+        method: "totalAssets",
+        params: []
+    } as any);
+    const totalAssets = totalAssetsQuery.data as bigint | undefined;
 
     return (
         <footer className="w-full bg-[#030406] border-t border-white/5 mt-20 relative overflow-hidden">
@@ -81,7 +89,7 @@ export function Footer() {
                             <p className="text-3xl font-black text-white mt-1">
                                 {mounted ? (
                                     (() => {
-                                        const assets = Number(formatUnits(totalAssets || 0n, 6));
+                                        const assets = Number(formatUnits(totalAssets || BigInt(0), 6));
                                         if (assets >= 1_000_000) return `$${(assets / 1_000_000).toFixed(1)}M+`;
                                         if (assets >= 1_000) return `$${(assets / 1_000).toFixed(1)}K+`;
                                         return `$${assets.toLocaleString()}`;
