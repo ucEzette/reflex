@@ -2,27 +2,21 @@
 
 import Link from "next/link";
 import { Twitter, Github, Linkedin, Globe, Shield, Terminal, Activity } from "lucide-react";
-import { useBlockNumber } from 'wagmi';
+import { useBlockNumber, useReadContract } from 'wagmi';
 import { formatUnits } from "viem";
 import { useState, useEffect } from "react";
+import { CONTRACTS, LP_POOL_ABI } from "@/lib/contracts";
 
 export function Footer() {
     const [mounted, setMounted] = useState(false);
     useEffect(() => { setMounted(true); }, []);
 
-    const contract = getContract({
-        client,
-        chain: defineChain(43113),
-        address: CONTRACTS.LP_POOL,
-        abi: LP_POOL_ABI as any
+    const { data: totalAssets } = useReadContract({
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LP_POOL_ABI,
+        functionName: "totalAssets",
+        query: { enabled: mounted }
     });
-
-    const totalAssetsQuery = useReadContract({
-        contract,
-        method: "totalAssets",
-        params: []
-    } as any);
-    const totalAssets = totalAssetsQuery.data as bigint | undefined;
 
     return (
         <footer className="w-full bg-[#030406] border-t border-white/5 mt-20 relative overflow-hidden">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import { useActiveAccount, useDisconnect, useActiveWallet } from "thirdweb/react";
+import { useAccount, useDisconnect } from "wagmi";
 import { formatUnits } from "viem";
 import { CONTRACTS, ERC20_ABI } from "@/lib/contracts";
 import {
@@ -41,10 +41,8 @@ interface MarketDetail {
 }
 
 export function Navbar() {
-    const account = useActiveAccount();
-    const wallet = useActiveWallet();
-    const address = account?.address;
-    const authenticated = !!account;
+    const { address, isConnected } = useAccount();
+    const authenticated = isConnected;
     const { disconnect } = useDisconnect();
 
     const [searchQuery, setSearchQuery] = useState("");
@@ -295,9 +293,7 @@ export function Navbar() {
                                                 <div className="py-2">
                                                     <button
                                                         onClick={() => {
-                                                            if (wallet) {
-                                                                disconnect(wallet);
-                                                            }
+                                                            disconnect();
                                                             setIsProfileOpen(false);
                                                         }}
                                                         className="w-full px-4 py-2 flex text-left hover:bg-white/5 transition-colors text-red-500 font-medium"

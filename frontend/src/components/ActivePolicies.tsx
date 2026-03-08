@@ -1,6 +1,5 @@
-import { useActiveAccount, useReadContract, useContractEvents } from "thirdweb/react";
-import { getContract, defineChain, prepareEvent } from "thirdweb";
-import { client } from "@/lib/thirdweb";
+import { useAccount, useReadContract, useWatchContractEvent } from "wagmi";
+import { config } from "@/lib/wagmiConfig";
 import { ESCROW_ABI, CONTRACTS } from "@/lib/contracts";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -77,19 +76,18 @@ function StatusBadge({ isActive, isClaimed }: { isActive: boolean; isClaimed: bo
 }
 
 function PolicyRow({ policyId, txHash }: { policyId: string, txHash?: string }) {
-    const chain = defineChain(43113);
-    const contract = getContract({ client, chain, address: CONTRACTS.ESCROW, abi: ESCROW_ABI as any });
-
-    const policyQuery = useReadContract({
-        contract,
-        method: "getPolicy",
-        params: [policyId as `0x${string}`],
+    const { data } = useReadContract({
+        address: CONTRACTS.ESCROW as `0x${string}`,
+        abi: ESCROW_ABI,
+        functionName: 'getPolicy',
+        args: [policyId as `0x${string}`],
     });
-    const data = policyQuery.data as any[];
 
-    if (!data) return null;
+    const policyData = data as any[];
 
-    const [, apiTarget, premiumPaid, payoutAmount, expirationTime, isActive, isClaimed] = data;
+    if (!policyData) return null;
+
+    const [, apiTarget, premiumPaid, payoutAmount, expirationTime, isActive, isClaimed] = policyData;
 
     // Extract flight number from apiTarget
     const flightMatch = apiTarget.match(/flights\/([^?]+)/);
@@ -176,23 +174,37 @@ function PolicyRow({ policyId, txHash }: { policyId: string, txHash?: string }) 
 export function ActivePolicies() {
     const { address, isConnected } = useAccount();
     const [mounted, setMounted] = useState(false);
+    const [txHashes, setTxHashes] = useState<Record<string, string>>({});
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
+    const { data: policyIds, isLoading } = useReadContract({
+        address: CONTRACTS.ESCROW as `0x${string}`,
+        abi: ESCROW_ABI,
+        functionName: 'getUserPolicies',
+        args: address ? [address as `0x${string}`] : undefined,
+        query: { enabled: !!address && mounted }
+    });
 
-    useEffect(() => {
-        if (eventsQuery.data && address) {
-            const hashMapping: Record<string, string> = {};
-            eventsQuery.data.forEach((event: any) => {
-                if (event.args.policyholder.toLowerCase() === address.toLowerCase()) {
-                    hashMapping[event.args.policyId] = event.transactionHash;
-                }
-            });
-            setTxHashes(hashMapping);
-        }
-    }, [eventsQuery.data, address]);
+    useWatchContractEvent({
+        address: CONTRACTS.ESCROW as `0x${string}`,
+        abi: ESCROW_ABI,
+        eventName: 'PolicyPurchased',
+        onLogs(logs) {
+            if (address) {
+                logs.forEach(log => {
+                    if ((log as any).args.policyholder?.toLowerCase() === address.toLowerCase()) {
+                        setTxHashes(prev => ({
+                            ...prev,
+                            [(log as any).args.policyId]: log.transactionHash
+                        }));
+                    }
+                });
+            }
+        },
+    });
 
     if (!mounted || !isConnected) return null;
 
@@ -213,7 +225,7 @@ export function ActivePolicies() {
                         <div>
                             <h2 className="text-xl font-bold text-foreground">Your Policies</h2>
                             <p className="text-sm text-zinc-500">
-                                {policyIds ? `${policyIds.length} policies found` : "Loading..."}
+                                {policyIds ? `${(policyIds as any[]).length} policies found` : "Loading..."}
                             </p>
                         </div>
                     </div>
@@ -226,7 +238,7 @@ export function ActivePolicies() {
                     <div className="p-4">
                         <TableSkeleton rows={5} />
                     </div>
-                ) : !policyIds || policyIds.length === 0 ? (
+                ) : !policyIds || (policyIds as any[]).length === 0 ? (
                     <div className="text-center py-12">
                         <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-zinc-800/50 flex items-center justify-center">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-zinc-600">
@@ -249,7 +261,7 @@ export function ActivePolicies() {
                             </tr>
                         </thead>
                         <tbody>
-                            {policyIds.map((id) => (
+                            {(policyIds as any[]).map((id) => (
                                 <PolicyRow key={id} policyId={id} txHash={txHashes[id]} />
                             ))}
                         </tbody>
