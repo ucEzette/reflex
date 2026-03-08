@@ -10,6 +10,8 @@ import { Toaster } from "sonner";
 import { constructMetadata } from "@/lib/metadata";
 
 export const metadata = constructMetadata();
+export const dynamic = "force-dynamic";
+
 
 export default function RootLayout({
   children,

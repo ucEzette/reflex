@@ -66,6 +66,8 @@ export function TreasuryAnalytics() {
         { name: 'Accumulated Fees', value: (liveProfit * 0.1), color: '#8b5cf6' },
     ];
 
+    if (!mounted) return null;
+
     return (
         <div className="space-y-8">
             <div className="flex items-center justify-between">

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
+
 // Oracle data proxy — fetches live external data for each product's oracle source
 // Keeps API keys server-side and provides a unified interface for the frontend
 // Each fetcher now returns a `riskProbability` or `riskStats` field for premium calculation

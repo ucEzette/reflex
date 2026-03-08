@@ -27,6 +27,15 @@ const data = [
 ];
 
 export function PortfolioPerformanceChart() {
+    const [mounted, setMounted] = React.useState(false);
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return <div className="w-full h-[300px] mt-4 bg-zinc-900/40 rounded-3xl animate-pulse" />;
+    }
+
     return (
         <div className="w-full h-[300px] mt-4">
             <ResponsiveContainer width="100%" height="100%">
