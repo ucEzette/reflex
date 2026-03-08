@@ -9,11 +9,15 @@ export const LIQUIDITY_POOL_ABI = parseAbi([
     "function totalShares() view returns (uint256)",
     "function depositLiquidity(uint256 amount) external",
     "function withdrawLiquidity(uint256 shares) external",
+    "function scheduleWithdrawal(uint256 shares, uint256 unlockTimestamp) external",
+    "function withdrawalIntentAmount(address) view returns (uint256)",
+    "function withdrawalIntentTimestamp(address) view returns (uint256)",
     "function pause() external",
     "function unpause() external",
     "function setAuthorizedQuoter(address quoter) external",
     "event LiquidityDeposited(address indexed provider, uint256 amount, uint256 shares)",
-    "event LiquidityWithdrawn(address indexed provider, uint256 amount, uint256 shares)"
+    "event LiquidityWithdrawn(address indexed provider, uint256 amount, uint256 shares)",
+    "event WithdrawalScheduled(address indexed provider, uint256 shares, uint256 unlockTimestamp)"
 ]);
 
 export const PRODUCT_ABI = parseAbi([

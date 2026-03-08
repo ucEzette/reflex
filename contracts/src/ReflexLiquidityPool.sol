@@ -66,6 +66,10 @@ contract ReflexLiquidityPool is
     // Autonomous Agent Integrations
     mapping(address => bool) public hasTreasuryRole;
 
+    // Scheduled Withdrawal Accounting
+    mapping(address => uint256) public withdrawalIntentAmount;
+    mapping(address => uint256) public withdrawalIntentTimestamp;
+
     event LiquidityDeposited(
         address indexed provider,
         uint256 amount,
@@ -75,6 +79,11 @@ contract ReflexLiquidityPool is
         address indexed provider,
         uint256 amount,
         uint256 shares
+    );
+    event WithdrawalScheduled(
+        address indexed provider,
+        uint256 shares,
+        uint256 unlockTimestamp
     );
     event ProductAuthorized(address indexed product, bool status);
 
@@ -249,6 +258,24 @@ contract ReflexLiquidityPool is
 
         usdc.safeTransfer(msg.sender, amountToWithdraw);
         emit LiquidityWithdrawn(msg.sender, amountToWithdraw, _shares);
+    }
+
+    /**
+     * @notice Record a user's intention to withdraw their shares at a future date.
+     * Use to provide protocol visibility on future liquidity needs.
+     */
+    function scheduleWithdrawal(
+        uint256 _shares,
+        uint256 _unlockTimestamp
+    ) external nonReentrant {
+        if (_shares == 0 || lpShares[msg.sender] < _shares)
+            revert("InvalidAmount");
+        require(_unlockTimestamp > block.timestamp, "FutureOnly");
+
+        withdrawalIntentAmount[msg.sender] = _shares;
+        withdrawalIntentTimestamp[msg.sender] = _unlockTimestamp;
+
+        emit WithdrawalScheduled(msg.sender, _shares, _unlockTimestamp);
     }
 
     /// @notice Called by authorized products when a user purchases a policy
