@@ -1,4 +1,3 @@
-import { Trophy, Users, Award, TrendingUp, Activity, Shield } from 'lucide-react';
 import { useReadContract } from 'wagmi';
 import { CONTRACTS } from '@/lib/contracts';
 import { LIQUIDITY_POOL_ABI } from '@/lib/enterprise_abis';

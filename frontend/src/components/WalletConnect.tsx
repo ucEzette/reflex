@@ -1,44 +1,18 @@
-"use client";
-
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
-import {
-    ConnectButton,
-    useActiveAccount,
-    useDisconnect,
-    useActiveWallet,
-    useActiveWalletChain,
-    useSwitchActiveWalletChain
-} from "thirdweb/react";
-import { client } from "../lib/thirdweb";
-import { createWallet } from "thirdweb/wallets";
-import { defineChain } from "thirdweb/chains";
-
-// Define the chain using Thirdweb's format
-const fujiChain = defineChain(43113);
-const TARGET_CHAIN_ID = fujiChain.id;
-const TARGET_CHAIN_NAME = "Avalanche Fuji";
-
-const WALLETS = [
-    createWallet("app.core.extension"),
-    createWallet("io.metamask"),
-    createWallet("com.coinbase.wallet"),
-    createWallet("me.rainbow"),
-    createWallet("walletConnect"),
-];
+import { useAccount, useConnect, useDisconnect, useSwitchChain, useChainId } from "wagmi";
+import { avalancheFuji } from "viem/chains";
 
 export function WalletConnect() {
-    // Read state from Thirdweb instead of Wagmi
-    const account = useActiveAccount();
-    const wallet = useActiveWallet();
-    const activeChain = useActiveWalletChain();
-    const switchChain = useSwitchActiveWalletChain();
+    const { address, isConnected } = useAccount();
+    const { connect, connectors } = useConnect();
     const { disconnect } = useDisconnect();
+    const { switchChain } = useSwitchChain();
+    const chainId = useChainId();
 
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [mounted, setMounted] = useState(false);
-    const [isSwitching, setIsSwitching] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -46,28 +20,13 @@ export function WalletConnect() {
 
     // Prompt user to switch to Fuji testnet if they are connected to another network
     useEffect(() => {
-        const performSwitch = async () => {
-            if (account && activeChain?.id !== TARGET_CHAIN_ID && switchChain && !isSwitching) {
-                setIsSwitching(true);
-                toast.warning(`Please switch to ${TARGET_CHAIN_NAME}`, {
-                    description: "Reflex requires this network for parametric settlements.",
-                    duration: 5000,
-                });
-                try {
-                    await switchChain(fujiChain);
-                    toast.success(`Switched to ${TARGET_CHAIN_NAME}`);
-                } catch (e: any) {
-                    console.error("Switch chain error:", e);
-                    toast.error("Network Switch Failed", {
-                        description: `Please manually switch your wallet to ${TARGET_CHAIN_NAME}.`,
-                    });
-                } finally {
-                    setIsSwitching(false);
-                }
-            }
-        };
-        performSwitch();
-    }, [account, activeChain, switchChain, isSwitching]);
+        if (isConnected && chainId !== avalancheFuji.id) {
+            toast.warning(`Please switch to Avalanche Fuji`, {
+                description: "Reflex requires this network for parametric settlements.",
+            });
+            switchChain?.({ chainId: avalancheFuji.id });
+        }
+    }, [isConnected, chainId, switchChain]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -81,17 +40,12 @@ export function WalletConnect() {
 
     if (!mounted) return null;
 
-    // Use account.address instead of Wagmi's address
-    if (account && account.address) {
+    if (isConnected && address) {
         return (
             <div className="flex items-center gap-3">
                 <div className="dexter-btn-container w-32 relative z-30">
                     <button
-                        onClick={() => {
-                            if (wallet) {
-                                disconnect(wallet);
-                            }
-                        }}
+                        onClick={() => disconnect()}
                         className="dexter-btn !min-w-[124px] !min-h-[36px] !px-3 !py-1.5" type="button"
                     >
                         <span className="dexter-btn-drawer dexter-transition-top flex items-center justify-center gap-1.5 !text-[9px] w-full left-0 right-0">
@@ -101,7 +55,7 @@ export function WalletConnect() {
                             </span>
                             FUJI TESTNET
                         </span>
-                        <span className="dexter-btn-text flex items-center justify-center gap-1.5 !text-xs w-full"><span className="material-symbols-outlined text-[16px]">account_balance_wallet</span> {account.address.slice(0, 4)}...{account.address.slice(-4)}</span>
+                        <span className="dexter-btn-text flex items-center justify-center gap-1.5 !text-xs w-full"><span className="material-symbols-outlined text-[16px]">account_balance_wallet</span> {address.slice(0, 4)}...{address.slice(-4)}</span>
                         <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100">
                             <path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path>
                         </svg>
@@ -140,26 +94,25 @@ export function WalletConnect() {
 
             {isOpen && (
                 <div className="absolute right-0 mt-2 w-64 bg-surface-dark border border-white/10 rounded-xl shadow-2xl overflow-hidden py-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="px-5 py-2 text-[10px] font-mono text-slate-500 uppercase tracking-[0.2em] border-b border-white/5 mb-4">
-                        Reflex Gateway
+                    <div className="px-5 py-2 text-[10px] font-mono text-zinc-500 uppercase tracking-[0.2em] border-b border-white/5 mb-4">
+                        Select Provider
                     </div>
-                    <div className="px-4">
-                        <ConnectButton
-                            client={client}
-                            theme={"dark"}
-                            wallets={WALLETS}
-                            appMetadata={{
-                                name: "Reflex",
-                                url: "https://reflex.finance",
-                            }}
-                            connectButton={{
-                                className: "!w-full !bg-primary !text-white !rounded-lg !py-3 !h-auto !text-xs !font-black !uppercase !tracking-widest hover:!opacity-90 transition-all shadow-[0_4px_20px_rgba(128,0,32,0.3)]",
-                                label: "Enter Reflex App"
-                            }}
-                        />
+                    <div className="space-y-2 px-3">
+                        {connectors.map((connector) => (
+                            <button
+                                key={connector.id}
+                                onClick={() => {
+                                    connect({ connector });
+                                    setIsOpen(false);
+                                }}
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 group"
+                            >
+                                <span className="text-xs font-bold text-zinc-300 group-hover:text-white transition-colors uppercase tracking-widest">{connector.name}</span>
+                            </button>
+                        ))}
                     </div>
-                    <div className="mt-4 px-5 py-3 bg-black/20 text-[10px] text-zinc-500 leading-relaxed">
-                        Connecting via Thirdweb enables <span className="text-emerald-400 font-bold">gasless</span> parametric insurance purchases.
+                    <div className="mt-4 px-5 py-3 bg-black/20 text-[10px] text-zinc-500 leading-relaxed font-mono">
+                        Direct Wagmi connection for high-throughput parametric execution.
                     </div>
                 </div>
             )}

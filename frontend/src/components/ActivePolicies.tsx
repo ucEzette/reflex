@@ -174,38 +174,13 @@ function PolicyRow({ policyId, txHash }: { policyId: string, txHash?: string }) 
 }
 
 export function ActivePolicies() {
+    const { address, isConnected } = useAccount();
     const [mounted, setMounted] = useState(false);
-    const account = useActiveAccount();
-    const address = account?.address;
-    const isConnected = !!account;
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    const chain = defineChain(43113);
-    const contract = getContract({ client, chain, address: CONTRACTS.ESCROW, abi: ESCROW_ABI as any });
-
-    const policyIdsQuery = useReadContract({
-        contract,
-        method: "getUserPolicies",
-        params: address ? [address] : undefined,
-        queryOptions: { enabled: !!address },
-    });
-    const policyIds = policyIdsQuery.data as string[];
-    const isLoading = policyIdsQuery.isLoading;
-
-    const [txHashes, setTxHashes] = useState<Record<string, string>>({});
-
-    // Log fetching logic for Thirdweb
-    const purchaseEvent = prepareEvent({
-        signature: "event PolicyPurchased(bytes32 indexed policyId, address indexed policyholder, string apiTarget, uint256 premiumPaid, uint256 payoutAmount, uint256 expirationTime)"
-    });
-
-    const eventsQuery = useContractEvents({
-        contract,
-        events: [purchaseEvent],
-    });
 
     useEffect(() => {
         if (eventsQuery.data && address) {

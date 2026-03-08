@@ -2,10 +2,7 @@
 
 import Link from "next/link";
 import { Twitter, Github, Linkedin, Globe, Shield, Terminal, Activity } from "lucide-react";
-import { useReadContract } from "thirdweb/react";
-import { client } from "@/lib/thirdweb";
-import { getContract, defineChain } from "thirdweb";
-import { CONTRACTS, LP_POOL_ABI } from "@/lib/contracts";
+import { useBlockNumber } from 'wagmi';
 import { formatUnits } from "viem";
 import { useState, useEffect } from "react";
 
