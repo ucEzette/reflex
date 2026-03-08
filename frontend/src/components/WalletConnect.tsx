@@ -12,6 +12,7 @@ const TARGET_CHAIN_ID = avalancheFuji.id;
 const TARGET_CHAIN_NAME = "Avalanche Fuji";
 
 const WALLETS = [
+    createWallet("app.core.extension"),
     createWallet("io.metamask"),
     createWallet("com.coinbase.wallet"),
     createWallet("me.rainbow"),
