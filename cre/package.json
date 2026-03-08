@@ -1,0 +1,9 @@
+{
+    "name": "reflex-cre",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "Chainlink Runtime Environment (CRE) actions for Reflex",
+    "dependencies": {
+        "@chainlink/cre-sdk": "^1.0.0"
+    }
+}
