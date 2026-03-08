@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import { useActiveAccount, useReadContract } from "thirdweb/react";
-import { getContract, defineChain } from "thirdweb";
-import { client } from "@/lib/thirdweb";
+"use client";
+import React, { useState, useEffect } from "react";
+import { useAccount, useReadContract } from "wagmi";
 import { ESCROW_ABI, CONTRACTS } from "@/lib/contracts";
 import { Shield, ExternalLink, Calendar, CheckCircle, XCircle, AlertCircle, Search, Filter } from "lucide-react";
 import Link from "next/link";
@@ -9,28 +8,22 @@ import Link from "next/link";
 type PolicyStatus = "All" | "Claimed" | "Expired" | "Disputed";
 
 export function ClaimHistory() {
-    const account = useActiveAccount();
-    const address = account?.address;
-    const isConnected = !!account;
+    const { address, isConnected } = useAccount();
     const [mounted, setMounted] = useState(false);
     const [filter, setFilter] = useState<PolicyStatus>("All");
     const [searchQuery, setSearchQuery] = useState("");
 
-    React.useEffect(() => {
+    useEffect(() => {
         setMounted(true);
     }, []);
 
-    const chain = defineChain(43113);
-    const contract = getContract({ client, chain, address: CONTRACTS.ESCROW as string, abi: ESCROW_ABI as any });
-
-    const userPoliciesQuery = useReadContract({
-        contract,
-        method: "getUserPolicies",
-        params: address ? [address] : undefined,
-        queryOptions: { enabled: !!address },
+    const { data: policyIds, isLoading } = useReadContract({
+        address: CONTRACTS.ESCROW as `0x${string}`,
+        abi: ESCROW_ABI,
+        functionName: 'getUserPolicies',
+        args: address ? [address as `0x${string}`] : undefined,
+        query: { enabled: !!address && mounted }
     });
-    const policyIds = userPoliciesQuery.data as any[];
-    const isLoading = userPoliciesQuery.isLoading;
 
     if (!mounted) return null;
     if (!isConnected) return null;
@@ -68,14 +61,14 @@ export function ClaimHistory() {
             <div className="grid grid-cols-1 gap-4">
                 {isLoading ? (
                     <div className="p-8 text-center text-slate-500 animate-pulse">Loading history...</div>
-                ) : !policyIds || policyIds.length === 0 ? (
+                ) : !policyIds || (policyIds as any[]).length === 0 ? (
                     <div className="p-12 text-center bg-zinc-900/20 border border-dashed border-white/10 rounded-3xl">
                         <Shield className="w-12 h-12 text-slate-700 mx-auto mb-4" />
                         <p className="text-slate-400 font-medium">No policy history found</p>
                         <p className="text-slate-600 text-sm mt-1">Settled policies will appear here.</p>
                     </div>
                 ) : (
-                    policyIds.map((id) => (
+                    (policyIds as any[]).map((id) => (
                         <ClaimHistoryRow key={id} policyId={id} filter={filter} search={searchQuery} />
                     ))
                 )}
@@ -85,19 +78,18 @@ export function ClaimHistory() {
 }
 
 function ClaimHistoryRow({ policyId, filter, search }: { policyId: string; filter: PolicyStatus; search: string }) {
-    const chain = defineChain(43113);
-    const contract = getContract({ client, chain, address: CONTRACTS.ESCROW as string, abi: ESCROW_ABI as any });
-
-    const policyQuery = useReadContract({
-        contract,
-        method: "getPolicy",
-        params: [policyId as `0x${string}`],
+    const { data } = useReadContract({
+        address: CONTRACTS.ESCROW as `0x${string}`,
+        abi: ESCROW_ABI,
+        functionName: 'getPolicy',
+        args: [policyId as `0x${string}`],
     });
-    const data = policyQuery.data as any[];
 
-    if (!data) return null;
+    const policyData = data as any[];
 
-    const [, apiTarget, premiumPaid, payoutAmount, expirationTime, isActive, isClaimed] = data;
+    if (!policyData) return null;
+
+    const [, apiTarget, premiumPaid, payoutAmount, expirationTime, isActive, isClaimed] = policyData;
 
     // Status Logic
     const isExpired = !isActive && !isClaimed;

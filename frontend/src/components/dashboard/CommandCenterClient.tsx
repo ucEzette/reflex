@@ -1,51 +1,43 @@
 "use client";
-
 import React from 'react';
 import { Shield, Activity, DollarSign, Landmark } from 'lucide-react';
 import { PolicyCard } from '@/components/dashboard/PolicyCard';
 import { PortfolioPerformanceChart } from '@/components/dashboard/PortfolioPerformanceChart';
-import { useActiveAccount, useReadContract } from "thirdweb/react";
-import { getContract, defineChain, readContract } from "thirdweb";
-import { client } from "@/lib/thirdweb";
+import { useAccount, useReadContract } from "wagmi";
+import { readContract } from "wagmi/actions";
+import { wagmiConfig } from '@/lib/wagmiConfig';
 import { CONTRACTS } from '@/lib/contracts';
 import { ESCROW_ABI, LIQUIDITY_POOL_ABI } from '@/lib/enterprise_abis';
 import { formatUnits } from 'viem';
 import { useState, useEffect } from 'react';
 
 export function CommandCenterClient() {
-    const account = useActiveAccount();
-    const address = account?.address;
+    const { address } = useAccount();
     const [policies, setPolicies] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [logs, setLogs] = useState<any[]>([]);
     const [logsLoading, setLogsLoading] = useState(true);
 
-    const chain = defineChain(43113); // Assuming Avalanche Fuji Testnet chain ID
-    const lpContract = getContract({ client, chain, address: CONTRACTS.LP_POOL as string, abi: LIQUIDITY_POOL_ABI as any });
-    const escrowContract = getContract({ client, chain, address: CONTRACTS.ESCROW as string, abi: ESCROW_ABI as any });
-
     // Fetch Global Stats
-    const totalAssetsQuery = useReadContract({
-        contract: lpContract,
-        method: 'totalAssets',
-        params: [],
+    const { data: totalAssets } = useReadContract({
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalAssets',
     });
-    const totalAssets = totalAssetsQuery.data;
 
-    const totalMaxPayoutsQuery = useReadContract({
-        contract: lpContract,
-        method: 'totalMaxPayouts',
-        params: [],
+    const { data: totalMaxPayouts } = useReadContract({
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalMaxPayouts',
     });
-    const totalMaxPayouts = totalMaxPayoutsQuery.data;
 
-    const policyIdsQuery = useReadContract({
-        contract: escrowContract,
-        method: 'getUserPolicies',
-        params: [address as `0x${string}`],
-        queryOptions: { enabled: !!address }
+    const { data: policyIds } = useReadContract({
+        address: CONTRACTS.ESCROW as `0x${string}`,
+        abi: ESCROW_ABI,
+        functionName: 'getUserPolicies',
+        args: address ? [address as `0x${string}`] : undefined,
+        query: { enabled: !!address }
     });
-    const policyIds = policyIdsQuery.data;
 
     useEffect(() => {
         const fetchPolicyDetails = async () => {
@@ -56,11 +48,12 @@ export function CommandCenterClient() {
 
             try {
                 const details = await Promise.all(
-                    (policyIds as string[]).map(async (id) => {
-                        const data = await readContract({
-                            contract: escrowContract,
-                            method: "getPolicy",
-                            params: [id]
+                    (policyIds as any[]).map(async (id) => {
+                        const data = await readContract(wagmiConfig, {
+                            address: CONTRACTS.ESCROW as `0x${string}`,
+                            abi: ESCROW_ABI,
+                            functionName: 'getPolicy',
+                            args: [id]
                         });
                         return { id, data };
                     })

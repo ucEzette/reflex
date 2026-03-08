@@ -1,80 +1,73 @@
-import { useActiveAccount, useReadContract, useSendTransaction } from "thirdweb/react";
-import { getContract, defineChain, prepareContractCall } from "thirdweb";
-import { client } from "@/lib/thirdweb";
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { CONTRACTS } from '@/lib/contracts';
 import { LIQUIDITY_POOL_ABI, ESCROW_ABI } from '@/lib/enterprise_abis';
 import { formatUnits } from 'viem';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { ShieldAlert, Info, Play, Pause, Zap, TrendingUp, RefreshCcw, Shield, Lock, Unlock } from 'lucide-react';
+import { InstitutionalTooltip } from '@/components/ui/InstitutionalTooltip';
 
 export function AdminControl() {
-    const account = useActiveAccount();
-    const address = account?.address;
-    const isConnected = !!account;
-
+    const { address, isConnected } = useAccount();
     const [mounted, setMounted] = useState(false);
     const [isHarvesting, setIsHarvesting] = useState(false);
 
     useEffect(() => { setMounted(true); }, []);
 
-    const chain = defineChain(43113);
-    const poolContract = getContract({ client, chain, address: CONTRACTS.LP_POOL as string, abi: LIQUIDITY_POOL_ABI as any });
-    const escrowContract = getContract({ client, chain, address: CONTRACTS.ESCROW as string, abi: ESCROW_ABI as any });
-
     // Live on-chain metrics
-    const totalAssetsQuery = useReadContract({
-        contract: poolContract,
-        method: 'totalAssets',
-        params: [],
+    const { data: totalAssets, refetch: refetchAssets } = useReadContract({
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalAssets',
+        query: { enabled: mounted }
     });
-    const totalAssets = totalAssetsQuery.data;
 
-    const totalMaxPayoutsQuery = useReadContract({
-        contract: poolContract,
-        method: 'totalMaxPayouts',
-        params: [],
+    const { data: totalMaxPayouts, refetch: refetchPayouts } = useReadContract({
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalMaxPayouts',
+        query: { enabled: mounted }
     });
-    const totalMaxPayouts = totalMaxPayoutsQuery.data;
 
-    const totalSharesQuery = useReadContract({
-        contract: poolContract,
-        method: 'totalShares',
-        params: [],
+    const { data: totalShares, refetch: refetchShares } = useReadContract({
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalShares',
+        query: { enabled: mounted }
     });
-    const totalShares = totalSharesQuery.data;
 
-    const requiredQuorumQuery = useReadContract({
-        contract: escrowContract,
-        method: 'requiredQuorum',
-        params: [],
+    const { data: requiredQuorum, refetch: refetchQuorum } = useReadContract({
+        address: CONTRACTS.ESCROW as `0x${string}`,
+        abi: ESCROW_ABI,
+        functionName: 'requiredQuorum',
+        query: { enabled: mounted }
     });
-    const requiredQuorum = requiredQuorumQuery.data;
-    const refetchQuorum = requiredQuorumQuery.refetch;
 
-    const pausedQuery = useReadContract({
-        contract: poolContract,
-        method: 'paused',
-        params: [],
+    const { data: paused, refetch: refetchPause } = useReadContract({
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'paused',
+        query: { enabled: mounted }
     });
-    const paused = pausedQuery.data;
-    const refetchPause = pausedQuery.refetch;
 
-    const { mutate: sendTransaction, isPending: isTxLoading } = useSendTransaction();
+    const { writeContract, data: hash } = useWriteContract();
+    const { isLoading: isTxLoading, isSuccess: isTxSuccess } = useWaitForTransactionReceipt({ hash });
+
+    useEffect(() => {
+        if (isTxSuccess) {
+            refetchPause();
+            refetchQuorum();
+            refetchAssets();
+            refetchPayouts();
+            refetchShares();
+        }
+    }, [isTxSuccess]);
 
     const handleTogglePause = () => {
-        const tx = prepareContractCall({
-            contract: poolContract,
-            method: paused ? 'unpause' : 'pause',
-            params: [],
-        });
-
-        sendTransaction(tx, {
-            onSuccess: () => {
-                toast.success(paused ? "Protocol Resumed" : "Protocol Paused");
-                refetchPause();
-            },
-            onError: (err) => {
-                toast.error("Action failed", { description: err.message });
-            }
+        writeContract({
+            address: CONTRACTS.LP_POOL as `0x${string}`,
+            abi: LIQUIDITY_POOL_ABI,
+            functionName: paused ? 'unpause' : 'pause',
         });
 
         toast.info(paused ? "Requesting Resume..." : "Requesting Emergency Pause...", {
@@ -84,12 +77,9 @@ export function AdminControl() {
 
     const handleHarvestYield = () => {
         setIsHarvesting(true);
-        // Note: Harvesting is currently done via a generic protocol write or automated keeper
         toast.info("Triggering Yield Harvest...", {
             description: "This will call the performance fee calculation on-chain."
         });
-
-        // Simulating the harvest for now as specific harvest function depends on the strategy implementation
         setTimeout(() => setIsHarvesting(false), 2000);
     };
 
@@ -97,19 +87,11 @@ export function AdminControl() {
         const relayerAddress = prompt("Enter Relayer Ethereum Address:");
         if (!relayerAddress || !relayerAddress.startsWith('0x')) return;
 
-        const tx = prepareContractCall({
-            contract: escrowContract,
-            method: 'addAuthorizedRelayer',
-            params: [relayerAddress as `0x${string}`],
-        });
-
-        sendTransaction(tx, {
-            onSuccess: () => {
-                toast.success("Relayer authorized!");
-            },
-            onError: (err) => {
-                toast.error("Failed to add relayer", { description: err.message });
-            }
+        writeContract({
+            address: CONTRACTS.ESCROW as `0x${string}`,
+            abi: ESCROW_ABI,
+            functionName: 'addAuthorizedRelayer',
+            args: [relayerAddress as `0x${string}`],
         });
 
         toast.info("Authorizing Relayer...", { description: `Granting guardian permissions to ${relayerAddress.slice(0, 10)}...` });
@@ -119,20 +101,11 @@ export function AdminControl() {
         const newQuorum = prompt("Enter New Quorum Threshold (e.g., 2):");
         if (!newQuorum) return;
 
-        const tx = prepareContractCall({
-            contract: escrowContract,
-            method: 'updateQuorum',
-            params: [BigInt(newQuorum)],
-        });
-
-        sendTransaction(tx, {
-            onSuccess: () => {
-                toast.success("Quorum threshold updated!");
-                refetchQuorum();
-            },
-            onError: (err) => {
-                toast.error("Failed to update quorum", { description: err.message });
-            }
+        writeContract({
+            address: CONTRACTS.ESCROW as `0x${string}`,
+            abi: ESCROW_ABI,
+            functionName: 'updateQuorum',
+            args: [BigInt(newQuorum)],
         });
 
         toast.info("Updating Quorum...", { description: `Setting consensus threshold to ${newQuorum} relayers.` });

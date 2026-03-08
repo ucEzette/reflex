@@ -1,9 +1,8 @@
+"use client";
 import React, { useEffect, useState } from 'react';
 import { Wallet, ExternalLink, Download, ArrowUpRight, Copy, ShieldCheck, RefreshCcw, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { useActiveAccount, useReadContract, useSendTransaction, useActiveWalletChain, useSwitchActiveWalletChain } from 'thirdweb/react';
-import { getContract, defineChain, prepareContractCall } from 'thirdweb';
-import { client } from '@/lib/thirdweb';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useSwitchChain, useChainId } from 'wagmi';
 import { formatUnits, parseUnits } from 'viem';
 import { ERC20_ABI } from '@/lib/contracts';
 import { CONTRACTS } from '@/lib/contracts';
@@ -11,12 +10,9 @@ import { CONTRACTS } from '@/lib/contracts';
 const TARGET_CHAIN_ID = 43113; // Avalanche Fuji
 
 export function WalletManager() {
-    const account = useActiveAccount();
-    const address = account?.address;
-    const isConnected = !!account;
-    const activeChain = useActiveWalletChain();
-    const chainId = activeChain?.id || 1;
-    const switchChain = useSwitchActiveWalletChain();
+    const { address, isConnected } = useAccount();
+    const chainId = useChainId();
+    const { switchChain } = useSwitchChain();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -25,43 +21,38 @@ export function WalletManager() {
 
     const isWrongNetwork = isConnected && chainId !== TARGET_CHAIN_ID;
 
-    const chain = defineChain(TARGET_CHAIN_ID);
-    const usdcContract = getContract({ client, chain, address: CONTRACTS.USDC as string, abi: ERC20_ABI as any });
-
-    const balanceQuery = useReadContract({
-        contract: usdcContract,
-        method: 'balanceOf',
-        params: address ? [address] : undefined,
-        queryOptions: { enabled: !!address }
+    const { data: balanceData, refetch } = useReadContract({
+        address: CONTRACTS.USDC as `0x${string}`,
+        abi: ERC20_ABI,
+        functionName: 'balanceOf',
+        args: address ? [address as `0x${string}`] : undefined,
+        query: { enabled: !!address }
     });
-    const balanceData = balanceQuery.data;
-    const refetch = balanceQuery.refetch;
 
-    const { mutate: sendTransaction, isPending: isTxPending } = useSendTransaction();
+    const { writeContract, data: hash } = useWriteContract();
+    const { isLoading: isTxPending, isSuccess: isTxSuccess } = useWaitForTransactionReceipt({ hash });
+
     const [isInternalProcessing, setIsInternalProcessing] = useState(false);
     const isProcessing = isTxPending || isInternalProcessing;
+
+    useEffect(() => {
+        if (isTxSuccess) {
+            toast.success("Successfully deposited 10,000 test USDC!");
+            setIsInternalProcessing(false);
+            refetch();
+        }
+    }, [isTxSuccess, refetch]);
 
     const handleDeposit = () => {
         if (!address) return;
         setIsInternalProcessing(true);
         toast.info("Minting 10,000 MOCK USDC...");
 
-        const tx = prepareContractCall({
-            contract: usdcContract,
-            method: 'mint',
-            params: [address, parseUnits('10000', 6)],
-        });
-
-        sendTransaction(tx, {
-            onSuccess: () => {
-                toast.success("Successfully deposited 10,000 test USDC!");
-                setIsInternalProcessing(false);
-                refetch();
-            },
-            onError: (err) => {
-                toast.error("Mint failed", { description: err.message });
-                setIsInternalProcessing(false);
-            }
+        writeContract({
+            address: CONTRACTS.USDC as `0x${string}`,
+            abi: ERC20_ABI,
+            functionName: 'mint',
+            args: [address as `0x${string}`, parseUnits('10000', 6)],
         });
     };
 
