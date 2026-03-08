@@ -1,29 +1,50 @@
 "use client";
 
 import Link from "next/link";
-import { useAccount, useReadContract, useDisconnect } from "wagmi";
+import { useState, useEffect, useRef } from "react";
+import { useActiveAccount, useDisconnect, useActiveWallet } from "thirdweb/react";
 import { formatUnits } from "viem";
 import { CONTRACTS, ERC20_ABI } from "@/lib/contracts";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { WalletConnect } from "@/components/WalletConnect";
-import { Search, Wallet, User, Activity as ActivityIcon, BarChart3, Briefcase, ChevronDown, Trophy, Medal, Terminal, Code, Moon, LogOut, Settings, HelpCircle, FileText, CheckCircle2, Eye, EyeOff, TrendingUp, Menu, X } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
-import { ALL_MARKETS, MarketDetail } from "@/lib/market-data";
+import {
+    Search,
+    Menu,
+    X,
+    BarChart3,
+    Briefcase,
+    TrendingUp,
+    Activity as ActivityIcon,
+    FileText,
+    Settings,
+    Moon
+} from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
+import { WalletConnect } from "./WalletConnect";
+import { ALL_MARKETS } from "@/lib/market-data";
 
-const warriorAvatars = [
-    '/avatars/warrior1.png',
-    '/avatars/warrior2.png',
-    '/avatars/warrior3.png',
-];
-
+// Helper for avatars
 const getWarriorAvatar = (address?: string) => {
-    if (!address) return warriorAvatars[0];
-    const charCodeSum = address.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return warriorAvatars[charCodeSum % warriorAvatars.length];
+    if (!address) return "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback";
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${address}`;
 };
 
+interface MarketDetail {
+    id: string;
+    title: string;
+    description: string;
+    riskBase: string;
+    icon: string;
+    iconBg: string;
+    iconColor: string;
+    marketData: {
+        maxPayout: string;
+    };
+}
+
 export function Navbar() {
-    const { address, isConnected: authenticated, connector } = useAccount();
+    const account = useActiveAccount();
+    const wallet = useActiveWallet();
+    const address = account?.address;
+    const authenticated = !!account;
     const { disconnect } = useDisconnect();
 
     const [searchQuery, setSearchQuery] = useState("");
@@ -274,10 +295,8 @@ export function Navbar() {
                                                 <div className="py-2">
                                                     <button
                                                         onClick={() => {
-                                                            if (connector) {
-                                                                disconnect({ connector });
-                                                            } else {
-                                                                disconnect();
+                                                            if (wallet) {
+                                                                disconnect(wallet);
                                                             }
                                                             setIsProfileOpen(false);
                                                         }}

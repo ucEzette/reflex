@@ -1,7 +1,6 @@
-"use client";
-
-import { useAccount, useReadContract, usePublicClient } from "wagmi";
-import { parseAbiItem } from "viem";
+import { useActiveAccount, useReadContract, useContractEvents } from "thirdweb/react";
+import { getContract, defineChain, prepareEvent } from "thirdweb";
+import { client } from "@/lib/thirdweb";
 import { ESCROW_ABI, CONTRACTS } from "@/lib/contracts";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -78,12 +77,15 @@ function StatusBadge({ isActive, isClaimed }: { isActive: boolean; isClaimed: bo
 }
 
 function PolicyRow({ policyId, txHash }: { policyId: string, txHash?: string }) {
-    const { data } = useReadContract({
-        address: CONTRACTS.ESCROW,
-        abi: ESCROW_ABI,
-        functionName: "getPolicy",
-        args: [policyId as `0x${string}`],
+    const chain = defineChain(43113);
+    const contract = getContract({ client, chain, address: CONTRACTS.ESCROW, abi: ESCROW_ABI as any });
+
+    const policyQuery = useReadContract({
+        contract,
+        method: "getPolicy",
+        params: [policyId as `0x${string}`],
     });
+    const data = policyQuery.data as any[];
 
     if (!data) return null;
 
@@ -173,52 +175,49 @@ function PolicyRow({ policyId, txHash }: { policyId: string, txHash?: string }) 
 
 export function ActivePolicies() {
     const [mounted, setMounted] = useState(false);
-    const { address, isConnected } = useAccount();
+    const account = useActiveAccount();
+    const address = account?.address;
+    const isConnected = !!account;
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    const { data: policyIds, isLoading } = useReadContract({
-        address: CONTRACTS.ESCROW,
-        abi: ESCROW_ABI,
-        functionName: "getUserPolicies",
-        args: address ? [address] : undefined,
-        query: { enabled: !!address },
-    });
+    const chain = defineChain(43113);
+    const contract = getContract({ client, chain, address: CONTRACTS.ESCROW, abi: ESCROW_ABI as any });
 
-    const publicClient = usePublicClient();
+    const policyIdsQuery = useReadContract({
+        contract,
+        method: "getUserPolicies",
+        params: address ? [address] : undefined,
+        queryOptions: { enabled: !!address },
+    });
+    const policyIds = policyIdsQuery.data as string[];
+    const isLoading = policyIdsQuery.isLoading;
+
     const [txHashes, setTxHashes] = useState<Record<string, string>>({});
 
+    // Log fetching logic for Thirdweb
+    const purchaseEvent = prepareEvent({
+        signature: "event PolicyPurchased(bytes32 indexed policyId, address indexed policyholder, string apiTarget, uint256 premiumPaid, uint256 payoutAmount, uint256 expirationTime)"
+    });
+
+    const eventsQuery = useContractEvents({
+        contract,
+        events: [purchaseEvent],
+    });
+
     useEffect(() => {
-        if (!publicClient || !address || !policyIds || policyIds.length === 0) return;
-
-        const fetchLogs = async () => {
-            try {
-                const logs = await publicClient.getLogs({
-                    address: CONTRACTS.ESCROW,
-                    event: parseAbiItem('event PolicyPurchased(bytes32 indexed policyId, address indexed policyholder, string apiTarget, uint256 premiumPaid, uint256 payoutAmount, uint256 expirationTime)'),
-                    args: {
-                        policyholder: address
-                    },
-                    fromBlock: BigInt(0),
-                    toBlock: 'latest'
-                });
-
-                const hashMapping: Record<string, string> = {};
-                logs.forEach(log => {
-                    if (log.args.policyId && log.transactionHash) {
-                        hashMapping[log.args.policyId] = log.transactionHash;
-                    }
-                });
-                setTxHashes(hashMapping);
-            } catch (e) {
-                console.error("Error fetching policy logs", e);
-            }
-        };
-
-        fetchLogs();
-    }, [publicClient, address, policyIds]);
+        if (eventsQuery.data && address) {
+            const hashMapping: Record<string, string> = {};
+            eventsQuery.data.forEach((event: any) => {
+                if (event.args.policyholder.toLowerCase() === address.toLowerCase()) {
+                    hashMapping[event.args.policyId] = event.transactionHash;
+                }
+            });
+            setTxHashes(hashMapping);
+        }
+    }, [eventsQuery.data, address]);
 
     if (!mounted || !isConnected) return null;
 
