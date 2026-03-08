@@ -24,6 +24,7 @@ export default function DocsPage() {
                                 <li><a href="#overview" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">Protocol Overview</a></li>
                                 <li><a href="#policyholders" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">For Policyholders</a></li>
                                 <li><a href="#investors" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">For Investors</a></li>
+                                <li><a href="#hackathon" className="block px-4 py-1.5 text-sm font-bold text-primary hover:text-primary transition-colors border-l border-primary">Hackathon Integration</a></li>
                             </ul>
                         </nav>
                         <nav className="space-y-3">
@@ -158,6 +159,52 @@ export default function DocsPage() {
                                             <li>• <strong>Non-Correlation</strong> — Risk spread across independent indices.</li>
                                             <li>• <strong>Utilization Guard</strong> — Sales halt if coverage exceeds 90% of assets.</li>
                                         </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* ═══════════ HACKATHON INTEGRATION ═══════════ */}
+                        <section id="hackathon" className="scroll-mt-32">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
+                                <span className="material-symbols-outlined text-primary text-4xl">emoji_events</span>
+                                Convergence Hackathon Implementation
+                            </h2>
+                            <div className="glass-panel p-8 rounded-2xl space-y-10">
+                                <div className="space-y-4">
+                                    <h3 className="text-xl font-bold text-foreground">Track 1: Chainlink Runtime Environment (CRE)</h3>
+                                    <p className="text-slate-400 font-light leading-relaxed text-sm">
+                                        Reflex utilizes <strong>CRE</strong> as the decentralized orchestration layer. The <code className="text-primary font-mono text-xs">cre/PolicyVerifier.ts</code> action serves as the protocol&apos;s gated entry point, performing off-chain verification of World ID proofs before authorizing the transaction.
+                                    </p>
+                                    <div className="p-4 bg-black/40 rounded-xl font-mono text-[11px] text-primary border border-primary/20">
+                                        {`// cre/PolicyVerifier.ts\nasync run(input: VerificationInput) {\n  const isHuman = await verifyWorldID(input.proof);\n  if (!isHuman) throw new Error("Sybil detected");\n  return { authorized: true, transaction: input.txData };\n}`}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4 pt-10 border-t border-white/5">
+                                    <h3 className="text-xl font-bold text-foreground">Track 2: World ID (Sybil Resistance)</h3>
+                                    <p className="text-slate-400 font-light leading-relaxed text-sm">
+                                        To protect the liquidity pool from malicious bot draining, we integrate <strong>World ID</strong>. This ensures that every parametric policy is backed by a verified human identity, effectively eliminating sybil attacks in high-stakes insurance markets.
+                                    </p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                                            <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">IDKit Integration</p>
+                                            <code className="text-[9px] text-zinc-400">{'<IDKitWidget app_id="reflex" action="buy">'}</code>
+                                        </div>
+                                        <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                                            <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">Verification Level</p>
+                                            <p className="text-xs text-foreground font-bold">Device / Orb (ZK-Proof)</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4 pt-10 border-t border-white/5">
+                                    <h3 className="text-xl font-bold text-foreground">Track 3: thirdweb x CRE (Gasless)</h3>
+                                    <p className="text-slate-400 font-light leading-relaxed text-sm">
+                                        The <strong>&quot;Gasless Protection&quot;</strong> flow enables users with 0 base tokens (AVAX) to instantly insure themselves. By utilizing <strong>thirdweb Account Abstraction</strong> and <strong>Paymasters</strong>, the protocol sponsors user gas, requiring only the USDC premium to commit.
+                                    </p>
+                                    <div className="p-4 bg-black/40 rounded-xl font-mono text-[11px] text-emerald-400 border border-emerald-500/20">
+                                        {`// Gasless execution via thirdweb Paymaster\nconst tx = await sendTransaction({\n  transaction,\n  account: smartAccount,\n  gasless: { provider: "thirdweb" }\n});`}
                                     </div>
                                 </div>
                             </div>

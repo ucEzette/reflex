@@ -4,6 +4,23 @@ Reflex is a decentralized **Protection Market** for parametric micro-insurance b
 
 ---
 
+## 🏆 Convergence Index: A Chainlink Hackathon Tracks
+Reflex is engineered for the **Convergence** hackathon, integrating several state-of-the-art tracks to create a seamless, sybil-resistant, and gasless user experience.
+
+### 1. Chainlink Runtime Environment (CRE) Orchestration
+- **The Brain**: Used to orchestrate off-chain verification and on-chain execution.
+- **Implementation**: The `cre/PolicyVerifier.ts` action acts as a secure gatekeeper, validating proofs before authorizing a transaction.
+
+### 2. Sybil Resistance via World ID
+- **The Human Layer**: Integrated **World ID** to ensure every policyholder is a unique human, preventing bot attacks on the protection market.
+- **Workflow**: Users verify their "Humanness" via the World ID widget on the market page before any policy can be purchased.
+
+### 3. thirdweb x CRE (Gasless Transactions)
+- **The UX Layer**: Integrated **thirdweb Account Abstraction** and **Paymasters** to provide a 1-click, 0-gas experience.
+- **Workflow**: Users can purchase policies without holding AVAX. The transaction is orchestrated via CRE and executed gaslessly by thirdweb’s infrastructure.
+
+---
+
 ## 🏛️ Protocol Philosophy: Parametric vs. Traditional
 Reflex isn't just "insurance on the blockchain"; it's a fundamental shift in how risk is managed.
 
@@ -43,11 +60,12 @@ Reflex isn't just "insurance on the blockchain"; it's a fundamental shift in how
 - **Consensus Layer**: DON nodes reach consensus on the data before pushing to Fuji.
 - **Keepers (Automation)**: Monitoring and expiring policies that pass their timestamp without a trigger.
 
-### 3. The Relayer Layer (Node.js)
-A high-performance service that orchestrates:
-- **EIP-712 Quote Signing**: Providing cryptographically secure, time-bound premium quotes.
-- **Risk Simulation**: Pre-calculating risk probability to ensure accurate pricing.
-- **Data Proxying**: Protecting API keys while ensuring decentralized verification.
+### 4. How it Works (The Sybil-Resistant Gasless Flow)
+1. **Selection**: User selects a risk (e.g., Flight Delay) and enters their payout.
+2. **Humanness Check**: User clicks **"Verify Humanness with World ID"**. This generates a ZK-proof of unique personhood.
+3. **CRE Verification**: The proof is sent to the **CRE PolicyVerifier**. It validates the nullifier and proof authenticity off-chain to prevent spam.
+4. **Gasless Execution**: Once verified, **thirdweb** takes over. Using **Account Abstraction**, it prepares a smart account call to `purchasePolicy()`.
+5. **Atomic Payout**: The policy is live. If **Chainlink Functions/DONs** detect a delay, the **ReflexParametricEscrow** releases funds instantly to the user's smart account.
 
 ---
 
