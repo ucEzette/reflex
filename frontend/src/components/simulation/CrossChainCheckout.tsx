@@ -1,7 +1,7 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useChainId, useSwitchChain } from "wagmi";
+import { useActiveAccount, useReadContract, useSendTransaction, useActiveWalletChain, useSwitchActiveWalletChain } from "thirdweb/react";
+import { getContract, defineChain, prepareContractCall } from "thirdweb";
+import { client } from "@/lib/thirdweb";
 import { toast } from "sonner";
 import { CONTRACTS, CCIP_CONFIG, ERC20_ABI } from "@/lib/contracts";
 import { CCIP_ROUTER_ABI } from "@/lib/ccip_abis";
@@ -21,94 +21,124 @@ const SUPPORTED_CHAINS = [
 ];
 
 export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, onSuccess }: CrossChainCheckoutProps) {
-    const { address, isConnected } = useAccount();
-    const chainId = useChainId();
-    const { switchChain } = useSwitchChain();
+    const account = useActiveAccount();
+    const address = account?.address;
+    const isConnected = !!account;
+    const activeChain = useActiveWalletChain();
+    const chainId = activeChain?.id || 11155111;
+    const switchChain = useSwitchActiveWalletChain();
 
     const [selectedChain, setSelectedChain] = useState(SUPPORTED_CHAINS[0]);
-    const [isFeeLoading, setIsFeeLoading] = useState(false);
-    const [ccipFee, setCcipFee] = useState<bigint>(BigInt(0));
 
-    // Current chain configuration
+    const chain = defineChain(chainId);
     const routerAddress = CCIP_CONFIG.ROUTERS[chainId.toString() as keyof typeof CCIP_CONFIG.ROUTERS];
 
+    const usdcContract = getContract({ client, chain, address: CONTRACTS.USDC as string, abi: ERC20_ABI as any });
+    const routerContract = routerAddress ? getContract({ client, chain, address: routerAddress as string, abi: CCIP_ROUTER_ABI as any }) : null;
+
     // 1. Check USDC Balance on current chain
-    const { data: usdcBalance } = useReadContract({
-        address: CONTRACTS.USDC,
-        abi: ERC20_ABI,
-        functionName: "balanceOf",
-        args: address ? [address] : undefined,
-        query: { enabled: !!address && !!routerAddress },
+    const usdcBalanceQuery = useReadContract({
+        contract: usdcContract,
+        method: "balanceOf",
+        params: address ? [address] : undefined,
+        queryOptions: { enabled: !!address && !!routerAddress },
     });
+    const usdcBalance = usdcBalanceQuery.data;
 
     // 2. Check Allowance for CCIP Router
-    const { data: allowance, refetch: refetchAllowance } = useReadContract({
-        address: CONTRACTS.USDC,
-        abi: ERC20_ABI,
-        functionName: "allowance",
-        args: address && routerAddress ? [address, routerAddress as `0x${string}`] : undefined,
-        query: { enabled: !!address && !!routerAddress },
+    const allowanceQuery = useReadContract({
+        contract: usdcContract,
+        method: "allowance",
+        params: address && routerAddress ? [address, routerAddress as string] : undefined,
+        queryOptions: { enabled: !!address && !!routerAddress },
     });
+    const allowance = allowanceQuery.data;
+    const refetchAllowance = allowanceQuery.refetch;
 
     // 3. Estimate CCIP Fees
-    const { data: estimatedFee } = useReadContract({
-        address: routerAddress as `0x${string}`,
-        abi: CCIP_ROUTER_ABI,
-        functionName: "getFee",
-        args: routerAddress ? [
+    const estimatedFeeQuery = useReadContract({
+        contract: routerContract!,
+        method: "getFee",
+        params: routerAddress ? [
             BigInt(CCIP_CONFIG.DESTINATION_CHAIN_SELECTOR),
             {
-                receiver: CONTRACTS.CROSS_CHAIN_RECEIVER,
-                data: "0x", // Standard deposit
-                tokenAmounts: [{ token: CONTRACTS.USDC, amount: BigInt(premiumUsdc) }],
-                feeToken: "0x0000000000000000000000000000000000000000", // Native gas
-                extraArgs: "0x"
+                receiver: CONTRACTS.CROSS_CHAIN_RECEIVER as `0x${string}`,
+                data: "0x" as `0x${string}`, // Standard deposit
+                tokenAmounts: [{ token: CONTRACTS.USDC as `0x${string}`, amount: BigInt(premiumUsdc) }],
+                feeToken: "0x0000000000000000000000000000000000000000" as `0x${string}`, // Native gas
+                extraArgs: "0x" as `0x${string}`
             }
         ] : undefined,
-        query: { enabled: !!routerAddress },
+        queryOptions: { enabled: !!routerAddress && !!routerContract },
     });
+    const estimatedFee = estimatedFeeQuery.data;
 
-    const { writeContract: approveUsdc, data: approveTxHash, isPending: isApproving } = useWriteContract();
-    const { isLoading: isApproveConfirming, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({ hash: approveTxHash });
+    const { mutate: sendTransaction, isPending: isTxPending } = useSendTransaction();
+    const [isInternalProcessing, setIsInternalProcessing] = useState(false);
+    const isProcessing = isTxPending || isInternalProcessing;
 
-    const { writeContract: sendCcip, data: sendTxHash, isPending: isSending } = useWriteContract();
-    const { isLoading: isSendConfirming, isSuccess: isSendSuccess } = useWaitForTransactionReceipt({ hash: sendTxHash });
-
-    const hasEnoughAllowance = allowance ? (Number(allowance) >= premiumUsdc) : false;
-    const hasEnoughBalance = usdcBalance ? (Number(usdcBalance) >= premiumUsdc) : false;
+    const hasEnoughAllowance = allowance ? (BigInt(allowance.toString()) >= BigInt(premiumUsdc)) : false;
+    const hasEnoughBalance = usdcBalance ? (BigInt(usdcBalance.toString()) >= BigInt(premiumUsdc)) : false;
 
     const handleCcipPayment = () => {
-        if (!routerAddress) return;
+        if (!routerAddress || !routerContract) return;
+        setIsInternalProcessing(true);
 
-        // Construct the message for the receiver
-        // Receiver decodes: (policyholder, apiTarget, premium, payoutAmount, duration)
-        // For simplicity in this UI bridge, we send a basic token transfer
-        // The receiver contract handles the policy purchase on the destination side
-
-        sendCcip({
-            address: routerAddress as `0x${string}`,
-            abi: CCIP_ROUTER_ABI,
-            functionName: "ccipSend",
-            args: [
+        const tx = prepareContractCall({
+            contract: routerContract,
+            method: "ccipSend",
+            params: [
                 BigInt(CCIP_CONFIG.DESTINATION_CHAIN_SELECTOR),
                 {
-                    receiver: CONTRACTS.CROSS_CHAIN_RECEIVER,
-                    data: "0x", // Simple deposit variant
-                    tokenAmounts: [{ token: CONTRACTS.USDC, amount: BigInt(premiumUsdc) }],
-                    feeToken: "0x0000000000000000000000000000000000000000",
-                    extraArgs: "0x97a312010000000000000000000000000000000000000000000000000000000000030d40" // Evm2EvmMessageV1 with gas limit
+                    receiver: CONTRACTS.CROSS_CHAIN_RECEIVER as `0x${string}`,
+                    data: "0x" as `0x${string}`, // Simple deposit variant
+                    tokenAmounts: [{ token: CONTRACTS.USDC as `0x${string}`, amount: BigInt(premiumUsdc) }],
+                    feeToken: "0x0000000000000000000000000000000000000000" as `0x${string}`,
+                    extraArgs: "0x97a312010000000000000000000000000000000000000000000000000000000000030d40" as `0x${string}` // Evm2EvmMessageV1 with gas limit
                 }
             ],
             value: estimatedFee as bigint
         });
+
+        sendTransaction(tx, {
+            onSuccess: () => {
+                toast.success("Cross-chain payment initiated!");
+                setIsInternalProcessing(false);
+                onSuccess();
+            },
+            onError: (err) => {
+                toast.error("Bridge payment failed", { description: err.message });
+                setIsInternalProcessing(false);
+            }
+        });
+    };
+
+    const handleApprove = () => {
+        if (!routerAddress || !usdcContract) return;
+        setIsInternalProcessing(true);
+
+        const tx = prepareContractCall({
+            contract: usdcContract,
+            method: "approve",
+            params: [routerAddress as string, BigInt(premiumUsdc)],
+        });
+
+        sendTransaction(tx, {
+            onSuccess: () => {
+                toast.success("Allowance approved!");
+                setIsInternalProcessing(false);
+                refetchAllowance();
+            },
+            onError: (err) => {
+                toast.error("Approval failed", { description: err.message });
+                setIsInternalProcessing(false);
+            }
+        });
     };
 
     useEffect(() => {
-        if (isSendSuccess) {
-            toast.success("Cross-chain payment initiated!");
-            onSuccess();
-        }
-    }, [isSendSuccess, onSuccess]);
+        // No longer needed as success/error handled in sendTransaction callbacks
+    }, []);
 
     return (
         <div className="space-y-4 p-4 bg-white/5 rounded-xl border border-white/10 mt-4 animate-in slide-in-from-top duration-300">
@@ -129,7 +159,7 @@ export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, on
                     {SUPPORTED_CHAINS.map((c) => (
                         <button
                             key={c.id}
-                            onClick={() => switchChain({ chainId: c.id })}
+                            onClick={() => switchChain(defineChain(c.id))}
                             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${chainId === c.id
                                 ? "bg-primary border-primary text-white"
                                 : "bg-black/40 border-white/10 text-slate-400 hover:border-white/30"
@@ -163,19 +193,14 @@ export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, on
                 </div>
             ) : (
                 <button
-                    onClick={hasEnoughAllowance ? handleCcipPayment : () => approveUsdc({
-                        address: CONTRACTS.USDC,
-                        abi: ERC20_ABI,
-                        functionName: "approve",
-                        args: [routerAddress as `0x${string}`, BigInt(premiumUsdc)]
-                    })}
-                    disabled={isSending || isSendConfirming || isApproving || isApproveConfirming || !hasEnoughBalance}
+                    onClick={hasEnoughAllowance ? handleCcipPayment : handleApprove}
+                    disabled={isProcessing || !hasEnoughBalance}
                     className={`w-full py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${hasEnoughBalance
                         ? "bg-primary text-white hover:brightness-110"
                         : "bg-white/5 text-slate-500 cursor-not-allowed border border-white/5"
                         }`}
                 >
-                    {isSending || isSendConfirming || isApproving || isApproveConfirming
+                    {isProcessing
                         ? "Processing..."
                         : !hasEnoughBalance
                             ? "Insufficient Balance"

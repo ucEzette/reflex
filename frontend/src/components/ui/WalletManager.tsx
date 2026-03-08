@@ -1,19 +1,22 @@
-"use client";
-
 import React, { useEffect, useState } from 'react';
 import { Wallet, ExternalLink, Download, ArrowUpRight, Copy, ShieldCheck, RefreshCcw, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useChainId, useSwitchChain } from 'wagmi';
+import { useActiveAccount, useReadContract, useSendTransaction, useActiveWalletChain, useSwitchActiveWalletChain } from 'thirdweb/react';
+import { getContract, defineChain, prepareContractCall } from 'thirdweb';
+import { client } from '@/lib/thirdweb';
 import { formatUnits, parseUnits } from 'viem';
 import { ERC20_ABI } from '@/lib/contracts';
-import { CONTRACTS } from '@/lib/wagmiConfig';
+import { CONTRACTS } from '@/lib/contracts';
 
 const TARGET_CHAIN_ID = 43113; // Avalanche Fuji
 
 export function WalletManager() {
-    const { address, isConnected } = useAccount();
-    const chainId = useChainId();
-    const { switchChain } = useSwitchChain();
+    const account = useActiveAccount();
+    const address = account?.address;
+    const isConnected = !!account;
+    const activeChain = useActiveWalletChain();
+    const chainId = activeChain?.id || 1;
+    const switchChain = useSwitchActiveWalletChain();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -22,34 +25,43 @@ export function WalletManager() {
 
     const isWrongNetwork = isConnected && chainId !== TARGET_CHAIN_ID;
 
-    const { data: hash, writeContract, isPending } = useWriteContract();
-    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
+    const chain = defineChain(TARGET_CHAIN_ID);
+    const usdcContract = getContract({ client, chain, address: CONTRACTS.USDC as string, abi: ERC20_ABI as any });
 
-    const { data: balanceData, refetch } = useReadContract({
-        address: CONTRACTS.USDC,
-        abi: ERC20_ABI,
-        functionName: 'balanceOf',
-        args: address ? [address as `0x${string}`] : undefined,
-        query: {
-            enabled: !!address,
-        }
+    const balanceQuery = useReadContract({
+        contract: usdcContract,
+        method: 'balanceOf',
+        params: address ? [address] : undefined,
+        queryOptions: { enabled: !!address }
     });
+    const balanceData = balanceQuery.data;
+    const refetch = balanceQuery.refetch;
 
-    useEffect(() => {
-        if (isConfirmed) {
-            toast.success("Successfully deposited 10,000 test USDC!");
-            refetch();
-        }
-    }, [isConfirmed, refetch]);
+    const { mutate: sendTransaction, isPending: isTxPending } = useSendTransaction();
+    const [isInternalProcessing, setIsInternalProcessing] = useState(false);
+    const isProcessing = isTxPending || isInternalProcessing;
 
     const handleDeposit = () => {
         if (!address) return;
+        setIsInternalProcessing(true);
         toast.info("Minting 10,000 MOCK USDC...");
-        writeContract({
-            address: CONTRACTS.USDC,
-            abi: ERC20_ABI,
-            functionName: 'mint',
-            args: [address as `0x${string}`, parseUnits('10000', 6)],
+
+        const tx = prepareContractCall({
+            contract: usdcContract,
+            method: 'mint',
+            params: [address, parseUnits('10000', 6)],
+        });
+
+        sendTransaction(tx, {
+            onSuccess: () => {
+                toast.success("Successfully deposited 10,000 test USDC!");
+                setIsInternalProcessing(false);
+                refetch();
+            },
+            onError: (err) => {
+                toast.error("Mint failed", { description: err.message });
+                setIsInternalProcessing(false);
+            }
         });
     };
 
@@ -74,7 +86,7 @@ export function WalletManager() {
         );
     }
 
-    const displayBalance = balanceData ? Number(formatUnits(balanceData, 6)) : 0;
+    const displayBalance = balanceData ? Number(formatUnits(balanceData as bigint, 6)) : 0;
 
     return (
         <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
@@ -89,7 +101,7 @@ export function WalletManager() {
                     </div>
                     <h3 className="text-xl font-bold text-foreground mb-4">Switch to Avalanche Fuji</h3>
                     <button
-                        onClick={() => switchChain({ chainId: TARGET_CHAIN_ID })}
+                        onClick={() => switchChain(defineChain(TARGET_CHAIN_ID))}
                         className="w-full bg-amber-500 text-white py-2 rounded-xl font-bold text-sm hover:bg-amber-600 transition-all flex items-center justify-center gap-2"
                     >
                         <RefreshCcw className="w-4 h-4" />
@@ -115,7 +127,7 @@ export function WalletManager() {
                     </h3>
                     <p className="text-xs text-muted-foreground flex items-center gap-2">
                         Available balance on Avalanche Fuji
-                        {(isPending || isConfirming) && <RefreshCcw className="w-3 h-3 animate-spin text-primary" />}
+                        {isProcessing && <RefreshCcw className="w-3 h-3 animate-spin text-primary" />}
                     </p>
                 </div>
             )}
@@ -142,10 +154,10 @@ export function WalletManager() {
                 <div className="grid grid-cols-2 gap-3">
                     <button
                         onClick={handleDeposit}
-                        disabled={isPending || isConfirming || isWrongNetwork}
+                        disabled={isProcessing || isWrongNetwork}
                         className="flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed">
-                        {isPending || isConfirming ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <ArrowUpRight className="w-4 h-4" />}
-                        {isPending || isConfirming ? 'Depositing...' : 'Deposit'}
+                        {isProcessing ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <ArrowUpRight className="w-4 h-4" />}
+                        {isProcessing ? 'Depositing...' : 'Deposit'}
                     </button>
                     <button
                         disabled={isWrongNetwork}

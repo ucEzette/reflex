@@ -84,7 +84,7 @@ export const ESCROW_ABI = [
 ] as const;
 
 
-export { ENTERPRISE_ERC20 as ERC20_ABI };
+export { ENTERPRISE_ERC20 as ERC20_ABI, PRODUCT_ABI, GENERIC_PRODUCT_ABI };
 export const LP_POOL_ABI = LIQUIDITY_POOL_ABI;
 export const TRAVEL_ABI = PRODUCT_ABI;
 export const AGRI_ABI = GENERIC_PRODUCT_ABI;
@@ -178,3 +178,8 @@ export const CCIP_CONFIG = {
         "84532": "0xD3b0651d97492A7E0427678083822afecbbDC67B", // Base Sepolia
     }
 };
+
+// Policy constants
+export const POLICY_PREMIUM = BigInt(5_000_000); // $5 USDC (6 decimals)
+export const POLICY_PAYOUT = BigInt(50_000_000); // $50 USDC (6 decimals)
+export const POLICY_DURATION_HOURS = BigInt(24); // 24 hours coverage
