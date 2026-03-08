@@ -2,11 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { BarChart3, Activity, Shield, AlertTriangle, DollarSign, Layers, PieChart, Zap, Lock, Unlock } from 'lucide-react';
-import { useActiveAccount, useReadContract } from 'thirdweb/react';
-import { getContract, defineChain } from "thirdweb";
-import { client } from "@/lib/thirdweb";
+import { useAccount, useReadContract } from 'wagmi';
 import { CONTRACTS } from '@/lib/contracts';
-import { LIQUIDITY_POOL_ABI, ERC20_ABI } from '@/lib/enterprise_abis';
+import { LIQUIDITY_POOL_ABI, ERC20_ABI, PRODUCT_ABI } from '@/lib/enterprise_abis';
 import { formatUnits } from 'viem';
 import {
     XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
@@ -26,33 +24,23 @@ const PRODUCT_NAMES = ['Travel Solutions', 'Agriculture', 'Energy', 'Catastrophe
 
 export default function AnalyticsPage() {
     const [mounted, setMounted] = useState(false);
-    const account = useActiveAccount();
-    const isConnected = !!account;
+    const { isConnected } = useAccount();
 
     useEffect(() => { setMounted(true); }, []);
 
-    const chain = defineChain(43113);
-
-    const lpContract = getContract({ client, chain, address: CONTRACTS.LP_POOL, abi: LIQUIDITY_POOL_ABI as any });
-    const travelContract = getContract({ client, chain, address: CONTRACTS.TRAVEL, abi: LIQUIDITY_POOL_ABI as any });
-    const agriContract = getContract({ client, chain, address: CONTRACTS.AGRI, abi: LIQUIDITY_POOL_ABI as any });
-    const energyContract = getContract({ client, chain, address: CONTRACTS.ENERGY, abi: LIQUIDITY_POOL_ABI as any });
-    const catContract = getContract({ client, chain, address: CONTRACTS.CATASTROPHE, abi: LIQUIDITY_POOL_ABI as any });
-    const maritimeContract = getContract({ client, chain, address: CONTRACTS.MARITIME, abi: LIQUIDITY_POOL_ABI as any });
-
     // Live on-chain data
     const { data: totalAssets } = useReadContract({
-        contract: lpContract,
-        method: 'totalAssets',
-        params: [],
-        queryOptions: { enabled: mounted }
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalAssets',
+        query: { enabled: mounted }
     });
 
     const { data: totalMaxPayouts } = useReadContract({
-        contract: lpContract,
-        method: 'totalMaxPayouts',
-        params: [],
-        queryOptions: { enabled: mounted }
+        address: CONTRACTS.LP_POOL as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalMaxPayouts',
+        query: { enabled: mounted }
     });
 
     const liveTVL = totalAssets ? Number(formatUnits(totalAssets as bigint, 6)) : 0;
@@ -69,11 +57,11 @@ export default function AnalyticsPage() {
     ];
 
     // Product active policy counts
-    const { data: travelCount } = useReadContract({ contract: travelContract, method: 'getActivePolicyCount', params: [], queryOptions: { enabled: mounted } });
-    const { data: agriCount } = useReadContract({ contract: agriContract, method: 'getActivePolicyCount', params: [], queryOptions: { enabled: mounted } });
-    const { data: energyCount } = useReadContract({ contract: energyContract, method: 'getActivePolicyCount', params: [], queryOptions: { enabled: mounted } });
-    const { data: catastropheCount } = useReadContract({ contract: catContract, method: 'getActivePolicyCount', params: [], queryOptions: { enabled: mounted } });
-    const { data: maritimeCount } = useReadContract({ contract: maritimeContract, method: 'getActivePolicyCount', params: [], queryOptions: { enabled: mounted } });
+    const { data: travelCount } = useReadContract({ address: CONTRACTS.TRAVEL as `0x${string}`, abi: PRODUCT_ABI, functionName: 'getActivePolicyCount', query: { enabled: mounted } });
+    const { data: agriCount } = useReadContract({ address: CONTRACTS.AGRI as `0x${string}`, abi: PRODUCT_ABI, functionName: 'getActivePolicyCount', query: { enabled: mounted } });
+    const { data: energyCount } = useReadContract({ address: CONTRACTS.ENERGY as `0x${string}`, abi: PRODUCT_ABI, functionName: 'getActivePolicyCount', query: { enabled: mounted } });
+    const { data: catastropheCount } = useReadContract({ address: CONTRACTS.CATASTROPHE as `0x${string}`, abi: PRODUCT_ABI, functionName: 'getActivePolicyCount', query: { enabled: mounted } });
+    const { data: maritimeCount } = useReadContract({ address: CONTRACTS.MARITIME as `0x${string}`, abi: PRODUCT_ABI, functionName: 'getActivePolicyCount', query: { enabled: mounted } });
 
     const counts = [
         Number(travelCount || 0),

@@ -5,9 +5,7 @@ export const dynamic = "force-dynamic";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useActiveAccount, useReadContract } from "thirdweb/react";
-import { getContract, defineChain } from "thirdweb";
-import { client } from "@/lib/thirdweb";
+import { useAccount, useReadContract } from "wagmi";
 import { ESCROW_ABI, CONTRACTS } from "@/lib/contracts";
 import { Shield, Upload, FileText, AlertCircle, CheckCircle, ArrowLeft, Info, Gavel, Activity } from "lucide-react";
 import Link from "next/link";
@@ -17,9 +15,12 @@ import { IpfsService } from "@/services/ipfs";
 export default function EvidenceSubmissionPage({ params }: { params: { id: string } }) {
     const id = params.id;
     const router = useRouter();
-    const account = useActiveAccount();
-    const isConnected = !!account;
-    const address = account?.address;
+    const { address, isConnected } = useAccount();
+
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Status State
     const [description, setDescription] = useState("");
@@ -27,21 +28,19 @@ export default function EvidenceSubmissionPage({ params }: { params: { id: strin
     const [subSuccess, setSubSuccess] = useState(false);
     const [files, setFiles] = useState<File[]>([]);
 
-    const contract = getContract({
-        client,
-        chain: defineChain(43113),
-        address: CONTRACTS.ESCROW,
-        abi: ESCROW_ABI as any
+    // Fetch Policy Data
+    const { data: policyData, isLoading: policyLoading } = useReadContract({
+        address: CONTRACTS.ESCROW as `0x${string}`,
+        abi: ESCROW_ABI,
+        functionName: "getPolicy",
+        args: [id as `0x${string}`],
+        query: { enabled: mounted && isConnected && !!address }
     });
 
-    // Fetch Policy Data
-    const policyQuery = useReadContract({
-        contract,
-        method: "getPolicy",
-        params: [id as `0x${string}`],
-    });
-    const policyData = policyQuery.data as any[];
-    const policyLoading = policyQuery.isLoading;
+    const policyArray = (policyData as unknown) as any[] || [];
+    const apiTarget = policyArray[1] || "Unknown";
+    const payoutAmount = policyArray[3] || BigInt(0);
+    const expirationTime = policyArray[4] || BigInt(0);
 
     if (!isConnected) return (
         <div className="min-h-screen flex items-center justify-center p-6">
@@ -100,15 +99,6 @@ export default function EvidenceSubmissionPage({ params }: { params: { id: strin
             setIsSubmitting(false);
         }
     };
-
-    if (policyLoading) return <div className="min-h-screen pt-32 text-center text-slate-500">Loading policy details...</div>;
-
-    // Destructure policy data from the query result
-    // Format: [policyholder, apiTarget, premiumPaid, payoutAmount, expirationTime, isActive, isClaimed]
-    const policyArray = policyData as any[] || [];
-    const apiTarget = policyArray[1] || "Unknown";
-    const payoutAmount = policyArray[3] || BigInt(0);
-    const expirationTime = policyArray[4] || BigInt(0);
 
     return (
         <div className="min-h-screen py-10 px-6 flex flex-col items-center">

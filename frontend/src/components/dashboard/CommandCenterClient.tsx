@@ -5,7 +5,7 @@ import { PolicyCard } from '@/components/dashboard/PolicyCard';
 import { PortfolioPerformanceChart } from '@/components/dashboard/PortfolioPerformanceChart';
 import { useAccount, useReadContract } from "wagmi";
 import { readContract } from "wagmi/actions";
-import { wagmiConfig } from '@/lib/wagmiConfig';
+import { config } from '@/lib/wagmiConfig';
 import { CONTRACTS } from '@/lib/contracts';
 import { ESCROW_ABI, LIQUIDITY_POOL_ABI } from '@/lib/enterprise_abis';
 import { formatUnits } from 'viem';
@@ -49,7 +49,7 @@ export function CommandCenterClient() {
             try {
                 const details = await Promise.all(
                     (policyIds as any[]).map(async (id) => {
-                        const data = await readContract(wagmiConfig, {
+                        const data = await readContract(config, {
                             address: CONTRACTS.ESCROW as `0x${string}`,
                             abi: ESCROW_ABI,
                             functionName: 'getPolicy',

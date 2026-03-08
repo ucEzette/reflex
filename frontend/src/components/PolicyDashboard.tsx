@@ -1,7 +1,6 @@
+"use client";
 import { useState, useEffect } from "react";
-import { useActiveAccount, useReadContract, useSendTransaction } from "thirdweb/react";
-import { getContract, defineChain, prepareContractCall } from "thirdweb";
-import { client } from "@/lib/thirdweb";
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { toast } from "sonner";
 import { ESCROW_ABI, ERC20_ABI, CONTRACTS, POLICY_PREMIUM, POLICY_PAYOUT, POLICY_DURATION_HOURS } from "@/lib/contracts";
 import { DashboardSkeleton } from "@/components/ui/Skeletons";
@@ -22,48 +21,51 @@ interface FlightData {
 }
 
 export function PolicyDashboard() {
-    const account = useActiveAccount();
-    const address = account?.address;
-    const isConnected = !!account;
-
     const [flightNumber, setFlightNumber] = useState("");
     const [flightDate, setFlightDate] = useState("");
+    const [mounted, setMounted] = useState(false);
+    const { address, isConnected } = useAccount();
+
     const [purchaseSuccess, setPurchaseSuccess] = useState(false);
     const [purchaseTxHash, setPurchaseTxHash] = useState("");
-    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    const chain = defineChain(43113);
-    const usdcContract = getContract({ client, chain, address: CONTRACTS.USDC as string, abi: ERC20_ABI as any });
-    const escrowContract = getContract({ client, chain, address: CONTRACTS.ESCROW as string, abi: ESCROW_ABI as any });
+    const { data: policyIds, refetch: refetchIds } = useReadContract({
+        address: CONTRACTS.ESCROW as `0x${string}`,
+        abi: ESCROW_ABI,
+        functionName: 'getUserPolicies',
+        args: address ? [address as `0x${string}`] : undefined,
+        query: { enabled: mounted && isConnected && !!address }
+    });
 
-    // Flight Validation State
     const [isValidating, setIsValidating] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
     const [flightDetails, setFlightDetails] = useState<FlightData | null>(null);
 
     /* ── Read USDC balance & allowance ── */
-    const balanceQuery = useReadContract({
-        contract: usdcContract,
-        method: "balanceOf",
-        params: address ? [address] as const : undefined,
+    const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
+        address: CONTRACTS.USDC as `0x${string}`,
+        abi: ERC20_ABI,
+        functionName: "balanceOf",
+        args: address ? [address as `0x${string}`] : undefined,
+        query: { enabled: !!address }
     });
-    const usdcBalance = balanceQuery.data as bigint | undefined;
-    const refetchBalance = balanceQuery.refetch;
 
-    const allowanceQuery = useReadContract({
-        contract: usdcContract,
-        method: "allowance",
-        params: address ? [address, CONTRACTS.ESCROW] as const : undefined,
+    const { data: allowance, refetch: refetchAllowance } = useReadContract({
+        address: CONTRACTS.USDC as `0x${string}`,
+        abi: ERC20_ABI,
+        functionName: "allowance",
+        args: address ? [address as `0x${string}`, CONTRACTS.ESCROW as `0x${string}`] : undefined,
+        query: { enabled: !!address }
     });
-    const allowance = allowanceQuery.data as bigint | undefined;
-    const refetchAllowance = allowanceQuery.refetch;
 
     /* ── Transactions ── */
-    const { mutate: sendTransaction, isPending: isTxPending } = useSendTransaction();
+    const { writeContract, data: txHash, isPending: isTxPending } = useWriteContract();
+    const { isLoading: isConfirming, isSuccess: isTxSuccess } = useWaitForTransactionReceipt({ hash: txHash });
+
     const [isApproving, setIsApproving] = useState(false);
     const [isPurchasing, setIsPurchasing] = useState(false);
 
@@ -74,16 +76,14 @@ export function PolicyDashboard() {
 
     const handleApprove = () => {
         setIsApproving(true);
-        const tx = prepareContractCall({
-            contract: usdcContract,
-            method: "approve",
-            params: [CONTRACTS.ESCROW as `0x${string}`, POLICY_PREMIUM],
-        });
-
-        sendTransaction(tx, {
+        writeContract({
+            address: CONTRACTS.USDC as `0x${string}`,
+            abi: ERC20_ABI,
+            functionName: "approve",
+            args: [CONTRACTS.ESCROW as `0x${string}`, POLICY_PREMIUM],
+        }, {
             onSuccess: () => {
-                toast.success("Allowance approved!");
-                refetchAllowance();
+                toast.success("Approval submitted!");
                 setIsApproving(false);
             },
             onError: (err) => {
@@ -92,6 +92,23 @@ export function PolicyDashboard() {
             }
         });
     };
+
+    useEffect(() => {
+        if (isTxSuccess) {
+            if (isApproving) {
+                toast.success("Allowance approved!");
+                refetchAllowance();
+                setIsApproving(false);
+            } else if (isPurchasing) {
+                toast.success("Policy secured successfully!");
+                setPurchaseSuccess(true);
+                setPurchaseTxHash(txHash || "");
+                refetchBalance();
+                refetchIds();
+                setIsPurchasing(false);
+            }
+        }
+    }, [isTxSuccess, isApproving, isPurchasing, txHash]);
 
     const formatFlightTime = (scheduledStr?: string, ianaTimezone?: string) => {
         if (!scheduledStr) return { time: "--:--", date: "---" };
@@ -130,19 +147,14 @@ export function PolicyDashboard() {
     const handlePurchase = () => {
         if (!apiTarget || !flightDetails) return;
         setIsPurchasing(true);
-        const tx = prepareContractCall({
-            contract: escrowContract,
-            method: "purchasePolicy",
-            params: [apiTarget, POLICY_PREMIUM, POLICY_PAYOUT, POLICY_DURATION_HOURS],
-        });
-
-        sendTransaction(tx, {
-            onSuccess: (receipt: any) => {
-                toast.success("Policy secured successfully!");
-                setPurchaseSuccess(true);
-                setPurchaseTxHash(receipt.transactionHash || receipt.hash || "");
-                refetchBalance();
-                setIsPurchasing(false);
+        writeContract({
+            address: CONTRACTS.ESCROW as `0x${string}`,
+            abi: ESCROW_ABI,
+            functionName: "purchasePolicy",
+            args: [apiTarget, POLICY_PREMIUM, POLICY_PAYOUT, POLICY_DURATION_HOURS],
+        }, {
+            onSuccess: () => {
+                toast.success("Purchase submitted!");
             },
             onError: (err) => {
                 toast.error(err.message.split(".")[0]);
@@ -189,7 +201,7 @@ export function PolicyDashboard() {
         return () => clearTimeout(timer);
     }, [apiTarget]);
 
-    const isProcessing = isApproving || isPurchasing || isTxPending;
+    const isProcessing = isApproving || isPurchasing || isTxPending || isConfirming;
     const hasEnoughBalance = usdcBalance ? (usdcBalance as bigint) >= POLICY_PREMIUM : false;
     const canPurchase = flightDetails !== null && !isValidating && flightDate && isConnected && hasEnoughBalance;
 
