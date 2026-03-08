@@ -1,17 +1,11 @@
-"use client";
-
-import React, { useState, useEffect } from 'react';
-import { PoolMetrics } from '@/types/market';
-import { DollarSign, ShieldCheck, TrendingUp, Layers, Activity, Lock, ExternalLink, Shield, Info, ArrowUpRight, ArrowDownRight, Search, Filter, ChevronRight, CheckCircle2, AlertCircle, Clock, Zap, UserCheck, Verified, RefreshCcw, ArrowDownLeft, AlertTriangle } from 'lucide-react';
-import { InstitutionalTooltip } from '@/components/ui/InstitutionalTooltip';
-import { ALL_MARKETS } from '@/lib/market-data';
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useConnect, usePublicClient } from 'wagmi';
+import { useActiveAccount, useReadContract, useSendTransaction, useContractEvents } from "thirdweb/react";
+import { getContract, defineChain, prepareContractCall, readContract, prepareEvent } from "thirdweb";
+import { client } from "@/lib/thirdweb";
 import { CONTRACTS, POOLS } from '@/lib/contracts';
 import { LIQUIDITY_POOL_ABI, ERC20_ABI } from '@/lib/enterprise_abis';
 import { parseUnits, formatUnits } from 'viem';
 import { toast } from 'sonner';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import { avalancheFuji } from 'wagmi/chains';
 import { cn } from '@/lib/utils';
 
 const performanceData = [
@@ -28,9 +22,9 @@ const performanceData = [
 
 export function InvestDashboardClient() {
     const [mounted, setMounted] = useState(false);
-    const { address, isConnected } = useAccount();
-    const { connectors, connectAsync } = useConnect();
-
+    const account = useActiveAccount();
+    const address = account?.address;
+    const isConnected = !!account;
 
     // Pool Selection & Forms
     const [selectedPool, setSelectedPool] = useState(POOLS[0]);
@@ -40,7 +34,6 @@ export function InvestDashboardClient() {
     const [withdrawalDate, setWithdrawalDate] = useState("");
 
     // History State
-    const publicClient = usePublicClient();
     const [history, setHistory] = useState<any[]>([]);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
@@ -48,57 +41,71 @@ export function InvestDashboardClient() {
         setMounted(true);
     }, []);
 
+    const chain = defineChain(43113);
+    const poolContract = getContract({ client, chain, address: selectedPool.address as string, abi: LIQUIDITY_POOL_ABI as any });
+    const usdcContract = getContract({ client, chain, address: CONTRACTS.USDC as string, abi: ERC20_ABI as any });
+
     // Contract Reads
-    const { data: totalAssets, refetch: refetchAssets } = useReadContract({
-        address: selectedPool.address,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'totalAssets',
+    const totalAssetsQuery = useReadContract({
+        contract: poolContract,
+        method: 'totalAssets',
+        params: [],
     });
+    const totalAssets = totalAssetsQuery.data;
+    const refetchAssets = totalAssetsQuery.refetch;
 
-    const { data: totalMaxPayouts, refetch: refetchPayouts } = useReadContract({
-        address: selectedPool.address,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'totalMaxPayouts',
+    const totalMaxPayoutsQuery = useReadContract({
+        contract: poolContract,
+        method: 'totalMaxPayouts',
+        params: [],
     });
+    const totalMaxPayouts = totalMaxPayoutsQuery.data;
+    const refetchPayouts = totalMaxPayoutsQuery.refetch;
 
-    const { data: userShares, refetch: refetchShares } = useReadContract({
-        address: selectedPool.address,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'lpShares',
-        args: address ? [address] : undefined,
+    const userSharesQuery = useReadContract({
+        contract: poolContract,
+        method: 'lpShares',
+        params: address ? [address] : undefined,
     });
+    const userShares = userSharesQuery.data;
+    const refetchShares = userSharesQuery.refetch;
 
-    const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
-        address: CONTRACTS.USDC,
-        abi: ERC20_ABI,
-        functionName: 'balanceOf',
-        args: address ? [address] : undefined,
+    const usdcBalanceQuery = useReadContract({
+        contract: usdcContract,
+        method: 'balanceOf',
+        params: address ? [address] : undefined,
     });
+    const usdcBalance = usdcBalanceQuery.data;
+    const refetchBalance = usdcBalanceQuery.refetch;
 
-    const { data: usdcAllowance, refetch: refetchAllowance } = useReadContract({
-        address: CONTRACTS.USDC,
-        abi: ERC20_ABI,
-        functionName: 'allowance',
-        args: address ? [address, selectedPool.address] : undefined,
+    const usdcAllowanceQuery = useReadContract({
+        contract: usdcContract,
+        method: 'allowance',
+        params: address ? [address, selectedPool.address] : undefined,
     });
+    const usdcAllowance = usdcAllowanceQuery.data;
+    const refetchAllowance = usdcAllowanceQuery.refetch;
 
-    const { data: intentAmount, refetch: refetchIntentAmount } = useReadContract({
-        address: selectedPool.address,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'withdrawalIntentAmount',
-        args: address ? [address] : undefined,
+    const intentAmountQuery = useReadContract({
+        contract: poolContract,
+        method: 'withdrawalIntentAmount',
+        params: address ? [address] : undefined,
     });
+    const intentAmount = intentAmountQuery.data;
+    const refetchIntentAmount = intentAmountQuery.refetch;
 
-    const { data: intentTimestamp, refetch: refetchIntentTimestamp } = useReadContract({
-        address: selectedPool.address,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'withdrawalIntentTimestamp',
-        args: address ? [address] : undefined,
+    const intentTimestampQuery = useReadContract({
+        contract: poolContract,
+        method: 'withdrawalIntentTimestamp',
+        params: address ? [address] : undefined,
     });
+    const intentTimestamp = intentTimestampQuery.data;
+    const refetchIntentTimestamp = intentTimestampQuery.refetch;
 
     // Contract Writes
-    const { writeContractAsync, data: hash, isPending: isSubmitting, error: writeError } = useWriteContract();
-    const { isLoading: isWaiting, isSuccess: isTxSuccess, isError: isTxError, error: txError } = useWaitForTransactionReceipt({ hash });
+    const { mutate: sendThirdwebTx, isPending: isTxPending } = useSendTransaction();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isTxSuccess, setIsTxSuccess] = useState(false);
 
     const [isApproving, setIsApproving] = useState(false);
     const [isMinting, setIsMinting] = useState(false);
@@ -109,18 +116,9 @@ export function InvestDashboardClient() {
         console.log("Initiating transaction...", { actionType, amount, needsApproval });
 
         if (!isConnected) {
-            toast.info("Connecting wallet...");
-            if (connectors.length > 0) {
-                try {
-                    await connectAsync({ connector: connectors[0], chainId: avalancheFuji.id });
-                    toast.success("Wallet connected!");
-                    return;
-                } catch (err: any) {
-                    console.error("Connection failed", err);
-                    return toast.error("Connection failed: " + (err.message || "Unknown error"));
-                }
-            }
-            return toast.error("No wallet provider detected.");
+            return toast.error("Connect wallet via 'Reflex Gateway' to secure liquidity.", {
+                description: "Re-connect your wallet using the top-right button to enable smart execution."
+            });
         }
 
         if (!amount || parseFloat(amount) <= 0) {
@@ -135,63 +133,77 @@ export function InvestDashboardClient() {
         }
 
         try {
-            const txConfig = {
-                gas: BigInt(500000), // Override gas limit to force transaction through and see internal revert reason if any
-            };
-
+            let tx;
             if (actionType === "deposit") {
                 if (needsApproval) {
                     setIsApproving(true);
                     toast.loading("Requesting USDC Approval...", { id: "tx" });
-                    await writeContractAsync({
-                        ...txConfig,
-                        address: CONTRACTS.USDC,
-                        abi: ERC20_ABI,
-                        functionName: 'approve',
-                        args: [selectedPool.address, value]
+                    tx = prepareContractCall({
+                        contract: usdcContract,
+                        method: 'approve',
+                        params: [selectedPool.address as `0x${string}`, value]
                     });
                 } else {
+                    setIsSubmitting(true);
                     toast.loading(`Depositing to ${selectedPool.sector} Pool...`, { id: "tx" });
-                    await writeContractAsync({
-                        ...txConfig,
-                        address: selectedPool.address,
-                        abi: LIQUIDITY_POOL_ABI,
-                        functionName: 'depositLiquidity',
-                        args: [value]
+                    tx = prepareContractCall({
+                        contract: poolContract,
+                        method: 'depositLiquidity',
+                        params: [value]
                     });
                 }
             } else {
+                setIsSubmitting(true);
                 const message = isScheduled ? `Scheduling Withdrawal for ${withdrawalDate}` : "Confirming Withdrawal...";
                 toast.loading(message, { id: "tx" });
 
                 if (isScheduled) {
                     const unlockTime = Math.floor(new Date(withdrawalDate).getTime() / 1000);
-                    await writeContractAsync({
-                        ...txConfig,
-                        address: selectedPool.address,
-                        abi: LIQUIDITY_POOL_ABI,
-                        functionName: 'scheduleWithdrawal',
-                        args: [value, BigInt(unlockTime)]
+                    tx = prepareContractCall({
+                        contract: poolContract,
+                        method: 'scheduleWithdrawal',
+                        params: [value, BigInt(unlockTime)]
                     });
                 } else {
-                    await writeContractAsync({
-                        ...txConfig,
-                        address: selectedPool.address,
-                        abi: LIQUIDITY_POOL_ABI,
-                        functionName: 'withdrawLiquidity',
-                        args: [value]
+                    tx = prepareContractCall({
+                        contract: poolContract,
+                        method: 'withdrawLiquidity',
+                        params: [value]
                     });
                 }
             }
-        } catch (err: any) {
-            console.error("Transaction Error:", err);
-            const msg = err.message || "Transaction failed";
-            if (msg.toLowerCase().includes("user rejected")) {
-                toast.error("Transaction rejected by user", { id: "tx" });
-            } else {
-                toast.error(msg, { id: "tx" });
+
+            if (tx) {
+                sendThirdwebTx(tx, {
+                    onSuccess: () => {
+                        if (isApproving) {
+                            toast.success("USDC Approved!", { id: "tx" });
+                            setIsApproving(false);
+                            refetchAllowance();
+                        } else {
+                            toast.success(`${actionType === 'deposit' ? 'Deposit' : 'Withdrawal'} successful!`, { id: "tx" });
+                            setAmount("");
+                            refetchAssets();
+                            refetchPayouts();
+                            refetchShares();
+                            refetchBalance();
+                            setIsSubmitting(false);
+                        }
+                    },
+                    onError: (err) => {
+                        console.error("Transaction Error:", err);
+                        const msg = err.message || "Transaction failed";
+                        toast.error(msg, { id: "tx" });
+                        setIsApproving(false);
+                        setIsSubmitting(false);
+                    }
+                });
             }
+        } catch (err: any) {
+            console.error("Transaction Preparation Error:", err);
+            toast.error(err.message || "Transaction failed");
             setIsApproving(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -200,102 +212,74 @@ export function InvestDashboardClient() {
         setIsMinting(true);
         toast.loading("Minting 1000 Test USDC...", { id: "mint" });
         try {
-            await writeContractAsync({
-                address: CONTRACTS.USDC,
-                abi: ERC20_ABI,
-                functionName: 'mint',
-                args: [address, parseUnits("1000", 6)]
+            const tx = prepareContractCall({
+                contract: usdcContract,
+                method: 'mint',
+                params: [address, parseUnits("1000", 6)]
             });
-            toast.success("Minting initiated! Refreshing balance...", { id: "mint" });
-            setTimeout(() => refetchBalance(), 2000);
+            sendThirdwebTx(tx, {
+                onSuccess: () => {
+                    toast.success("Minting successful! Refreshing balance...", { id: "mint" });
+                    setTimeout(() => refetchBalance(), 2000);
+                },
+                onError: (err) => {
+                    console.error("Mint Error:", err);
+                    toast.error("Minting failed. Standard USDC doesn't support public minting. Please use official Fuji Faucet.", { id: "mint" });
+                }
+            });
         } catch (err: any) {
-            console.error("Mint Error:", err);
-            const msg = err.message || "Minting failed";
-            if (msg.toLowerCase().includes("gas limit") || msg.toLowerCase().includes("reverted")) {
-                toast.error("Standard USDC doesn't support public minting. Please use the official Fuji Faucet: core.app/tools/faucet", { id: "mint", duration: 5000 });
-                window.open("https://core.app/tools/faucet/", "_blank");
-            } else {
-                toast.error(msg, { id: "mint" });
-            }
+            console.error("Mint Preparation Error:", err);
+            toast.error("Minting failed", { id: "mint" });
         } finally {
             setIsMinting(false);
         }
     };
 
-    useEffect(() => {
-        if (isTxSuccess) {
-            if (isApproving) {
-                toast.success("USDC Approved!", { id: "tx" });
-                setIsApproving(false);
-                refetchAllowance();
-            } else {
-                toast.success(`${actionType === 'deposit' ? 'Deposit' : 'Withdrawal'} successful!`, { id: "tx" });
-                setAmount("");
-                refetchAssets();
-                refetchPayouts();
-                refetchShares();
-                refetchBalance();
-            }
-        }
-        if (isTxError) {
-            console.error("Receipt Error:", txError);
-            toast.error("On-chain execution failed", { id: "tx" });
-            setIsApproving(false);
-        }
-    }, [isTxSuccess, isTxError, txError, actionType, isApproving, refetchAllowance]);
+    const depositEvent = prepareEvent({
+        signature: "event LiquidityDeposited(address indexed provider, uint256 amount, uint256 shares)"
+    });
+    const withdrawEvent = prepareEvent({
+        signature: "event LiquidityWithdrawn(address indexed provider, uint256 amount, uint256 shares)"
+    });
+
+    const depositEventsQuery = useContractEvents({
+        contract: poolContract,
+        events: [depositEvent],
+    });
+    const withdrawEventsQuery = useContractEvents({
+        contract: poolContract,
+        events: [withdrawEvent],
+    });
 
     useEffect(() => {
-        const fetchHistory = async () => {
-            if (!address || !publicClient) return;
-            setIsLoadingHistory(true);
-            try {
-                const [depositLogs, withdrawLogs] = await Promise.all([
-                    publicClient.getLogs({
-                        address: selectedPool.address,
-                        event: LIQUIDITY_POOL_ABI.find(x => x.type === 'event' && x.name === 'LiquidityDeposited') as any,
-                        args: { provider: address },
-                        fromBlock: BigInt(0)
-                    }),
-                    publicClient.getLogs({
-                        address: selectedPool.address,
-                        event: LIQUIDITY_POOL_ABI.find(x => x.type === 'event' && x.name === 'LiquidityWithdrawn') as any,
-                        args: { provider: address },
-                        fromBlock: BigInt(0)
-                    })
-                ]);
+        if (!address) return;
 
-                const allLogs = await Promise.all([
-                    ...depositLogs.map(async (log: any) => {
-                        const block = await publicClient.getBlock({ blockNumber: log.blockNumber });
-                        return {
-                            id: log.transactionHash,
-                            type: 'deposit',
-                            amount: formatUnits(log.args.amount, 6),
-                            timestamp: Number(block.timestamp) * 1000,
-                            hash: log.transactionHash
-                        };
-                    }),
-                    ...withdrawLogs.map(async (log: any) => {
-                        const block = await publicClient.getBlock({ blockNumber: log.blockNumber });
-                        return {
-                            id: log.transactionHash,
-                            type: 'withdraw',
-                            amount: formatUnits(log.args.amount, 6),
-                            timestamp: Number(block.timestamp) * 1000,
-                            hash: log.transactionHash
-                        };
-                    })
-                ]);
+        const processEvents = () => {
+            const deposits = (depositEventsQuery.data || [])
+                .filter((e: any) => e.args.provider.toLowerCase() === address.toLowerCase())
+                .map((e: any) => ({
+                    id: e.transactionHash,
+                    type: 'deposit',
+                    amount: formatUnits(e.args.amount, 6),
+                    timestamp: Date.now(), // Simplified
+                    hash: e.transactionHash
+                }));
 
-                setHistory(allLogs.sort((a, b) => b.timestamp - a.timestamp));
-            } catch (err) {
-                console.error("Failed to fetch history:", err);
-            } finally {
-                setIsLoadingHistory(false);
-            }
+            const withdrawals = (withdrawEventsQuery.data || [])
+                .filter((e: any) => e.args.provider.toLowerCase() === address.toLowerCase())
+                .map((e: any) => ({
+                    id: e.transactionHash,
+                    type: 'withdraw',
+                    amount: formatUnits(e.args.amount, 6),
+                    timestamp: Date.now(), // Simplified
+                    hash: e.transactionHash
+                }));
+
+            setHistory([...deposits, ...withdrawals].sort((a, b) => b.timestamp - a.timestamp));
         };
-        fetchHistory();
-    }, [address, publicClient, isTxSuccess, selectedPool.address]);
+
+        processEvents();
+    }, [address, depositEventsQuery.data, withdrawEventsQuery.data]);
 
     if (!mounted) return null;
 
@@ -642,14 +626,14 @@ export function InvestDashboardClient() {
 
                             <button
                                 onClick={handleTransaction}
-                                disabled={isSubmitting || isWaiting}
+                                disabled={isSubmitting || isTxPending}
                                 className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-sm transition-all duration-500 relative flex items-center justify-center gap-2
                                     ${isTxSuccess ? 'bg-emerald-500 text-black shadow-[0_0_30px_rgba(16,185,129,0.4)]' :
-                                        (isSubmitting || isWaiting) ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-white/5' :
+                                        (isSubmitting || isTxPending) ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-white/5' :
                                             'bg-primary hover:bg-primary/90 text-white shadow-[0_10px_20px_rgba(128,0,32,0.3)]'}
                                     disabled:opacity-50`}
                             >
-                                {isWaiting ? <RefreshCcw className="w-4 h-4 animate-spin" /> :
+                                {isTxPending ? <RefreshCcw className="w-4 h-4 animate-spin" /> :
                                     isSubmitting ? (isApproving ? 'Approving...' : 'Confirming...') :
                                         isTxSuccess ? <><CheckCircle2 className="w-5 h-5" /> SUCCEEDED</> :
                                             !isConnected ? <><Layers className="w-4 h-4" /> CONNECT WALLET</> :

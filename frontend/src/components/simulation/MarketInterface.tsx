@@ -1,8 +1,6 @@
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { toast } from "sonner";
+import { useActiveAccount, useReadContract, useSendTransaction } from "thirdweb/react";
+import { getContract, defineChain, prepareContractCall } from "thirdweb";
+import { client } from "@/lib/thirdweb";
 import { ESCROW_ABI, ERC20_ABI, CONTRACTS } from "@/lib/contracts";
 import { POLICY_PREMIUM, POLICY_PAYOUT, POLICY_DURATION_HOURS } from "@/lib/wagmiConfig";
 
@@ -43,77 +41,88 @@ export function MarketInterface() {
     const [purchaseSuccess, setPurchaseSuccess] = useState(false);
 
     /* ── Web3 Integration ── */
-    const { address, isConnected } = useAccount();
+    const account = useActiveAccount();
+    const address = account?.address;
+    const isConnected = !!account;
 
-    const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
-        address: CONTRACTS.USDC,
-        abi: ERC20_ABI,
-        functionName: "balanceOf",
-        args: address ? [address] : undefined,
-        query: { enabled: !!address },
+    const chain = defineChain(43113);
+    const usdcContract = getContract({ client, chain, address: CONTRACTS.USDC as string, abi: ERC20_ABI as any });
+    const escrowContract = getContract({ client, chain, address: CONTRACTS.ESCROW as string, abi: ESCROW_ABI as any });
+
+    const usdcBalanceQuery = useReadContract({
+        contract: usdcContract,
+        method: "balanceOf",
+        params: address ? [address] : undefined,
+        queryOptions: { enabled: !!address },
     });
+    const usdcBalance = usdcBalanceQuery.data;
+    const refetchBalance = usdcBalanceQuery.refetch;
 
-    const { data: allowance, refetch: refetchAllowance } = useReadContract({
-        address: CONTRACTS.USDC,
-        abi: ERC20_ABI,
-        functionName: "allowance",
-        args: address ? [address, CONTRACTS.ESCROW] : undefined,
-        query: { enabled: !!address },
+    const allowanceQuery = useReadContract({
+        contract: usdcContract,
+        method: "allowance",
+        params: address ? [address, CONTRACTS.ESCROW] : undefined,
+        queryOptions: { enabled: !!address },
     });
+    const allowance = allowanceQuery.data;
+    const refetchAllowance = allowanceQuery.refetch;
 
-    const { writeContract: approveUsdc, data: approveTxHash, isPending: isApproving, error: approveError } = useWriteContract();
-    const { isLoading: isApproveConfirming, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({ hash: approveTxHash });
+    const { mutate: sendTransaction, isPending: isTxPending } = useSendTransaction();
+    const [isInternalProcessing, setIsInternalProcessing] = useState(false);
 
-    const { writeContract: purchasePolicy, data: purchaseTxHash, isPending: isPurchasing, error: purchaseError } = useWriteContract();
-    const { isLoading: isPurchaseConfirming, isSuccess: isPurchaseSuccess } = useWaitForTransactionReceipt({
-        hash: purchaseTxHash,
-        query: { enabled: !!purchaseTxHash },
-    });
-
-    const hasEnoughAllowance = allowance ? (allowance as bigint) >= POLICY_PREMIUM : false;
-    const hasEnoughBalance = usdcBalance ? (usdcBalance as bigint) >= POLICY_PREMIUM : false;
-    const isProcessing = isApproving || isApproveConfirming || isPurchasing || isPurchaseConfirming;
+    const hasEnoughAllowance = allowance ? (BigInt(allowance.toString()) >= POLICY_PREMIUM) : false;
+    const hasEnoughBalance = usdcBalance ? (BigInt(usdcBalance.toString()) >= POLICY_PREMIUM) : false;
+    const isProcessing = isTxPending || isInternalProcessing;
     const canPurchase = flightDetails !== null && isConnected && hasEnoughBalance;
 
     const handleApprove = () => {
-        approveUsdc({
-            address: CONTRACTS.USDC,
-            abi: ERC20_ABI,
-            functionName: "approve",
-            args: [CONTRACTS.ESCROW, POLICY_PREMIUM],
+        setIsInternalProcessing(true);
+        const tx = prepareContractCall({
+            contract: usdcContract,
+            method: "approve",
+            params: [CONTRACTS.ESCROW, POLICY_PREMIUM],
+        });
+
+        toast.loading("Requesting allowance...", { id: "approve" });
+
+        sendTransaction(tx, {
+            onSuccess: () => {
+                toast.success("Allowance approved!", { id: "approve" });
+                setIsInternalProcessing(false);
+                refetchAllowance();
+            },
+            onError: (err) => {
+                toast.error(err.message.split(".")[0], { id: "approve" });
+                setIsInternalProcessing(false);
+            }
         });
     };
 
     const handlePurchase = () => {
         if (!flightDetails) return;
-        purchasePolicy({
-            address: CONTRACTS.ESCROW,
-            abi: ESCROW_ABI,
-            functionName: "purchasePolicy",
-            args: [flightDetails.flightId || flightDetails.flightNumber || flightCode.trim().toUpperCase(), POLICY_PREMIUM, POLICY_PAYOUT, POLICY_DURATION_HOURS],
+        setIsInternalProcessing(true);
+
+        const tx = prepareContractCall({
+            contract: escrowContract,
+            method: "purchasePolicy",
+            params: [flightDetails.flightId || flightDetails.flightNumber || flightCode.trim().toUpperCase(), POLICY_PREMIUM, POLICY_PAYOUT, POLICY_DURATION_HOURS],
+        });
+
+        toast.loading("Initializing purchase...", { id: "purchase" });
+
+        sendTransaction(tx, {
+            onSuccess: () => {
+                toast.success("Policy secured successfully!", { id: "purchase" });
+                setPurchaseSuccess(true);
+                setIsInternalProcessing(false);
+                refetchBalance();
+            },
+            onError: (err) => {
+                toast.error(err.message.split(".")[0], { id: "purchase" });
+                setIsInternalProcessing(false);
+            }
         });
     };
-
-    useEffect(() => {
-        if (isApproving) toast.loading("Requesting allowance...", { id: "approve" });
-        if (isApproveConfirming) toast.loading("Confirming on-chain...", { id: "approve" });
-        if (isApproveSuccess) {
-            toast.success("Allowance approved!", { id: "approve" });
-            refetchAllowance();
-        }
-        if (approveError) toast.error(approveError.message.split(".")[0], { id: "approve" });
-    }, [isApproving, isApproveConfirming, isApproveSuccess, approveError, refetchAllowance]);
-
-    useEffect(() => {
-        if (isPurchasing) toast.loading("Initializing purchase...", { id: "purchase" });
-        if (isPurchaseConfirming) toast.loading("Securing flight insurance...", { id: "purchase" });
-        if (isPurchaseSuccess) {
-            toast.success("Policy secured successfully!", { id: "purchase" });
-            setPurchaseSuccess(true);
-            refetchBalance();
-        }
-        if (purchaseError) toast.error(purchaseError.message.split(".")[0], { id: "purchase" });
-    }, [isPurchasing, isPurchaseConfirming, isPurchaseSuccess, purchaseError, refetchBalance]);
 
 
     // Mock telemetry updates (only when not showing real flight info)
