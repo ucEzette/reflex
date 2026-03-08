@@ -62,7 +62,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
     const [product, setProduct] = useState<MarketProduct | null>(null);
 
     // Form states
-    const [payoutInput, setPayoutInput] = useState("1000");
+    const [payoutInput, setPayoutInput] = useState("");
     const [dateRange, setDateRange] = useState({ start: '', end: '' });
     const [coordinates, setCoordinates] = useState({ lat: '', lon: '' });
     const [zone, setZone] = useState('');
