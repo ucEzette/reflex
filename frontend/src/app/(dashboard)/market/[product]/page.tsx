@@ -16,7 +16,7 @@ import { parseUnits } from 'viem';
 import { toast } from 'sonner';
 import { getContract, prepareContractCall, defineChain } from "thirdweb";
 import { client } from "../../../../lib/thirdweb";
-import { useSendTransaction } from "thirdweb/react";
+import { useSendTransaction, useActiveAccount } from "thirdweb/react";
 import { IDKitWidget, VerificationLevel } from '@worldcoin/idkit';
 import type { ISuccessResult } from '@worldcoin/idkit';
 
@@ -63,6 +63,7 @@ const INSURANCE_LOADING_FACTOR = 2.5;
 export default function ProductMarketPage({ params }: { params: { product: string } }) {
     const router = useRouter();
     const { address, isConnected } = useAccount();
+    const activeAccount = useActiveAccount();
     const [mounted, setMounted] = useState(false);
     const [product, setProduct] = useState<MarketProduct | null>(null);
 
@@ -212,7 +213,11 @@ export default function ProductMarketPage({ params }: { params: { product: strin
 
 
     const handlePurchase = async () => {
-        if (!isConnected) return toast.error("Connect wallet first");
+        if (!isConnected || !activeAccount) {
+            return toast.error("Connect wallet via 'Reflex Gateway' for gasless transactions", {
+                description: "Re-connect your wallet using the top-right button to enable smart execution."
+            });
+        }
         if (!isHumanVerified) return toast.error("Please verify your humanness with World ID first");
 
         try {
@@ -239,6 +244,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                     console.log("[CRE] Gasless orchestration success:", txHash);
                 },
                 onError: (err) => {
+                    console.error("[CRE] Gasless execution error:", err);
                     toast.error(`Transaction failed: ${err.message}`);
                 }
             });

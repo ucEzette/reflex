@@ -4,10 +4,14 @@ const nextConfig = {
     eslint: { ignoreDuringBuilds: true },
     reactStrictMode: true,
     
-    // Tell the Next.js tracer to ignore the missing export-detail.json file
     experimental: {
         outputFileTracingExcludes: {
             '*': [
+                // Exclude the massive build caches from server bundles (fixes 250MB error)
+                '**/.next/cache/**',
+                '**/.next/trace/**',
+                
+                // Keep the previous fix for the Vercel routing bug
                 '**/.next/export-detail.json',
                 '.next/export-detail.json'
             ],
