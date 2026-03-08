@@ -1,89 +1,82 @@
-"use client";
-
-import React, { useState } from 'react';
-import { InstitutionalTooltip } from '@/components/ui/InstitutionalTooltip';
-import {
-    ShieldAlert,
-    TrendingUp,
-    UserPlus,
-    UserMinus,
-    Pause,
-    Play,
-    RefreshCcw,
-    Zap,
-    Lock,
-    Unlock,
-    Shield,
-    Info
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { useReadContract } from 'wagmi';
+import { useActiveAccount, useReadContract, useSendTransaction } from "thirdweb/react";
+import { getContract, defineChain, prepareContractCall } from "thirdweb";
+import { client } from "@/lib/thirdweb";
 import { CONTRACTS } from '@/lib/contracts';
 import { LIQUIDITY_POOL_ABI, ESCROW_ABI } from '@/lib/enterprise_abis';
 import { formatUnits } from 'viem';
 import { useEffect } from 'react';
-import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 
 export function AdminControl() {
+    const account = useActiveAccount();
+    const address = account?.address;
+    const isConnected = !!account;
+
     const [mounted, setMounted] = useState(false);
-    const [isPaused, setIsPaused] = useState(false);
     const [isHarvesting, setIsHarvesting] = useState(false);
-    const [isManagingRelayers, setIsManagingRelayers] = useState(false);
 
     useEffect(() => { setMounted(true); }, []);
 
+    const chain = defineChain(43113);
+    const poolContract = getContract({ client, chain, address: CONTRACTS.LP_POOL as string, abi: LIQUIDITY_POOL_ABI as any });
+    const escrowContract = getContract({ client, chain, address: CONTRACTS.ESCROW as string, abi: ESCROW_ABI as any });
+
     // Live on-chain metrics
-    const { data: totalAssets } = useReadContract({
-        address: CONTRACTS.LP_POOL as `0x${string}`,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'totalAssets',
-        query: { enabled: mounted }
+    const totalAssetsQuery = useReadContract({
+        contract: poolContract,
+        method: 'totalAssets',
+        params: [],
     });
+    const totalAssets = totalAssetsQuery.data;
 
-    const { data: totalMaxPayouts } = useReadContract({
-        address: CONTRACTS.LP_POOL as `0x${string}`,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'totalMaxPayouts',
-        query: { enabled: mounted }
+    const totalMaxPayoutsQuery = useReadContract({
+        contract: poolContract,
+        method: 'totalMaxPayouts',
+        params: [],
     });
+    const totalMaxPayouts = totalMaxPayoutsQuery.data;
 
-    const { data: totalShares } = useReadContract({
-        address: CONTRACTS.LP_POOL as `0x${string}`,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'totalShares',
-        query: { enabled: mounted }
+    const totalSharesQuery = useReadContract({
+        contract: poolContract,
+        method: 'totalShares',
+        params: [],
     });
+    const totalShares = totalSharesQuery.data;
 
-    const { data: requiredQuorum, refetch: refetchQuorum } = useReadContract({
-        address: CONTRACTS.ESCROW as `0x${string}`,
-        abi: ESCROW_ABI,
-        functionName: 'requiredQuorum',
-        query: { enabled: mounted }
+    const requiredQuorumQuery = useReadContract({
+        contract: escrowContract,
+        method: 'requiredQuorum',
+        params: [],
     });
+    const requiredQuorum = requiredQuorumQuery.data;
+    const refetchQuorum = requiredQuorumQuery.refetch;
 
-    const { data: paused, refetch: refetchPause } = useReadContract({
-        address: CONTRACTS.LP_POOL as `0x${string}`,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'paused',
-        query: { enabled: mounted }
+    const pausedQuery = useReadContract({
+        contract: poolContract,
+        method: 'paused',
+        params: [],
     });
+    const paused = pausedQuery.data;
+    const refetchPause = pausedQuery.refetch;
 
-    const { writeContract, data: txHash } = useWriteContract();
-    const { isLoading: isTxLoading, isSuccess: isTxSuccess } = useWaitForTransactionReceipt({ hash: txHash });
-
-    useEffect(() => {
-        if (isTxSuccess) {
-            refetchQuorum();
-            refetchPause();
-        }
-    }, [isTxSuccess, refetchQuorum, refetchPause]);
+    const { mutate: sendTransaction, isPending: isTxLoading } = useSendTransaction();
 
     const handleTogglePause = () => {
-        writeContract({
-            address: CONTRACTS.LP_POOL as `0x${string}`,
-            abi: LIQUIDITY_POOL_ABI,
-            functionName: paused ? 'unpause' : 'pause',
+        const tx = prepareContractCall({
+            contract: poolContract,
+            method: paused ? 'unpause' : 'pause',
+            params: [],
         });
+
+        sendTransaction(tx, {
+            onSuccess: () => {
+                toast.success(paused ? "Protocol Resumed" : "Protocol Paused");
+                refetchPause();
+            },
+            onError: (err) => {
+                toast.error("Action failed", { description: err.message });
+            }
+        });
+
         toast.info(paused ? "Requesting Resume..." : "Requesting Emergency Pause...", {
             description: "Please confirm the transaction in your wallet."
         });
@@ -104,12 +97,21 @@ export function AdminControl() {
         const relayerAddress = prompt("Enter Relayer Ethereum Address:");
         if (!relayerAddress || !relayerAddress.startsWith('0x')) return;
 
-        writeContract({
-            address: CONTRACTS.ESCROW as `0x${string}`,
-            abi: ESCROW_ABI,
-            functionName: 'addAuthorizedRelayer',
-            args: [relayerAddress as `0x${string}`],
+        const tx = prepareContractCall({
+            contract: escrowContract,
+            method: 'addAuthorizedRelayer',
+            params: [relayerAddress as `0x${string}`],
         });
+
+        sendTransaction(tx, {
+            onSuccess: () => {
+                toast.success("Relayer authorized!");
+            },
+            onError: (err) => {
+                toast.error("Failed to add relayer", { description: err.message });
+            }
+        });
+
         toast.info("Authorizing Relayer...", { description: `Granting guardian permissions to ${relayerAddress.slice(0, 10)}...` });
     };
 
@@ -117,12 +119,22 @@ export function AdminControl() {
         const newQuorum = prompt("Enter New Quorum Threshold (e.g., 2):");
         if (!newQuorum) return;
 
-        writeContract({
-            address: CONTRACTS.ESCROW as `0x${string}`,
-            abi: ESCROW_ABI,
-            functionName: 'updateQuorum',
-            args: [BigInt(newQuorum)],
+        const tx = prepareContractCall({
+            contract: escrowContract,
+            method: 'updateQuorum',
+            params: [BigInt(newQuorum)],
         });
+
+        sendTransaction(tx, {
+            onSuccess: () => {
+                toast.success("Quorum threshold updated!");
+                refetchQuorum();
+            },
+            onError: (err) => {
+                toast.error("Failed to update quorum", { description: err.message });
+            }
+        });
+
         toast.info("Updating Quorum...", { description: `Setting consensus threshold to ${newQuorum} relayers.` });
     };
 
@@ -141,10 +153,10 @@ export function AdminControl() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Emergency Killswitch */}
-                <div className={`p-6 rounded-2xl border transition-all ${isPaused ? 'bg-red-500/10 border-red-500/30' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}>
+                <div className={`p-6 rounded-2xl border transition-all ${paused ? 'bg-red-500/10 border-red-500/30' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}>
                     <div className="flex items-center justify-between mb-4">
-                        <div className={`p-2 rounded-lg ${isPaused ? 'bg-red-500/20' : 'bg-white/10'}`}>
-                            {isPaused ? <Play className="w-5 h-5 text-red-500" /> : <Pause className="w-5 h-5 text-slate-400" />}
+                        <div className={`p-2 rounded-lg ${paused ? 'bg-red-500/20' : 'bg-white/10'}`}>
+                            {paused ? <Play className="w-5 h-5 text-red-500" /> : <Pause className="w-5 h-5 text-slate-400" />}
                         </div>
                         <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${paused ? 'bg-red-500 text-white' : 'bg-emerald-500/10 text-emerald-500'}`}>
                             {paused ? 'Paused' : 'Active'}

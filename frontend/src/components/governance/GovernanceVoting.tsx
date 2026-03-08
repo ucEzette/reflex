@@ -1,9 +1,6 @@
-"use client";
-
-import React, { useState, useEffect } from 'react';
-import { Vote, ChevronRight, Clock, CheckCircle2, AlertCircle, Shield, Play, PlusCircle, ExternalLink } from 'lucide-react';
-import { toast } from 'sonner';
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useActiveAccount, useReadContract, useSendTransaction } from "thirdweb/react";
+import { getContract, defineChain, prepareContractCall } from "thirdweb";
+import { client } from "@/lib/thirdweb";
 import { CONTRACTS } from '@/lib/contracts';
 import { ESCROW_ABI } from '@/lib/enterprise_abis';
 
@@ -52,7 +49,10 @@ const MOCK_PROPOSALS: Proposal[] = [
 ];
 
 export function GovernanceVoting() {
-    const { address } = useAccount();
+    const account = useActiveAccount();
+    const address = account?.address;
+    const isConnected = !!account;
+
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [hasVoted, setHasVoted] = useState<Record<string, boolean>>({});
 
@@ -62,31 +62,27 @@ export function GovernanceVoting() {
     const TARGET = "UAL123";
     const EVIDENCE_CID = "bafybeig...geba";
 
-    const { data: voteDetails, refetch: refetchVotes } = useReadContract({
-        address: CONTRACTS.ESCROW as `0x${string}`,
-        abi: ESCROW_ABI,
-        functionName: 'getVoteDetails',
-        args: [DISPUTED_POLICY as `0x${string}`],
-        query: { enabled: !!address }
+    const chain = defineChain(43113);
+    const contract = getContract({ client, chain, address: CONTRACTS.ESCROW as string, abi: ESCROW_ABI as any });
+
+    const voteDetailsQuery = useReadContract({
+        contract,
+        method: 'getVoteDetails',
+        params: [DISPUTED_POLICY as `0x${string}`],
+        queryOptions: { enabled: !!address }
     });
+    const voteDetails = voteDetailsQuery.data as any[];
+    const refetchVotes = voteDetailsQuery.refetch;
 
-    const { data: isRelayer } = useReadContract({
-        address: CONTRACTS.ESCROW as `0x${string}`,
-        abi: ESCROW_ABI,
-        functionName: 'authorizedRelayers',
-        args: [address as `0x${string}`],
-        query: { enabled: !!address }
+    const authorizedRelayersQuery = useReadContract({
+        contract,
+        method: 'authorizedRelayers',
+        params: address ? [address] : undefined,
+        queryOptions: { enabled: !!address }
     });
+    const isRelayer = authorizedRelayersQuery.data as boolean;
 
-    const { writeContract, data: txHash } = useWriteContract();
-    const { isSuccess: isSubmitSuccess, isLoading: isSubmitLoading } = useWaitForTransactionReceipt({ hash: txHash });
-
-    useEffect(() => {
-        if (isSubmitSuccess) {
-            toast.success("Consensus Vote Submitted!", { description: "Your relayer signature has been added to the quorum." });
-            refetchVotes();
-        }
-    }, [isSubmitSuccess, refetchVotes]);
+    const { mutate: sendTransaction, isPending: isSubmitLoading } = useSendTransaction();
 
     const handleVote = (id: string, support: boolean) => {
         setHasVoted(prev => ({ ...prev, [id]: true }));
@@ -101,11 +97,20 @@ export function GovernanceVoting() {
             return;
         }
 
-        writeContract({
-            address: CONTRACTS.ESCROW as `0x${string}`,
-            abi: ESCROW_ABI,
-            functionName: 'submitRelayerConsensus',
-            args: [DISPUTED_POLICY as `0x${string}`],
+        const tx = prepareContractCall({
+            contract,
+            method: 'submitRelayerConsensus',
+            params: [DISPUTED_POLICY as `0x${string}`],
+        });
+
+        sendTransaction(tx, {
+            onSuccess: () => {
+                toast.success("Consensus Vote Submitted!", { description: "Your relayer signature has been added to the quorum." });
+                refetchVotes();
+            },
+            onError: (err) => {
+                toast.error("Transaction failed", { description: err.message });
+            }
         });
     };
 

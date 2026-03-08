@@ -1,29 +1,40 @@
 "use client";
 
-import { useAccount, useDisconnect, useSwitchChain } from "wagmi";
 import { useState, useRef, useEffect } from "react";
-import { avalancheFuji } from "wagmi/chains";
 import { toast } from "sonner";
-import { ConnectButton } from "thirdweb/react";
+import {
+    ConnectButton,
+    useActiveAccount,
+    useDisconnect,
+    useActiveWallet,
+    useActiveWalletChain,
+    useSwitchActiveWalletChain
+} from "thirdweb/react";
 import { client } from "../lib/thirdweb";
 import { createWallet } from "thirdweb/wallets";
+import { defineChain } from "thirdweb/chains";
 
-const TARGET_CHAIN_ID = avalancheFuji.id;
+// Define the chain using Thirdweb's format
+const fujiChain = defineChain(43113);
+const TARGET_CHAIN_ID = fujiChain.id;
 const TARGET_CHAIN_NAME = "Avalanche Fuji";
 
-// FIXED: Removed "injected" and added "walletConnect" for universal EVM access
 const WALLETS = [
     createWallet("app.core.extension"),
     createWallet("io.metamask"),
     createWallet("com.coinbase.wallet"),
     createWallet("me.rainbow"),
-    createWallet("walletConnect"), 
+    createWallet("walletConnect"),
 ];
 
 export function WalletConnect() {
-    const { address, isConnected, chainId, connector } = useAccount();
-    const { switchChainAsync } = useSwitchChain();
+    // Read state from Thirdweb instead of Wagmi
+    const account = useActiveAccount();
+    const wallet = useActiveWallet();
+    const activeChain = useActiveWalletChain();
+    const switchChain = useSwitchActiveWalletChain();
     const { disconnect } = useDisconnect();
+
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [mounted, setMounted] = useState(false);
@@ -36,14 +47,14 @@ export function WalletConnect() {
     // Prompt user to switch to Fuji testnet if they are connected to another network
     useEffect(() => {
         const performSwitch = async () => {
-            if (isConnected && chainId !== TARGET_CHAIN_ID && switchChainAsync && !isSwitching) {
+            if (account && activeChain?.id !== TARGET_CHAIN_ID && switchChain && !isSwitching) {
                 setIsSwitching(true);
                 toast.warning(`Please switch to ${TARGET_CHAIN_NAME}`, {
                     description: "Reflex requires this network for parametric settlements.",
                     duration: 5000,
                 });
                 try {
-                    await switchChainAsync({ chainId: TARGET_CHAIN_ID });
+                    await switchChain(fujiChain);
                     toast.success(`Switched to ${TARGET_CHAIN_NAME}`);
                 } catch (e: any) {
                     console.error("Switch chain error:", e);
@@ -56,7 +67,7 @@ export function WalletConnect() {
             }
         };
         performSwitch();
-    }, [isConnected, chainId, switchChainAsync, isSwitching]);
+    }, [account, activeChain, switchChain, isSwitching]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -70,16 +81,15 @@ export function WalletConnect() {
 
     if (!mounted) return null;
 
-    if (isConnected && address) {
+    // Use account.address instead of Wagmi's address
+    if (account && account.address) {
         return (
             <div className="flex items-center gap-3">
                 <div className="dexter-btn-container w-32 relative z-30">
                     <button
                         onClick={() => {
-                            if (connector) {
-                                disconnect({ connector });
-                            } else {
-                                disconnect();
+                            if (wallet) {
+                                disconnect(wallet);
                             }
                         }}
                         className="dexter-btn !min-w-[124px] !min-h-[36px] !px-3 !py-1.5" type="button"
@@ -91,7 +101,7 @@ export function WalletConnect() {
                             </span>
                             FUJI TESTNET
                         </span>
-                        <span className="dexter-btn-text flex items-center justify-center gap-1.5 !text-xs w-full"><span className="material-symbols-outlined text-[16px]">account_balance_wallet</span> {address.slice(0, 4)}...{address.slice(-4)}</span>
+                        <span className="dexter-btn-text flex items-center justify-center gap-1.5 !text-xs w-full"><span className="material-symbols-outlined text-[16px]">account_balance_wallet</span> {account.address.slice(0, 4)}...{account.address.slice(-4)}</span>
                         <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100">
                             <path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path>
                         </svg>

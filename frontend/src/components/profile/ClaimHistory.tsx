@@ -1,7 +1,7 @@
-"use client";
-
 import React, { useState } from "react";
-import { useAccount, useReadContract } from "wagmi";
+import { useActiveAccount, useReadContract } from "thirdweb/react";
+import { getContract, defineChain } from "thirdweb";
+import { client } from "@/lib/thirdweb";
 import { ESCROW_ABI, CONTRACTS } from "@/lib/contracts";
 import { Shield, ExternalLink, Calendar, CheckCircle, XCircle, AlertCircle, Search, Filter } from "lucide-react";
 import Link from "next/link";
@@ -9,7 +9,9 @@ import Link from "next/link";
 type PolicyStatus = "All" | "Claimed" | "Expired" | "Disputed";
 
 export function ClaimHistory() {
-    const { address, isConnected } = useAccount();
+    const account = useActiveAccount();
+    const address = account?.address;
+    const isConnected = !!account;
     const [mounted, setMounted] = useState(false);
     const [filter, setFilter] = useState<PolicyStatus>("All");
     const [searchQuery, setSearchQuery] = useState("");
@@ -18,13 +20,17 @@ export function ClaimHistory() {
         setMounted(true);
     }, []);
 
-    const { data: policyIds, isLoading } = useReadContract({
-        address: CONTRACTS.ESCROW,
-        abi: ESCROW_ABI,
-        functionName: "getUserPolicies",
-        args: address ? [address] : undefined,
-        query: { enabled: !!address },
+    const chain = defineChain(43113);
+    const contract = getContract({ client, chain, address: CONTRACTS.ESCROW as string, abi: ESCROW_ABI as any });
+
+    const userPoliciesQuery = useReadContract({
+        contract,
+        method: "getUserPolicies",
+        params: address ? [address] : undefined,
+        queryOptions: { enabled: !!address },
     });
+    const policyIds = userPoliciesQuery.data as any[];
+    const isLoading = userPoliciesQuery.isLoading;
 
     if (!mounted) return null;
     if (!isConnected) return null;
@@ -79,12 +85,15 @@ export function ClaimHistory() {
 }
 
 function ClaimHistoryRow({ policyId, filter, search }: { policyId: string; filter: PolicyStatus; search: string }) {
-    const { data } = useReadContract({
-        address: CONTRACTS.ESCROW,
-        abi: ESCROW_ABI,
-        functionName: "getPolicy",
-        args: [policyId as `0x${string}`],
+    const chain = defineChain(43113);
+    const contract = getContract({ client, chain, address: CONTRACTS.ESCROW as string, abi: ESCROW_ABI as any });
+
+    const policyQuery = useReadContract({
+        contract,
+        method: "getPolicy",
+        params: [policyId as `0x${string}`],
     });
+    const data = policyQuery.data as any[];
 
     if (!data) return null;
 
