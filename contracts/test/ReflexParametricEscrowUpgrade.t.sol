@@ -52,7 +52,8 @@ contract ReflexParametricEscrowUpgradeTest is Test {
             address(usdc),
             L1_CHAIN_ID,
             treasury,
-            admin
+            admin,
+            1
         );
         ERC1967Proxy proxy = new ERC1967Proxy(
             address(implementation),
