@@ -1,9 +1,7 @@
-import { useReadContract, useReadContracts } from 'wagmi';
-import { CONTRACTS } from '../lib/contracts';
-import { LIQUIDITY_POOL_ABI, ERC20_ABI } from '../lib/enterprise_abis';
+import { useReadContract } from 'wagmi';
+import { CONTRACTS } from '@/lib/contracts';
+import { LIQUIDITY_POOL_ABI } from '@/lib/enterprise_abis';
 import { formatUnits } from 'viem';
-
-// Real on-chain data hooks — replacing all mock data
 
 export function usePoolMetrics() {
     const { data: totalAssets } = useReadContract({
