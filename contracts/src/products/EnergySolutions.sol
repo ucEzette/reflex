@@ -29,6 +29,7 @@ contract EnergySolutions {
 
     mapping(bytes32 => EnergyPolicy) public policies;
     bytes32[] public activePolicyIds;
+    mapping(address => bytes32[]) public userPolicies;
 
     event PolicyCreated(
         bytes32 id,
@@ -81,6 +82,7 @@ contract EnergySolutions {
             targetGrid: _targetGrid
         });
         activePolicyIds.push(policyId);
+        userPolicies[msg.sender].push(policyId);
 
         IERC20 usdc = pool.usdc();
         SafeERC20.safeTransferFrom(usdc, msg.sender, address(this), premium);
@@ -173,6 +175,12 @@ contract EnergySolutions {
 
     function getActivePolicyCount() external view returns (uint256) {
         return activePolicyIds.length;
+    }
+
+    function getUserPolicies(
+        address _user
+    ) external view returns (bytes32[] memory) {
+        return userPolicies[_user];
     }
 
     function _removeFromActive(bytes32 _id) internal {
