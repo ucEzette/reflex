@@ -12,7 +12,7 @@ import { Plane, CloudRain, Zap, Flame, Anchor, ArrowLeft, HelpCircle, Activity, 
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
 import { toast } from "sonner";
-import { CONTRACTS, PRODUCT_ABI, GENERIC_PRODUCT_ABI } from "@/lib/contracts";
+import { CONTRACTS, PRODUCT_ABI, GENERIC_PRODUCT_ABI, ERC20_ABI } from "@/lib/contracts";
 import { IDKitWidget, VerificationLevel } from '@worldcoin/idkit';
 import type { ISuccessResult } from '@worldcoin/idkit';
 
@@ -201,19 +201,66 @@ export default function ProductMarketPage({ params }: { params: { product: strin
         query: { enabled: mounted && !!targetContractAddress }
     });
 
-    const { writeContract: purchasePolicy, data: hash, isPending: isTxPending } = useWriteContract();
+    const { writeContract: purchasePolicy, data: hash, isPending: isTxPending, error: purchaseError } = useWriteContract();
     const { isLoading: isConfirming, isSuccess: isPurchaseSuccess } = useWaitForTransactionReceipt({ hash });
 
+    // USDC Allowance Check
+    const { data: allowance, refetch: refetchAllowance } = useReadContract({
+        address: CONTRACTS.USDC as `0x${string}`,
+        abi: ERC20_ABI,
+        functionName: "allowance",
+        args: [address as `0x${string}`, targetContractAddress as `0x${string}`],
+        query: { enabled: !!address && !!targetContractAddress }
+    });
+
+    const { writeContract: approveUSDC, isPending: isApprovePending, data: approveHash } = useWriteContract();
+    const { isLoading: isConfirmingApprove, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({ hash: approveHash });
+
+    useEffect(() => {
+        if (isApproveSuccess) {
+            toast.success("USDC Approved!");
+            refetchAllowance();
+        }
+    }, [isApproveSuccess, refetchAllowance]);
+
+    useEffect(() => {
+        if (purchaseError) {
+            console.error("Purchase Error:", purchaseError);
+            toast.error(purchaseError.message || "Purchase failed");
+        }
+    }, [purchaseError]);
+
+    const needsApproval = allowance !== undefined && premiumQuote !== undefined && BigInt(allowance) < BigInt(premiumQuote);
+
     const handlePurchase = async () => {
+        console.log("Handle Purchase Triggered");
         if (!isConnected || !address) {
+            console.log("Wallet not connected");
             return toast.error("Connect wallet to proceed");
         }
-        if (!isHumanVerified) return toast.error("Please verify your humanness with World ID first");
+        if (!isHumanVerified) {
+            console.log("Not human verified");
+            return toast.error("Please verify your humanness with World ID first");
+        }
+
+        if (needsApproval) {
+            console.log("Requesting USDC Approval for:", targetContractAddress);
+            approveUSDC({
+                address: CONTRACTS.USDC as `0x${string}`,
+                abi: ERC20_ABI,
+                functionName: "approve",
+                args: [targetContractAddress as `0x${string}`, premiumQuote as bigint]
+            });
+            return;
+        }
 
         try {
             const args = product?.id === 'flight'
                 ? [flightId || "REF-001", parseUnits(payoutInput, 6), BigInt(dynamicRisk.nDelayed), BigInt(dynamicRisk.nTotal), BigInt(effectiveDuration), "0x" as `0x${string}`]
                 : [zone || coordinates.lat || "ZONE-A", parseUnits(payoutInput, 6), BigInt(100), BigInt(50), expectedRiskBase, BigInt(effectiveDuration)];
+
+            console.log("Executing purchasePolicy on:", targetContractAddress);
+            console.log("Arguments:", args);
 
             purchasePolicy({
                 address: targetContractAddress as `0x${string}`,
@@ -223,12 +270,15 @@ export default function ProductMarketPage({ params }: { params: { product: strin
             });
 
         } catch (err: any) {
+            console.error("Handle Purchase Try/Catch Error:", err);
             toast.error(err.message || "Execution failed");
         }
     };
 
     useEffect(() => {
-        if (isPurchaseSuccess) toast.success("Policy secured successfully!");
+        if (isPurchaseSuccess) {
+            toast.success("Policy secured successfully!");
+        }
     }, [isPurchaseSuccess]);
 
     const [showCalcInfo, setShowCalcInfo] = useState(false);
@@ -276,317 +326,367 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Left Column: Configuration */}
-                    <div className="space-y-6">
-                        <div className="bg-card border border-border rounded-xl p-6 space-y-6">
-                            <h3 className="text-lg font-bold text-foreground">Configure Parameters</h3>
-
-                            {product.id === 'flight' && (
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2 col-span-2">
-                                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Flight Number</label>
-                                        <input type="text" placeholder="EK202" value={flightId} onChange={e => setFlightId(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Departure Date</label>
-                                        <div className="relative">
-                                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                                            <input type="date" value={dateRange.start} onChange={e => setDateRange({ ...dateRange, start: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Arrival Date</label>
-                                        <div className="relative">
-                                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                                            <input type="date" value={dateRange.end} onChange={e => setDateRange({ ...dateRange, end: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {product.id === 'prod-cat' && (
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Latitude</label>
-                                        <div className="relative">
-                                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                                            <input type="text" placeholder="34.0522" value={coordinates.lat} onChange={e => setCoordinates({ ...coordinates, lat: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Longitude</label>
-                                        <div className="relative">
-                                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                                            <input type="text" placeholder="-118.2437" value={coordinates.lon} onChange={e => setCoordinates({ ...coordinates, lon: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {(product.id === 'prod-agri' || product.id === 'prod-energy' || product.id === 'prod-maritime') && (
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Target Zone / Port</label>
-                                    <input type="text" placeholder={product.inputPlaceholder} value={zone} onChange={e => setZone(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
-                                </div>
-                            )}
-
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex justify-between">Requested Max Payout (USDC)</label>
-                                <input type="number" value={payoutInput} onChange={e => setPayoutInput(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xl font-bold text-foreground focus:border-primary outline-none" />
+                {isPurchaseSuccess ? (
+                    <div className="bg-card border border-border rounded-xl p-12 text-center space-y-8 animate-in zoom-in-95 duration-500 max-w-2xl mx-auto shadow-2xl shadow-emerald-500/10">
+                        <div className="flex justify-center">
+                            <div className="w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
+                                <CheckCircle2 className="w-12 h-12" />
                             </div>
-
-                            {/* Duration Selector — hidden for flights (auto-computed from schedule) */}
-                            {product.id === 'flight' ? (
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
-                                        <Clock className="w-3 h-3" /> Policy Duration (Auto)
-                                    </label>
-                                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
-                                        {flightScheduledArrival ? (
-                                            <>
-                                                <p className="text-sm font-bold text-emerald-400">
-                                                    Expires on arrival + 6h buffer
-                                                </p>
-                                                <p className="text-[10px] text-zinc-400 mt-1">
-                                                    Scheduled Arrival: {new Date(flightScheduledArrival).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })} · Auto-settled by Chainlink Keepers
-                                                </p>
-                                            </>
-                                        ) : (
-                                            <p className="text-xs text-zinc-400">Enter a flight number to auto-compute duration</p>
-                                        )}
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
-                                        <Clock className="w-3 h-3" /> Policy Duration
-                                    </label>
-                                    <div className="grid grid-cols-4 gap-2">
-                                        {DURATION_OPTIONS.map(opt => (
-                                            <button
-                                                key={opt.value}
-                                                onClick={() => setSelectedDuration(opt)}
-                                                className={`py-2.5 rounded-lg text-sm font-bold transition-all ${selectedDuration.value === opt.value
-                                                    ? 'bg-primary text-white shadow-[0_0_12px_rgba(128,0,32,0.3)]'
-                                                    : 'bg-white/5 text-zinc-400 border border-white/10 hover:border-primary/50 hover:text-foreground'}`}
-                                            >
-                                                {opt.short}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <p className="text-[10px] text-zinc-500 mt-1">
-                                        Expires: {expiryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} · Auto-settled by Chainlink Keepers
-                                    </p>
-                                </div>
-                            )}
                         </div>
-
-                        {/* Oracle Data Panel */}
-                        <div className="bg-card border border-border rounded-xl p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                                    <Satellite className="w-4 h-4 text-cyan-500" /> Live Oracle Feed
-                                </h3>
-                                <button onClick={fetchOracleData} className="text-xs text-zinc-500 hover:text-white transition-colors flex items-center gap-1">
-                                    <RefreshCcw className={`w-3 h-3 ${isLoadingOracle ? 'animate-spin' : ''}`} /> Refresh
-                                </button>
-                            </div>
-                            {isLoadingOracle ? (
-                                <div className="flex items-center justify-center py-6">
-                                    <RefreshCcw className="w-5 h-5 text-primary animate-spin" />
-                                </div>
-                            ) : oracleData?.status === 'ok' ? (
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <Radio className="w-3 h-3 text-emerald-500 animate-pulse" />
-                                        <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider">Connected — {oracleData.source}</span>
-                                    </div>
-                                    {Object.entries(oracleData.data || {}).map(([key, value]: [string, any]) => {
-                                        if (typeof value === 'object') return null; // skip nested objects
-                                        return (
-                                            <div key={key} className="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0">
-                                                <span className="text-[10px] text-zinc-500 uppercase tracking-wider">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                                                <span className="text-xs font-medium text-foreground">{String(value)}</span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ) : oracleData?.status === 'no_key' ? (
-                                <div className="py-4 text-center">
-                                    <Shield className="w-6 h-6 text-amber-500 mx-auto mb-2 opacity-50" />
-                                    <p className="text-xs text-amber-500">{oracleData.message}</p>
-                                    <p className="text-[10px] text-zinc-600 mt-1">Add API key to .env.local to enable</p>
-                                </div>
-                            ) : (
-                                <div className="py-4 text-center">
-                                    <Activity className="w-6 h-6 text-zinc-600 mx-auto mb-2" />
-                                    <p className="text-xs text-zinc-500">Enter parameters to fetch oracle data</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Right Column: Quote & Purchase */}
-                    <div className="bg-card border border-border rounded-xl p-6 flex flex-col justify-between relative">
-                        <div>
-                            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
-                                <h3 className="text-lg font-bold text-foreground">Underwriting Quote</h3>
-                                <button onClick={() => setShowCalcInfo(!showCalcInfo)}><HelpCircle className={`w-5 h-5 cursor-pointer transition-colors ${showCalcInfo ? 'text-primary' : 'text-zinc-500 hover:text-white'}`} /></button>
-                            </div>
-
-                            {showCalcInfo && calc && (
-                                <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-4 mb-6 space-y-3 text-xs">
-                                    <div>
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-primary block mb-1.5">Pricing Formula</span>
-                                        <code className="text-[11px] text-emerald-400 font-mono bg-black/40 px-2.5 py-1.5 rounded block leading-relaxed">{calc.formula}</code>
-                                    </div>
-                                    <div>
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 block mb-1.5">Variables</span>
-                                        <ul className="space-y-1.5">
-                                            {calc.variables.map((v: string, i: number) => (
-                                                <li key={i} className="text-[10px] text-zinc-400 leading-relaxed flex gap-1.5">
-                                                    <span className="text-primary mt-0.5 shrink-0">•</span> {v}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                    <div className="border-t border-white/5 pt-2.5">
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-amber-500/80 block mb-1">Example</span>
-                                        <span className="text-[10px] text-zinc-300 leading-relaxed">{calc.example}</span>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Flight Not Found Banner */}
-                            {product.id === 'flight' && oracleData && !flightValid && (
-                                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-5 mb-6 text-center space-y-2">
-                                    <div className="flex items-center justify-center gap-2">
-                                        <AlertTriangle className="w-5 h-5 text-amber-400" />
-                                        <span className="text-lg font-black text-amber-400">Flight Not Found</span>
-                                    </div>
-                                    <p className="text-sm text-zinc-400">
-                                        {oracleData.message || `No flights found for this identifier.`}
-                                    </p>
-                                    <p className="text-xs text-zinc-500 max-w-[280px] mx-auto">
-                                        Please verify the flight number and try again. Example: <strong>UA532</strong>, <strong>EK202</strong>
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Flight Status Gating Banner */}
-                            {product.id === 'flight' && flightValid && !flightInsurable && (
-                                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5 mb-6 text-center space-y-2">
-                                    <div className="flex items-center justify-center gap-2">
-                                        <Plane className="w-5 h-5 text-red-400" />
-                                        <span className="text-lg font-black text-red-400">Flight Not Insurable</span>
-                                    </div>
-                                    <p className="text-sm text-zinc-400">
-                                        Status: <span className="font-bold text-red-300">{flightStatusLabel}</span>
-                                    </p>
-                                    <p className="text-xs text-zinc-500 max-w-[280px] mx-auto">
-                                        Insurance can only be purchased for flights with a <strong>Scheduled</strong> status. This flight has already departed, arrived, or been cancelled.
-                                    </p>
-                                </div>
-                            )}
-
-                            {isQuoting ? (
-                                <div className="h-48 flex flex-col items-center justify-center space-y-4">
-                                    <RefreshCcw className="w-8 h-8 text-primary animate-spin" />
-                                    <p className="text-xs text-zinc-500 uppercase tracking-widest font-black">Sourcing Premium...</p>
-                                </div>
-                            ) : (product.id === 'flight' && !flightInsurable) ? null : premiumQuote ? (
-                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                    <div className="text-center">
-                                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Required Premium (USDC)</p>
-                                        <span className="text-6xl font-black text-foreground">${(Number(premiumQuote) / 1e6).toFixed(2)}</span>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                                            <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Max Coverage</p>
-                                            <p className="text-sm font-bold text-emerald-400">${Number(payoutInput).toLocaleString()}</p>
-                                        </div>
-                                        <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                                            <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Duration</p>
-                                            <p className="text-sm font-bold text-foreground">
-                                                {product.id === 'flight' && flightScheduledArrival
-                                                    ? `Until ${new Date(flightScheduledArrival).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} + 6h`
-                                                    : selectedDuration.label}
-                                            </p>
-                                        </div>
-                                        <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                                            <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Oracle Route</p>
-                                            <p className="text-sm font-bold text-foreground">Chainlink DON</p>
-                                        </div>
-                                        <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                                            <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Auto-Settlement</p>
-                                            <p className="text-sm font-bold text-cyan-400">Keepers ✓</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="h-48 flex flex-col items-center justify-center text-zinc-500 space-y-4">
-                                    <Activity className="w-12 h-12 opacity-20" />
-                                    <p className="text-sm max-w-[200px] text-center">Configure parameters to generate a live hazard quote</p>
-                                </div>
-                            )}
-                        </div>
-
                         <div className="space-y-4">
-                            {/* World ID Verification Widget */}
-                            {!isHumanVerified ? (
-                                <div className="space-y-3">
-                                    <IDKitWidget
-                                        app_id="app_staging_reflex"
-                                        action="purchase_policy"
-                                        onSuccess={handleWorldIDSuccess}
-                                        verification_level={VerificationLevel.Device}
-                                    >
-                                        {({ open }: { open: () => void }) => (
-                                            <button
-                                                onClick={open}
-                                                className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 transition-all font-bold text-sm text-white shadow-xl group"
-                                            >
-                                                <div className="w-6 h-6 flex items-center justify-center bg-white rounded-full p-1 group-hover:scale-110 transition-transform">
-                                                    <Image src="/world-id.svg" alt="World ID" width={16} height={16} />
-                                                </div>
-                                                Verify Humanness with World ID
-                                            </button>
-                                        )}
-                                    </IDKitWidget>
+                            <h2 className="text-4xl font-black text-foreground">Policy Secured!</h2>
+                            <p className="text-zinc-400">
+                                Your parametric protection for <span className="text-white font-bold">{flightId || zone || "your asset"}</span> is now active on the Avalanche Fuji network.
+                            </p>
+                        </div>
 
-                                    {/* Testnet Bypass */}
-                                    <button
-                                        onClick={() => {
-                                            setIsHumanVerified(true);
-                                            toast.info("Testnet Bypass: Humanness verified manually");
-                                        }}
-                                        className="w-full text-[10px] text-zinc-600 hover:text-primary transition-colors uppercase tracking-[0.2em] font-black py-1"
-                                    >
-                                        [ Dev: Bypass Verification ]
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs uppercase tracking-widest">
-                                    <CheckCircle2 className="w-4 h-4" /> Humanness Verified
-                                </div>
-                            )}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-left">
+                                <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Coverage</p>
+                                <p className="text-lg font-black text-emerald-400">${Number(payoutInput).toLocaleString()}</p>
+                            </div>
+                            <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-left">
+                                <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Status</p>
+                                <p className="text-lg font-black text-sky-400">Active ✓</p>
+                            </div>
+                        </div>
 
-                            <button
-                                onClick={handlePurchase}
-                                disabled={!premiumQuote || isConfirming || isTxPending || (product.id === 'flight' && !flightInsurable)}
-                                className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-2
-                                ${(isConfirming || isTxPending) ? 'bg-zinc-700 text-zinc-400' : (product.id === 'flight' && !flightInsurable) ? 'bg-red-900/30 text-red-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_20px_rgba(16,185,129,0.3)]'}
-                                disabled:opacity-50 disabled:cursor-not-allowed`}
+                        <div className="flex flex-col gap-4">
+                            <a
+                                href={`https://testnet.snowscan.xyz/tx/${hash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full py-4 rounded-xl bg-sky-500 text-black font-black uppercase tracking-widest text-sm hover:bg-sky-400 transition-all flex items-center justify-center gap-2"
                             >
-                                {(isConfirming || isTxPending) ? <><RefreshCcw className="w-4 h-4 animate-spin" /> Confirming...</> :
-                                    (product.id === 'flight' && !flightInsurable) ? <>Flight Not Insurable</> :
-                                        <><CheckCircle2 className="w-4 h-4" /> Finalize Policy (Wagmi Optimized)</>}
+                                <Globe className="w-4 h-4" /> View Transaction on Snowscan
+                            </a>
+                            <button
+                                onClick={() => router.push('/dashboard')}
+                                className="w-full py-4 rounded-xl bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-sm hover:bg-white/10 transition-all"
+                            >
+                                Go to Portfolio
                             </button>
                         </div>
+
+                        <div className="flex items-center justify-center gap-2 pt-4 border-t border-white/5">
+                            <span className="text-[10px] text-zinc-600 uppercase tracking-widest">Powered by Chainlink DON & Avalanche CCIP</span>
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Left Column: Configuration */}
+                        <div className="space-y-6">
+                            <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+                                <h3 className="text-lg font-bold text-foreground">Configure Parameters</h3>
+                                {/* ... existing form content ... */}
+
+                                {product.id === 'flight' && (
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2 col-span-2">
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Flight Number</label>
+                                            <input type="text" placeholder="EK202" value={flightId} onChange={e => setFlightId(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Departure Date</label>
+                                            <div className="relative">
+                                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                                                <input type="date" value={dateRange.start} onChange={e => setDateRange({ ...dateRange, start: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Arrival Date</label>
+                                            <div className="relative">
+                                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                                                <input type="date" value={dateRange.end} onChange={e => setDateRange({ ...dateRange, end: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {product.id === 'prod-cat' && (
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Latitude</label>
+                                            <div className="relative">
+                                                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                                                <input type="text" placeholder="34.0522" value={coordinates.lat} onChange={e => setCoordinates({ ...coordinates, lat: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Longitude</label>
+                                            <div className="relative">
+                                                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                                                <input type="text" placeholder="-118.2437" value={coordinates.lon} onChange={e => setCoordinates({ ...coordinates, lon: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {(product.id === 'prod-agri' || product.id === 'prod-energy' || product.id === 'prod-maritime') && (
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Target Zone / Port</label>
+                                        <input type="text" placeholder={product.inputPlaceholder} value={zone} onChange={e => setZone(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                    </div>
+                                )}
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex justify-between">Requested Max Payout (USDC)</label>
+                                    <input type="number" value={payoutInput} onChange={e => setPayoutInput(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xl font-bold text-foreground focus:border-primary outline-none" />
+                                </div>
+
+                                {/* Duration Selector — hidden for flights (auto-computed from schedule) */}
+                                {product.id === 'flight' ? (
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+                                            <Clock className="w-3 h-3" /> Policy Duration (Auto)
+                                        </label>
+                                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
+                                            {flightScheduledArrival ? (
+                                                <>
+                                                    <p className="text-sm font-bold text-emerald-400">
+                                                        Expires on arrival + 6h buffer
+                                                    </p>
+                                                    <p className="text-[10px] text-zinc-400 mt-1">
+                                                        Scheduled Arrival: {new Date(flightScheduledArrival).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })} · Auto-settled by Chainlink Keepers
+                                                    </p>
+                                                </>
+                                            ) : (
+                                                <p className="text-xs text-zinc-400">Enter a flight number to auto-compute duration</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+                                            <Clock className="w-3 h-3" /> Policy Duration
+                                        </label>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {DURATION_OPTIONS.map(opt => (
+                                                <button
+                                                    key={opt.value}
+                                                    onClick={() => setSelectedDuration(opt)}
+                                                    className={`py-2.5 rounded-lg text-sm font-bold transition-all ${selectedDuration.value === opt.value
+                                                        ? 'bg-primary text-white shadow-[0_0_12px_rgba(128,0,32,0.3)]'
+                                                        : 'bg-white/5 text-zinc-400 border border-white/10 hover:border-primary/50 hover:text-foreground'}`}
+                                                >
+                                                    {opt.short}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <p className="text-[10px] text-zinc-500 mt-1">
+                                            Expires: {expiryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} · Auto-settled by Chainlink Keepers
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Oracle Data Panel */}
+                            <div className="bg-card border border-border rounded-xl p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                                        <Satellite className="w-4 h-4 text-cyan-500" /> Live Oracle Feed
+                                    </h3>
+                                    <button onClick={fetchOracleData} className="text-xs text-zinc-500 hover:text-white transition-colors flex items-center gap-1">
+                                        <RefreshCcw className={`w-3 h-3 ${isLoadingOracle ? 'animate-spin' : ''}`} /> Refresh
+                                    </button>
+                                </div>
+                                {isLoadingOracle ? (
+                                    <div className="flex items-center justify-center py-6">
+                                        <RefreshCcw className="w-5 h-5 text-primary animate-spin" />
+                                    </div>
+                                ) : oracleData?.status === 'ok' ? (
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <Radio className="w-3 h-3 text-emerald-500 animate-pulse" />
+                                            <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider">Connected — {oracleData.source}</span>
+                                        </div>
+                                        {Object.entries(oracleData.data || {}).map(([key, value]: [string, any]) => {
+                                            if (typeof value === 'object') return null; // skip nested objects
+                                            return (
+                                                <div key={key} className="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0">
+                                                    <span className="text-[10px] text-zinc-500 uppercase tracking-wider">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                                    <span className="text-xs font-medium text-foreground">{String(value)}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : oracleData?.status === 'no_key' ? (
+                                    <div className="py-4 text-center">
+                                        <Shield className="w-6 h-6 text-amber-500 mx-auto mb-2 opacity-50" />
+                                        <p className="text-xs text-amber-500">{oracleData.message}</p>
+                                        <p className="text-[10px] text-zinc-600 mt-1">Add API key to .env.local to enable</p>
+                                    </div>
+                                ) : (
+                                    <div className="py-4 text-center">
+                                        <Activity className="w-6 h-6 text-zinc-600 mx-auto mb-2" />
+                                        <p className="text-xs text-zinc-500">Enter parameters to fetch oracle data</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Right Column: Quote & Purchase */}
+                        <div className="bg-card border border-border rounded-xl p-6 flex flex-col justify-between relative">
+                            <div>
+                                <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+                                    <h3 className="text-lg font-bold text-foreground">Underwriting Quote</h3>
+                                    <button onClick={() => setShowCalcInfo(!showCalcInfo)}><HelpCircle className={`w-5 h-5 cursor-pointer transition-colors ${showCalcInfo ? 'text-primary' : 'text-zinc-500 hover:text-white'}`} /></button>
+                                </div>
+
+                                {showCalcInfo && calc && (
+                                    <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-4 mb-6 space-y-3 text-xs">
+                                        <div>
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-primary block mb-1.5">Pricing Formula</span>
+                                            <code className="text-[11px] text-emerald-400 font-mono bg-black/40 px-2.5 py-1.5 rounded block leading-relaxed">{calc.formula}</code>
+                                        </div>
+                                        <div>
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 block mb-1.5">Variables</span>
+                                            <ul className="space-y-1.5">
+                                                {calc.variables.map((v: string, i: number) => (
+                                                    <li key={i} className="text-[10px] text-zinc-400 leading-relaxed flex gap-1.5">
+                                                        <span className="text-primary mt-0.5 shrink-0">•</span> {v}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/5 pt-2.5">
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-amber-500/80 block mb-1">Example</span>
+                                            <span className="text-[10px] text-zinc-300 leading-relaxed">{calc.example}</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Flight Not Found Banner */}
+                                {product.id === 'flight' && oracleData && !flightValid && (
+                                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-5 mb-6 text-center space-y-2">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <AlertTriangle className="w-5 h-5 text-amber-400" />
+                                            <span className="text-lg font-black text-amber-400">Flight Not Found</span>
+                                        </div>
+                                        <p className="text-sm text-zinc-400">
+                                            {oracleData.message || `No flights found for this identifier.`}
+                                        </p>
+                                        <p className="text-xs text-zinc-500 max-w-[280px] mx-auto">
+                                            Please verify the flight number and try again. Example: <strong>UA532</strong>, <strong>EK202</strong>
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Flight Status Gating Banner */}
+                                {product.id === 'flight' && flightValid && !flightInsurable && (
+                                    <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5 mb-6 text-center space-y-2">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <Plane className="w-5 h-5 text-red-400" />
+                                            <span className="text-lg font-black text-red-400">Flight Not Insurable</span>
+                                        </div>
+                                        <p className="text-sm text-zinc-400">
+                                            Status: <span className="font-bold text-red-300">{flightStatusLabel}</span>
+                                        </p>
+                                        <p className="text-xs text-zinc-500 max-w-[280px] mx-auto">
+                                            Insurance can only be purchased for flights with a <strong>Scheduled</strong> status. This flight has already departed, arrived, or been cancelled.
+                                        </p>
+                                    </div>
+                                )}
+
+                                {isQuoting ? (
+                                    <div className="h-48 flex flex-col items-center justify-center space-y-4">
+                                        <RefreshCcw className="w-8 h-8 text-primary animate-spin" />
+                                        <p className="text-xs text-zinc-500 uppercase tracking-widest font-black">Sourcing Premium...</p>
+                                    </div>
+                                ) : (product.id === 'flight' && !flightInsurable) ? null : premiumQuote ? (
+                                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                        <div className="text-center">
+                                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Required Premium (USDC)</p>
+                                            <span className="text-6xl font-black text-foreground">${(Number(premiumQuote) / 1e6).toFixed(2)}</span>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                                                <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Max Coverage</p>
+                                                <p className="text-sm font-bold text-emerald-400">${Number(payoutInput).toLocaleString()}</p>
+                                            </div>
+                                            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                                                <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Duration</p>
+                                                <p className="text-sm font-bold text-foreground">
+                                                    {product.id === 'flight' && flightScheduledArrival
+                                                        ? `Until ${new Date(flightScheduledArrival).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} + 6h`
+                                                        : selectedDuration.label}
+                                                </p>
+                                            </div>
+                                            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                                                <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Oracle Route</p>
+                                                <p className="text-sm font-bold text-foreground">Chainlink DON</p>
+                                            </div>
+                                            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                                                <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Auto-Settlement</p>
+                                                <p className="text-sm font-bold text-cyan-400">Keepers ✓</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="h-48 flex flex-col items-center justify-center text-zinc-500 space-y-4">
+                                        <Activity className="w-12 h-12 opacity-20" />
+                                        <p className="text-sm max-w-[200px] text-center">Configure parameters to generate a live hazard quote</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="space-y-4">
+                                {/* World ID Verification Widget */}
+                                {!isHumanVerified ? (
+                                    <div className="space-y-3">
+                                        <IDKitWidget
+                                            app_id="app_staging_reflex"
+                                            action="purchase_policy"
+                                            onSuccess={handleWorldIDSuccess}
+                                            verification_level={VerificationLevel.Device}
+                                        >
+                                            {({ open }: { open: () => void }) => (
+                                                <button
+                                                    onClick={open}
+                                                    className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 transition-all font-bold text-sm text-white shadow-xl group"
+                                                >
+                                                    <div className="w-6 h-6 flex items-center justify-center bg-white rounded-full p-1 group-hover:scale-110 transition-transform">
+                                                        <Image src="/world-id.svg" alt="World ID" width={16} height={16} />
+                                                    </div>
+                                                    Verify Humanness with World ID
+                                                </button>
+                                            )}
+                                        </IDKitWidget>
+
+                                        {/* Testnet Bypass */}
+                                        <button
+                                            onClick={() => {
+                                                setIsHumanVerified(true);
+                                                toast.info("Testnet Bypass: Humanness verified manually");
+                                            }}
+                                            className="w-full text-[10px] text-zinc-600 hover:text-primary transition-colors uppercase tracking-[0.2em] font-black py-1"
+                                        >
+                                            [ Dev: Bypass Verification ]
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs uppercase tracking-widest">
+                                        <CheckCircle2 className="w-4 h-4" /> Humanness Verified
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={handlePurchase}
+                                    disabled={!premiumQuote || isConfirming || isTxPending || isApprovePending || isConfirmingApprove || (product.id === 'flight' && !flightInsurable)}
+                                    className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-2
+                                ${(isConfirming || isTxPending || isConfirmingApprove || isApprovePending) ? 'bg-zinc-700 text-zinc-400' : (product.id === 'flight' && !flightInsurable) ? 'bg-red-900/30 text-red-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_20px_rgba(16,185,129,0.3)]'}
+                                disabled:opacity-50 disabled:cursor-not-allowed`}
+                                >
+                                    {(isConfirming || isTxPending || isConfirmingApprove || isApprovePending) ? <><RefreshCcw className="w-4 h-4 animate-spin" /> {isApprovePending || isConfirmingApprove ? "Approving..." : "Confirming..."}</> :
+                                        (product.id === 'flight' && !flightInsurable) ? <>Flight Not Insurable</> :
+                                            needsApproval ? <><CheckCircle2 className="w-4 h-4" /> Approve USDC for Policy</> :
+                                                <><CheckCircle2 className="w-4 h-4" /> Finalize Policy (Wagmi Optimized)</>}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

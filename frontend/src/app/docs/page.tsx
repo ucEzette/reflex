@@ -497,6 +497,8 @@ export default function DocsPage() {
                             <div className="glass-panel p-8 rounded-2xl space-y-4">
                                 <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-4">Avalanche Fuji Testnet (Chain ID: 43113)</p>
                                 {[
+                                    { name: "ReflexParametricEscrow (Proxy)", addr: "0xd8218d83e4fe4927aff7bcd0bed316a3c39be7b4" },
+                                    { name: "Cross-Chain Receiver", addr: "0xc7a297de87890728453daa240a8373d7d5cee90b" },
                                     { name: "ReflexLiquidityPool", addr: "0xbcfeeaea01b9ddd2f8a1092676681c6b52dbe81c" },
                                     { name: "ProductFactory", addr: "0x870268aafe40b15f6bf14d42c435e6d2c7b660fe" },
                                     { name: "TravelSolutions", addr: "0x54eb96ee828c3c3201ff5419ad5cbff4b2d482b6" },
