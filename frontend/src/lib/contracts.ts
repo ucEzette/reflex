@@ -93,19 +93,19 @@ export const CATASTROPHE_ABI = GENERIC_PRODUCT_ABI;
 export const MARITIME_ABI = GENERIC_PRODUCT_ABI;
 
 export const CONTRACTS = {
-    ESCROW: "0x6b37b0FC861B0Fa22242eC92C25F2643876E4fbf" as `0x${string}`,
-    USDC: "0x5425890298aed601595a70AB815c96711a31Bc65" as `0x${string}`,
+    ESCROW: "0xd8218d83e4fe4927aff7bcd0bed316a3c39be7b4" as `0x${string}`,
+    USDC: "0x5425890298aed601595a70ab815c96711a31bc65" as `0x${string}`,
 
     // Phase 97: Redeployment with PROTOCOL_MARGIN=3000 (30%)
     // Institutional Sector Isolated Pools
-    LP_TRAVEL: "0xbcFEeaEA01b9DDd2F8A1092676681c6B52DBE81C" as `0x${string}`,
-    LP_AGRI: "0xCb4C97087ed4C858281C39Df44aE0997561FFe8C" as `0x${string}`,
-    LP_ENERGY: "0xe8b7B01B2b4ec0f400f37F2D894e3654F05852F6" as `0x${string}`,
-    LP_CAT: "0x9d803A3066C858d714c4F5eE286eaa6249d451aB" as `0x${string}`,
-    LP_MARITIME: "0x6586035D5e39e30bf37445451b43EEaEeAa1405a" as `0x${string}`,
+    LP_TRAVEL: "0xbcfeeaea01b9ddd2f8a1092676681c6b52dbe81c" as `0x${string}`,
+    LP_AGRI: "0xcb4c97087ed4c858281c39df44ae0997561ffe8c" as `0x${string}`,
+    LP_ENERGY: "0xe8b7b01b2b4ec0f400f37f2d894e3654f05852f6" as `0x${string}`,
+    LP_CAT: "0x9d803a3066c858d714c4f5ee286eaa6249d451ab" as `0x${string}`,
+    LP_MARITIME: "0x6586035d5e39e30bf37445451b43eeaeea1405a" as `0x${string}`,
 
     // Previous global addresses kept for backward compatibility if needed
-    LP_POOL: "0xbcFEeaEA01b9DDd2F8A1092676681c6B52DBE81C" as `0x${string}`,
+    LP_POOL: "0xbcfeeaea01b9ddd2f8a1092676681c6b52dbe81c" as `0x${string}`,
     PRODUCT_FACTORY: "0x870268aafe40b15f6bf14d42c435e6d2c7b660fe" as `0x${string}`,
     TRAVEL: "0x98ce0538928303b6e31a9c376a1d4a37374f1d93" as `0x${string}`,
     AGRI: "0xfaab070d6f017955252e0a19cc532f227edb2425" as `0x${string}`,

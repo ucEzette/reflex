@@ -50,7 +50,7 @@ export function PolicyCard({ policyId, policyData, onActionSuccess, txHash }: Po
     // For this UI, we'll assume if it's expired and not claimed, and theoretically met conditions (mock logic for now)
     // In production, we'd check an `isTriggered` state or similar.
     const isExpired = Number(expirationTime) < (Date.now() / 1000);
-    const status = isClaimed ? 'Claimed' : (isExpired ? 'Expired' : (!isActive ? 'Voided' : 'Active'));
+    const status = isClaimed ? 'Paid' : (isExpired ? 'Expired' : 'Active');
 
     const { writeContract, data: hash } = useWriteContract();
     const { isLoading: isWaiting } = useWaitForTransactionReceipt({ hash });
@@ -113,7 +113,7 @@ export function PolicyCard({ policyId, policyData, onActionSuccess, txHash }: Po
                 <div className="flex items-center gap-3 text-xs text-slate-500">
                     <div className="flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>{status === 'Claimed' ? 'Settled' : (isExpired ? 'Expired' : `Expires ${new Date(Number(expirationTime) * 1000).toLocaleDateString()}`)}</span>
+                        <span>{status === 'Paid' ? 'Settled' : (isExpired ? 'Expired' : `Expires ${new Date(Number(expirationTime) * 1000).toLocaleDateString()}`)}</span>
                     </div>
                     {txHash && (
                         <>
@@ -142,7 +142,7 @@ export function PolicyCard({ policyId, policyData, onActionSuccess, txHash }: Po
     );
 }
 
-function StatusBadge({ status }: { status: Policy['status'] }) {
+function StatusBadge({ status }: { status: string }) {
     switch (status) {
         case 'Active':
             return (
@@ -166,10 +166,10 @@ function StatusBadge({ status }: { status: Policy['status'] }) {
                     <span className="animate-spin w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full" /> Processing
                 </span>
             );
-        case 'Claimed':
+        case 'Paid':
             return (
                 <span className="inline-flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest border border-slate-700">
-                    <CheckCircle2 className="w-3 h-3" /> Claimed
+                    <CheckCircle2 className="w-3 h-3" /> Paid
                 </span>
             );
         default:

@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 import { parseAbi } from 'viem';
 
 export const LIQUIDITY_POOL_ABI = parseAbi([
@@ -34,15 +33,12 @@ export const PRODUCT_ABI = parseAbi([
 ]);
 
 export const ERC20_ABI = parseAbi([
-    "function balanceOf(address) view returns (uint256)",
-    "function allowance(address, address) view returns (uint256)",
-    "function approve(address, uint256) returns (bool)",
-    "function transfer(address, uint256) returns (bool)",
-    "function transferFrom(address, address, uint256) returns (bool)",
-    "function mint(address, uint256)"
+    "function balanceOf(address account) view returns (uint256)",
+    "function allowance(address owner, address spender) view returns (uint256)",
+    "function approve(address spender, uint256 amount) returns (bool)",
+    "function transfer(address recipient, uint256 amount) returns (bool)",
+    "function mint(address to, uint256 amount)"
 ]);
-
-// Agriculture, Energy, Catastrophe, and Maritime all follow similar patterns
 
 export const ESCROW_ABI = parseAbi([
     "function getVoteDetails(bytes32 _policyId) view returns (uint256 currentVotes, uint256 required)",
@@ -59,6 +55,7 @@ export const ESCROW_ABI = parseAbi([
     "function getUserPolicies(address _user) view returns (bytes32[])",
     "function getPolicy(bytes32 _policyId) view returns (address policyholder, string memory apiTarget, uint256 premiumPaid, uint256 payoutAmount, uint256 expirationTime, bool isActive, bool isClaimed)"
 ]);
+
 export const GENERIC_PRODUCT_ABI = parseAbi([
     "function quotePremium(uint256 expectedRiskBase) view returns (uint256)",
     "function purchasePolicy(string, uint256, uint256, uint256, uint256, uint256) external returns (bytes32)",
