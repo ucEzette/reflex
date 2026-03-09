@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useWatchContractEvent } from "wagmi";
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useWatchContractEvent, useChainId, useSwitchChain } from "wagmi";
 import { CONTRACTS, POOLS } from '@/lib/contracts';
 import { LIQUIDITY_POOL_ABI, ERC20_ABI } from '@/lib/enterprise_abis';
 import { parseUnits, formatUnits } from 'viem';
@@ -25,6 +25,9 @@ const performanceData = [
 export function InvestDashboardClient() {
     const [mounted, setMounted] = useState(false);
     const { address, isConnected } = useAccount();
+    const chainId = useChainId();
+    const { switchChain } = useSwitchChain();
+    const TARGET_CHAIN_ID = 43113; // Fuji
 
     // Pool Selection & Forms
     const [selectedPool, setSelectedPool] = useState(POOLS[0]);
@@ -39,7 +42,17 @@ export function InvestDashboardClient() {
 
     useEffect(() => {
         setMounted(true);
+        const savedHistory = localStorage.getItem("invest_history");
+        if (savedHistory) {
+            setHistory(JSON.parse(savedHistory));
+        }
     }, []);
+
+    useEffect(() => {
+        if (mounted) {
+            localStorage.setItem("invest_history", JSON.stringify(history));
+        }
+    }, [history, mounted]);
 
     // Contract Reads
     const { data: totalAssets, refetch: refetchAssets } = useReadContract({
@@ -115,9 +128,22 @@ export function InvestDashboardClient() {
             if (isApproving) {
                 toast.success("USDC Approved!", { id: "tx" });
                 setIsApproving(false);
+                setIsSubmitting(false);
                 refetchAllowance();
+                // We keep amount so user can deposit immediately
             } else {
                 toast.success(`${actionType === 'deposit' ? 'Deposit' : 'Withdrawal'} successful!`, { id: "tx" });
+
+                // Add to history explicitly on success
+                const newEntry = {
+                    id: hash,
+                    type: actionType,
+                    amount: amount,
+                    timestamp: Date.now(),
+                    hash: hash
+                };
+                setHistory(prev => [newEntry, ...prev].slice(0, 50));
+
                 setAmount("");
                 refetchAssets();
                 refetchPayouts();
@@ -164,10 +190,23 @@ export function InvestDashboardClient() {
         }
 
         try {
+            // Pre-flight chain check
+            if (chainId !== TARGET_CHAIN_ID) {
+                toast.info("Switching to Avalanche Fuji...");
+                switchChain?.({ chainId: TARGET_CHAIN_ID });
+                return;
+            }
+
             if (actionType === "deposit") {
                 if (needsApproval) {
                     setIsApproving(true);
+                    console.log("Invest Page: Requesting USDC Approval", {
+                        spender: selectedPool.address,
+                        amount: value.toString(),
+                        token: CONTRACTS.USDC
+                    });
                     toast.loading("Requesting USDC Approval...", { id: "tx" });
+
                     writeContract({
                         address: CONTRACTS.USDC as `0x${string}`,
                         abi: ERC20_ABI,
@@ -176,6 +215,10 @@ export function InvestDashboardClient() {
                     });
                 } else {
                     setIsSubmitting(true);
+                    console.log("Invest Page: Depositing Liquidity", {
+                        pool: selectedPool.address,
+                        amount: value.toString()
+                    });
                     toast.loading(`Depositing to ${selectedPool.sector} Pool...`, { id: "tx" });
                     writeContract({
                         address: selectedPool.address as `0x${string}`,
@@ -187,6 +230,11 @@ export function InvestDashboardClient() {
             } else {
                 setIsSubmitting(true);
                 const message = isScheduled ? `Scheduling Withdrawal for ${withdrawalDate}` : "Confirming Withdrawal...";
+                console.log("Invest Page: Withdrawing Liquidity", {
+                    pool: selectedPool.address,
+                    amount: value.toString(),
+                    isScheduled
+                });
                 toast.loading(message, { id: "tx" });
 
                 if (isScheduled) {
@@ -260,7 +308,78 @@ export function InvestDashboardClient() {
         },
     });
 
-    if (!mounted) return null;
+    // Initial fetch of historical logs
+    useEffect(() => {
+        const fetchHistory = async () => {
+            if (!address || !mounted) return;
+            try {
+                const publicClient = config.getClient();
+
+                const [depositLogs, withdrawLogs] = await Promise.all([
+                    publicClient.getLogs({
+                        address: selectedPool.address as `0x${string}`,
+                        event: {
+                            type: 'event',
+                            name: 'LiquidityDeposited',
+                            inputs: [
+                                { indexed: true, name: 'provider', type: 'address' },
+                                { indexed: false, name: 'amount', type: 'uint256' },
+                                { indexed: false, name: 'shares', type: 'uint256' }
+                            ]
+                        },
+                        fromBlock: 0n
+                    }),
+                    publicClient.getLogs({
+                        address: selectedPool.address as `0x${string}`,
+                        event: {
+                            type: 'event',
+                            name: 'LiquidityWithdrawn',
+                            inputs: [
+                                { indexed: true, name: 'provider', type: 'address' },
+                                { indexed: false, name: 'amount', type: 'uint256' },
+                                { indexed: false, name: 'shares', type: 'uint256' }
+                            ]
+                        },
+                        fromBlock: 0n
+                    })
+                ]);
+
+                const formattedDeposits = depositLogs
+                    .filter(l => (l.args as any).provider?.toLowerCase() === address.toLowerCase())
+                    .map(l => ({
+                        id: l.transactionHash,
+                        type: 'deposit',
+                        amount: formatUnits((l.args as any).amount, 6),
+                        timestamp: Date.now(), // approximation if we don't fetch block
+                        hash: l.transactionHash
+                    }));
+
+                const formattedWithdrawals = withdrawLogs
+                    .filter(l => (l.args as any).provider?.toLowerCase() === address.toLowerCase())
+                    .map(l => ({
+                        id: l.transactionHash,
+                        type: 'withdraw',
+                        amount: formatUnits((l.args as any).amount, 6),
+                        timestamp: Date.now(),
+                        hash: l.transactionHash
+                    }));
+
+                const fullHistory = [...formattedDeposits, ...formattedWithdrawals]
+                    .sort((a, b) => b.timestamp - a.timestamp);
+
+                setHistory(prev => {
+                    // Merge and de-duplicate by hash
+                    const existingHashes = new Set(prev.map(h => h.hash));
+                    const uniqueNew = fullHistory.filter(h => !existingHashes.has(h.hash));
+                    return [...uniqueNew, ...prev].slice(0, 50);
+                });
+
+            } catch (err) {
+                console.error("Error fetching historical liquidity logs:", err);
+            }
+        };
+        fetchHistory();
+    }, [address, mounted, selectedPool.address]);
 
     const globalUtilization = totalAssets && totalMaxPayouts ? (Number(totalMaxPayouts) * 100) / Number(totalAssets) : 0;
     const formattedBalance = usdcBalance ? formatUnits(usdcBalance as bigint, 6) : "0";
@@ -614,7 +733,7 @@ export function InvestDashboardClient() {
                             >
                                 {isTxPending ? <RefreshCcw className="w-4 h-4 animate-spin" /> :
                                     isSubmitting ? (isApproving ? 'Approving...' : 'Confirming...') :
-                                        isTxSuccess ? <><CheckCircle2 className="w-5 h-5" /> SUCCEEDED</> :
+                                        (isTxSuccess && !isApproving && !amount) ? <><CheckCircle2 className="w-5 h-5" /> SUCCEEDED</> :
                                             !isConnected ? <><Layers className="w-4 h-4" /> CONNECT WALLET</> :
                                                 !amount ? <><DollarSign className="w-4 h-4" /> ENTER AMOUNT</> :
                                                     (actionType === 'deposit' ? (needsApproval ? 'APPROVE USDC' : 'INITIATE DEPOSIT') : 'REQUEST WITHDRAWAL')}

@@ -98,7 +98,7 @@ export const CONTRACTS = {
 
     // Phase 97: Redeployment with PROTOCOL_MARGIN=3000 (30%)
     // Institutional Sector Isolated Pools
-    LP_TRAVEL: "0xd352d2D35d20791301c5A10Fd847849C5b8f453c" as `0x${string}`,
+    LP_TRAVEL: "0xbcfeeaea01b9ddd2f8a1092676681c6b52dbe81c" as `0x${string}`, // Pointing to funded pool
     LP_AGRI: "0xCb4C97087ed4C858281C39Df44aE0997561FFe8C" as `0x${string}`,
     LP_ENERGY: "0xe8b7B01B2b4ec0f400f37F2D894e3654F05852F6" as `0x${string}`,
     LP_CAT: "0x9d803A3066C858d714c4F5eE286eaa6249d451aB" as `0x${string}`,
@@ -107,11 +107,11 @@ export const CONTRACTS = {
     // Previous global addresses kept for backward compatibility if needed
     LP_POOL: "0xbcfeeaea01b9ddd2f8a1092676681c6b52dbe81c" as `0x${string}`,
     PRODUCT_FACTORY: "0x870268aafe40b15f6bf14d42c435e6d2c7b660fe" as `0x${string}`,
-    TRAVEL: "0x26b8fbf92E1063CaEffBA70EC8F86Fc3d76E7911" as `0x${string}`,
-    AGRI: "0x05dE694A7ff32c9D41d4FF5FD9e89c77fd6E8BAC" as `0x${string}`,
-    ENERGY: "0x2062932817121290f6bb7ff87f20eeb40ce52179" as `0x${string}`,
-    CATASTROPHE: "0x7c1dfcd03c2ba97c13309a36e46ef20ddf869b61" as `0x${string}`,
-    MARITIME: "0x237660db78797fbe77373db803b3325aa51cd04a" as `0x${string}`,
+    TRAVEL: "0x98ce0538928303b6e31a9c376a1d4a37374f1d93" as `0x${string}`,
+    AGRI: "0xfaab070d6f017955252e0a19cc532f227edb2425" as `0x${string}`,
+    ENERGY: "0x762285536f8f07fe75706bb429d230a0e7b22966" as `0x${string}`,
+    CATASTROPHE: "0x9b0378eeb2b22367183c09dc79966a32c79074c5" as `0x${string}`,
+    MARITIME: "0x255ff883066744bf2d2914da1ebc26ff4d4b58c8" as `0x${string}`,
     CROSS_CHAIN_RECEIVER: "0xc7a297de87890728453daa240a8373d7d5cee90b" as `0x${string}`
 };
 

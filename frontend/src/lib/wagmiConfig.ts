@@ -5,13 +5,7 @@ import { injected, walletConnect, coinbaseWallet } from "wagmi/connectors";
 export const config = createConfig({
     chains: [avalancheFuji, avalanche, sepolia, arbitrumSepolia, baseSepolia],
     connectors: [
-        injected({
-            target: {
-                id: 'coreWallet',
-                name: 'Core Wallet',
-                provider: (window: any) => (window as any).avalanche
-            }
-        }),
+        injected(),
         walletConnect({
             projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
             showQrModal: true
