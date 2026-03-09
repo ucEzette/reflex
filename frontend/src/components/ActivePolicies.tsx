@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useEffect, useState, useMemo } from "react";
 import { TableSkeleton } from "@/components/ui/Skeletons";
 
+import { formatUnits } from "viem";
+
 function CountdownTimer({ expirationTime }: { expirationTime: bigint }) {
     const [timeLeft, setTimeLeft] = useState("");
 
@@ -43,10 +45,11 @@ function CountdownTimer({ expirationTime }: { expirationTime: bigint }) {
     );
 }
 
-function StatusBadge({ status, isActive: _isActive, isClaimed: _isClaimed }: { status?: number, isActive?: boolean; isClaimed?: boolean }) {
+function StatusBadge({ status, isActive: _isActive, isClaimed: _isClaimed, expirationTime }: { status?: number, isActive?: boolean; isClaimed?: boolean, expirationTime?: bigint }) {
     // Standardize status: 0=Active, 1=Claimed, 2=Expired
     const isClaimed = _isClaimed || status === 1;
-    const isActive = _isActive || status === 0;
+    const isExpired = expirationTime ? Number(expirationTime) < (Date.now() / 1000) : false;
+    const isActive = (_isActive || status === 0) && !isExpired;
 
     if (isClaimed) {
         return (
@@ -54,7 +57,7 @@ function StatusBadge({ status, isActive: _isActive, isClaimed: _isClaimed }: { s
                 <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor">
                     <circle cx="4" cy="4" r="4" />
                 </svg>
-                Claimed
+                Paid
             </span>
         );
     }
@@ -106,15 +109,23 @@ function PolicyRow({ policy, txHash }: { policy: PolicyItem, txHash?: string }) 
 
     if (isEscrow) {
         [holder, target, premium, payout, expiry, isActive, isClaimed] = data as any[];
+    } else if (policy.type === 'Travel') {
+        // struct FlightPolicy { address policyholder; uint256 premium; uint256 payout; uint256 status; uint256 expiresAt; string flightId; } (6 items)
+        const [ph, prem, pay, stat, exp, fId] = data as any[];
+        holder = ph;
+        premium = prem;
+        payout = pay;
+        status = stat;
+        expiry = exp;
+        target = fId;
+        isActive = status === BigInt(0) || status === 0;
+        isClaimed = status === BigInt(1) || status === 1;
     } else {
-        // Product mappings return items in struct order
-        // struct FlightPolicy { address policyholder; uint256 premium; uint256 maxPayout; bytes32 flightId; uint256 status; uint256 expiresAt; string targetFlight; }
-        // struct AgPolicy { address policyholder; uint256 premium; uint256 maxPayout; uint256 rainfallStrike; uint256 status; uint256 expiresAt; string geographicZone; }
-        // ... all follow: holder, premium, payout, [strike/id], status, expiry, target
+        // Generic: [holder, premium, payout, strike, exit, status, expiry, zone] (8 items)
         const d = data as any[];
-        [holder, premium, payout, , status, expiry, target] = d;
-        isActive = status === 0;
-        isClaimed = status === 1;
+        [holder, premium, payout, , , status, expiry, target] = d;
+        isActive = status === BigInt(0) || status === 0;
+        isClaimed = status === BigInt(1) || status === 1;
     }
 
     // Extract display target
@@ -144,15 +155,15 @@ function PolicyRow({ policy, txHash }: { policy: PolicyItem, txHash?: string }) 
                 </div>
             </td>
             <td className="px-4 py-4">
-                <span className="text-sm text-zinc-400">${(Number(premium) / 1e6).toFixed(2)}</span>
+                <span className="text-sm text-zinc-400">${Number(formatUnits(premium, 6)).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </td>
             <td className="px-4 py-4">
                 <span className="text-sm font-medium text-emerald-400">
-                    ${(Number(payout) / 1e6).toFixed(2)}
+                    ${Number(formatUnits(payout, 6)).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </span>
             </td>
             <td className="px-4 py-4">
-                <StatusBadge status={status} isActive={isActive} isClaimed={isClaimed} />
+                <StatusBadge status={status} isActive={isActive} isClaimed={isClaimed} expirationTime={expiry} />
             </td>
             <td className="px-4 py-4">
                 {isActive && !isClaimed ? (
@@ -169,7 +180,7 @@ function PolicyRow({ policy, txHash }: { policy: PolicyItem, txHash?: string }) 
                     {txHash && (
                         <div className="flex items-center gap-2">
                             <a
-                                href={`https://testnet.snowscan.xyz/tx/${txHash}`}
+                                href={`https://testnet.snowtrace.io/tx/${txHash}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex max-w-max items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-800/50 text-[10px] text-sky-400 hover:text-sky-300 hover:bg-zinc-800 transition-colors border border-zinc-800"
@@ -302,23 +313,24 @@ export function ActivePolicies() {
                     CONTRACTS.MARITIME
                 ];
 
-                const allLogs = await Promise.all(contracts.map(contract =>
-                    publicClient.getLogs({
+                const allLogs = await Promise.all(contracts.map(contract => {
+                    const isTravel = contract === CONTRACTS.TRAVEL;
+                    return publicClient.getLogs({
                         address: contract as `0x${string}`,
                         event: {
                             type: 'event',
-                            name: 'PolicyCreated', // Note: Escrow uses PolicyPurchased
+                            name: 'PolicyCreated',
                             inputs: [
-                                { indexed: true, name: 'id', type: 'bytes32' },
-                                { indexed: true, name: 'holder', type: 'address' },
+                                { indexed: false, name: 'id', type: 'bytes32' },
+                                { indexed: false, name: 'holder', type: 'address' },
                                 { indexed: false, name: 'premium', type: 'uint256' },
-                                { indexed: false, name: 'payout', type: 'uint256' },
+                                { indexed: false, name: isTravel ? 'payout' : 'maxPayout', type: 'uint256' },
                                 { indexed: false, name: 'expiresAt', type: 'uint256' }
                             ]
                         },
-                        fromBlock: BigInt(0) // Or a more recent starting block
+                        fromBlock: BigInt(0)
                     }).catch(() => [])
-                ));
+                }));
 
                 // Escrow uses PolicyPurchased
                 const escrowLogs = await publicClient.getLogs({
@@ -342,7 +354,7 @@ export function ActivePolicies() {
                 [...allLogs.flat(), ...escrowLogs].forEach(log => {
                     const args = (log as any).args;
                     const holder = args.holder || args.policyholder;
-                    if (holder?.toLowerCase() === address.toLowerCase()) {
+                    if (address && holder?.toLowerCase() === address.toLowerCase()) {
                         const pid = args.id || args.policyId;
                         if (pid) {
                             newHashes[pid] = log.transactionHash;

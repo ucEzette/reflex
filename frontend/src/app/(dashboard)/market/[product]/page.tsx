@@ -266,7 +266,9 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                 address: targetContractAddress as `0x${string}`,
                 abi: product?.id === 'flight' ? PRODUCT_ABI : GENERIC_PRODUCT_ABI,
                 functionName: "purchasePolicy",
-                args: args as any
+                args: product?.id === 'flight'
+                    ? [...args as any] // already includes signature placeholder or real sig
+                    : [...args as any] // Generic takes 6 arguments, no signature
             });
 
         } catch (err: any) {

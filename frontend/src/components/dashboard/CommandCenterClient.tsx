@@ -12,10 +12,16 @@ import { useState, useEffect, useMemo } from 'react';
 
 export function CommandCenterClient() {
     const { address } = useAccount();
+    const [mounted, setMounted] = useState(false);
     const [policies, setPolicies] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [logs, setLogs] = useState<any[]>([]);
     const [logsLoading, setLogsLoading] = useState(true);
+    const [txHashes, setTxHashes] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Global Stats Aggregation
     const poolAddresses = [
@@ -28,27 +34,50 @@ export function CommandCenterClient() {
 
     const { data: globalStats } = useReadContracts({
         contracts: [
-            ...poolAddresses.map(address => ({
-                address: address as `0x${string}`,
+            ...poolAddresses.map(poolAddr => ({
+                address: poolAddr as `0x${string}`,
                 abi: LP_POOL_ABI,
                 functionName: 'totalAssets',
             })),
-            ...poolAddresses.map(address => ({
-                address: address as `0x${string}`,
+            ...poolAddresses.map(poolAddr => ({
+                address: poolAddr as `0x${string}`,
                 abi: LP_POOL_ABI,
                 functionName: 'totalMaxPayouts',
+            })),
+            // Active Policy Counts
+            { address: CONTRACTS.TRAVEL as `0x${string}`, abi: TRAVEL_ABI, functionName: 'getActivePolicyCount' },
+            { address: CONTRACTS.AGRI as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getActivePolicyCount' },
+            { address: CONTRACTS.ENERGY as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getActivePolicyCount' },
+            { address: CONTRACTS.CATASTROPHE as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getActivePolicyCount' },
+            { address: CONTRACTS.MARITIME as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getActivePolicyCount' },
+            // User LP Shares for Governance Power
+            ...poolAddresses.map(pa => ({
+                address: pa as `0x${string}`,
+                abi: LP_POOL_ABI,
+                functionName: 'lpShares',
+                args: address ? [address] : undefined,
             }))
         ]
     });
 
     const totalAssets = useMemo(() => {
         if (!globalStats) return BigInt(0);
-        return globalStats.slice(0, 5).reduce((acc, res) => acc + (res.result as bigint || BigInt(0)), BigInt(0));
+        return (globalStats.slice(0, 5) as any[]).reduce((acc, res) => acc + (res.result as bigint || BigInt(0)), BigInt(0));
     }, [globalStats]);
 
     const totalMaxPayouts = useMemo(() => {
         if (!globalStats) return BigInt(0);
-        return globalStats.slice(5, 10).reduce((acc, res) => acc + (res.result as bigint || BigInt(0)), BigInt(0));
+        return (globalStats.slice(5, 10) as any[]).reduce((acc, res) => acc + (res.result as bigint || BigInt(0)), BigInt(0));
+    }, [globalStats]);
+
+    const activePolicyCount = useMemo(() => {
+        if (!globalStats) return 0;
+        return (globalStats.slice(10, 15) as any[]).reduce((acc, res) => acc + Number(res.result || 0), 0);
+    }, [globalStats]);
+
+    const userTotalShares = useMemo(() => {
+        if (!globalStats) return BigInt(0);
+        return (globalStats.slice(15, 20) as any[]).reduce((acc, res) => acc + (res.result as bigint || BigInt(0)), BigInt(0));
     }, [globalStats]);
 
     // Multi-contract User Policy Fetching
@@ -132,18 +161,157 @@ export function CommandCenterClient() {
     }, [address, escrowIds, travelIds, agriIds, energyIds, catIds, maritimeIds]);
 
     useEffect(() => {
-        const fetchLogs = async () => {
+        const fetchHistory = async () => {
             setLogsLoading(true);
             try {
-                setLogs([]);
+                const publicClient = getPublicClient(config);
+                if (!publicClient) return;
+
+                const productContracts = [
+                    { address: CONTRACTS.TRAVEL, type: 'Travel' },
+                    { address: CONTRACTS.AGRI, type: 'Agri' },
+                    { address: CONTRACTS.ENERGY, type: 'Energy' },
+                    { address: CONTRACTS.CATASTROPHE, type: 'Catastrophe' },
+                    { address: CONTRACTS.MARITIME, type: 'Maritime' }
+                ];
+
+                // Fetch PolicyCreated and PolicyClaimed from all products
+                const logPromises = productContracts.flatMap(pc => [
+                    publicClient.getLogs({
+                        address: pc.address as `0x${string}`,
+                        event: {
+                            type: 'event',
+                            name: 'PolicyCreated',
+                            inputs: [
+                                { indexed: false, name: 'id', type: 'bytes32' },
+                                { indexed: false, name: 'holder', type: 'address' },
+                                { indexed: false, name: 'premium', type: 'uint256' },
+                                { indexed: false, name: pc.type === 'Travel' ? 'payout' : 'maxPayout', type: 'uint256' },
+                                { indexed: false, name: 'expiresAt', type: 'uint256' }
+                            ]
+                        },
+                        fromBlock: BigInt(0)
+                    }),
+                    publicClient.getLogs({
+                        address: pc.address as `0x${string}`,
+                        event: {
+                            type: 'event',
+                            name: 'PolicyClaimed',
+                            inputs: [
+                                { indexed: false, name: 'id', type: 'bytes32' },
+                                { indexed: false, name: 'payout', type: 'uint256' }
+                            ]
+                        },
+                        fromBlock: BigInt(0)
+                    })
+                ]);
+
+                // Escrow special events
+                logPromises.push(
+                    publicClient.getLogs({
+                        address: CONTRACTS.ESCROW as `0x${string}`,
+                        event: {
+                            type: 'event',
+                            name: 'PolicyPurchased',
+                            inputs: [
+                                { indexed: true, name: 'policyId', type: 'bytes32' },
+                                { indexed: true, name: 'policyholder', type: 'address' },
+                                { indexed: false, name: 'apiTarget', type: 'string' },
+                                { indexed: false, name: 'premiumPaid', type: 'uint256' },
+                                { indexed: false, name: 'payoutAmount', type: 'uint256' },
+                                { indexed: false, name: 'expirationTime', type: 'uint256' }
+                            ]
+                        },
+                        fromBlock: BigInt(0)
+                    }),
+                    publicClient.getLogs({
+                        address: CONTRACTS.ESCROW as `0x${string}`,
+                        event: {
+                            type: 'event',
+                            name: 'PolicyClaimed',
+                            inputs: [
+                                { indexed: true, name: 'policyId', type: 'bytes32' },
+                                { indexed: true, name: 'policyholder', type: 'address' },
+                                { indexed: false, name: 'payoutAmount', type: 'uint256' }
+                            ]
+                        },
+                        fromBlock: BigInt(0)
+                    })
+                );
+
+                const results = await Promise.all(logPromises);
+                const allLogs = results.flat().sort((a, b) => Number(b.blockNumber) - Number(a.blockNumber));
+
+                // Fetch timestamps for the top logs to show relative time
+                const topLogs = allLogs.slice(0, 15);
+                const logsWithTime = await Promise.all(topLogs.map(async (log) => {
+                    const block = await publicClient.getBlock({ blockNumber: log.blockNumber });
+                    const args = (log as any).args;
+                    const eventName = (log as any).eventName || 'Transaction';
+                    const isClaim = eventName.includes('Claimed');
+                    const amount = args.premium || args.premiumPaid || args.payout || args.payoutAmount;
+                    
+                    // Simple relative time helper
+                    const secondsAgo = Math.floor(Date.now() / 1000) - Number(block.timestamp);
+                    let timeStr = "Just now";
+                    if (secondsAgo > 3600) timeStr = `${Math.floor(secondsAgo / 3600)}h ago`;
+                    else if (secondsAgo > 60) timeStr = `${Math.floor(secondsAgo / 60)}m ago`;
+
+                    return {
+                        id: `${log.transactionHash}-${log.logIndex}`,
+                        type: isClaim ? 'claim' : 'purchase',
+                        title: isClaim ? 'Policy Claim Settle' : 'Parametric Purchase',
+                        desc: isClaim ? `Settled payout of $${formatUnits(amount, 6)}` : `New policy issued for $${formatUnits(amount, 6)}`,
+                        time: timeStr,
+                        amount: formatUnits(amount, 6),
+                        hash: log.transactionHash
+                    };
+                }));
+
+                setLogs(logsWithTime);
+
+                // Populate txHashes mapping for PolicyCards using ALL logs
+                const hashes: Record<string, string> = {};
+                allLogs.forEach(log => {
+                    const args = (log as any).args;
+                    const pid = args.id || args.policyId;
+                    if (pid) {
+                        hashes[pid] = log.transactionHash;
+                    }
+                });
+                setTxHashes(hashes);
+
+                // Derive global aggregate stats from ALL logs
+                const totalPremiumsVal = allLogs.reduce((acc, log) => {
+                    const args = (log as any).args;
+                    const premium = args.premium || args.premiumPaid || BigInt(0);
+                    return acc + Number(formatUnits(premium, 6));
+                }, 0);
+
+                const totalClaimsVal = allLogs.reduce((acc, log) => {
+                    const args = (log as any).args;
+                    if ((log as any).eventName?.includes('Claimed')) {
+                        const payout = args.payout || args.payoutAmount || BigInt(0);
+                        return acc + Number(formatUnits(payout, 6));
+                    }
+                    return acc;
+                }, 0);
+
+                setGlobalCalculatedStats({
+                    totalPremiums: totalPremiumsVal,
+                    totalClaims: totalClaimsVal
+                });
+
             } catch (err) {
                 console.error("Error fetching logs:", err);
             } finally {
                 setLogsLoading(false);
             }
         };
-        fetchLogs();
+        fetchHistory();
     }, []);
+
+    const [globalCalculatedStats, setGlobalCalculatedStats] = useState({ totalPremiums: 0, totalClaims: 0 });
 
     const activeCount = policies.filter(p => p.data[5]).length; // p.data[5] is isActive
     const tvlValue = totalAssets ? `$${(Number(formatUnits(totalAssets as bigint, 6)) / 1e6).toFixed(1)}M` : "$0.0M";
@@ -153,10 +321,19 @@ export function CommandCenterClient() {
     const totalPersonalCoverage = policies.reduce((acc, p) => acc + Number(formatUnits(p.data[3], 6)), 0);
     const totalPersonalPremiums = policies.reduce((acc, p) => acc + Number(formatUnits(p.data[2], 6)), 0);
 
-    const tvl = tvlValue;
-    const claimsPaid = payoutValue;
-    const totalPremiums = `$${totalPersonalPremiums.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    // Final dashboard formatting - using calculated or real-time data
+    const tvl = Number(formatUnits(totalAssets, 6)) > 1000000
+        ? `$${(Number(formatUnits(totalAssets, 6)) / 1e6).toFixed(1)}M`
+        : `$${Number(formatUnits(totalAssets, 6)).toLocaleString()}`;
 
+    const claimsPaid = globalCalculatedStats.totalClaims > 1000000
+        ? `$${(globalCalculatedStats.totalClaims / 1e6).toFixed(1)}M`
+        : `$${globalCalculatedStats.totalClaims.toLocaleString()}`;
+
+    const totalPremiums = `$${globalCalculatedStats.totalPremiums.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const govPower = `${(Number(formatUnits(userTotalShares, 6)) / 1000).toFixed(1)}k`;
+
+    if (!mounted) return null;
 
     return (
         <div className="min-h-screen p-6 lg:p-12 space-y-8 max-w-7xl mx-auto">
@@ -178,8 +355,8 @@ export function CommandCenterClient() {
                 <StatCard title="Total Covered (TVL)" value={tvl} icon={<Shield className="text-primary w-5 h-5" />} trend="+12.5%" />
                 <StatCard title="Total Premiums" value={totalPremiums} icon={<DollarSign className="text-amber-500 w-5 h-5" />} trend="+1.2%" />
                 <StatCard title="Claims Settled" value={claimsPaid} icon={<Shield className="text-emerald-500 w-5 h-5" />} trend="+4.2%" />
-                <StatCard title="Active Policies" value={activeCount.toString()} icon={<Activity className="text-blue-500 w-5 h-5" />} trend="+2" />
-                <StatCard title="Governance Power" value="450.2k" icon={<Landmark className="text-purple-500 w-5 h-5" />} trend="Top 5%" />
+                <StatCard title="Active Policies" value={activePolicyCount.toString()} icon={<Activity className="text-blue-500 w-5 h-5" />} trend={`+${policies.length}`} />
+                <StatCard title="Governance Power" value={govPower} icon={<Landmark className="text-purple-500 w-5 h-5" />} trend="Top 5%" />
             </section>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -225,6 +402,7 @@ export function CommandCenterClient() {
                                         key={policy.id}
                                         policyId={policy.id}
                                         policyData={policy.data}
+                                        txHash={txHashes[policy.id]}
                                     />
                                 ))
                             )}
@@ -248,10 +426,31 @@ export function CommandCenterClient() {
                                     </div>
                                 </div>
                             ))
-                        ) : (
+                        ) : logs.length === 0 ? (
                             <div className="text-center py-8">
-                                <p className="text-xs text-slate-500">Live network activity logs streaming...</p>
+                                <p className="text-xs text-slate-500">No network activity yet.</p>
                             </div>
+                        ) : (
+                            logs.map((log) => (
+                                <div key={log.id} className="flex gap-4 group">
+                                    <div className={`w-2 h-2 mt-1.5 rounded-full ${log.type === 'claim' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-primary shadow-[0_0_8px_rgba(128,0,32,0.5)]'}`} />
+                                    <div className="flex-1 space-y-1">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[10px] font-black uppercase text-zinc-300 tracking-widest">{log.title}</span>
+                                            <span className="text-[10px] text-zinc-500">{log.time}</span>
+                                        </div>
+                                        <p className="text-xs text-zinc-400 leading-snug">{log.desc}</p>
+                                        <a
+                                            href={`https://testnet.snowtrace.io/tx/${log.hash}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-[9px] text-primary font-bold uppercase hover:underline inline-block pt-1"
+                                        >
+                                            View TX
+                                        </a>
+                                    </div>
+                                </div>
+                            ))
                         )}
                     </div>
                 </section>
