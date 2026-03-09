@@ -275,32 +275,37 @@ export function InvestDashboardClient() {
                     });
                     toast.loading("Requesting USDC Approval...", { id: "tx" });
 
-                    if (simulateApprove?.request) {
-                        writeContract(simulateApprove.request, {
-                            onError: (error) => {
-                                console.error("Invest Page: Approval Call Reverted", error);
-                                if (simulateApproveError) {
-                                    console.error("Invest Page: Simulation Error details", simulateApproveError);
-                                }
-                                toast.error(error.message || "Approval failed. Check network & balance.", { id: "tx" });
-                                setIsApproving(false);
-                            }
+                    const executeApprove = (isReset = false) => {
+                        const approveValue = isReset ? BigInt(0) : value;
+                        console.log(`Invest Page: Calling ${isReset ? 'Reset' : 'Approval'}`, {
+                            spender: selectedPool.address,
+                            amount: approveValue.toString()
                         });
-                    } else {
+
                         writeContract({
                             address: CONTRACTS.USDC as `0x${string}`,
                             abi: ERC20_ABI,
                             functionName: 'approve',
-                            args: [selectedPool.address as `0x${string}`, value],
-                            chainId: TARGET_CHAIN_ID
+                            args: [selectedPool.address as `0x${string}`, approveValue],
+                            chainId: TARGET_CHAIN_ID,
+                            gas: BigInt(650000)
                         }, {
-                            onError: (error) => {
-                                console.error("Invest Page: Approval Call Reverted", error);
-                                toast.error(error.message || "Approval failed. Check network & balance.", { id: "tx" });
+                            onError: (error: any) => {
+                                console.error("Invest Page: Transaction Error", error);
+                                // If it reverted, maybe it needs a reset (USDC race condition protection)
+                                toast.error("Approval failed. Some USDC contracts require a 0-allowance reset first.", {
+                                    id: "tx",
+                                    action: {
+                                        label: "Reset to 0",
+                                        onClick: () => executeApprove(true)
+                                    }
+                                });
                                 setIsApproving(false);
                             }
                         });
-                    }
+                    };
+
+                    executeApprove();
                 } else {
                     setIsSubmitting(true);
                     console.log("Invest Page: Depositing Liquidity", {
@@ -313,7 +318,8 @@ export function InvestDashboardClient() {
                         abi: LIQUIDITY_POOL_ABI,
                         functionName: 'depositLiquidity',
                         args: [value],
-                        chainId: TARGET_CHAIN_ID
+                        chainId: TARGET_CHAIN_ID,
+                        gas: BigInt(800000) // Force manual gas limit for deposit
                     });
                 }
             } else {
@@ -333,7 +339,8 @@ export function InvestDashboardClient() {
                         abi: LIQUIDITY_POOL_ABI,
                         functionName: 'scheduleWithdrawal',
                         args: [value, BigInt(unlockTime)],
-                        chainId: TARGET_CHAIN_ID
+                        chainId: TARGET_CHAIN_ID,
+                        gas: BigInt(500000)
                     });
                 } else {
                     writeContract({
@@ -341,7 +348,8 @@ export function InvestDashboardClient() {
                         abi: LIQUIDITY_POOL_ABI,
                         functionName: 'withdrawLiquidity',
                         args: [value],
-                        chainId: TARGET_CHAIN_ID
+                        chainId: TARGET_CHAIN_ID,
+                        gas: BigInt(500000)
                     });
                 }
             }
@@ -360,7 +368,8 @@ export function InvestDashboardClient() {
             abi: ERC20_ABI,
             functionName: 'mint',
             args: [address, parseUnits("1000", 6)],
-            chainId: TARGET_CHAIN_ID
+            chainId: TARGET_CHAIN_ID,
+            gas: BigInt(200000)
         });
     };
 

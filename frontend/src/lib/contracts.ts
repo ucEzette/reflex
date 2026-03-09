@@ -158,13 +158,13 @@ export const POOLS = [
     },
     {
         id: 'maritime',
-        name: 'Reflex Maritime Logistics Vault',
-        description: 'Liquidity for shipping delay and cargo damage protection across global trade routes.',
+        name: 'Reflex Maritime Logistics Pool',
+        description: 'Shipping and freight disruption protection for global trade corridors.',
         address: CONTRACTS.LP_MARITIME,
         sector: 'Maritime',
         color: 'text-blue-400',
         borderColor: 'border-blue-500/20',
-        icon: 'sailing'
+        icon: 'ship'
     }
 ];
 
