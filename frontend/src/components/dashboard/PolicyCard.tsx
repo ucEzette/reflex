@@ -29,21 +29,28 @@ interface PolicyCardProps {
     policyId: `0x${string}`;
     policyData: [address: string, apiTarget: string, premiumPaid: bigint, payoutAmount: bigint, expirationTime: bigint, isActive: boolean, isClaimed: boolean];
     onActionSuccess?: () => void;
+    txHash?: string;
 }
 
-export function PolicyCard({ policyId, policyData, onActionSuccess }: PolicyCardProps) {
+export function PolicyCard({ policyId, policyData, onActionSuccess, txHash }: PolicyCardProps) {
+    const [mounted, setMounted] = React.useState(false);
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const [policyholder, apiTarget, premiumPaid, payoutAmount, expirationTime, isActive, isClaimed] = policyData;
 
-    // Determine type from apiTarget or storage (mocking type detection for now)
-    const type = apiTarget.includes('UAL') || apiTarget.includes('BA') ? 'Travel' :
-        apiTarget.includes('MATO') ? 'Agriculture' : 'Energy';
-    const Icon = iconMap[type] || Plane;
+    // Determine type from apiTarget or contract address
+    const type = apiTarget.toLowerCase().includes('ua') || apiTarget.toLowerCase().includes('ba') ? 'Travel' :
+        apiTarget.toLowerCase().includes('mato') ? 'Agriculture' :
+            apiTarget.toLowerCase().includes('generic') ? 'Weather' : 'Energy';
+    const Icon = iconMap[type as keyof typeof iconMap] || Plane;
 
     // In parametric insurance, claimable state usually depends on oracle data.
     // For this UI, we'll assume if it's expired and not claimed, and theoretically met conditions (mock logic for now)
     // In production, we'd check an `isTriggered` state or similar.
-    const isExpired = Number(expirationTime) * 1000 < Date.now();
-    const status = isClaimed ? 'Claimed' : (!isActive ? 'Expired' : (isExpired ? 'Claimable' : 'Active'));
+    const isExpired = Number(expirationTime) < (Date.now() / 1000);
+    const status = isClaimed ? 'Claimed' : (isExpired ? 'Expired' : (!isActive ? 'Voided' : 'Active'));
 
     const { writeContract, data: hash } = useWriteContract();
     const { isLoading: isWaiting } = useWaitForTransactionReceipt({ hash });
@@ -58,6 +65,8 @@ export function PolicyCard({ policyId, policyData, onActionSuccess }: PolicyCard
         });
         toast.info("Submitting Consensus Request...", { description: "Verifying parametric trigger with relayer network." });
     };
+
+    if (!mounted) return null;
 
     return (
         <article
@@ -101,9 +110,24 @@ export function PolicyCard({ policyId, policyData, onActionSuccess }: PolicyCard
             </div>
 
             <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>{status === 'Claimed' ? 'Settled' : (isExpired ? 'Expired' : `Expires ${new Date(Number(expirationTime) * 1000).toLocaleDateString()}`)}</span>
+                <div className="flex items-center gap-3 text-xs text-slate-500">
+                    <div className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{status === 'Claimed' ? 'Settled' : (isExpired ? 'Expired' : `Expires ${new Date(Number(expirationTime) * 1000).toLocaleDateString()}`)}</span>
+                    </div>
+                    {txHash && (
+                        <>
+                            <div className="w-px h-3 bg-white/10" />
+                            <a
+                                href={`https://testnet.snowtrace.io/tx/${txHash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline font-bold uppercase tracking-widest text-[9px]"
+                            >
+                                Explorer
+                            </a>
+                        </>
+                    )}
                 </div>
                 {status === 'Claimable' && (
                     <button

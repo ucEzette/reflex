@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useWatchContractEvent, useChainId, useSwitchChain } from "wagmi";
 import { CONTRACTS, POOLS } from '@/lib/contracts';
 import { config } from '@/lib/wagmiConfig';
@@ -71,6 +71,13 @@ export function InvestDashboardClient() {
         query: { enabled: mounted }
     });
 
+    const { data: totalShares, refetch: refetchTotalShares } = useReadContract({
+        address: selectedPool.address as `0x${string}`,
+        abi: LIQUIDITY_POOL_ABI,
+        functionName: 'totalShares',
+        query: { enabled: mounted }
+    });
+
     const { data: userShares, refetch: refetchShares } = useReadContract({
         address: selectedPool.address as `0x${string}`,
         abi: LIQUIDITY_POOL_ABI,
@@ -78,6 +85,11 @@ export function InvestDashboardClient() {
         args: address ? [address] : undefined,
         query: { enabled: mounted && !!address }
     });
+
+    const userLiquidityValue = useMemo(() => {
+        if (!userShares || !totalAssets || !totalShares || (totalShares as bigint) === BigInt(0)) return BigInt(0);
+        return ((userShares as bigint) * (totalAssets as bigint)) / (totalShares as bigint);
+    }, [userShares, totalAssets, totalShares]);
 
     const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
         address: CONTRACTS.USDC as `0x${string}`,
@@ -148,6 +160,8 @@ export function InvestDashboardClient() {
 
                 setAmount("");
                 refetchAssets();
+                refetchTotalShares();
+                refetchAllowance();
                 refetchPayouts();
                 refetchShares();
                 refetchBalance();
@@ -161,7 +175,7 @@ export function InvestDashboardClient() {
             setIsApproving(false);
             setIsSubmitting(false);
         }
-    }, [isTxConfirming, isTxSuccess, confirmError, isApproving, actionType, refetchAllowance, refetchAssets, refetchPayouts, refetchShares, refetchBalance, refetchIntentAmount, refetchIntentTimestamp]);
+    }, [isTxConfirming, isTxSuccess, confirmError, isApproving, actionType, refetchAllowance, refetchAssets, refetchTotalShares, refetchPayouts, refetchShares, refetchBalance, refetchIntentAmount, refetchIntentTimestamp]);
 
     useEffect(() => {
         if (writeError) {
@@ -314,13 +328,22 @@ export function InvestDashboardClient() {
     useEffect(() => {
         const fetchHistory = async () => {
             if (!address || !mounted) return;
+            setIsLoadingHistory(true);
             try {
                 const publicClient = getPublicClient(config);
                 if (!publicClient) return;
 
-                const [depositLogs, withdrawLogs] = await Promise.all([
+                const poolContracts = [
+                    CONTRACTS.LP_TRAVEL,
+                    CONTRACTS.LP_AGRI,
+                    CONTRACTS.LP_ENERGY,
+                    CONTRACTS.LP_CAT,
+                    CONTRACTS.LP_MARITIME
+                ];
+
+                const allLogsPromises = poolContracts.flatMap(poolAddr => [
                     publicClient.getLogs({
-                        address: selectedPool.address as `0x${string}`,
+                        address: poolAddr as `0x${string}`,
                         event: {
                             type: 'event',
                             name: 'LiquidityDeposited',
@@ -333,7 +356,7 @@ export function InvestDashboardClient() {
                         fromBlock: BigInt(0)
                     }),
                     publicClient.getLogs({
-                        address: selectedPool.address as `0x${string}`,
+                        address: poolAddr as `0x${string}`,
                         event: {
                             type: 'event',
                             name: 'LiquidityWithdrawn',
@@ -347,45 +370,35 @@ export function InvestDashboardClient() {
                     })
                 ]);
 
-                const formattedDeposits = depositLogs
+                const results = await Promise.all(allLogsPromises);
+                const allLogs = results.flat();
+
+                const userHistory = allLogs
                     .filter((l: any) => (l.args as any).provider?.toLowerCase() === address.toLowerCase())
                     .map((l: any) => ({
-                        id: l.transactionHash,
-                        type: 'deposit',
+                        id: `${l.transactionHash}-${l.logIndex}`,
+                        type: l.eventName === 'LiquidityDeposited' ? 'deposit' : 'withdraw',
                         amount: formatUnits((l.args as any).amount, 6),
-                        timestamp: Date.now(), // approximation if we don't fetch block
+                        timestamp: Date.now(), // approximation
                         hash: l.transactionHash
-                    }));
-
-                const formattedWithdrawals = withdrawLogs
-                    .filter((l: any) => (l.args as any).provider?.toLowerCase() === address.toLowerCase())
-                    .map((l: any) => ({
-                        id: l.transactionHash,
-                        type: 'withdraw',
-                        amount: formatUnits((l.args as any).amount, 6),
-                        timestamp: Date.now(),
-                        hash: l.transactionHash
-                    }));
-
-                const fullHistory = [...formattedDeposits, ...formattedWithdrawals]
+                    }))
                     .sort((a, b) => b.timestamp - a.timestamp);
 
-                setHistory(prev => {
-                    // Merge and de-duplicate by hash
-                    const existingHashes = new Set(prev.map(h => h.hash));
-                    const uniqueNew = fullHistory.filter(h => !existingHashes.has(h.hash));
-                    return [...uniqueNew, ...prev].slice(0, 50);
-                });
+                setHistory(userHistory.slice(0, 50));
 
             } catch (err) {
                 console.error("Error fetching historical liquidity logs:", err);
+            } finally {
+                setIsLoadingHistory(false);
             }
         };
         fetchHistory();
-    }, [address, mounted, selectedPool.address]);
+    }, [address, mounted]);
 
     const globalUtilization = totalAssets && totalMaxPayouts ? (Number(totalMaxPayouts) * 100) / Number(totalAssets) : 0;
     const formattedBalance = usdcBalance ? formatUnits(usdcBalance as bigint, 6) : "0";
+
+    if (!mounted) return null;
 
     return (
         <div className="min-h-screen bg-background p-4 md:p-8 space-y-8 max-w-[1400px] mx-auto pb-20">
@@ -399,7 +412,7 @@ export function InvestDashboardClient() {
                 <div className="flex items-center gap-6">
                     <div className="text-right">
                         <p className="text-[10px] text-zinc-500 uppercase font-bold">Your Liquidity Position</p>
-                        <p className="text-xl font-black text-foreground">{userShares ? formatUnits(userShares as bigint, 6) : "0.00"} USDC</p>
+                        <p className="text-xl font-black text-foreground">{userLiquidityValue ? formatUnits(userLiquidityValue, 6) : "0.00"} USDC</p>
                     </div>
                     <div className="h-10 w-px bg-white/10" />
                 </div>

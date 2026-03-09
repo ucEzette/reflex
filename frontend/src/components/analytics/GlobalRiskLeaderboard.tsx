@@ -2,6 +2,7 @@ import { useReadContract } from 'wagmi';
 import { CONTRACTS } from '@/lib/contracts';
 import { LIQUIDITY_POOL_ABI } from '@/lib/enterprise_abis';
 import { formatUnits } from 'viem';
+import { Trophy, Users, Activity, Shield, TrendingUp, Award } from 'lucide-react';
 
 const leaderData: any[] = []; // Mock entities removed
 
