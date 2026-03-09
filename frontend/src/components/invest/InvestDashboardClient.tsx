@@ -98,7 +98,10 @@ export function InvestDashboardClient() {
         address: selectedPool.address as `0x${string}`,
         abi: LIQUIDITY_POOL_ABI,
         functionName: 'totalAssets',
-        query: { enabled: mounted }
+        query: {
+            enabled: mounted,
+            refetchInterval: 10000 // Refetch every 10s
+        }
     });
 
     const { data: totalMaxPayouts, refetch: refetchPayouts } = useReadContract({
@@ -134,31 +137,60 @@ export function InvestDashboardClient() {
                 functionName: 'totalShares',
             })),
         ],
-        query: { enabled: mounted && !!address }
+        query: {
+            enabled: mounted && !!address && chainId === TARGET_CHAIN_ID,
+            refetchInterval: 10000
+        }
     });
 
     const userLiquidityValue = useMemo(() => {
-        if (!globalPositions || !address) return BigInt(0);
+        if (!globalPositions || !address || chainId !== TARGET_CHAIN_ID) return BigInt(0);
 
         let totalValue = BigInt(0);
-        for (let i = 0; i < POOLS.length; i++) {
-            const shares = globalPositions[i]?.result as bigint || BigInt(0);
-            const assets = globalPositions[i + POOLS.length]?.result as bigint || BigInt(0);
-            const supply = globalPositions[i + (POOLS.length * 2)]?.result as bigint || BigInt(0);
+        try {
+            for (let i = 0; i < POOLS.length; i++) {
+                const sharesResult = globalPositions[i];
+                const assetsResult = globalPositions[i + POOLS.length];
+                const supplyResult = globalPositions[i + (POOLS.length * 2)];
 
-            if (shares > 0 && supply > 0) {
-                totalValue += (shares * assets) / supply;
+                if (sharesResult?.status === 'success' && assetsResult?.status === 'success' && supplyResult?.status === 'success') {
+                    const shares = sharesResult.result as bigint;
+                    const assets = assetsResult.result as bigint;
+                    const supply = supplyResult.result as bigint;
+
+                    if (shares > 0 && supply > 0) {
+                        totalValue += (shares * assets) / supply;
+                    }
+                }
             }
+        } catch (e) {
+            console.error("Error calculating user liquidity:", e);
         }
         return totalValue;
-    }, [globalPositions, address]);
+    }, [globalPositions, address, chainId]);
+
+    // Force refetch on address or chain change
+    useEffect(() => {
+        if (mounted && address && chainId === TARGET_CHAIN_ID) {
+            console.log("Forcing refetch of liquidity data for address:", address);
+            refetchAssets();
+            refetchPayouts();
+            refetchTotalShares();
+            refetchGlobalPositions();
+            refetchBalance();
+            refetchAllowance();
+        }
+    }, [address, chainId, mounted]);
 
     const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
         address: CONTRACTS.USDC as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'balanceOf',
         args: address ? [address] : undefined,
-        query: { enabled: mounted && !!address }
+        query: {
+            enabled: mounted && !!address,
+            refetchInterval: 10000
+        }
     });
 
     const { data: usdcAllowance, refetch: refetchAllowance } = useReadContract({
