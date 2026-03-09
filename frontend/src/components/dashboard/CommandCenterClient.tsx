@@ -10,6 +10,10 @@ import { CONTRACTS, ESCROW_ABI, TRAVEL_ABI, GENERIC_PRODUCT_ABI, LP_POOL_ABI } f
 import { formatUnits } from 'viem';
 import { useState, useEffect, useMemo } from 'react';
 
+const FUJI_START_BLOCK = BigInt(52515483);
+const MAX_BLOCKS_PER_QUERY = 2000; // Safer value for 2048 limit
+const MAX_TOTAL_BLOCKS = 500000; // Increased to cover more history (last ~10 days)
+
 export function CommandCenterClient() {
     const { address } = useAccount();
     const [mounted, setMounted] = useState(false);
@@ -160,12 +164,43 @@ export function CommandCenterClient() {
         fetchAllPolicyDetails();
     }, [address, escrowIds, travelIds, agriIds, energyIds, catIds, maritimeIds]);
 
+    const getLogsInChunks = async (publicClient: any, params: any) => {
+        try {
+            const currentBlock = await publicClient.getBlockNumber();
+            const fromBlock = params.fromBlock > currentBlock - BigInt(MAX_TOTAL_BLOCKS)
+                ? params.fromBlock
+                : currentBlock - BigInt(MAX_TOTAL_BLOCKS);
+
+            let allLogs: any[] = [];
+            let start = fromBlock;
+
+            while (start < currentBlock) {
+                let end = start + BigInt(MAX_BLOCKS_PER_QUERY);
+                if (end > currentBlock) end = currentBlock;
+
+                const chunk = await publicClient.getLogs({
+                    ...params,
+                    fromBlock: start,
+                    toBlock: end
+                });
+                allLogs = [...allLogs, ...chunk];
+                start = end + BigInt(1);
+            }
+            return allLogs;
+        } catch (e) {
+            console.error("Chunked logs error:", e);
+            return [];
+        }
+    };
+
     useEffect(() => {
         const fetchHistory = async () => {
             setLogsLoading(true);
             try {
                 const publicClient = getPublicClient(config);
                 if (!publicClient) return;
+
+                console.log("Fetching logs from block:", FUJI_START_BLOCK.toString());
 
                 const productContracts = [
                     { address: CONTRACTS.TRAVEL, type: 'Travel' },
@@ -177,7 +212,7 @@ export function CommandCenterClient() {
 
                 // Fetch PolicyCreated and PolicyClaimed from all products
                 const logPromises = productContracts.flatMap(pc => [
-                    publicClient.getLogs({
+                    getLogsInChunks(publicClient, {
                         address: pc.address as `0x${string}`,
                         event: {
                             type: 'event',
@@ -190,25 +225,25 @@ export function CommandCenterClient() {
                                 { indexed: false, name: 'expiresAt', type: 'uint256' }
                             ]
                         },
-                        fromBlock: BigInt(0)
+                        fromBlock: FUJI_START_BLOCK
                     }),
-                    publicClient.getLogs({
+                    getLogsInChunks(publicClient, {
                         address: pc.address as `0x${string}`,
                         event: {
                             type: 'event',
                             name: 'PolicyClaimed',
                             inputs: [
                                 { indexed: false, name: 'id', type: 'bytes32' },
-                                { indexed: false, name: 'payout', type: 'uint256' }
+                                { indexed: false, name: pc.type === 'Travel' ? 'payout' : 'actualPayout', type: 'uint256' }
                             ]
                         },
-                        fromBlock: BigInt(0)
+                        fromBlock: FUJI_START_BLOCK
                     })
                 ]);
 
                 // Escrow special events
                 logPromises.push(
-                    publicClient.getLogs({
+                    getLogsInChunks(publicClient, {
                         address: CONTRACTS.ESCROW as `0x${string}`,
                         event: {
                             type: 'event',
@@ -222,9 +257,9 @@ export function CommandCenterClient() {
                                 { indexed: false, name: 'expirationTime', type: 'uint256' }
                             ]
                         },
-                        fromBlock: BigInt(0)
+                        fromBlock: FUJI_START_BLOCK
                     }),
-                    publicClient.getLogs({
+                    getLogsInChunks(publicClient, {
                         address: CONTRACTS.ESCROW as `0x${string}`,
                         event: {
                             type: 'event',
@@ -235,7 +270,7 @@ export function CommandCenterClient() {
                                 { indexed: false, name: 'payoutAmount', type: 'uint256' }
                             ]
                         },
-                        fromBlock: BigInt(0)
+                        fromBlock: FUJI_START_BLOCK
                     })
                 );
 
@@ -312,6 +347,7 @@ export function CommandCenterClient() {
                 setLogsLoading(false);
             }
         };
+
         fetchHistory();
     }, []);
 

@@ -8,6 +8,10 @@ import { LIQUIDITY_POOL_ABI, ERC20_ABI } from '@/lib/enterprise_abis';
 import { parseUnits, formatUnits } from 'viem';
 import { toast } from 'sonner';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+
+const FUJI_START_BLOCK = BigInt(52515483);
+const MAX_BLOCKS_PER_QUERY = 2000;
+const MAX_TOTAL_BLOCKS = 500000;
 import { cn } from '@/lib/utils';
 import { Trophy, Users, Activity, Shield, TrendingUp, Award, RefreshCcw, ArrowUpRight, ArrowDownLeft, DollarSign, Clock, AlertCircle, CheckCircle2, Layers } from 'lucide-react';
 import { InstitutionalTooltip } from '@/components/ui/InstitutionalTooltip';
@@ -59,6 +63,35 @@ export function InvestDashboardClient() {
             localStorage.setItem("invest_history", JSON.stringify(history));
         }
     }, [history, mounted]);
+    const getLogsInChunks = async (params: any) => {
+        if (!publicClient) return [];
+        try {
+            const currentBlock = await publicClient.getBlockNumber();
+            const fromBlock = params.fromBlock > currentBlock - BigInt(MAX_TOTAL_BLOCKS)
+                ? params.fromBlock
+                : currentBlock - BigInt(MAX_TOTAL_BLOCKS);
+
+            let allLogs: any[] = [];
+            let start = fromBlock;
+
+            while (start < currentBlock) {
+                let end = start + BigInt(MAX_BLOCKS_PER_QUERY);
+                if (end > currentBlock) end = currentBlock;
+
+                const chunk = await publicClient.getLogs({
+                    ...params,
+                    fromBlock: start,
+                    toBlock: end
+                });
+                allLogs = [...allLogs, ...chunk];
+                start = end + BigInt(1);
+            }
+            return allLogs;
+        } catch (e) {
+            console.error("Invest chunked logs error:", e);
+            return [];
+        }
+    };
 
     // Contract Reads
     const { data: totalAssets, refetch: refetchAssets } = useReadContract({
@@ -427,7 +460,7 @@ export function InvestDashboardClient() {
                 ];
 
                 const allLogsPromises = poolContracts.flatMap(poolAddr => [
-                    publicClient.getLogs({
+                    getLogsInChunks({
                         address: poolAddr as `0x${string}`,
                         event: {
                             type: 'event',
@@ -438,9 +471,9 @@ export function InvestDashboardClient() {
                                 { indexed: false, name: 'shares', type: 'uint256' }
                             ]
                         },
-                        fromBlock: BigInt(0)
+                        fromBlock: FUJI_START_BLOCK
                     }),
-                    publicClient.getLogs({
+                    getLogsInChunks({
                         address: poolAddr as `0x${string}`,
                         event: {
                             type: 'event',
@@ -451,7 +484,7 @@ export function InvestDashboardClient() {
                                 { indexed: false, name: 'shares', type: 'uint256' }
                             ]
                         },
-                        fromBlock: BigInt(0)
+                        fromBlock: FUJI_START_BLOCK
                     })
                 ]);
 

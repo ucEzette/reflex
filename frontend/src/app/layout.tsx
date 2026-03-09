@@ -38,6 +38,22 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
           rel="stylesheet"
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.global = window;
+              if (!window.process) {
+                window.process = { 
+                  env: { NODE_DEBUG: false },
+                  version: '',
+                  nextTick: (cb) => setTimeout(cb, 0),
+                  on: () => {},
+                  emit: () => {},
+                };
+              }
+            `,
+          }}
+        />
       </head>
       <body className="bg-transparent text-slate-900 dark:text-slate-100 font-display selection:bg-primary selection:text-white overflow-x-hidden transition-colors duration-500">
         <Providers>

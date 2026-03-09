@@ -4,8 +4,10 @@ import { getPublicClient } from "@wagmi/core";
 import { ESCROW_ABI, TRAVEL_ABI, GENERIC_PRODUCT_ABI, CONTRACTS } from "@/lib/contracts";
 import Link from "next/link";
 import { useEffect, useState, useMemo } from "react";
+const FUJI_START_BLOCK = BigInt(52515483);
+const MAX_BLOCKS_PER_QUERY = 2000;
+const MAX_TOTAL_BLOCKS = 500000;
 import { TableSkeleton } from "@/components/ui/Skeletons";
-
 import { formatUnits } from "viem";
 
 function CountdownTimer({ expirationTime }: { expirationTime: bigint }) {
@@ -201,6 +203,35 @@ function PolicyRow({ policy, txHash }: { policy: PolicyItem, txHash?: string }) 
 export function ActivePolicies() {
     const { address, isConnected } = useAccount();
     const [mounted, setMounted] = useState(false);
+
+    const getLogsInChunks = async (publicClient: any, params: any) => {
+        try {
+            const currentBlock = await publicClient.getBlockNumber();
+            const fromBlock = params.fromBlock > currentBlock - BigInt(MAX_TOTAL_BLOCKS)
+                ? params.fromBlock
+                : currentBlock - BigInt(MAX_TOTAL_BLOCKS);
+
+            let allLogs: any[] = [];
+            let start = fromBlock;
+
+            while (start < currentBlock) {
+                let end = start + BigInt(MAX_BLOCKS_PER_QUERY);
+                if (end > currentBlock) end = currentBlock;
+
+                const chunk = await publicClient.getLogs({
+                    ...params,
+                    fromBlock: start,
+                    toBlock: end
+                });
+                allLogs = [...allLogs, ...chunk];
+                start = end + BigInt(1);
+            }
+            return allLogs;
+        } catch (e) {
+            console.error("ActivePolicies chunked logs error:", e);
+            return [];
+        }
+    };
     const [txHashes, setTxHashes] = useState<Record<string, string>>({});
 
     useEffect(() => {
@@ -302,19 +333,18 @@ export function ActivePolicies() {
                 const publicClient = getPublicClient(config);
                 if (!publicClient) return;
 
-                const contracts = [
-                    CONTRACTS.ESCROW,
-                    CONTRACTS.TRAVEL,
-                    CONTRACTS.AGRI,
-                    CONTRACTS.ENERGY,
-                    CONTRACTS.CATASTROPHE,
-                    CONTRACTS.MARITIME
+                const products = [
+                    { address: CONTRACTS.ESCROW, type: 'Escrow' },
+                    { address: CONTRACTS.TRAVEL, type: 'Travel' },
+                    { address: CONTRACTS.AGRI, type: 'Agri' },
+                    { address: CONTRACTS.ENERGY, type: 'Energy' },
+                    { address: CONTRACTS.CATASTROPHE, type: 'Catastrophe' },
+                    { address: CONTRACTS.MARITIME, type: 'Maritime' }
                 ];
 
-                const allLogs = await Promise.all(contracts.map(contract => {
-                    const isTravel = contract === CONTRACTS.TRAVEL;
-                    return publicClient.getLogs({
-                        address: contract as `0x${string}`,
+                const results = await Promise.all(products.map(p =>
+                    getLogsInChunks(publicClient, {
+                        address: p.address as `0x${string}`,
                         event: {
                             type: 'event',
                             name: 'PolicyCreated',
@@ -322,16 +352,15 @@ export function ActivePolicies() {
                                 { indexed: false, name: 'id', type: 'bytes32' },
                                 { indexed: false, name: 'holder', type: 'address' },
                                 { indexed: false, name: 'premium', type: 'uint256' },
-                                { indexed: false, name: isTravel ? 'payout' : 'maxPayout', type: 'uint256' },
+                                { indexed: false, name: p.type === 'Travel' ? 'payout' : 'maxPayout', type: 'uint256' },
                                 { indexed: false, name: 'expiresAt', type: 'uint256' }
                             ]
                         },
-                        fromBlock: BigInt(0)
-                    }).catch(() => [])
-                }));
+                        fromBlock: FUJI_START_BLOCK
+                    })
+                ));
 
-                // Escrow uses PolicyPurchased
-                const escrowLogs = await publicClient.getLogs({
+                const escrowResults = await getLogsInChunks(publicClient, {
                     address: CONTRACTS.ESCROW as `0x${string}`,
                     event: {
                         type: 'event',
@@ -345,11 +374,11 @@ export function ActivePolicies() {
                             { indexed: false, name: 'expirationTime', type: 'uint256' }
                         ]
                     },
-                    fromBlock: BigInt(0)
-                }).catch(() => []);
+                    fromBlock: FUJI_START_BLOCK
+                });
 
                 const newHashes: Record<string, string> = {};
-                [...allLogs.flat(), ...escrowLogs].forEach(log => {
+                [...results.flat(), ...escrowResults].forEach(log => {
                     const args = (log as any).args;
                     const holder = args.holder || args.policyholder;
                     if (address && holder?.toLowerCase() === address.toLowerCase()) {
