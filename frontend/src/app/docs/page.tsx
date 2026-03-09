@@ -494,25 +494,103 @@ export default function DocsPage() {
                                 <span className="material-symbols-outlined text-violet-400 text-4xl">code</span>
                                 Contract Addresses
                             </h2>
-                            <div className="glass-panel p-8 rounded-2xl space-y-4">
-                                <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-4">Avalanche Fuji Testnet (Chain ID: 43113)</p>
-                                {[
-                                    { name: "ReflexParametricEscrow (Proxy)", addr: "0xd8218d83e4fe4927aff7bcd0bed316a3c39be7b4" },
-                                    { name: "Cross-Chain Receiver", addr: "0xc7a297de87890728453daa240a8373d7d5cee90b" },
-                                    { name: "ReflexLiquidityPool", addr: "0xbcfeeaea01b9ddd2f8a1092676681c6b52dbe81c" },
-                                    { name: "ProductFactory", addr: "0x870268aafe40b15f6bf14d42c435e6d2c7b660fe" },
-                                    { name: "TravelSolutions", addr: "0x54eb96ee828c3c3201ff5419ad5cbff4b2d482b6" },
-                                    { name: "AgricultureIndex", addr: "0x2b9ad5fb816f0ea3cd605495634dbe851ebdb240" },
-                                    { name: "EnergySolutions", addr: "0x2062932817121290f6bb7ff87f20eeb40ce52179" },
-                                    { name: "CatastropheProximity", addr: "0x7c1dfcd03c2ba97c13309a36e46ef20ddf869b61" },
-                                    { name: "MaritimeSolutions", addr: "0x237660db78797fbe77373db803b3325aa51cd04a" },
-                                    { name: "USDC (Mock)", addr: "0x5425890298aed601595a70AB815c96711a31Bc65" },
-                                ].map((c) => (
-                                    <div key={c.name} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
-                                        <span className="text-xs text-foreground font-bold">{c.name}</span>
-                                        <code className="text-[10px] text-slate-400 font-mono truncate max-w-[300px]">{c.addr}</code>
+                            <div className="glass-panel p-8 rounded-2xl space-y-12">
+                                <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-8">Avalanche Fuji Testnet (Chain ID: 43113)</p>
+
+                                {/* Core Architecture */}
+                                <div className="space-y-6">
+                                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-amber-400">account_balance</span>
+                                        Core Architecture
+                                    </h3>
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {[
+                                            { 
+                                                name: "ReflexParametricEscrow (Proxy)", 
+                                                addr: "0xd8218d83e4fe4927aff7bcd0bed316a3c39be7b4",
+                                                desc: "The primary micro-insurance engine and policy vault. Manages policy issuance, handles parametric triggers via Chainlink Functions, and coordinates cross-chain settlements via Avalanche Teleporter."
+                                            },
+                                            { 
+                                                name: "ProductFactory", 
+                                                addr: "0x870268aafe40b15f6bf14d42c435e6d2c7b660fe",
+                                                desc: "A central administrative registry for all protocol products. Handles official authorization of new risk products and enforces access control for pool capital."
+                                            },
+                                            { 
+                                                name: "USDC (Testnet Mock)", 
+                                                addr: "0x5425890298aed601595a70AB815c96711a31Bc65",
+                                                desc: "The primary settlement currency for the Reflex protocol on Fuji. Used for policy purchases, liquidity provision, and claim payouts."
+                                            },
+                                        ].map((c) => (
+                                            <div key={c.name} className="flex flex-col p-4 rounded-xl bg-white/5 border border-white/10 hover:border-violet-500/30 transition-all group">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <span className="text-sm text-foreground font-bold">{c.name}</span>
+                                                    <a href={`https://testnet.snowtrace.io/address/${c.addr}`} target="_blank" rel="noopener noreferrer" className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-violet-400 flex items-center gap-1">
+                                                        Snowtrace <span className="material-symbols-outlined text-[12px]">open_in_new</span>
+                                                    </a>
+                                                </div>
+                                                <p className="text-xs text-slate-400 leading-relaxed mb-3">{c.desc}</p>
+                                                <code className="text-[9px] text-slate-500 font-mono bg-black/40 px-2 py-1 rounded select-all truncate">{c.addr}</code>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
+                                </div>
+
+                                {/* Sector Liquidity Pools */}
+                                <div className="space-y-6">
+                                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-emerald-400">payments</span>
+                                        Sector Liquidity Pools
+                                    </h3>
+                                    <p className="text-xs text-slate-500 italic">All pools utilize the ReflexLiquidityPool engine, routing idle capital to Aave V3 for yield optimization.</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {[
+                                            { name: "Travel Liquidity Pool", addr: "0xbcfeeaea01b9ddd2f8a1092676681c6b52dbe81c", desc: "Institutional capital backing the Travel risk sector." },
+                                            { name: "Agriculture Liquidity Pool", addr: "0xcb4c97087ed4c858281c39df44ae0997561ffe8c", desc: "Capital reserve for agricultural productivity hazards." },
+                                            { name: "Energy Liquidity Pool", addr: "0xe8b7b01b2b4ec0f400f37f2d894e3654f05852f6", desc: "Dedicated liquidity for renewable energy supply risk." },
+                                            { name: "Catastrophe Liquidity Pool", addr: "0x9d803a3066c858d714c4f5ee286eaa6249d451ab", desc: "High-intensity capital for natural disaster protection." },
+                                            { name: "Maritime Liquidity Pool", addr: "0x6586035d5e39e30bf37445451b43eeaeeaa1405a", desc: "Global trade liquidity backing ocean logistics." },
+                                        ].map((c) => (
+                                            <div key={c.name} className="flex flex-col p-4 rounded-xl bg-white/5 border border-white/10 hover:border-emerald-500/30 transition-all group">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <span className="text-sm text-foreground font-bold">{c.name}</span>
+                                                    <a href={`https://testnet.snowtrace.io/address/${c.addr}`} target="_blank" rel="noopener noreferrer" className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-emerald-400 flex items-center gap-1">
+                                                        Snowtrace <span className="material-symbols-outlined text-[12px]">open_in_new</span>
+                                                    </a>
+                                                </div>
+                                                <p className="text-xs text-slate-400 leading-relaxed mb-3">{c.desc}</p>
+                                                <code className="text-[9px] text-slate-500 font-mono bg-black/40 px-2 py-1 rounded select-all truncate">{c.addr}</code>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Parametric Modules */}
+                                <div className="space-y-6">
+                                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-blue-400">developer_board</span>
+                                        Parametric Modules
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {[
+                                            { name: "TravelSolutions", addr: "0x98ce0538928303b6e31a9c376a1d4a37374f1d93", desc: "Flight delay protection using aviation oracles for automated payouts." },
+                                            { name: "AgricultureIndex", addr: "0xfaab070d6f017955252e0a19cc532f227edb2425", desc: "Drought and extreme weather protection via verifiable climate indices." },
+                                            { name: "EnergySolutions", addr: "0x762285536f8f07fe75706bb429d230a0e7b22966", desc: "Hedging for energy shortfalls and renewable production volatility." },
+                                            { name: "CatastropheProximity", addr: "0x9b0378eeb2b22367183c09dc79966a32c79074c5", desc: "Location-based protection against high-magnitude natural disasters." },
+                                            { name: "MaritimeSolutions", addr: "0x255ff883066744bf2d2914da1ebc26ff4d4b58c8", desc: "Shipping risk management covering logistics delays and offshore events." },
+                                        ].map((c) => (
+                                            <div key={c.name} className="flex flex-col p-4 rounded-xl bg-white/5 border border-white/10 hover:border-blue-500/30 transition-all group">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <span className="text-sm text-foreground font-bold">{c.name}</span>
+                                                    <a href={`https://testnet.snowtrace.io/address/${c.addr}`} target="_blank" rel="noopener noreferrer" className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-blue-400 flex items-center gap-1">
+                                                        Snowtrace <span className="material-symbols-outlined text-[12px]">open_in_new</span>
+                                                    </a>
+                                                </div>
+                                                <p className="text-xs text-slate-400 leading-relaxed mb-3">{c.desc}</p>
+                                                <code className="text-[9px] text-slate-500 font-mono bg-black/40 px-2 py-1 rounded select-all truncate">{c.addr}</code>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         </section>
 
