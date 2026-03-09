@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useWatchContractEvent, useChainId, useSwitchChain } from "wagmi";
 import { CONTRACTS, POOLS } from '@/lib/contracts';
+import { config } from '@/lib/wagmiConfig';
+import { getPublicClient } from '@wagmi/core';
 import { LIQUIDITY_POOL_ABI, ERC20_ABI } from '@/lib/enterprise_abis';
 import { parseUnits, formatUnits } from 'viem';
 import { toast } from 'sonner';
@@ -313,7 +315,8 @@ export function InvestDashboardClient() {
         const fetchHistory = async () => {
             if (!address || !mounted) return;
             try {
-                const publicClient = config.getClient();
+                const publicClient = getPublicClient(config);
+                if (!publicClient) return;
 
                 const [depositLogs, withdrawLogs] = await Promise.all([
                     publicClient.getLogs({
@@ -327,7 +330,7 @@ export function InvestDashboardClient() {
                                 { indexed: false, name: 'shares', type: 'uint256' }
                             ]
                         },
-                        fromBlock: 0n
+                        fromBlock: BigInt(0)
                     }),
                     publicClient.getLogs({
                         address: selectedPool.address as `0x${string}`,
@@ -340,13 +343,13 @@ export function InvestDashboardClient() {
                                 { indexed: false, name: 'shares', type: 'uint256' }
                             ]
                         },
-                        fromBlock: 0n
+                        fromBlock: BigInt(0)
                     })
                 ]);
 
                 const formattedDeposits = depositLogs
-                    .filter(l => (l.args as any).provider?.toLowerCase() === address.toLowerCase())
-                    .map(l => ({
+                    .filter((l: any) => (l.args as any).provider?.toLowerCase() === address.toLowerCase())
+                    .map((l: any) => ({
                         id: l.transactionHash,
                         type: 'deposit',
                         amount: formatUnits((l.args as any).amount, 6),
@@ -355,8 +358,8 @@ export function InvestDashboardClient() {
                     }));
 
                 const formattedWithdrawals = withdrawLogs
-                    .filter(l => (l.args as any).provider?.toLowerCase() === address.toLowerCase())
-                    .map(l => ({
+                    .filter((l: any) => (l.args as any).provider?.toLowerCase() === address.toLowerCase())
+                    .map((l: any) => ({
                         id: l.transactionHash,
                         type: 'withdraw',
                         amount: formatUnits((l.args as any).amount, 6),

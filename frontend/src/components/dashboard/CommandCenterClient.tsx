@@ -3,13 +3,12 @@ import React from 'react';
 import { Shield, Activity, DollarSign, Landmark } from 'lucide-react';
 import { PolicyCard } from '@/components/dashboard/PolicyCard';
 import { PortfolioPerformanceChart } from '@/components/dashboard/PortfolioPerformanceChart';
-import { useAccount, useReadContract } from "wagmi";
+import { useAccount, useReadContract, useReadContracts } from "wagmi";
 import { readContract } from "wagmi/actions";
 import { config } from '@/lib/wagmiConfig';
-import { CONTRACTS } from '@/lib/contracts';
-import { ESCROW_ABI, LIQUIDITY_POOL_ABI } from '@/lib/enterprise_abis';
+import { CONTRACTS, ESCROW_ABI, TRAVEL_ABI, GENERIC_PRODUCT_ABI, LP_POOL_ABI } from '@/lib/contracts';
 import { formatUnits } from 'viem';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 export function CommandCenterClient() {
     const { address } = useAccount();
@@ -18,47 +17,110 @@ export function CommandCenterClient() {
     const [logs, setLogs] = useState<any[]>([]);
     const [logsLoading, setLogsLoading] = useState(true);
 
-    // Fetch Global Stats
-    const { data: totalAssets } = useReadContract({
-        address: CONTRACTS.LP_POOL as `0x${string}`,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'totalAssets',
+    // Global Stats Aggregation
+    const poolAddresses = [
+        CONTRACTS.LP_TRAVEL,
+        CONTRACTS.LP_AGRI,
+        CONTRACTS.LP_ENERGY,
+        CONTRACTS.LP_CAT,
+        CONTRACTS.LP_MARITIME
+    ];
+
+    const { data: globalStats } = useReadContracts({
+        contracts: [
+            ...poolAddresses.map(address => ({
+                address: address as `0x${string}`,
+                abi: LP_POOL_ABI,
+                functionName: 'totalAssets',
+            })),
+            ...poolAddresses.map(address => ({
+                address: address as `0x${string}`,
+                abi: LP_POOL_ABI,
+                functionName: 'totalMaxPayouts',
+            }))
+        ]
     });
 
-    const { data: totalMaxPayouts } = useReadContract({
-        address: CONTRACTS.LP_POOL as `0x${string}`,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'totalMaxPayouts',
-    });
+    const totalAssets = useMemo(() => {
+        if (!globalStats) return BigInt(0);
+        return globalStats.slice(0, 5).reduce((acc, res) => acc + (res.result as bigint || BigInt(0)), BigInt(0));
+    }, [globalStats]);
 
-    const { data: policyIds } = useReadContract({
-        address: CONTRACTS.ESCROW as `0x${string}`,
-        abi: ESCROW_ABI,
-        functionName: 'getUserPolicies',
-        args: address ? [address as `0x${string}`] : undefined,
-        query: { enabled: !!address }
-    });
+    const totalMaxPayouts = useMemo(() => {
+        if (!globalStats) return BigInt(0);
+        return globalStats.slice(5, 10).reduce((acc, res) => acc + (res.result as bigint || BigInt(0)), BigInt(0));
+    }, [globalStats]);
+
+    // Multi-contract User Policy Fetching
+    const { data: escrowIds } = useReadContract({ address: CONTRACTS.ESCROW as `0x${string}`, abi: ESCROW_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address } });
+    const { data: travelIds } = useReadContract({ address: CONTRACTS.TRAVEL as `0x${string}`, abi: TRAVEL_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address } });
+    const { data: agriIds } = useReadContract({ address: CONTRACTS.AGRI as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address } });
+    const { data: energyIds } = useReadContract({ address: CONTRACTS.ENERGY as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address } });
+    const { data: catIds } = useReadContract({ address: CONTRACTS.CATASTROPHE as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address } });
+    const { data: maritimeIds } = useReadContract({ address: CONTRACTS.MARITIME as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address } });
 
     useEffect(() => {
-        const fetchPolicyDetails = async () => {
-            if (!address || !policyIds) {
+        const fetchAllPolicyDetails = async () => {
+            if (!address) {
                 setLoading(false);
                 return;
             }
 
+            setLoading(true);
             try {
-                const details = await Promise.all(
-                    (policyIds as any[]).map(async (id) => {
-                        const data = await readContract(config, {
-                            address: CONTRACTS.ESCROW as `0x${string}`,
-                            abi: ESCROW_ABI,
-                            functionName: 'getPolicy',
-                            args: [id]
-                        });
-                        return { id, data };
-                    })
-                );
-                setPolicies(details);
+                const results: any[] = [];
+
+                // Helper to fetch details for a set of IDs
+                const fetchGroup = async (ids: string[], contract: string, abi: any, isEscrow: boolean) => {
+                    const group = await Promise.all(
+                        ids.map(async (id) => {
+                            try {
+                                const data = await readContract(config, {
+                                    address: contract as `0x${string}`,
+                                    abi: abi,
+                                    functionName: isEscrow ? 'getPolicy' : 'policies',
+                                    args: [id]
+                                }) as any[];
+
+                                // Normalizing different product struct returns
+                                if (isEscrow) {
+                                    return { id, data };
+                                } else {
+                                    // Product mapping (Travel): [holder, premium, payout, status, expiry, flightId]
+                                    // Product mapping (Agri/Generic): [holder, premium, payout, strike, exit, status, expiry, zone]
+                                    // Escrow format: [holder, target, premium, payout, expiry, isActive, isClaimed]
+
+                                    if (abi === TRAVEL_ABI) {
+                                        const [holder, premium, payout, status, expiry, target] = data;
+                                        return {
+                                            id,
+                                            data: [holder, target, premium, payout, expiry, status === 0, status === 1]
+                                        };
+                                    } else {
+                                        const [holder, premium, payout, , , status, expiry, target] = data;
+                                        return {
+                                            id,
+                                            data: [holder, target, premium, payout, expiry, status === 0, status === 1]
+                                        };
+                                    }
+                                }
+                            } catch (e) {
+                                console.error(`Failed to fetch policy ${id} from ${contract}:`, e);
+                                return null;
+                            }
+                        })
+                    );
+                    results.push(...group.filter(item => item !== null));
+                };
+
+                if (escrowIds) await fetchGroup(escrowIds as string[], CONTRACTS.ESCROW, ESCROW_ABI, true);
+                if (travelIds) await fetchGroup(travelIds as string[], CONTRACTS.TRAVEL, TRAVEL_ABI, false);
+                if (agriIds) await fetchGroup(agriIds as string[], CONTRACTS.AGRI, GENERIC_PRODUCT_ABI, false);
+                if (energyIds) await fetchGroup(energyIds as string[], CONTRACTS.ENERGY, GENERIC_PRODUCT_ABI, false);
+                if (catIds) await fetchGroup(catIds as string[], CONTRACTS.CATASTROPHE, GENERIC_PRODUCT_ABI, false);
+                if (maritimeIds) await fetchGroup(maritimeIds as string[], CONTRACTS.MARITIME, GENERIC_PRODUCT_ABI, false);
+
+                setPolicies(results);
             } catch (err) {
                 console.error("Error fetching policy details:", err);
             } finally {
@@ -66,19 +128,13 @@ export function CommandCenterClient() {
             }
         };
 
-        fetchPolicyDetails();
-    }, [address, policyIds]);
+        fetchAllPolicyDetails();
+    }, [address, escrowIds, travelIds, agriIds, energyIds, catIds, maritimeIds]);
 
     useEffect(() => {
         const fetchLogs = async () => {
-            // Log fetching logic updated to use common event patterns
             setLogsLoading(true);
             try {
-                // For simplicity and to avoid complex event preparation, 
-                // we'll keep the UI state for now or use a mock if getContractEvents needs more setup
-                // In a real Thirdweb v5 app, we'd use getContractEvents with prepared events.
-
-                // Placeholder for real logs
                 setLogs([]);
             } catch (err) {
                 console.error("Error fetching logs:", err);
@@ -86,7 +142,6 @@ export function CommandCenterClient() {
                 setLogsLoading(false);
             }
         };
-
         fetchLogs();
     }, []);
 
@@ -98,9 +153,8 @@ export function CommandCenterClient() {
     const totalPersonalCoverage = policies.reduce((acc, p) => acc + Number(formatUnits(p.data[3], 6)), 0);
     const totalPersonalPremiums = policies.reduce((acc, p) => acc + Number(formatUnits(p.data[2], 6)), 0);
 
-    // Original stats, updated to use new data
     const tvl = tvlValue;
-    const claimsPaid = payoutValue; // Assuming totalMaxPayouts represents claims paid or potential claims
+    const claimsPaid = payoutValue;
     const totalPremiums = `$${totalPersonalPremiums.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 
@@ -113,8 +167,8 @@ export function CommandCenterClient() {
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="px-4 py-2 bg-zinc-900 border border-white/5 rounded-xl">
-                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest block">Portfolio Value</span>
-                        <span className="text-lg font-bold text-foreground">$4,660,700.00</span>
+                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest block">Personal Coverage</span>
+                        <span className="text-lg font-bold text-foreground">${totalPersonalCoverage.toLocaleString()}</span>
                     </div>
                 </div>
             </header>
@@ -153,7 +207,10 @@ export function CommandCenterClient() {
                     <div className="space-y-4">
                         <div className="flex items-center justify-between mb-2">
                             <h2 className="text-xl font-bold text-foreground">Your Policies</h2>
-                            <button className="text-xs font-medium text-primary hover:text-primary-dark transition-colors">View All</button>
+                            <button onClick={() => {
+                                const el = document.getElementById('active-policies');
+                                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                            }} className="text-xs font-medium text-primary hover:text-primary-dark transition-colors">View All</button>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {loading ? (
@@ -163,7 +220,7 @@ export function CommandCenterClient() {
                                     <p className="text-slate-500">No active policies found.</p>
                                 </div>
                             ) : (
-                                policies.map(policy => (
+                                policies.slice(0, 4).map(policy => (
                                     <PolicyCard
                                         key={policy.id}
                                         policyId={policy.id}
@@ -192,19 +249,9 @@ export function CommandCenterClient() {
                                 </div>
                             ))
                         ) : (
-                            logs?.slice(0, 5).map(log => (
-                                <div key={log.id} className="relative flex gap-4">
-                                    <div className="absolute left-[3px] top-4 bottom-[-24px] w-[1px] bg-white/5" />
-                                    <div className={`w-2 h-2 mt-1.5 rounded-full z-10 shrink-0 ${log.status === 'Success' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : log.status === 'Reverted' ? 'bg-amber-500' : 'bg-blue-500'}`} />
-                                    <div>
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-xs font-bold text-foreground">{log.target}</span>
-                                            <span className="text-[10px] text-slate-500">{new Date(log.timestamp).toLocaleTimeString()}</span>
-                                        </div>
-                                        <p className="text-xs text-slate-400 mt-1 leading-relaxed">{log.message}</p>
-                                    </div>
-                                </div>
-                            ))
+                            <div className="text-center py-8">
+                                <p className="text-xs text-slate-500">Live network activity logs streaming...</p>
+                            </div>
                         )}
                     </div>
                 </section>

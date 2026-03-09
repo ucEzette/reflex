@@ -1,8 +1,9 @@
 import { useAccount, useReadContract, useWatchContractEvent } from "wagmi";
 import { config } from "@/lib/wagmiConfig";
-import { ESCROW_ABI, CONTRACTS } from "@/lib/contracts";
+import { getPublicClient } from "@wagmi/core";
+import { ESCROW_ABI, TRAVEL_ABI, GENERIC_PRODUCT_ABI, CONTRACTS } from "@/lib/contracts";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { TableSkeleton } from "@/components/ui/Skeletons";
 
 function CountdownTimer({ expirationTime }: { expirationTime: bigint }) {
@@ -42,7 +43,11 @@ function CountdownTimer({ expirationTime }: { expirationTime: bigint }) {
     );
 }
 
-function StatusBadge({ isActive, isClaimed }: { isActive: boolean; isClaimed: boolean }) {
+function StatusBadge({ status, isActive: _isActive, isClaimed: _isClaimed }: { status?: number, isActive?: boolean; isClaimed?: boolean }) {
+    // Standardize status: 0=Active, 1=Claimed, 2=Expired
+    const isClaimed = _isClaimed || status === 1;
+    const isActive = _isActive || status === 0;
+
     if (isClaimed) {
         return (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -75,50 +80,83 @@ function StatusBadge({ isActive, isClaimed }: { isActive: boolean; isClaimed: bo
     );
 }
 
-function PolicyRow({ policyId, txHash }: { policyId: string, txHash?: string }) {
+interface PolicyItem {
+    id: string;
+    contract: string;
+    type: 'Escrow' | 'Travel' | 'Agri' | 'Energy' | 'Catastrophe' | 'Maritime';
+}
+
+function PolicyRow({ policy, txHash }: { policy: PolicyItem, txHash?: string }) {
+    const isEscrow = policy.type === 'Escrow';
+
+    // Determine ABI and Function
+    const abi = isEscrow ? ESCROW_ABI : (policy.type === 'Travel' ? TRAVEL_ABI : GENERIC_PRODUCT_ABI);
+    const functionName = isEscrow ? 'getPolicy' : 'policies';
+
     const { data } = useReadContract({
-        address: CONTRACTS.ESCROW as `0x${string}`,
-        abi: ESCROW_ABI,
-        functionName: 'getPolicy',
-        args: [policyId as `0x${string}`],
+        address: policy.contract as `0x${string}`,
+        abi: abi as any,
+        functionName: functionName,
+        args: [policy.id as `0x${string}`],
     });
 
-    const policyData = data as any[];
+    if (!data) return null;
 
-    if (!policyData) return null;
+    let holder, target, premium, payout, expiry, status, isActive, isClaimed;
 
-    const [, apiTarget, premiumPaid, payoutAmount, expirationTime, isActive, isClaimed] = policyData;
+    if (isEscrow) {
+        [holder, target, premium, payout, expiry, isActive, isClaimed] = data as any[];
+    } else {
+        // Product mappings return items in struct order
+        // struct FlightPolicy { address policyholder; uint256 premium; uint256 maxPayout; bytes32 flightId; uint256 status; uint256 expiresAt; string targetFlight; }
+        // struct AgPolicy { address policyholder; uint256 premium; uint256 maxPayout; uint256 rainfallStrike; uint256 status; uint256 expiresAt; string geographicZone; }
+        // ... all follow: holder, premium, payout, [strike/id], status, expiry, target
+        const d = data as any[];
+        [holder, premium, payout, , status, expiry, target] = d;
+        isActive = status === 0;
+        isClaimed = status === 1;
+    }
 
-    // Extract flight number from apiTarget
-    const flightMatch = apiTarget.match(/flights\/([^?]+)/);
-    const flightNumber = flightMatch ? flightMatch[1] : apiTarget;
+    // Extract display target
+    let displayTarget = target || "";
+    if (isEscrow) {
+        const flightMatch = displayTarget.match(/flights\/([^?]+)/);
+        displayTarget = flightMatch ? flightMatch[1] : displayTarget;
+    }
+
+    const sectorColors: Record<string, string> = {
+        Travel: 'text-primary',
+        Agri: 'text-emerald-400',
+        Energy: 'text-amber-400',
+        Catastrophe: 'text-rose-500',
+        Maritime: 'text-blue-400',
+        Escrow: 'text-zinc-400'
+    };
 
     return (
         <tr className="border-b border-zinc-800/30 hover:bg-zinc-800/20 transition-colors">
             <td className="px-4 py-4">
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-zinc-400">
-                            <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" fill="currentColor" />
-                        </svg>
+                    <div className={`text-[10px] font-bold px-1.5 py-0.5 rounded border border-current ${sectorColors[policy.type]}`}>
+                        {policy.type.toUpperCase()}
                     </div>
-                    <span className="text-sm font-medium text-foreground">{flightNumber}</span>
+                    <span className="text-sm font-medium text-foreground">{displayTarget || "Global Policy"}</span>
                 </div>
             </td>
             <td className="px-4 py-4">
-                <span className="text-sm text-zinc-400">${(Number(premiumPaid) / 1e6).toFixed(2)}</span>
+                <span className="text-sm text-zinc-400">${(Number(premium) / 1e6).toFixed(2)}</span>
             </td>
             <td className="px-4 py-4">
                 <span className="text-sm font-medium text-emerald-400">
-                    ${(Number(payoutAmount) / 1e6).toFixed(2)}
+                    ${(Number(payout) / 1e6).toFixed(2)}
                 </span>
             </td>
             <td className="px-4 py-4">
-                <StatusBadge isActive={isActive} isClaimed={isClaimed} />
+                <StatusBadge status={status} isActive={isActive} isClaimed={isClaimed} />
             </td>
             <td className="px-4 py-4">
                 {isActive && !isClaimed ? (
-                    <CountdownTimer expirationTime={expirationTime} />
+                    <CountdownTimer expirationTime={expiry} />
                 ) : (
                     <span className="text-sm text-zinc-600">—</span>
                 )}
@@ -126,17 +164,8 @@ function PolicyRow({ policyId, txHash }: { policyId: string, txHash?: string }) 
             <td className="px-4 py-4">
                 <div className="flex flex-col gap-1.5 align-start">
                     <span className="text-xs font-mono text-zinc-400">
-                        {policyId.slice(0, 10)}...
+                        {policy.id.slice(0, 10)}...
                     </span>
-                    {!isActive && !isClaimed && (
-                        <Link
-                            href={`/claims/evidence/${policyId}`}
-                            className="inline-flex max-w-max items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 text-[10px] text-amber-400 hover:text-amber-300 hover:bg-amber-500/20 transition-colors border border-amber-500/20"
-                        >
-                            <span className="material-symbols-outlined !text-[12px]">gavel</span>
-                            <span>Dispute</span>
-                        </Link>
-                    )}
                     {txHash && (
                         <div className="flex items-center gap-2">
                             <a
@@ -145,23 +174,12 @@ function PolicyRow({ policyId, txHash }: { policyId: string, txHash?: string }) 
                                 rel="noopener noreferrer"
                                 className="inline-flex max-w-max items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-800/50 text-[10px] text-sky-400 hover:text-sky-300 hover:bg-zinc-800 transition-colors border border-zinc-800"
                             >
-                                <span>Snowscan</span>
+                                <span>Explorer</span>
                                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                                     <polyline points="15 3 21 3 21 9" />
                                     <line x1="10" y1="14" x2="21" y2="3" />
                                 </svg>
-                            </a>
-                            <a
-                                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I just secured ${payoutAmount ? `$${(Number(payoutAmount) / 1e6).toFixed(0)}` : "parametric"} protection on @ReflexProtocol! 🛡️\n\nMy policy for ${flightNumber} is now live on Avalanche. \n\n#Reflex #DeFi #Avalanche`)}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex max-w-max items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-[10px] text-primary hover:bg-primary/20 transition-colors border border-primary/20"
-                            >
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.451-6.231zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" />
-                                </svg>
-                                <span>Share</span>
                             </a>
                         </div>
                     )}
@@ -180,7 +198,8 @@ export function ActivePolicies() {
         setMounted(true);
     }, []);
 
-    const { data: policyIds, isLoading } = useReadContract({
+    // Fetch from all sources
+    const { data: escrowIds } = useReadContract({
         address: CONTRACTS.ESCROW as `0x${string}`,
         abi: ESCROW_ABI,
         functionName: 'getUserPolicies',
@@ -188,28 +207,161 @@ export function ActivePolicies() {
         query: { enabled: !!address && mounted }
     });
 
+    const { data: travelIds } = useReadContract({
+        address: CONTRACTS.TRAVEL as `0x${string}`,
+        abi: TRAVEL_ABI,
+        functionName: 'getUserPolicies',
+        args: address ? [address as `0x${string}`] : undefined,
+        query: { enabled: !!address && mounted }
+    });
+
+    const { data: agriIds } = useReadContract({
+        address: CONTRACTS.AGRI as `0x${string}`,
+        abi: GENERIC_PRODUCT_ABI,
+        functionName: 'getUserPolicies',
+        args: address ? [address as `0x${string}`] : undefined,
+        query: { enabled: !!address && mounted }
+    });
+
+    const { data: energyIds } = useReadContract({
+        address: CONTRACTS.ENERGY as `0x${string}`,
+        abi: GENERIC_PRODUCT_ABI,
+        functionName: 'getUserPolicies',
+        args: address ? [address as `0x${string}`] : undefined,
+        query: { enabled: !!address && mounted }
+    });
+
+    const { data: catIds } = useReadContract({
+        address: CONTRACTS.CATASTROPHE as `0x${string}`,
+        abi: GENERIC_PRODUCT_ABI,
+        functionName: 'getUserPolicies',
+        args: address ? [address as `0x${string}`] : undefined,
+        query: { enabled: !!address && mounted }
+    });
+
+    const { data: maritimeIds } = useReadContract({
+        address: CONTRACTS.MARITIME as `0x${string}`,
+        abi: GENERIC_PRODUCT_ABI,
+        functionName: 'getUserPolicies',
+        args: address ? [address as `0x${string}`] : undefined,
+        query: { enabled: !!address && mounted }
+    });
+
+    const allPolicies = useMemo(() => {
+        const items: PolicyItem[] = [];
+        if (escrowIds) (escrowIds as string[]).forEach(id => items.push({ id, contract: CONTRACTS.ESCROW, type: 'Escrow' }));
+        if (travelIds) (travelIds as string[]).forEach(id => items.push({ id, contract: CONTRACTS.TRAVEL, type: 'Travel' }));
+        if (agriIds) (agriIds as string[]).forEach(id => items.push({ id, contract: CONTRACTS.AGRI, type: 'Agri' }));
+        if (energyIds) (energyIds as string[]).forEach(id => items.push({ id, contract: CONTRACTS.ENERGY, type: 'Energy' }));
+        if (catIds) (catIds as string[]).forEach(id => items.push({ id, contract: CONTRACTS.CATASTROPHE, type: 'Catastrophe' }));
+        if (maritimeIds) (maritimeIds as string[]).forEach(id => items.push({ id, contract: CONTRACTS.MARITIME, type: 'Maritime' }));
+        return items;
+    }, [escrowIds, travelIds, agriIds, energyIds, catIds, maritimeIds]);
+
+    // Watch for events on all products to pick up tx hashes
     useWatchContractEvent({
-        address: CONTRACTS.ESCROW as `0x${string}`,
-        abi: ESCROW_ABI,
-        eventName: 'PolicyPurchased',
+        config,
+        address: [
+            CONTRACTS.ESCROW,
+            CONTRACTS.TRAVEL,
+            CONTRACTS.AGRI,
+            CONTRACTS.ENERGY,
+            CONTRACTS.CATASTROPHE,
+            CONTRACTS.MARITIME
+        ],
         onLogs(logs) {
             if (address) {
                 logs.forEach(log => {
-                    if ((log as any).args.policyholder?.toLowerCase() === address.toLowerCase()) {
-                        setTxHashes(prev => ({
-                            ...prev,
-                            [(log as any).args.policyId]: log.transactionHash
-                        }));
+                    const args = (log as any).args;
+                    if (args.policyholder?.toLowerCase() === address.toLowerCase() ||
+                        args.holder?.toLowerCase() === address.toLowerCase()) {
+                        const pid = args.policyId || args.id;
+                        if (pid) {
+                            setTxHashes(prev => ({ ...prev, [pid]: log.transactionHash }));
+                        }
                     }
                 });
             }
         },
     });
 
+    // Initial fetch of historical logs
+    useEffect(() => {
+        const fetchHistory = async () => {
+            if (!address || !mounted) return;
+            try {
+                const publicClient = getPublicClient(config);
+                if (!publicClient) return;
+
+                const contracts = [
+                    CONTRACTS.ESCROW,
+                    CONTRACTS.TRAVEL,
+                    CONTRACTS.AGRI,
+                    CONTRACTS.ENERGY,
+                    CONTRACTS.CATASTROPHE,
+                    CONTRACTS.MARITIME
+                ];
+
+                const allLogs = await Promise.all(contracts.map(contract =>
+                    publicClient.getLogs({
+                        address: contract as `0x${string}`,
+                        event: {
+                            type: 'event',
+                            name: 'PolicyCreated', // Note: Escrow uses PolicyPurchased
+                            inputs: [
+                                { indexed: true, name: 'id', type: 'bytes32' },
+                                { indexed: true, name: 'holder', type: 'address' },
+                                { indexed: false, name: 'premium', type: 'uint256' },
+                                { indexed: false, name: 'payout', type: 'uint256' },
+                                { indexed: false, name: 'expiresAt', type: 'uint256' }
+                            ]
+                        },
+                        fromBlock: BigInt(0) // Or a more recent starting block
+                    }).catch(() => [])
+                ));
+
+                // Escrow uses PolicyPurchased
+                const escrowLogs = await publicClient.getLogs({
+                    address: CONTRACTS.ESCROW as `0x${string}`,
+                    event: {
+                        type: 'event',
+                        name: 'PolicyPurchased',
+                        inputs: [
+                            { indexed: true, name: 'policyId', type: 'bytes32' },
+                            { indexed: true, name: 'policyholder', type: 'address' },
+                            { indexed: false, name: 'apiTarget', type: 'string' },
+                            { indexed: false, name: 'premiumPaid', type: 'uint256' },
+                            { indexed: false, name: 'payoutAmount', type: 'uint256' },
+                            { indexed: false, name: 'expirationTime', type: 'uint256' }
+                        ]
+                    },
+                    fromBlock: BigInt(0)
+                }).catch(() => []);
+
+                const newHashes: Record<string, string> = {};
+                [...allLogs.flat(), ...escrowLogs].forEach(log => {
+                    const args = (log as any).args;
+                    const holder = args.holder || args.policyholder;
+                    if (holder?.toLowerCase() === address.toLowerCase()) {
+                        const pid = args.id || args.policyId;
+                        if (pid) {
+                            newHashes[pid] = log.transactionHash;
+                        }
+                    }
+                });
+
+                setTxHashes(prev => ({ ...newHashes, ...prev }));
+            } catch (err) {
+                console.error("Error fetching historical policy logs:", err);
+            }
+        };
+        fetchHistory();
+    }, [address, mounted]);
+
     if (!mounted || !isConnected) return null;
 
     return (
-        <div className="relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-900/50 backdrop-blur-xl">
+        <div id="active-policies" className="relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-900/50 backdrop-blur-xl">
             <div className="absolute inset-0 bg-gradient-to-br from-sky-500/3 to-transparent" />
 
             {/* Header */}
@@ -225,7 +377,7 @@ export function ActivePolicies() {
                         <div>
                             <h2 className="text-xl font-bold text-foreground">Your Policies</h2>
                             <p className="text-sm text-zinc-500">
-                                {policyIds ? `${(policyIds as any[]).length} policies found` : "Loading..."}
+                                {allPolicies.length} protocol policies found
                             </p>
                         </div>
                     </div>
@@ -234,11 +386,7 @@ export function ActivePolicies() {
 
             {/* Table */}
             <div className="relative overflow-x-auto">
-                {isLoading ? (
-                    <div className="p-4">
-                        <TableSkeleton rows={5} />
-                    </div>
-                ) : !policyIds || (policyIds as any[]).length === 0 ? (
+                {allPolicies.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-zinc-800/50 flex items-center justify-center">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-zinc-600">
@@ -246,13 +394,13 @@ export function ActivePolicies() {
                             </svg>
                         </div>
                         <p className="text-sm text-zinc-500">No policies yet</p>
-                        <p className="text-xs text-zinc-600 mt-1">Purchase your first flight delay insurance above</p>
+                        <p className="text-xs text-zinc-600 mt-1">Purchase parametric protection in the Market</p>
                     </div>
                 ) : (
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-zinc-800/50">
-                                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">Flight</th>
+                                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">Sector/Target</th>
                                 <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">Premium</th>
                                 <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">Payout</th>
                                 <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">Status</th>
@@ -261,8 +409,8 @@ export function ActivePolicies() {
                             </tr>
                         </thead>
                         <tbody>
-                            {(policyIds as any[]).map((id) => (
-                                <PolicyRow key={id} policyId={id} txHash={txHashes[id]} />
+                            {allPolicies.map((policy) => (
+                                <PolicyRow key={policy.id} policy={policy} txHash={txHashes[policy.id]} />
                             ))}
                         </tbody>
                     </table>
