@@ -46,10 +46,10 @@ function CountdownTimer({ expirationTime }: { expirationTime: bigint }) {
 }
 
 function StatusBadge({ status, isActive: _isActive, isClaimed: _isClaimed, expirationTime }: { status?: number, isActive?: boolean; isClaimed?: boolean, expirationTime?: bigint }) {
-    // Standardize status: 0=Active, 1=Claimed, 2=Expired
-    const isClaimed = _isClaimed || status === 1;
+    // Standardize status: 0=Active (Active), 1=Claimed (Paid), 2=Expired (Expired)
+    const isClaimed = _isClaimed || Number(status) === 1;
     const isExpired = expirationTime ? Number(expirationTime) < (Date.now() / 1000) : false;
-    const isActive = (_isActive || status === 0) && !isExpired;
+    const isActive = (_isActive || Number(status) === 0) && !isExpired && !isClaimed;
 
     if (isClaimed) {
         return (
@@ -110,7 +110,6 @@ function PolicyRow({ policy, txHash }: { policy: PolicyItem, txHash?: string }) 
     if (isEscrow) {
         [holder, target, premium, payout, expiry, isActive, isClaimed] = data as any[];
     } else if (policy.type === 'Travel') {
-        // struct FlightPolicy { address policyholder; uint256 premium; uint256 payout; uint256 status; uint256 expiresAt; string flightId; } (6 items)
         const [ph, prem, pay, stat, exp, fId] = data as any[];
         holder = ph;
         premium = prem;
@@ -118,14 +117,13 @@ function PolicyRow({ policy, txHash }: { policy: PolicyItem, txHash?: string }) 
         status = stat;
         expiry = exp;
         target = fId;
-        isActive = status === BigInt(0) || status === 0;
-        isClaimed = status === BigInt(1) || status === 1;
+        isActive = Number(status) === 0;
+        isClaimed = Number(status) === 1;
     } else {
-        // Generic: [holder, premium, payout, strike, exit, status, expiry, zone] (8 items)
         const d = data as any[];
         [holder, premium, payout, , , status, expiry, target] = d;
-        isActive = status === BigInt(0) || status === 0;
-        isClaimed = status === BigInt(1) || status === 1;
+        isActive = Number(status) === 0;
+        isClaimed = Number(status) === 1;
     }
 
     // Extract display target
@@ -163,10 +161,10 @@ function PolicyRow({ policy, txHash }: { policy: PolicyItem, txHash?: string }) 
                 </span>
             </td>
             <td className="px-4 py-4">
-                <StatusBadge status={status} isActive={isActive} isClaimed={isClaimed} expirationTime={expiry} />
+                <StatusBadge status={Number(status)} isActive={isActive} isClaimed={isClaimed} expirationTime={expiry} />
             </td>
             <td className="px-4 py-4">
-                {isActive && !isClaimed ? (
+                {isActive && !isClaimed && Number(expiry) > (Date.now() / 1000) ? (
                     <CountdownTimer expirationTime={expiry} />
                 ) : (
                     <span className="text-sm text-zinc-600">—</span>

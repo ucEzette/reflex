@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useWatchContractEvent, useChainId, useSwitchChain } from "wagmi";
+import { useAccount, useReadContract, useReadContracts, useWriteContract, useWaitForTransactionReceipt, useWatchContractEvent, useChainId, useSwitchChain, useSimulateContract } from "wagmi";
 import { CONTRACTS, POOLS } from '@/lib/contracts';
 import { config } from '@/lib/wagmiConfig';
 import { getPublicClient } from '@wagmi/core';
@@ -41,6 +41,10 @@ export function InvestDashboardClient() {
     // History State
     const [history, setHistory] = useState<any[]>([]);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isApproving, setIsApproving] = useState(false);
+    const [isMinting, setIsMinting] = useState(false);
+    const [isTxPending, setIsTxPending] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -78,18 +82,43 @@ export function InvestDashboardClient() {
         query: { enabled: mounted }
     });
 
-    const { data: userShares, refetch: refetchShares } = useReadContract({
-        address: selectedPool.address as `0x${string}`,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'lpShares',
-        args: address ? [address] : undefined,
+    const { data: globalPositions, refetch: refetchGlobalPositions } = useReadContracts({
+        contracts: [
+            ...POOLS.map(pool => ({
+                address: pool.address as `0x${string}`,
+                abi: LIQUIDITY_POOL_ABI,
+                functionName: 'lpShares',
+                args: address ? [address] : undefined,
+            })),
+            ...POOLS.map(pool => ({
+                address: pool.address as `0x${string}`,
+                abi: LIQUIDITY_POOL_ABI,
+                functionName: 'totalAssets',
+            })),
+            ...POOLS.map(pool => ({
+                address: pool.address as `0x${string}`,
+                abi: LIQUIDITY_POOL_ABI,
+                functionName: 'totalShares',
+            })),
+        ],
         query: { enabled: mounted && !!address }
     });
 
     const userLiquidityValue = useMemo(() => {
-        if (!userShares || !totalAssets || !totalShares || (totalShares as bigint) === BigInt(0)) return BigInt(0);
-        return ((userShares as bigint) * (totalAssets as bigint)) / (totalShares as bigint);
-    }, [userShares, totalAssets, totalShares]);
+        if (!globalPositions || !address) return BigInt(0);
+
+        let totalValue = BigInt(0);
+        for (let i = 0; i < POOLS.length; i++) {
+            const shares = globalPositions[i]?.result as bigint || BigInt(0);
+            const assets = globalPositions[i + POOLS.length]?.result as bigint || BigInt(0);
+            const supply = globalPositions[i + (POOLS.length * 2)]?.result as bigint || BigInt(0);
+
+            if (shares > 0 && supply > 0) {
+                totalValue += (shares * assets) / supply;
+            }
+        }
+        return totalValue;
+    }, [globalPositions, address]);
 
     const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
         address: CONTRACTS.USDC as `0x${string}`,
@@ -127,13 +156,36 @@ export function InvestDashboardClient() {
     const { writeContract, data: hash, error: writeError, isPending: isWritePending } = useWriteContract();
     const { isLoading: isTxConfirming, isSuccess: isTxSuccess, error: confirmError } = useWaitForTransactionReceipt({ hash });
 
-    const isTxPending = isWritePending || isTxConfirming;
+    // Robust approval check
+    const needsApproval = useMemo(() => {
+        if (actionType !== "deposit" || !amount || usdcAllowance === undefined) return false;
+        try {
+            const val = parseUnits(amount, 6);
+            return val > (usdcAllowance as bigint);
+        } catch (e) {
+            return false;
+        }
+    }, [actionType, amount, usdcAllowance]);
 
-    const [isApproving, setIsApproving] = useState(false);
-    const [isMinting, setIsMinting] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false); // Keep for UI state management
+    // Pre-simulate approval to catch reverts early
+    const depositAmountBigInt = useMemo(() => {
+        try {
+            return amount ? parseUnits(amount, 6) : BigInt(0);
+        } catch {
+            return BigInt(0);
+        }
+    }, [amount]);
 
-    const needsApproval = actionType === "deposit" && usdcAllowance !== undefined && amount && parseUnits(amount, 6) > (usdcAllowance as bigint);
+    const { data: simulateApprove, error: simulateApproveError } = useSimulateContract({
+        address: CONTRACTS.USDC as `0x${string}`,
+        abi: ERC20_ABI,
+        functionName: 'approve',
+        args: [selectedPool.address as `0x${string}`, depositAmountBigInt],
+        query: {
+            enabled: mounted && isConnected && actionType === 'deposit' && needsApproval && !!amount && parseFloat(amount) > 0
+        },
+        chainId: TARGET_CHAIN_ID
+    });
 
     useEffect(() => {
         if (isTxConfirming) {
@@ -163,7 +215,7 @@ export function InvestDashboardClient() {
                 refetchTotalShares();
                 refetchAllowance();
                 refetchPayouts();
-                refetchShares();
+                refetchGlobalPositions();
                 refetchBalance();
                 refetchIntentAmount();
                 refetchIntentTimestamp();
@@ -175,7 +227,7 @@ export function InvestDashboardClient() {
             setIsApproving(false);
             setIsSubmitting(false);
         }
-    }, [isTxConfirming, isTxSuccess, confirmError, isApproving, actionType, refetchAllowance, refetchAssets, refetchTotalShares, refetchPayouts, refetchShares, refetchBalance, refetchIntentAmount, refetchIntentTimestamp]);
+    }, [isTxConfirming, isTxSuccess, confirmError, isApproving, actionType, refetchAllowance, refetchAssets, refetchTotalShares, refetchPayouts, refetchGlobalPositions, refetchBalance, refetchIntentAmount, refetchIntentTimestamp]);
 
     useEffect(() => {
         if (writeError) {
@@ -223,12 +275,32 @@ export function InvestDashboardClient() {
                     });
                     toast.loading("Requesting USDC Approval...", { id: "tx" });
 
-                    writeContract({
-                        address: CONTRACTS.USDC as `0x${string}`,
-                        abi: ERC20_ABI,
-                        functionName: 'approve',
-                        args: [selectedPool.address as `0x${string}`, value]
-                    });
+                    if (simulateApprove?.request) {
+                        writeContract(simulateApprove.request, {
+                            onError: (error) => {
+                                console.error("Invest Page: Approval Call Reverted", error);
+                                if (simulateApproveError) {
+                                    console.error("Invest Page: Simulation Error details", simulateApproveError);
+                                }
+                                toast.error(error.message || "Approval failed. Check network & balance.", { id: "tx" });
+                                setIsApproving(false);
+                            }
+                        });
+                    } else {
+                        writeContract({
+                            address: CONTRACTS.USDC as `0x${string}`,
+                            abi: ERC20_ABI,
+                            functionName: 'approve',
+                            args: [selectedPool.address as `0x${string}`, value],
+                            chainId: TARGET_CHAIN_ID
+                        }, {
+                            onError: (error) => {
+                                console.error("Invest Page: Approval Call Reverted", error);
+                                toast.error(error.message || "Approval failed. Check network & balance.", { id: "tx" });
+                                setIsApproving(false);
+                            }
+                        });
+                    }
                 } else {
                     setIsSubmitting(true);
                     console.log("Invest Page: Depositing Liquidity", {
@@ -240,7 +312,8 @@ export function InvestDashboardClient() {
                         address: selectedPool.address as `0x${string}`,
                         abi: LIQUIDITY_POOL_ABI,
                         functionName: 'depositLiquidity',
-                        args: [value]
+                        args: [value],
+                        chainId: TARGET_CHAIN_ID
                     });
                 }
             } else {
@@ -259,14 +332,16 @@ export function InvestDashboardClient() {
                         address: selectedPool.address as `0x${string}`,
                         abi: LIQUIDITY_POOL_ABI,
                         functionName: 'scheduleWithdrawal',
-                        args: [value, BigInt(unlockTime)]
+                        args: [value, BigInt(unlockTime)],
+                        chainId: TARGET_CHAIN_ID
                     });
                 } else {
                     writeContract({
                         address: selectedPool.address as `0x${string}`,
                         abi: LIQUIDITY_POOL_ABI,
                         functionName: 'withdrawLiquidity',
-                        args: [value]
+                        args: [value],
+                        chainId: TARGET_CHAIN_ID
                     });
                 }
             }
@@ -285,6 +360,7 @@ export function InvestDashboardClient() {
             abi: ERC20_ABI,
             functionName: 'mint',
             args: [address, parseUnits("1000", 6)],
+            chainId: TARGET_CHAIN_ID
         });
     };
 
@@ -298,7 +374,7 @@ export function InvestDashboardClient() {
                 setHistory(prev => [...userLogs.map(l => ({
                     id: l.transactionHash,
                     type: 'deposit',
-                    amount: formatUnits((l.args as any).amount, 6),
+                    amount: formatUnits(((l.args as any).amount || BigInt(0)) as bigint, 6),
                     timestamp: Date.now(),
                     hash: l.transactionHash
                 })), ...prev].slice(0, 50));
@@ -316,7 +392,7 @@ export function InvestDashboardClient() {
                 setHistory(prev => [...userLogs.map(l => ({
                     id: l.transactionHash,
                     type: 'withdraw',
-                    amount: formatUnits((l.args as any).amount, 6),
+                    amount: formatUnits(((l.args as any).amount || BigInt(0)) as bigint, 6),
                     timestamp: Date.now(),
                     hash: l.transactionHash
                 })), ...prev].slice(0, 50));
@@ -751,8 +827,9 @@ export function InvestDashboardClient() {
                                     isSubmitting ? (isApproving ? 'Approving...' : 'Confirming...') :
                                         (isTxSuccess && !isApproving && !amount) ? <><CheckCircle2 className="w-5 h-5" /> SUCCEEDED</> :
                                             !isConnected ? <><Layers className="w-4 h-4" /> CONNECT WALLET</> :
-                                                !amount ? <><DollarSign className="w-4 h-4" /> ENTER AMOUNT</> :
-                                                    (actionType === 'deposit' ? (needsApproval ? 'APPROVE USDC' : 'INITIATE DEPOSIT') : 'REQUEST WITHDRAWAL')}
+                                                chainId !== TARGET_CHAIN_ID ? <><Activity className="w-4 h-4" /> SWITCH TO FUJI</> : // Explicit CTA for network
+                                                    !amount ? <><DollarSign className="w-4 h-4" /> ENTER AMOUNT</> :
+                                                        (actionType === 'deposit' ? (needsApproval ? 'APPROVE USDC' : 'INITIATE DEPOSIT') : 'REQUEST WITHDRAWAL')}
                             </button>
                         </div>
 

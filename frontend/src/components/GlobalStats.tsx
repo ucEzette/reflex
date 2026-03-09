@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { useReadContract } from 'wagmi';
+import { useReadContracts } from 'wagmi';
 import { CONTRACTS } from '@/lib/contracts';
 import { LIQUIDITY_POOL_ABI } from '@/lib/enterprise_abis';
 import { formatUnits } from 'viem';
@@ -12,19 +12,32 @@ export function GlobalStats() {
         setMounted(true);
     }, []);
 
-    const { data: totalAssets } = useReadContract({
-        address: CONTRACTS.LP_POOL as `0x${string}`,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'totalAssets',
+    const poolAddresses = [
+        CONTRACTS.LP_TRAVEL,
+        CONTRACTS.LP_AGRI,
+        CONTRACTS.LP_ENERGY,
+        CONTRACTS.LP_CAT,
+        CONTRACTS.LP_MARITIME
+    ];
+
+    const { data: globalData } = useReadContracts({
+        contracts: [
+            ...poolAddresses.map(address => ({
+                address: address as `0x${string}`,
+                abi: LIQUIDITY_POOL_ABI,
+                functionName: 'totalAssets',
+            })),
+            ...poolAddresses.map(address => ({
+                address: address as `0x${string}`,
+                abi: LIQUIDITY_POOL_ABI,
+                functionName: 'totalMaxPayouts',
+            }))
+        ],
         query: { enabled: mounted }
     });
 
-    const { data: totalMaxPayouts } = useReadContract({
-        address: CONTRACTS.LP_POOL as `0x${string}`,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'totalMaxPayouts',
-        query: { enabled: mounted }
-    });
+    const totalAssets = globalData ? (globalData.slice(0, 5) as any[]).reduce((acc, res) => acc + (res.result as bigint || BigInt(0)), BigInt(0)) : BigInt(0);
+    const totalMaxPayouts = globalData ? (globalData.slice(5, 10) as any[]).reduce((acc, res) => acc + (res.result as bigint || BigInt(0)), BigInt(0)) : BigInt(0);
 
     if (!mounted) return (
         <div className="grid grid-cols-2 gap-4 mt-4">

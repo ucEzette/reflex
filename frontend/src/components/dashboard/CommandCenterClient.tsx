@@ -4,7 +4,7 @@ import { Shield, Activity, DollarSign, Landmark } from 'lucide-react';
 import { PolicyCard } from '@/components/dashboard/PolicyCard';
 import { PortfolioPerformanceChart } from '@/components/dashboard/PortfolioPerformanceChart';
 import { useAccount, useReadContract, useReadContracts } from "wagmi";
-import { readContract } from "wagmi/actions";
+import { readContract, getPublicClient } from "@wagmi/core";
 import { config } from '@/lib/wagmiConfig';
 import { CONTRACTS, ESCROW_ABI, TRAVEL_ABI, GENERIC_PRODUCT_ABI, LP_POOL_ABI } from '@/lib/contracts';
 import { formatUnits } from 'viem';
@@ -250,7 +250,7 @@ export function CommandCenterClient() {
                     const eventName = (log as any).eventName || 'Transaction';
                     const isClaim = eventName.includes('Claimed');
                     const amount = args.premium || args.premiumPaid || args.payout || args.payoutAmount;
-                    
+
                     // Simple relative time helper
                     const secondsAgo = Math.floor(Date.now() / 1000) - Number(block.timestamp);
                     let timeStr = "Just now";
@@ -284,8 +284,12 @@ export function CommandCenterClient() {
                 // Derive global aggregate stats from ALL logs
                 const totalPremiumsVal = allLogs.reduce((acc, log) => {
                     const args = (log as any).args;
-                    const premium = args.premium || args.premiumPaid || BigInt(0);
-                    return acc + Number(formatUnits(premium, 6));
+                    const eventName = (log as any).eventName;
+                    if (eventName === 'PolicyCreated' || eventName === 'PolicyPurchased') {
+                        const premium = args.premium || args.premiumPaid || BigInt(0);
+                        return acc + Number(formatUnits(premium, 6));
+                    }
+                    return acc;
                 }, 0);
 
                 const totalClaimsVal = allLogs.reduce((acc, log) => {
