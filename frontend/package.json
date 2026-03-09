@@ -40,6 +40,5 @@
     "typescript": "^5"
   },
   "overrides": {
-    "pino": "8.20.0"
   }
 }

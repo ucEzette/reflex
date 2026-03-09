@@ -102,7 +102,21 @@ export function WalletConnect() {
                             <button
                                 key={connector.id}
                                 onClick={() => {
-                                    connect({ connector });
+                                    try {
+                                        connect({ connector }, {
+                                            onError: (error) => {
+                                                console.error("Connection failed:", error);
+                                                toast.error(`Connection failed: ${error.message || 'Unknown error'}`);
+                                            },
+                                            onSuccess: () => {
+                                                toast.success(`Connected with ${connector.name}`);
+                                                setIsOpen(false);
+                                            }
+                                        });
+                                    } catch (err) {
+                                        console.error("Connect error:", err);
+                                        toast.error("Failed to initiate connection");
+                                    }
                                     setIsOpen(false);
                                 }}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 group"
