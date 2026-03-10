@@ -103,6 +103,7 @@ function PolicyRow({ policy, txHash }: { policy: PolicyItem, txHash?: string }) 
         abi: abi as any,
         functionName: functionName,
         args: [policy.id as `0x${string}`],
+        chainId: 43113,
     });
 
     if (!data) return null;
@@ -244,7 +245,8 @@ export function ActivePolicies() {
         abi: ESCROW_ABI,
         functionName: 'getUserPolicies',
         args: address ? [address as `0x${string}`] : undefined,
-        query: { enabled: !!address && mounted }
+        query: { enabled: !!address && mounted },
+        chainId: 43113
     });
 
     const { data: travelIds } = useReadContract({
@@ -252,7 +254,8 @@ export function ActivePolicies() {
         abi: TRAVEL_ABI,
         functionName: 'getUserPolicies',
         args: address ? [address as `0x${string}`] : undefined,
-        query: { enabled: !!address && mounted }
+        query: { enabled: !!address && mounted },
+        chainId: 43113
     });
 
     const { data: agriIds } = useReadContract({
@@ -260,7 +263,8 @@ export function ActivePolicies() {
         abi: GENERIC_PRODUCT_ABI,
         functionName: 'getUserPolicies',
         args: address ? [address as `0x${string}`] : undefined,
-        query: { enabled: !!address && mounted }
+        query: { enabled: !!address && mounted },
+        chainId: 43113
     });
 
     const { data: energyIds } = useReadContract({
@@ -268,7 +272,8 @@ export function ActivePolicies() {
         abi: GENERIC_PRODUCT_ABI,
         functionName: 'getUserPolicies',
         args: address ? [address as `0x${string}`] : undefined,
-        query: { enabled: !!address && mounted }
+        query: { enabled: !!address && mounted },
+        chainId: 43113
     });
 
     const { data: catIds } = useReadContract({
@@ -276,7 +281,8 @@ export function ActivePolicies() {
         abi: GENERIC_PRODUCT_ABI,
         functionName: 'getUserPolicies',
         args: address ? [address as `0x${string}`] : undefined,
-        query: { enabled: !!address && mounted }
+        query: { enabled: !!address && mounted },
+        chainId: 43113
     });
 
     const { data: maritimeIds } = useReadContract({
@@ -284,7 +290,8 @@ export function ActivePolicies() {
         abi: GENERIC_PRODUCT_ABI,
         functionName: 'getUserPolicies',
         args: address ? [address as `0x${string}`] : undefined,
-        query: { enabled: !!address && mounted }
+        query: { enabled: !!address && mounted },
+        chainId: 43113
     });
 
     const allPolicies = useMemo(() => {

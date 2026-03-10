@@ -191,14 +191,16 @@ export default function ProductMarketPage({ params }: { params: { product: strin
         args: product?.id === 'flight'
             ? [BigInt(dynamicRisk.nDelayed), BigInt(dynamicRisk.nTotal), parseUnits(payoutInput || "0", 6)] as const
             : [expectedRiskBase] as const,
-        query: { enabled: mounted && !!targetContractAddress && (product?.id === 'flight' ? !!flightId : !!payoutInput) }
+        query: { enabled: mounted && !!targetContractAddress && (product?.id === 'flight' ? !!flightId : !!payoutInput) },
+        chainId: 43113
     });
 
     const { data: activePolicyCount } = useReadContract({
         address: targetContractAddress as `0x${string}`,
         abi: product?.id === 'flight' ? PRODUCT_ABI : GENERIC_PRODUCT_ABI,
         functionName: "getActivePolicyCount",
-        query: { enabled: mounted && !!targetContractAddress }
+        query: { enabled: mounted && !!targetContractAddress },
+        chainId: 43113
     });
 
     const { writeContract: purchasePolicy, data: hash, isPending: isTxPending, error: purchaseError } = useWriteContract();
@@ -210,7 +212,8 @@ export default function ProductMarketPage({ params }: { params: { product: strin
         abi: ERC20_ABI,
         functionName: "allowance",
         args: [address as `0x${string}`, targetContractAddress as `0x${string}`],
-        query: { enabled: !!address && !!targetContractAddress }
+        query: { enabled: !!address && !!targetContractAddress },
+        chainId: 43113
     });
 
     const { writeContract: approveUSDC, isPending: isApprovePending, data: approveHash } = useWriteContract();

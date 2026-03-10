@@ -101,21 +101,24 @@ export function InvestDashboardClient() {
         query: {
             enabled: mounted,
             refetchInterval: 10000 // Refetch every 10s
-        }
+        },
+        chainId: 43113
     });
 
     const { data: totalMaxPayouts, refetch: refetchPayouts } = useReadContract({
         address: selectedPool.address as `0x${string}`,
         abi: LIQUIDITY_POOL_ABI,
         functionName: 'totalMaxPayouts',
-        query: { enabled: mounted }
+        query: { enabled: mounted },
+        chainId: 43113
     });
 
     const { data: totalShares, refetch: refetchTotalShares } = useReadContract({
         address: selectedPool.address as `0x${string}`,
         abi: LIQUIDITY_POOL_ABI,
         functionName: 'totalShares',
-        query: { enabled: mounted }
+        query: { enabled: mounted },
+        chainId: 43113
     });
 
     const { data: globalPositions, refetch: refetchGlobalPositions } = useReadContracts({
@@ -140,11 +143,12 @@ export function InvestDashboardClient() {
         query: {
             enabled: mounted && !!address && chainId === TARGET_CHAIN_ID,
             refetchInterval: 10000
-        }
+        },
+        chainId: 43113
     });
 
     const userLiquidityValue = useMemo(() => {
-        if (!globalPositions || !address || chainId !== TARGET_CHAIN_ID) return BigInt(0);
+        if (!globalPositions || !address) return BigInt(0);
 
         let totalValue = BigInt(0);
         try {
@@ -190,7 +194,8 @@ export function InvestDashboardClient() {
         query: {
             enabled: mounted && !!address,
             refetchInterval: 10000
-        }
+        },
+        chainId: 43113
     });
 
     const { data: usdcAllowance, refetch: refetchAllowance } = useReadContract({
@@ -198,7 +203,8 @@ export function InvestDashboardClient() {
         abi: ERC20_ABI,
         functionName: 'allowance',
         args: address ? [address, selectedPool.address as `0x${string}`] : undefined,
-        query: { enabled: mounted && !!address }
+        query: { enabled: mounted && !!address },
+        chainId: 43113
     });
 
     const { data: intentAmount, refetch: refetchIntentAmount } = useReadContract({
@@ -206,7 +212,8 @@ export function InvestDashboardClient() {
         abi: LIQUIDITY_POOL_ABI,
         functionName: 'withdrawalIntentAmount',
         args: address ? [address] : undefined,
-        query: { enabled: mounted && !!address }
+        query: { enabled: mounted && !!address },
+        chainId: 43113
     });
 
     const { data: intentTimestamp, refetch: refetchIntentTimestamp } = useReadContract({
@@ -214,7 +221,8 @@ export function InvestDashboardClient() {
         abi: LIQUIDITY_POOL_ABI,
         functionName: 'withdrawalIntentTimestamp',
         args: address ? [address] : undefined,
-        query: { enabled: mounted && !!address }
+        query: { enabled: mounted && !!address },
+        chainId: 43113
     });
 
     // Contract Writes
