@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Policy } from '@/types/dashboard';
+import { Policy, PolicyStatus } from '@/types/dashboard';
 import { Plane, Cloud, CloudRain, Zap, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -50,9 +50,13 @@ export function PolicyCard({ policyId, policyData, onActionSuccess, txHash }: Po
     // For this UI, we'll assume if it's expired and not claimed, and theoretically met conditions (mock logic for now)
     // In production, we'd check an `isTriggered` state or similar.
     const isExpired = Number(expirationTime) < (Date.now() / 1000);
-
-    // Status should be Paid if claimed, Expired if time passed, else use contract isActive
-    const status = isClaimed ? 'Paid' : (isExpired ? 'Expired' : (isActive ? 'Active' : 'Processing'));
+    
+    // Status logic:
+    // 1. If claimed -> Claimed
+    // 2. If expired -> Claimable (allows user to trigger relayer consensus in this demo)
+    // 3. If active -> Active
+    // 4. Else -> Processing
+    const status: PolicyStatus = isClaimed ? 'Claimed' : (isExpired ? 'Claimable' : (isActive ? 'Active' : 'Processing'));
 
     const formatExpiry = (timestamp: bigint) => {
         const date = new Date(Number(timestamp) * 1000);
@@ -104,7 +108,7 @@ export function PolicyCard({ policyId, policyData, onActionSuccess, txHash }: Po
                         <p className="text-[10px] text-slate-400 font-mono">{policyId.slice(0, 18)}...</p>
                     </div>
                 </div>
-                <StatusBadge status={status as any} />
+                <StatusBadge status={status} />
             </div>
 
             <div className="space-y-3">
@@ -126,7 +130,7 @@ export function PolicyCard({ policyId, policyData, onActionSuccess, txHash }: Po
                 <div className="flex items-center gap-3 text-xs text-slate-500">
                     <div className="flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>{status === 'Paid' ? 'Settled' : (isExpired ? 'Expired' : `Expires ${formatExpiry(expirationTime)}`)}</span>
+                        <span>{status === 'Claimed' ? 'Settled' : (isExpired ? 'Expired' : `Expires ${formatExpiry(expirationTime)}`)}</span>
                     </div>
                     {txHash && (
                         <>
@@ -179,7 +183,7 @@ function StatusBadge({ status }: { status: string }) {
                     <span className="animate-spin w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full" /> Processing
                 </span>
             );
-        case 'Paid':
+        case 'Claimed':
             return (
                 <span className="inline-flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest border border-slate-700">
                     <CheckCircle2 className="w-3 h-3" /> Paid
