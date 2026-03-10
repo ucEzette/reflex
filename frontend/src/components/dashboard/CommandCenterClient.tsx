@@ -2,6 +2,7 @@
 import React from 'react';
 import { Shield, Activity, DollarSign, Landmark } from 'lucide-react';
 import { PolicyCard } from '@/components/dashboard/PolicyCard';
+import { ActivePolicies } from '@/components/ActivePolicies';
 import { PortfolioPerformanceChart } from '@/components/dashboard/PortfolioPerformanceChart';
 import { useAccount, useReadContract, useReadContracts } from "wagmi";
 import { readContract, getPublicClient } from "@wagmi/core";
@@ -73,7 +74,6 @@ export function CommandCenterClient() {
                                 address: addr as `0x${string}`,
                                 abi: LP_POOL_ABI,
                                 functionName: 'totalAssets',
-                                chainId: 43113
                             }),
                             pc.readContract({
                                 address: addr as `0x${string}`,
@@ -218,7 +218,9 @@ export function CommandCenterClient() {
                 if (catIds) await fetchGroup(catIds as string[], CONTRACTS.CATASTROPHE, GENERIC_PRODUCT_ABI, false);
                 if (maritimeIds) await fetchGroup(maritimeIds as string[], CONTRACTS.MARITIME, GENERIC_PRODUCT_ABI, false);
 
-                setPolicies(results);
+                // Ideal sorting: Newest first (highest expiry)
+                const sorted = results.sort((a, b) => Number(b.data[4]) - Number(a.data[4]));
+                setPolicies(sorted);
             } catch (err) {
                 console.error("Error fetching policy details:", err);
             } finally {
@@ -559,6 +561,20 @@ export function CommandCenterClient() {
                         )}
                     </div>
                 </section>
+            </div>
+
+            {/* Detailed History Section */}
+            <div className="mt-12 pt-12 border-t border-white/5">
+                <div className="flex items-center gap-3 mb-8">
+                    <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                        <Activity className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-foreground tracking-tight">Protocol History</h2>
+                        <p className="text-slate-500 text-sm font-medium">Full ledger of your on-chain parametric protections.</p>
+                    </div>
+                </div>
+                <ActivePolicies />
             </div>
         </div>
     );

@@ -91,21 +91,9 @@ interface PolicyItem {
     type: 'Escrow' | 'Travel' | 'Agri' | 'Energy' | 'Catastrophe' | 'Maritime';
 }
 
-function PolicyRow({ policy, txHash }: { policy: PolicyItem, txHash?: string }) {
+function PolicyRow({ policy, txHash }: { policy: any, txHash?: string }) {
     const isEscrow = policy.type === 'Escrow';
-
-    // Determine ABI and Function
-    const abi = isEscrow ? ESCROW_ABI : (policy.type === 'Travel' ? TRAVEL_ABI : GENERIC_PRODUCT_ABI);
-    const functionName = isEscrow ? 'getPolicy' : 'policies';
-
-    const { data } = useReadContract({
-        address: policy.contract as `0x${string}`,
-        abi: abi as any,
-        functionName: functionName,
-        args: [policy.id as `0x${string}`],
-        chainId: 43113,
-    });
-
+    const data = policy.data;
     if (!data) return null;
 
     let holder, target, premium, payout, expiry, status, isActive, isClaimed;
@@ -234,6 +222,8 @@ export function ActivePolicies() {
         }
     };
     const [txHashes, setTxHashes] = useState<Record<string, string>>({});
+    const [policyDetails, setPolicyDetails] = useState<any[]>([]);
+    const [detailsLoading, setDetailsLoading] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -294,7 +284,7 @@ export function ActivePolicies() {
         chainId: 43113
     });
 
-    const allPolicies = useMemo(() => {
+    const allPolicyIds = useMemo(() => {
         const items: PolicyItem[] = [];
         if (escrowIds) (escrowIds as string[]).forEach(id => items.push({ id, contract: CONTRACTS.ESCROW, type: 'Escrow' }));
         if (travelIds) (travelIds as string[]).forEach(id => items.push({ id, contract: CONTRACTS.TRAVEL, type: 'Travel' }));
@@ -304,6 +294,51 @@ export function ActivePolicies() {
         if (maritimeIds) (maritimeIds as string[]).forEach(id => items.push({ id, contract: CONTRACTS.MARITIME, type: 'Maritime' }));
         return items;
     }, [escrowIds, travelIds, agriIds, energyIds, catIds, maritimeIds]);
+
+    useEffect(() => {
+        const fetchDetails = async () => {
+            if (allPolicyIds.length === 0 || !mounted) {
+                setPolicyDetails([]);
+                return;
+            }
+
+            setDetailsLoading(true);
+            try {
+                const results = await Promise.all(allPolicyIds.map(async (policy) => {
+                    const isEscrow = policy.type === 'Escrow';
+                    const abi = isEscrow ? ESCROW_ABI : (policy.type === 'Travel' ? TRAVEL_ABI : GENERIC_PRODUCT_ABI);
+                    const functionName = isEscrow ? 'getPolicy' : 'policies';
+
+                    try {
+                        const data = await readContract(config, {
+                            address: policy.contract as `0x${string}`,
+                            abi: abi as any,
+                            functionName: functionName,
+                            args: [policy.id as `0x${string}`],
+                        });
+                        return { ...policy, data: data as any[] };
+                    } catch (e) {
+                        return null;
+                    }
+                }));
+
+                const valid = results.filter(r => r !== null);
+                // Ideal sorting: Newest expiry first
+                const sorted = valid.sort((a, b) => {
+                    const expiryA = a.type === 'Escrow' ? Number(a.data[4]) : (a.type === 'Travel' ? Number(a.data[4]) : Number(a.data[6]));
+                    const expiryB = b.type === 'Escrow' ? Number(b.data[4]) : (b.type === 'Travel' ? Number(b.data[4]) : Number(b.data[6]));
+                    return expiryB - expiryA;
+                });
+                setPolicyDetails(sorted);
+            } catch (err) {
+                console.error("Error fetching bulk details:", err);
+            } finally {
+                setDetailsLoading(false);
+            }
+        };
+
+        fetchDetails();
+    }, [allPolicyIds, mounted]);
 
     // Watch for events on all products to pick up tx hashes
     useWatchContractEvent({
@@ -423,7 +458,7 @@ export function ActivePolicies() {
                         <div>
                             <h2 className="text-xl font-bold text-foreground">Your Policies</h2>
                             <p className="text-sm text-zinc-500">
-                                {allPolicies.length} protocol policies found
+                                {policyDetails.length} protocol policies found
                             </p>
                         </div>
                     </div>
@@ -431,8 +466,12 @@ export function ActivePolicies() {
             </div>
 
             {/* Table */}
-            <div className="relative overflow-x-auto">
-                {allPolicies.length === 0 ? (
+            <div className="relative overflow-x-auto min-h-[200px]">
+                {detailsLoading ? (
+                    <div className="p-12">
+                        <TableSkeleton />
+                    </div>
+                ) : policyDetails.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-zinc-800/50 flex items-center justify-center">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-zinc-600">
@@ -455,7 +494,7 @@ export function ActivePolicies() {
                             </tr>
                         </thead>
                         <tbody>
-                            {allPolicies.map((policy) => (
+                            {policyDetails.map((policy) => (
                                 <PolicyRow key={policy.id} policy={policy} txHash={txHashes[policy.id]} />
                             ))}
                         </tbody>

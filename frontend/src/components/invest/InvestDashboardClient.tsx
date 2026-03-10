@@ -146,13 +146,11 @@ export function InvestDashboardClient() {
                             abi: LIQUIDITY_POOL_ABI,
                             functionName: 'lpShares',
                             args: [address],
-                            chainId: 43113
                         }),
                         pc.readContract({
                             address: pool.address as `0x${string}`,
                             abi: LIQUIDITY_POOL_ABI,
                             functionName: 'totalAssets',
-                            chainId: 43113
                         }),
                         pc.readContract({
                             address: pool.address as `0x${string}`,
