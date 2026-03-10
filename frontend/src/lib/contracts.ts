@@ -102,7 +102,7 @@ export const CONTRACTS = {
     LP_AGRI: "0xcb4c97087ed4c858281c39df44ae0997561ffe8c" as `0x${string}`,
     LP_ENERGY: "0xe8b7b01b2b4ec0f400f37f2d894e3654f05852f6" as `0x${string}`,
     LP_CAT: "0x9d803a3066c858d714c4f5ee286eaa6249d451ab" as `0x${string}`,
-    LP_MARITIME: "0x6586035d5e39e30bf37445451b43eeaeea1405a" as `0x${string}`,
+    LP_MARITIME: "0x6586035d5e39e30bf37445451b43eeaeeaa1405a" as `0x${string}`,
 
     // Previous global addresses kept for backward compatibility if needed
     LP_POOL: "0xbcfeeaea01b9ddd2f8a1092676681c6b52dbe81c" as `0x${string}`,

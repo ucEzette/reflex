@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useAccount, useReadContract, useReadContracts, useWriteContract, useWaitForTransactionReceipt, useWatchContractEvent, useChainId, useSwitchChain, useSimulateContract } from "wagmi";
 import { CONTRACTS, POOLS } from '@/lib/contracts';
 import { config } from '@/lib/wagmiConfig';
@@ -63,10 +63,10 @@ export function InvestDashboardClient() {
             localStorage.setItem("invest_history", JSON.stringify(history));
         }
     }, [history, mounted]);
-    const getLogsInChunks = async (params: any) => {
-        if (!publicClient) return [];
+    const getLogsInChunks = async (pc: any, params: any) => {
+        if (!pc) return [];
         try {
-            const currentBlock = await publicClient.getBlockNumber();
+            const currentBlock = await pc.getBlockNumber();
             const fromBlock = params.fromBlock > currentBlock - BigInt(MAX_TOTAL_BLOCKS)
                 ? params.fromBlock
                 : currentBlock - BigInt(MAX_TOTAL_BLOCKS);
@@ -78,7 +78,7 @@ export function InvestDashboardClient() {
                 let end = start + BigInt(MAX_BLOCKS_PER_QUERY);
                 if (end > currentBlock) end = currentBlock;
 
-                const chunk = await publicClient.getLogs({
+                const chunk = await pc.getLogs({
                     ...params,
                     fromBlock: start,
                     toBlock: end
@@ -121,57 +121,70 @@ export function InvestDashboardClient() {
         chainId: 43113
     });
 
-    const { data: globalPositions, refetch: refetchGlobalPositions } = useReadContracts({
-        contracts: [
-            ...POOLS.map(pool => ({
-                address: pool.address as `0x${string}`,
-                abi: LIQUIDITY_POOL_ABI,
-                functionName: 'lpShares',
-                args: address ? [address] : undefined,
-            })),
-            ...POOLS.map(pool => ({
-                address: pool.address as `0x${string}`,
-                abi: LIQUIDITY_POOL_ABI,
-                functionName: 'totalAssets',
-            })),
-            ...POOLS.map(pool => ({
-                address: pool.address as `0x${string}`,
-                abi: LIQUIDITY_POOL_ABI,
-                functionName: 'totalShares',
-            })),
-        ],
-        query: {
-            enabled: mounted && !!address && chainId === TARGET_CHAIN_ID,
-            refetchInterval: 10000
-        },
-        chainId: 43113
+    const [protocolData, setProtocolData] = useState<{
+        userLiquidityValue: bigint;
+    }>({
+        userLiquidityValue: BigInt(0)
     });
 
-    const userLiquidityValue = useMemo(() => {
-        if (!globalPositions || !address) return BigInt(0);
+    // Aggressive Sync Logic
+    const syncProtocolData = useCallback(async () => {
+        const pc = getPublicClient(config);
+        if (!pc || !address) return;
 
-        let totalValue = BigInt(0);
+        // console.log("Invest Page: Starting Aggressive Sync...");
+
         try {
-            for (let i = 0; i < POOLS.length; i++) {
-                const sharesResult = globalPositions[i];
-                const assetsResult = globalPositions[i + POOLS.length];
-                const supplyResult = globalPositions[i + (POOLS.length * 2)];
+            let totalValue = BigInt(0);
 
-                if (sharesResult?.status === 'success' && assetsResult?.status === 'success' && supplyResult?.status === 'success') {
-                    const shares = sharesResult.result as bigint;
-                    const assets = assetsResult.result as bigint;
-                    const supply = supplyResult.result as bigint;
+            // Fetch each pool's data individually to be resilient
+            await Promise.all(POOLS.map(async (pool) => {
+                try {
+                    const [shares, assets, supply] = await Promise.all([
+                        pc.readContract({
+                            address: pool.address as `0x${string}`,
+                            abi: LIQUIDITY_POOL_ABI,
+                            functionName: 'lpShares',
+                            args: [address],
+                            chainId: 43113
+                        }),
+                        pc.readContract({
+                            address: pool.address as `0x${string}`,
+                            abi: LIQUIDITY_POOL_ABI,
+                            functionName: 'totalAssets',
+                            chainId: 43113
+                        }),
+                        pc.readContract({
+                            address: pool.address as `0x${string}`,
+                            abi: LIQUIDITY_POOL_ABI,
+                            functionName: 'totalShares',
+                        })
+                    ]);
 
-                    if (shares > 0 && supply > 0) {
-                        totalValue += (shares * assets) / supply;
+                    if (Number(shares) > 0 && Number(supply) > 0) {
+                        totalValue += ((shares as bigint) * (assets as bigint)) / (supply as bigint);
                     }
+                } catch (e) {
+                    console.error(`Invest Page: Failed to read pool ${pool.sector}:`, e);
                 }
-            }
-        } catch (e) {
-            console.error("Error calculating user liquidity:", e);
+            }));
+
+            setProtocolData({ userLiquidityValue: totalValue });
+            // console.log("Invest Page: Aggressive Sync Complete", { totalValue });
+
+        } catch (err) {
+            console.error("Invest Page: Aggressive Sync failed:", err);
         }
-        return totalValue;
-    }, [globalPositions, address, chainId]);
+    }, [address]);
+
+    useEffect(() => {
+        if (!mounted || !address) return;
+        syncProtocolData();
+        const interval = setInterval(syncProtocolData, 20000); // 20s
+        return () => clearInterval(interval);
+    }, [address, mounted, syncProtocolData]);
+
+    const userLiquidityValue = protocolData.userLiquidityValue;
 
     // Force refetch on address or chain change
     useEffect(() => {
@@ -180,11 +193,11 @@ export function InvestDashboardClient() {
             refetchAssets();
             refetchPayouts();
             refetchTotalShares();
-            refetchGlobalPositions();
+            syncProtocolData();
             refetchBalance();
             refetchAllowance();
         }
-    }, [address, chainId, mounted]);
+    }, [address, chainId, mounted, syncProtocolData]);
 
     const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
         address: CONTRACTS.USDC as `0x${string}`,
@@ -288,7 +301,7 @@ export function InvestDashboardClient() {
                 refetchTotalShares();
                 refetchAllowance();
                 refetchPayouts();
-                refetchGlobalPositions();
+                syncProtocolData();
                 refetchBalance();
                 refetchIntentAmount();
                 refetchIntentTimestamp();
@@ -300,7 +313,7 @@ export function InvestDashboardClient() {
             setIsApproving(false);
             setIsSubmitting(false);
         }
-    }, [isTxConfirming, isTxSuccess, confirmError, isApproving, actionType, refetchAllowance, refetchAssets, refetchTotalShares, refetchPayouts, refetchGlobalPositions, refetchBalance, refetchIntentAmount, refetchIntentTimestamp]);
+    }, [isTxConfirming, isTxSuccess, confirmError, isApproving, actionType, refetchAllowance, refetchAssets, refetchTotalShares, refetchPayouts, syncProtocolData, refetchBalance, refetchIntentAmount, refetchIntentTimestamp]);
 
     useEffect(() => {
         if (writeError) {
@@ -500,7 +513,7 @@ export function InvestDashboardClient() {
                 ];
 
                 const allLogsPromises = poolContracts.flatMap(poolAddr => [
-                    getLogsInChunks({
+                    getLogsInChunks(publicClient, {
                         address: poolAddr as `0x${string}`,
                         event: {
                             type: 'event',
@@ -513,7 +526,7 @@ export function InvestDashboardClient() {
                         },
                         fromBlock: FUJI_START_BLOCK
                     }),
-                    getLogsInChunks({
+                    getLogsInChunks(publicClient, {
                         address: poolAddr as `0x${string}`,
                         event: {
                             type: 'event',

@@ -11,12 +11,14 @@ export function GlobalRiskLeaderboard() {
         address: CONTRACTS.LP_POOL as `0x${string}`,
         abi: LIQUIDITY_POOL_ABI,
         functionName: 'totalAssets',
+        chainId: 43113,
     });
 
     const { data: totalPayouts } = useReadContract({
         address: CONTRACTS.LP_POOL as `0x${string}`,
         abi: LIQUIDITY_POOL_ABI,
         functionName: 'totalMaxPayouts',
+        chainId: 43113,
     });
 
     const liveTVL = totalAssets ? Number(formatUnits(totalAssets as bigint, 6)) : 0;

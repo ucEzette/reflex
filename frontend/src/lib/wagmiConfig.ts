@@ -37,7 +37,7 @@ export const config = createConfig({
         }),
     ],
     transports: {
-        [avalancheFuji.id]: http(process.env.NEXT_PUBLIC_RPC_URL || "https://api.avax-test.network/ext/bc/C/rpc"),
+        [avalancheFuji.id]: http(process.env.NEXT_PUBLIC_RPC_URL || "https://avalanche-fuji.drpc.org"),
         [avalanche.id]: http(),
         [sepolia.id]: http(),
         [arbitrumSepolia.id]: http(),
