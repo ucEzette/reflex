@@ -24,7 +24,7 @@ export default function DocsPage() {
                                 <li><a href="#overview" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">Protocol Overview</a></li>
                                 <li><a href="#policyholders" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">For Policyholders</a></li>
                                 <li><a href="#investors" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">For Investors</a></li>
-                                <li><a href="#hackathon" className="block px-4 py-1.5 text-sm font-bold text-primary hover:text-primary transition-colors border-l border-primary">Hackathon Integration</a></li>
+                                <li><a href="#integrations" className="block px-4 py-1.5 text-sm font-bold text-primary hover:text-primary transition-colors border-l border-primary">Protocol Integrations</a></li>
                             </ul>
                         </nav>
                         <nav className="space-y-3">
@@ -164,48 +164,92 @@ export default function DocsPage() {
                             </div>
                         </section>
 
-                        {/* ═══════════ HACKATHON INTEGRATION ═══════════ */}
-                        <section id="hackathon" className="scroll-mt-32">
+                        {/* ═══════════ PROTOCOL INTEGRATIONS ═══════════ */}
+                        <section id="integrations" className="scroll-mt-32">
                             <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
-                                <span className="material-symbols-outlined text-primary text-4xl">emoji_events</span>
-                                Convergence Hackathon Implementation
+                                <span className="material-symbols-outlined text-primary text-4xl">integration_instructions</span>
+                                Protocol Integrations
                             </h2>
-                            <div className="glass-panel p-8 rounded-2xl space-y-10">
+                            <div className="glass-panel p-8 rounded-2xl space-y-12">
+                                {/* Avalanche */}
                                 <div className="space-y-4">
-                                    <h3 className="text-xl font-bold text-foreground">Track 1: Chainlink Runtime Environment (CRE)</h3>
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-red-500/10 rounded-lg border border-red-500/20">
+                                            <span className="material-symbols-outlined text-red-400 text-xl">layers</span>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-foreground">Avalanche Ecosystem</h3>
+                                    </div>
                                     <p className="text-slate-400 font-light leading-relaxed text-sm">
-                                        Reflex utilizes <strong>CRE</strong> as the decentralized orchestration layer. The <code className="text-primary font-mono text-xs">cre/PolicyVerifier.ts</code> action serves as the protocol&apos;s gated entry point, performing off-chain verification of World ID proofs before authorizing the transaction.
+                                        Reflex is natively built for the <strong>Avalanche Network</strong>. We utilize <strong>Avalanche Teleporter</strong> for cross-chain communication and <strong>Avalanche Fuji</strong> for our primary testnet deployment, leveraging the network's sub-second finality for rapid parametric settlement.
+                                    </p>
+                                </div>
+
+                                {/* Chainlink */}
+                                <div className="space-y-4 pt-10 border-t border-white/5">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                                            <span className="material-symbols-outlined text-blue-400 text-xl">hub</span>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-foreground">Chainlink DON & Functions</h3>
+                                    </div>
+                                    <p className="text-slate-400 font-light leading-relaxed text-sm">
+                                        The protocol utilizes <strong>Chainlink Functions</strong> and Decentralized Oracle Networks (DONs) to source high-fidelity off-chain data. The <code className="text-primary font-mono text-xs">cre/PolicyVerifier.ts</code> logic serves as a gated entry point, performing cryptographic verification of external events before authorizing payouts.
                                     </p>
                                     <div className="p-4 bg-black/40 rounded-xl font-mono text-[11px] text-primary border border-primary/20">
-                                        {`// cre/PolicyVerifier.ts\nasync run(input: VerificationInput) {\n  const isHuman = await verifyWorldID(input.proof);\n  if (!isHuman) throw new Error("Sybil detected");\n  return { authorized: true, transaction: input.txData };\n}`}
+                                        {`// cre/PolicyVerifier.ts execution\nasync run(input: VerificationInput) {\n  const isValid = await verifyParametricTrigger(input.data);\n  if (!isValid) throw new Error("Trigger conditions not met");\n  return { authorized: true, payout: input.requestedPayout };\n}`}
                                     </div>
                                 </div>
 
+                                {/* World ID */}
                                 <div className="space-y-4 pt-10 border-t border-white/5">
-                                    <h3 className="text-xl font-bold text-foreground">Track 2: World ID (Sybil Resistance)</h3>
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-slate-100/10 rounded-lg border border-slate-100/20">
+                                            <span className="material-symbols-outlined text-slate-100 text-xl">face</span>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-foreground">World ID (WDK Integration)</h3>
+                                    </div>
                                     <p className="text-slate-400 font-light leading-relaxed text-sm">
-                                        To protect the liquidity pool from malicious bot draining, we integrate <strong>World ID</strong>. This ensures that every parametric policy is backed by a verified human identity, effectively eliminating sybil attacks in high-stakes insurance markets.
+                                        To protect the liquidity pool from Sybil attacks, we integrate <strong>World ID</strong>. Using the <strong>World ID Developer Kit (WDK)</strong>, we ensure that every parametric policy is backed by a verified human identity, maintaining the protocol's actuarial integrity.
                                     </p>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                                            <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">IDKit Integration</p>
-                                            <code className="text-[9px] text-zinc-400">{'<IDKitWidget app_id="reflex" action="buy">'}</code>
+                                            <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">IDKit Widget</p>
+                                            <code className="text-[9px] text-zinc-400">{'<IDKitWidget app_id="reflex" action="purchase_policy">'}</code>
                                         </div>
                                         <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                                            <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">Verification Level</p>
-                                            <p className="text-xs text-foreground font-bold">Device / Orb (ZK-Proof)</p>
+                                            <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">WDK Verification</p>
+                                            <p className="text-xs text-foreground font-bold">ZK-Proof via Orb/Device Verification</p>
                                         </div>
                                     </div>
                                 </div>
 
+                                {/* thirdweb */}
                                 <div className="space-y-4 pt-10 border-t border-white/5">
-                                    <h3 className="text-xl font-bold text-foreground">Track 3: thirdweb x CRE (Gasless)</h3>
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                                            <span className="material-symbols-outlined text-emerald-400 text-xl">bolt</span>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-foreground">thirdweb x Account Abstraction</h3>
+                                    </div>
                                     <p className="text-slate-400 font-light leading-relaxed text-sm">
-                                        The <strong>&quot;Gasless Protection&quot;</strong> flow enables users with 0 base tokens (AVAX) to instantly insure themselves. By utilizing <strong>thirdweb Account Abstraction</strong> and <strong>Paymasters</strong>, the protocol sponsors user gas, requiring only the USDC premium to commit.
+                                        The implementation utilizes <strong>thirdweb's Account Abstraction</strong> stack to enable gasless transaction flows. By using <strong>Connect SDK</strong> and <strong>In-App Wallets</strong>, we provide a seamless UX for users to secure protection without managing complex gas requirements.
                                     </p>
                                     <div className="p-4 bg-black/40 rounded-xl font-mono text-[11px] text-emerald-400 border border-emerald-500/20">
-                                        {`// Gasless execution via thirdweb Paymaster\nconst tx = await sendTransaction({\n  transaction,\n  account: smartAccount,\n  gasless: { provider: "thirdweb" }\n});`}
+                                        {`// Gasless execution via thirdweb Smart Wallet\nconst result = await buyPolicy({\n  product: "Agri-Corn",\n  gasless: true // Sponsored via thirdweb Paymaster\n});`}
                                     </div>
+                                </div>
+
+                                {/* Aave V3 */}
+                                <div className="space-y-4 pt-10 border-t border-white/5">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
+                                            <span className="material-symbols-outlined text-indigo-400 text-xl">account_balance</span>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-foreground">Aave V3 Yield Optimization</h3>
+                                    </div>
+                                    <p className="text-slate-400 font-light leading-relaxed text-sm">
+                                        Reflex Liquidity Pools are deeply integrated with <strong>Aave V3</strong>. Idle USDC in the pools is automatically routed to Aave's lending markets, ensuring that liquidity providers earn base yield on their capital in addition to parametric insurance premiums.
+                                    </p>
                                 </div>
                             </div>
                         </section>
