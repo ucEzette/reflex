@@ -13,13 +13,14 @@ import { useState, useEffect, useMemo } from 'react';
 
 const FUJI_START_BLOCK = BigInt(52515483);
 const MAX_BLOCKS_PER_QUERY = 2000; // Safer value for 2048 limit
-const MAX_TOTAL_BLOCKS = 500000; // Increased to cover more history (last ~10 days)
+const MAX_TOTAL_BLOCKS = 5000000; // Increased to cover more history (~4 months)
 
 export function CommandCenterClient() {
     const { address } = useAccount();
     const [mounted, setMounted] = useState(false);
     const [policies, setPolicies] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showAll, setShowAll] = useState(false);
     const [logs, setLogs] = useState<any[]>([]);
     const [logsLoading, setLogsLoading] = useState(true);
     const [txHashes, setTxHashes] = useState<Record<string, string>>({});
@@ -158,65 +159,71 @@ export function CommandCenterClient() {
     const { data: maritimeIds } = useReadContract({ address: CONTRACTS.MARITIME as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address }, chainId: 43113 });
 
     useEffect(() => {
+        let timer: NodeJS.Timeout;
+
         const fetchAllPolicyDetails = async () => {
             if (!address) {
                 setLoading(false);
                 return;
             }
 
-            setLoading(true);
+            // For background fetches, we don't set global loading to true to avoid flickering
+            // unless it's the first fetch
+            if (policies.length === 0) setLoading(true);
+
             try {
                 const results: any[] = [];
+                const ids = [
+                    { list: escrowIds as `0x${string}`[], addr: CONTRACTS.ESCROW, abi: ESCROW_ABI, isEscrow: true },
+                    { list: travelIds as `0x${string}`[], addr: CONTRACTS.TRAVEL, abi: TRAVEL_ABI, isEscrow: false },
+                    { list: agriIds as `0x${string}`[], addr: CONTRACTS.AGRI, abi: GENERIC_PRODUCT_ABI, isEscrow: false },
+                    { list: energyIds as `0x${string}`[], addr: CONTRACTS.ENERGY, abi: GENERIC_PRODUCT_ABI, isEscrow: false },
+                    { list: catIds as `0x${string}`[], addr: CONTRACTS.CATASTROPHE, abi: GENERIC_PRODUCT_ABI, isEscrow: false },
+                    { list: maritimeIds as `0x${string}`[], addr: CONTRACTS.MARITIME, abi: GENERIC_PRODUCT_ABI, isEscrow: false }
+                ];
 
-                // Helper to fetch details for a set of IDs
-                const fetchGroup = async (ids: string[], contract: string, abi: any, isEscrow: boolean) => {
-                    const group = await Promise.all(
-                        ids.map(async (id) => {
-                            try {
-                                const data = await readContract(config, {
-                                    address: contract as `0x${string}`,
-                                    abi: abi,
-                                    functionName: isEscrow ? 'getPolicy' : 'policies',
-                                    args: [id]
-                                }) as any[];
+                await Promise.all(ids.map(async (group) => {
+                    if (!group.list) return;
 
-                                // Normalizing different product struct returns
-                                if (isEscrow) {
-                                    return { id, data };
+                    const details = await Promise.all(group.list.map(async (id) => {
+                        try {
+                            const data = await readContract(config, {
+                                address: group.addr as `0x${string}`,
+                                abi: group.abi,
+                                functionName: group.isEscrow ? 'getPolicy' : 'policies',
+                                args: [id]
+                            }) as unknown as any[];
+
+                            const type = group.abi === TRAVEL_ABI ? 'Travel' :
+                                (group.addr === CONTRACTS.AGRI ? 'Agri' :
+                                    (group.addr === CONTRACTS.ENERGY ? 'Energy' :
+                                        (group.addr === CONTRACTS.CATASTROPHE ? 'Catastrophe' : 'Maritime')));
+
+                            if (group.isEscrow) {
+                                return { id, data, type };
+                            } else {
+                                if (group.abi === TRAVEL_ABI) {
+                                    const [holder, premium, payout, status, expiry, target] = data;
+                                    return {
+                                        id,
+                                        type,
+                                        data: [holder, target, premium, payout, expiry, Number(status) === 0, Number(status) === 1]
+                                    };
                                 } else {
-                                    // Product mapping (Travel): [holder, premium, payout, status, expiry, flightId]
-                                    // Product mapping (Agri/Generic): [holder, premium, payout, strike, exit, status, expiry, zone]
-                                    // Escrow format: [holder, target, premium, payout, expiry, isActive, isClaimed]
-
-                                    if (abi === TRAVEL_ABI) {
-                                        const [holder, premium, payout, status, expiry, target] = data;
-                                        return {
-                                            id,
-                                            data: [holder, target, premium, payout, expiry, status === 0, status === 1]
-                                        };
-                                    } else {
-                                        const [holder, premium, payout, , , status, expiry, target] = data;
-                                        return {
-                                            id,
-                                            data: [holder, target, premium, payout, expiry, status === 0, status === 1]
-                                        };
-                                    }
+                                    const [holder, premium, payout, , , status, expiry, target] = data;
+                                    return {
+                                        id,
+                                        type,
+                                        data: [holder, target, premium, payout, expiry, Number(status) === 0, Number(status) === 1]
+                                    };
                                 }
-                            } catch (e) {
-                                console.error(`Failed to fetch policy ${id} from ${contract}:`, e);
-                                return null;
                             }
-                        })
-                    );
-                    results.push(...group.filter(item => item !== null));
-                };
-
-                if (escrowIds) await fetchGroup(escrowIds as string[], CONTRACTS.ESCROW, ESCROW_ABI, true);
-                if (travelIds) await fetchGroup(travelIds as string[], CONTRACTS.TRAVEL, TRAVEL_ABI, false);
-                if (agriIds) await fetchGroup(agriIds as string[], CONTRACTS.AGRI, GENERIC_PRODUCT_ABI, false);
-                if (energyIds) await fetchGroup(energyIds as string[], CONTRACTS.ENERGY, GENERIC_PRODUCT_ABI, false);
-                if (catIds) await fetchGroup(catIds as string[], CONTRACTS.CATASTROPHE, GENERIC_PRODUCT_ABI, false);
-                if (maritimeIds) await fetchGroup(maritimeIds as string[], CONTRACTS.MARITIME, GENERIC_PRODUCT_ABI, false);
+                        } catch (e) {
+                            return null;
+                        }
+                    }));
+                    results.push(...details.filter(d => d !== null));
+                }));
 
                 // Ideal sorting: Newest first (highest expiry)
                 const sorted = results.sort((a, b) => Number(b.data[4]) - Number(a.data[4]));
@@ -229,6 +236,15 @@ export function CommandCenterClient() {
         };
 
         fetchAllPolicyDetails();
+
+        // Aggressive polling: Refresh every 15s to catch status changes
+        if (address) {
+            timer = setInterval(fetchAllPolicyDetails, 15000);
+        }
+
+        return () => {
+            if (timer) clearInterval(timer);
+        };
     }, [address, escrowIds, travelIds, agriIds, energyIds, catIds, maritimeIds]);
 
     const getLogsInChunks = async (publicClient: any, params: any) => {
@@ -492,9 +508,14 @@ export function CommandCenterClient() {
                         <div className="flex items-center justify-between mb-2">
                             <h2 className="text-xl font-bold text-foreground">Your Policies</h2>
                             <button onClick={() => {
-                                const el = document.getElementById('active-policies');
-                                if (el) el.scrollIntoView({ behavior: 'smooth' });
-                            }} className="text-xs font-medium text-primary hover:text-primary-dark transition-colors">View All</button>
+                                setShowAll(!showAll);
+                                if (!showAll) {
+                                    const el = document.getElementById('active-policies');
+                                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                }
+                            }} className="text-xs font-medium text-primary hover:text-primary-dark transition-colors">
+                                {showAll ? "Show Less" : "View All"}
+                            </button>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {loading ? (
@@ -504,7 +525,7 @@ export function CommandCenterClient() {
                                     <p className="text-slate-500">No active policies found.</p>
                                 </div>
                             ) : (
-                                policies.slice(0, 4).map(policy => (
+                                (showAll ? policies : policies.slice(0, 4)).map(policy => (
                                     <PolicyCard
                                         key={policy.id}
                                         policyId={policy.id}
@@ -574,7 +595,7 @@ export function CommandCenterClient() {
                         <p className="text-slate-500 text-sm font-medium">Full ledger of your on-chain parametric protections.</p>
                     </div>
                 </div>
-                <ActivePolicies />
+                <ActivePolicies initialPolicies={policies} initialTxHashes={txHashes} />
             </div>
         </div>
     );

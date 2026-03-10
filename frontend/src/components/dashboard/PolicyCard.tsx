@@ -50,7 +50,20 @@ export function PolicyCard({ policyId, policyData, onActionSuccess, txHash }: Po
     // For this UI, we'll assume if it's expired and not claimed, and theoretically met conditions (mock logic for now)
     // In production, we'd check an `isTriggered` state or similar.
     const isExpired = Number(expirationTime) < (Date.now() / 1000);
-    const status = isClaimed ? 'Paid' : (isExpired ? 'Expired' : 'Active');
+
+    // Status should be Paid if claimed, Expired if time passed, else use contract isActive
+    const status = isClaimed ? 'Paid' : (isExpired ? 'Expired' : (isActive ? 'Active' : 'Processing'));
+
+    const formatExpiry = (timestamp: bigint) => {
+        const date = new Date(Number(timestamp) * 1000);
+        return new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        }).format(date);
+    };
 
     const { writeContract, data: hash } = useWriteContract();
     const { isLoading: isWaiting } = useWaitForTransactionReceipt({ hash });
@@ -113,7 +126,7 @@ export function PolicyCard({ policyId, policyData, onActionSuccess, txHash }: Po
                 <div className="flex items-center gap-3 text-xs text-slate-500">
                     <div className="flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>{status === 'Paid' ? 'Settled' : (isExpired ? 'Expired' : `Expires ${new Date(Number(expirationTime) * 1000).toLocaleDateString()}`)}</span>
+                        <span>{status === 'Paid' ? 'Settled' : (isExpired ? 'Expired' : `Expires ${formatExpiry(expirationTime)}`)}</span>
                     </div>
                     {txHash && (
                         <>

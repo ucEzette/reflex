@@ -542,18 +542,40 @@ export function InvestDashboardClient() {
                 const results = await Promise.all(allLogsPromises);
                 const allLogs = results.flat();
 
-                const userHistory = allLogs
+                // Sort ALL logs by blockNumber/logIndex DESC immediately
+                const sortedLogs = allLogs
                     .filter((l: any) => (l.args as any).provider?.toLowerCase() === address.toLowerCase())
-                    .map((l: any) => ({
-                        id: `${l.transactionHash}-${l.logIndex}`,
-                        type: l.eventName === 'LiquidityDeposited' ? 'deposit' : 'withdraw',
-                        amount: formatUnits((l.args as any).amount, 6),
-                        timestamp: Date.now(), // approximation
-                        hash: l.transactionHash
-                    }))
-                    .sort((a, b) => b.timestamp - a.timestamp);
+                    .sort((a, b) => {
+                        if (Number(b.blockNumber) !== Number(a.blockNumber)) {
+                            return Number(b.blockNumber) - Number(a.blockNumber);
+                        }
+                        return Number(b.logIndex) - Number(a.logIndex);
+                    });
 
-                setHistory(userHistory.slice(0, 50));
+                // Fetch timestamps for the top 20 logs to be efficient
+                const recentLogs = sortedLogs.slice(0, 20);
+                const historyWithTimestamps = await Promise.all(recentLogs.map(async (l: any) => {
+                    try {
+                        const block = await publicClient.getBlock({ blockNumber: l.blockNumber });
+                        return {
+                            id: `${l.transactionHash}-${l.logIndex}`,
+                            type: l.eventName === 'LiquidityDeposited' ? 'deposit' : 'withdraw',
+                            amount: formatUnits((l.args as any).amount, 6),
+                            timestamp: Number(block.timestamp) * 1000,
+                            hash: l.transactionHash
+                        };
+                    } catch (e) {
+                        return {
+                            id: `${l.transactionHash}-${l.logIndex}`,
+                            type: l.eventName === 'LiquidityDeposited' ? 'deposit' : 'withdraw',
+                            amount: formatUnits((l.args as any).amount, 6),
+                            timestamp: Date.now(), // Fallback
+                            hash: l.transactionHash
+                        };
+                    }
+                }));
+
+                setHistory(historyWithTimestamps);
 
             } catch (err) {
                 console.error("Error fetching historical liquidity logs:", err);

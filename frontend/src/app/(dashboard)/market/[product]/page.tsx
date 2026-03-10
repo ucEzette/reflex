@@ -12,7 +12,7 @@ import { Plane, CloudRain, Zap, Flame, Anchor, ArrowLeft, HelpCircle, Activity, 
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
 import { toast } from "sonner";
-import { CONTRACTS, PRODUCT_ABI, GENERIC_PRODUCT_ABI, ERC20_ABI } from "@/lib/contracts";
+import { CONTRACTS, PRODUCT_ABI, GENERIC_PRODUCT_ABI, ERC20_ABI, LP_POOL_ABI } from "@/lib/contracts";
 import { IDKitWidget, VerificationLevel } from '@worldcoin/idkit';
 import type { ISuccessResult } from '@worldcoin/idkit';
 
@@ -203,6 +203,48 @@ export default function ProductMarketPage({ params }: { params: { product: strin
         chainId: 43113
     });
 
+    // Pool Diagnostics
+    const { data: poolAddress } = useReadContract({
+        address: targetContractAddress as `0x${string}`,
+        abi: product?.id === 'flight' ? PRODUCT_ABI : GENERIC_PRODUCT_ABI,
+        functionName: "pool",
+        query: { enabled: mounted && !!targetContractAddress },
+        chainId: 43113
+    });
+
+    const { data: poolAssets } = useReadContract({
+        address: poolAddress as `0x${string}`,
+        abi: LP_POOL_ABI,
+        functionName: "totalAssets",
+        query: { enabled: mounted && !!poolAddress },
+        chainId: 43113
+    });
+
+    const { data: poolMaxPayouts } = useReadContract({
+        address: poolAddress as `0x${string}`,
+        abi: LP_POOL_ABI,
+        functionName: "totalMaxPayouts",
+        query: { enabled: mounted && !!poolAddress },
+        chainId: 43113
+    });
+
+    const { data: isProductAuthorized } = useReadContract({
+        address: poolAddress as `0x${string}`,
+        abi: LP_POOL_ABI,
+        functionName: "authorizedProducts",
+        args: [targetContractAddress as `0x${string}`],
+        query: { enabled: mounted && !!poolAddress && !!targetContractAddress },
+        chainId: 43113
+    });
+
+    const remainingCapacity = poolAssets !== undefined && poolMaxPayouts !== undefined
+        ? BigInt(poolAssets) - BigInt(poolMaxPayouts)
+        : BigInt(0);
+
+    const requestedPayoutBigInt = parseUnits(payoutInput || "0", 6);
+    const insufficientLiquidity = requestedPayoutBigInt > remainingCapacity;
+
+
     const { writeContract: purchasePolicy, data: hash, isPending: isTxPending, error: purchaseError } = useWriteContract();
     const { isLoading: isConfirming, isSuccess: isPurchaseSuccess } = useWaitForTransactionReceipt({ hash });
 
@@ -257,22 +299,40 @@ export default function ProductMarketPage({ params }: { params: { product: strin
             return;
         }
 
+        if (!payoutInput || isNaN(parseFloat(payoutInput))) {
+            return toast.error("Please enter a valid payout amount");
+        }
+
         try {
-            const args = product?.id === 'flight'
-                ? [flightId || "REF-001", parseUnits(payoutInput, 6), BigInt(dynamicRisk.nDelayed), BigInt(dynamicRisk.nTotal), BigInt(effectiveDuration), "0x" as `0x${string}`]
-                : [zone || coordinates.lat || "ZONE-A", parseUnits(payoutInput, 6), BigInt(100), BigInt(50), expectedRiskBase, BigInt(effectiveDuration)];
-
-            console.log("Executing purchasePolicy on:", targetContractAddress);
-            console.log("Arguments:", args);
-
-            purchasePolicy({
-                address: targetContractAddress as `0x${string}`,
-                abi: product?.id === 'flight' ? PRODUCT_ABI : GENERIC_PRODUCT_ABI,
-                functionName: "purchasePolicy",
-                args: product?.id === 'flight'
-                    ? [...args as any] // already includes signature placeholder or real sig
-                    : [...args as any] // Generic takes 6 arguments, no signature
-            });
+            if (product?.id === 'flight') {
+                purchasePolicy({
+                    address: targetContractAddress as `0x${string}`,
+                    abi: PRODUCT_ABI,
+                    functionName: "purchasePolicy",
+                    args: [
+                        flightId || "REF-001",
+                        parseUnits(payoutInput, 6),
+                        BigInt(dynamicRisk.nDelayed),
+                        BigInt(dynamicRisk.nTotal),
+                        BigInt(effectiveDuration),
+                        "0x" as `0x${string}`
+                    ]
+                });
+            } else {
+                purchasePolicy({
+                    address: targetContractAddress as `0x${string}`,
+                    abi: GENERIC_PRODUCT_ABI,
+                    functionName: "purchasePolicy",
+                    args: [
+                        zone || coordinates.lat || "ZONE-A",
+                        parseUnits(payoutInput, 6),
+                        BigInt(100),
+                        BigInt(50),
+                        expectedRiskBase,
+                        BigInt(effectiveDuration)
+                    ]
+                });
+            }
 
         } catch (err: any) {
             console.error("Handle Purchase Try/Catch Error:", err);
@@ -634,7 +694,53 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                                         <p className="text-sm max-w-[200px] text-center">Configure parameters to generate a live hazard quote</p>
                                     </div>
                                 )}
+
+                                {/* Premium Diagnostics Panel */}
+                                {premiumQuote && (
+                                    <div className="mt-6 pt-6 border-t border-white/5 space-y-3">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 flex items-center gap-2">
+                                            <Shield className="w-3 h-3" /> Safety & Liquidity Check
+                                        </h4>
+                                        <div className="grid grid-cols-1 gap-2">
+                                            <div className="flex justify-between items-center bg-black/20 rounded-lg px-3 py-2 border border-white/5">
+                                                <span className="text-[10px] text-zinc-500 uppercase">Product Authorization</span>
+                                                {isProductAuthorized === true ? (
+                                                    <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                                                        <CheckCircle2 className="w-3 h-3" /> VERIFIED
+                                                    </span>
+                                                ) : isProductAuthorized === false ? (
+                                                    <span className="text-[10px] font-bold text-rose-500 flex items-center gap-1 text-right">
+                                                        <AlertTriangle className="w-3 h-3" /> UNAUTHORIZED
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[10px] text-zinc-600">Pending...</span>
+                                                )}
+                                            </div>
+                                            <div className="flex justify-between items-center bg-black/20 rounded-lg px-3 py-2 border border-white/5">
+                                                <span className="text-[10px] text-zinc-500 uppercase">Pool Capacity</span>
+                                                {poolAssets !== undefined ? (
+                                                    <span className={`text-[10px] font-bold ${insufficientLiquidity ? 'text-rose-500' : 'text-sky-400'}`}>
+                                                        ${Number(formatUnits(remainingCapacity, 6)).toLocaleString()} available
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[10px] text-zinc-600">Checking...</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {isProductAuthorized === false && (
+                                            <p className="text-[9px] text-rose-400 bg-rose-500/10 p-2 rounded border border-rose-500/20 leading-relaxed">
+                                                <strong>CRITICAL:</strong> This insurance product is not yet authorized in its liquidity pool. Purchases are currently disabled to maintain protocol safety.
+                                            </p>
+                                        )}
+                                        {insufficientLiquidity && (
+                                            <p className="text-[9px] text-rose-400 bg-rose-500/10 p-2 rounded border border-rose-500/20 leading-relaxed">
+                                                <strong>LIQUIDITY ALERT:</strong> The requested payout exceeds the current pool capacity. Please reduce the payout or wait for pool top-up.
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
+
 
                             <div className="space-y-4">
                                 {/* World ID Verification Widget */}
@@ -678,9 +784,9 @@ export default function ProductMarketPage({ params }: { params: { product: strin
 
                                 <button
                                     onClick={handlePurchase}
-                                    disabled={!premiumQuote || isConfirming || isTxPending || isApprovePending || isConfirmingApprove || (product.id === 'flight' && !flightInsurable)}
+                                    disabled={!premiumQuote || isConfirming || isTxPending || isApprovePending || isConfirmingApprove || (product.id === 'flight' && !flightInsurable) || isProductAuthorized === false || insufficientLiquidity}
                                     className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-2
-                                ${(isConfirming || isTxPending || isConfirmingApprove || isApprovePending) ? 'bg-zinc-700 text-zinc-400' : (product.id === 'flight' && !flightInsurable) ? 'bg-red-900/30 text-red-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_20px_rgba(16,185,129,0.3)]'}
+                                ${(isConfirming || isTxPending || isConfirmingApprove || isApprovePending) ? 'bg-zinc-700 text-zinc-400' : (product.id === 'flight' && !flightInsurable) || isProductAuthorized === false || insufficientLiquidity ? 'bg-red-900/30 text-red-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_20px_rgba(16,185,129,0.3)]'}
                                 disabled:opacity-50 disabled:cursor-not-allowed`}
                                 >
                                     {(isConfirming || isTxPending || isConfirmingApprove || isApprovePending) ? <><RefreshCcw className="w-4 h-4 animate-spin" /> {isApprovePending || isConfirmingApprove ? "Approving..." : "Confirming..."}</> :

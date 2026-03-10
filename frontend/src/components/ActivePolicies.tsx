@@ -1,14 +1,15 @@
 import { useAccount, useReadContract, useWatchContractEvent } from "wagmi";
 import { config } from "@/lib/wagmiConfig";
-import { getPublicClient } from "@wagmi/core";
+import { readContract, getPublicClient } from "@wagmi/core";
 import { ESCROW_ABI, TRAVEL_ABI, GENERIC_PRODUCT_ABI, CONTRACTS } from "@/lib/contracts";
 import Link from "next/link";
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 const FUJI_START_BLOCK = BigInt(52515483);
 const MAX_BLOCKS_PER_QUERY = 2000;
-const MAX_TOTAL_BLOCKS = 500000;
+const MAX_TOTAL_BLOCKS = 5000000;
 import { TableSkeleton } from "@/components/ui/Skeletons";
 import { formatUnits } from "viem";
+import { stat } from "fs";
 
 function CountdownTimer({ expirationTime }: { expirationTime: bigint }) {
     const [timeLeft, setTimeLeft] = useState("");
@@ -49,9 +50,18 @@ function CountdownTimer({ expirationTime }: { expirationTime: bigint }) {
 
 function StatusBadge({ status, isActive: _isActive, isClaimed: _isClaimed, expirationTime }: { status?: number, isActive?: boolean; isClaimed?: boolean, expirationTime?: bigint }) {
     // Standardize status: 0=Active (Active), 1=Claimed (Paid), 2=Expired (Expired)
-    const isClaimed = _isClaimed || Number(status) === 1;
-    const isExpired = expirationTime ? Number(expirationTime) < (Date.now() / 1000) : false;
-    const isActive = (_isActive || Number(status) === 0) && !isExpired && !isClaimed;
+    const isClaimed = _isClaimed || status === 1;
+    const isExpired = expirationTime ? Number(expirationTime) < (Math.floor(Date.now() / 1000)) : false;
+
+    // Determine active state - fallback to time-based if flags are missing
+    let isActive = false;
+    if (_isActive !== undefined) {
+        isActive = _isActive && !isExpired && !isClaimed;
+    } else if (status !== undefined && !isNaN(status)) {
+        isActive = Number(status) === 0 && !isExpired && !isClaimed;
+    } else {
+        isActive = !isExpired && !isClaimed;
+    }
 
     if (isClaimed) {
         return (
@@ -98,23 +108,32 @@ function PolicyRow({ policy, txHash }: { policy: any, txHash?: string }) {
 
     let holder, target, premium, payout, expiry, status, isActive, isClaimed;
 
-    if (isEscrow) {
+    if (data.length === 7 && (typeof data[5] === 'boolean' || typeof data[5] === 'number')) {
+        // Handle pre-normalized data from CommandCenter or other sources
+        [holder, target, premium, payout, expiry, isActive, isClaimed] = data;
+        isActive = !!isActive;
+        isClaimed = !!isClaimed;
+        // Map back to numeric status for StatusBadge fallback
+        status = isClaimed ? 1 : (Number(expiry) < Math.floor(Date.now() / 1000) ? 2 : 0);
+    } else if (isEscrow) {
         [holder, target, premium, payout, expiry, isActive, isClaimed] = data as any[];
+        status = isClaimed ? 1 : (Number(expiry) < Math.floor(Date.now() / 1000) ? 2 : 0);
     } else if (policy.type === 'Travel') {
         const [ph, prem, pay, stat, exp, fId] = data as any[];
         holder = ph;
         premium = prem;
         payout = pay;
-        status = stat;
+        status = Number(stat);
         expiry = exp;
         target = fId;
-        isActive = Number(status) === 0;
-        isClaimed = Number(status) === 1;
+        isActive = status === 0;
+        isClaimed = status === 1;
     } else {
         const d = data as any[];
         [holder, premium, payout, , , status, expiry, target] = d;
-        isActive = Number(status) === 0;
-        isClaimed = Number(status) === 1;
+        status = Number(status);
+        isActive = status === 0;
+        isClaimed = status === 1;
     }
 
     // Extract display target
@@ -124,20 +143,24 @@ function PolicyRow({ policy, txHash }: { policy: any, txHash?: string }) {
         displayTarget = flightMatch ? flightMatch[1] : displayTarget;
     }
 
-    const sectorColors: Record<string, string> = {
-        Travel: 'text-primary',
-        Agri: 'text-emerald-400',
-        Energy: 'text-amber-400',
-        Catastrophe: 'text-rose-500',
-        Maritime: 'text-blue-400',
-        Escrow: 'text-zinc-400'
+    const formatExpiryTable = (timestamp: bigint) => {
+        const date = new Date(Number(timestamp) * 1000);
+        return new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        }).format(date);
     };
+
+    const isExpired = Number(expiry) < (Date.now() / 1000);
 
     return (
         <tr className="border-b border-zinc-800/30 hover:bg-zinc-800/20 transition-colors">
             <td className="px-4 py-4">
                 <div className="flex items-center gap-2">
-                    <div className={`text-[10px] font-bold px-1.5 py-0.5 rounded border border-current ${sectorColors[policy.type]}`}>
+                    <div className={`text-[10px] font-bold px-1.5 py-0.5 rounded border border-current ${policy.type === 'Escrow' ? 'text-zinc-400' : (policy.type === 'Agri' ? 'text-emerald-400' : (policy.type === 'Energy' ? 'text-amber-400' : (policy.type === 'Catastrophe' ? 'text-rose-500' : (policy.type === 'Maritime' ? 'text-blue-400' : 'text-primary'))))}`}>
                         {policy.type.toUpperCase()}
                     </div>
                     <span className="text-sm font-medium text-foreground">{displayTarget || "Global Policy"}</span>
@@ -155,11 +178,14 @@ function PolicyRow({ policy, txHash }: { policy: any, txHash?: string }) {
                 <StatusBadge status={Number(status)} isActive={isActive} isClaimed={isClaimed} expirationTime={expiry} />
             </td>
             <td className="px-4 py-4">
-                {isActive && !isClaimed && Number(expiry) > (Date.now() / 1000) ? (
-                    <CountdownTimer expirationTime={expiry} />
-                ) : (
-                    <span className="text-sm text-zinc-600">—</span>
-                )}
+                <div className="flex flex-col">
+                    {!isClaimed && !isExpired ? (
+                        <CountdownTimer expirationTime={expiry} />
+                    ) : (
+                        <span className="text-xs text-zinc-600 font-mono">{isClaimed ? "SETTLED" : "EXPIRED"}</span>
+                    )}
+                    <span className="text-[10px] text-zinc-500 mt-1 font-mono">{formatExpiryTable(expiry)}</span>
+                </div>
             </td>
             <td className="px-4 py-4">
                 <div className="flex flex-col gap-1.5 align-start">
@@ -189,7 +215,15 @@ function PolicyRow({ policy, txHash }: { policy: any, txHash?: string }) {
     );
 }
 
-export function ActivePolicies() {
+interface ActivePoliciesProps {
+    initialPolicies?: any[];
+    initialTxHashes?: Record<string, string>;
+}
+
+export const ActivePolicies: React.FC<ActivePoliciesProps> = ({
+    initialPolicies,
+    initialTxHashes
+}) => {
     const { address, isConnected } = useAccount();
     const [mounted, setMounted] = useState(false);
 
@@ -222,6 +256,12 @@ export function ActivePolicies() {
         }
     };
     const [txHashes, setTxHashes] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        if (initialTxHashes) {
+            setTxHashes(prev => ({ ...prev, ...initialTxHashes }));
+        }
+    }, [initialTxHashes]);
     const [policyDetails, setPolicyDetails] = useState<any[]>([]);
     const [detailsLoading, setDetailsLoading] = useState(false);
 
@@ -296,12 +336,21 @@ export function ActivePolicies() {
     }, [escrowIds, travelIds, agriIds, energyIds, catIds, maritimeIds]);
 
     useEffect(() => {
+        let timer: NodeJS.Timeout;
+
         const fetchDetails = async () => {
+            if (initialPolicies) {
+                setPolicyDetails(initialPolicies);
+                return;
+            }
+
             if (allPolicyIds.length === 0 || !mounted) {
+                if (mounted && isConnected) console.log("ActivePolicies: No policy IDs found yet.");
                 setPolicyDetails([]);
                 return;
             }
 
+            console.log("ActivePolicies: Fetching details for IDs:", allPolicyIds.length);
             setDetailsLoading(true);
             try {
                 const results = await Promise.all(allPolicyIds.map(async (policy) => {
@@ -316,7 +365,7 @@ export function ActivePolicies() {
                             functionName: functionName,
                             args: [policy.id as `0x${string}`],
                         });
-                        return { ...policy, data: data as any[] };
+                        return { ...policy, data: data as any };
                     } catch (e) {
                         return null;
                     }
@@ -325,10 +374,15 @@ export function ActivePolicies() {
                 const valid = results.filter(r => r !== null);
                 // Ideal sorting: Newest expiry first
                 const sorted = valid.sort((a, b) => {
-                    const expiryA = a.type === 'Escrow' ? Number(a.data[4]) : (a.type === 'Travel' ? Number(a.data[4]) : Number(a.data[6]));
-                    const expiryB = b.type === 'Escrow' ? Number(b.data[4]) : (b.type === 'Travel' ? Number(b.data[4]) : Number(b.data[6]));
+                    const expiryA = a.type === 'Escrow' || (a.data.length === 7 && typeof a.data[5] === 'boolean')
+                        ? Number(a.data[4])
+                        : (a.type === 'Travel' ? Number(a.data[4]) : Number(a.data[6]));
+                    const expiryB = b.type === 'Escrow' || (b.data.length === 7 && typeof b.data[5] === 'boolean')
+                        ? Number(b.data[4])
+                        : (b.type === 'Travel' ? Number(b.data[4]) : Number(b.data[6]));
                     return expiryB - expiryA;
                 });
+                console.log("ActivePolicies: Successfully fetched details:", sorted.length);
                 setPolicyDetails(sorted);
             } catch (err) {
                 console.error("Error fetching bulk details:", err);
@@ -338,7 +392,16 @@ export function ActivePolicies() {
         };
 
         fetchDetails();
-    }, [allPolicyIds, mounted]);
+
+        // Aggressive Polling: Refresh every 15 seconds if connected
+        if (isConnected && !initialPolicies) {
+            timer = setInterval(fetchDetails, 15000);
+        }
+
+        return () => {
+            if (timer) clearInterval(timer);
+        };
+    }, [allPolicyIds, mounted, isConnected, initialPolicies]);
 
     // Watch for events on all products to pick up tx hashes
     useWatchContractEvent({

@@ -14,6 +14,8 @@ export const LIQUIDITY_POOL_ABI = parseAbi([
     "function pause() external",
     "function unpause() external",
     "function setAuthorizedQuoter(address quoter) external",
+    "function authorizedProducts(address product) view returns (bool)",
+
     "event LiquidityDeposited(address indexed provider, uint256 amount, uint256 shares)",
     "event LiquidityWithdrawn(address indexed provider, uint256 amount, uint256 shares)",
     "event WithdrawalScheduled(address indexed provider, uint256 shares, uint256 unlockTimestamp)"
@@ -26,6 +28,8 @@ export const PRODUCT_ABI = parseAbi([
     "function expirePolicy(bytes32 id) external",
     "function getActivePolicyCount() view returns (uint256)",
     "function getUserPolicies(address) view returns (bytes32[])",
+    "function pool() view returns (address)",
+
     "function policies(bytes32) view returns (address policyholder, uint256 premium, uint256 payout, uint256 status, uint256 expiresAt, string flightId)",
     "event PolicyCreated(bytes32 id, address holder, uint256 premium, uint256 payout, uint256 expiresAt)",
     "event PolicyClaimed(bytes32 id, uint256 payout)",
@@ -63,6 +67,8 @@ export const GENERIC_PRODUCT_ABI = parseAbi([
     "function expirePolicy(bytes32) external",
     "function getActivePolicyCount() view returns (uint256)",
     "function getUserPolicies(address) view returns (bytes32[])",
+    "function pool() view returns (address)",
+
     "function policies(bytes32) view returns (address policyholder, uint256 premium, uint256 maxPayout, uint256 strikeIndex, uint256 exitIndex, uint256 status, uint256 expiresAt, string geographicZone)",
     "function checkUpkeep(bytes) view returns (bool upkeepNeeded, bytes performData)",
     "function performUpkeep(bytes) external",
