@@ -37,7 +37,7 @@ export function Footer() {
                             The internet of value needs a safety net. Reflex provides hyper-efficient, parametric coverage for the most volatile real-world risks.
                         </p>
                         <div className="flex items-center gap-4">
-                            <a href="https://x.com/ReflexProtocol" target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white/5 rounded-xl text-zinc-400 hover:text-primary hover:bg-primary/10 transition-all border border-white/10">
+                            <a href="https://x.com/runicsorcerer" target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white/5 rounded-xl text-zinc-400 hover:text-primary hover:bg-primary/10 transition-all border border-white/10">
                                 <Twitter className="w-4 h-4" />
                             </a>
                             <a href="https://github.com/ucEzette/reflex" target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white/5 rounded-xl text-zinc-400 hover:text-primary hover:bg-primary/10 transition-all border border-white/10">
@@ -68,7 +68,7 @@ export function Footer() {
                             <li><a href="https://github.com/ucEzette/reflex" target="_blank" rel="noopener noreferrer" className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-2"><Github className="w-3 h-3" /> GitHub Org</a></li>
                             <li><Link href="/docs#contracts" className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-2"><Globe className="w-3 h-3" /> API Reference</Link></li>
                             <li><Link href="/docs#security" className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-2"><Shield className="w-3 h-3" /> Bug Bounty</Link></li>
-                            <li><a href="mailto:support@reflex.finance" className="text-sm text-primary hover:text-primary/80 transition-colors flex items-center gap-2 font-bold"><Activity className="w-3 h-3" /> Report Issue</a></li>
+                            <li><a href="mailto:sneppsezette@gmail.com" className="text-sm text-primary hover:text-primary/80 transition-colors flex items-center gap-2 font-bold"><Activity className="w-3 h-3" /> Report Issue</a></li>
                         </ul>
                     </div>
 
