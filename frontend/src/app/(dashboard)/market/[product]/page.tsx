@@ -78,6 +78,8 @@ export default function ProductMarketPage({ params }: { params: { product: strin
     const [coordinates, setCoordinates] = useState({ lat: '', lon: '' });
     const [zone, setZone] = useState('');
     const [flightId, setFlightId] = useState('');
+    const [strikeInput, setStrikeInput] = useState("100");
+    const [exitInput, setExitInput] = useState("50");
     const [selectedDuration, setSelectedDuration] = useState(DURATION_OPTIONS[2]); // default 30d
 
     // Oracle Data & Dynamic Risk
@@ -326,8 +328,8 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                     args: [
                         zone || coordinates.lat || "ZONE-A",
                         parseUnits(payoutInput, 6),
-                        BigInt(100),
-                        BigInt(50),
+                        BigInt(strikeInput),
+                        BigInt(exitInput),
                         expectedRiskBase,
                         BigInt(effectiveDuration)
                     ]
@@ -468,7 +470,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                                     </div>
                                 )}
 
-                                {product.id === 'prod-cat' && (
+                                {product.id === 'cat' && (
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Latitude</label>
@@ -487,10 +489,25 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                                     </div>
                                 )}
 
-                                {(product.id === 'prod-agri' || product.id === 'prod-energy' || product.id === 'prod-maritime') && (
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Target Zone / Port</label>
-                                        <input type="text" placeholder={product.inputPlaceholder} value={zone} onChange={e => setZone(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                {(product.id === 'agri' || product.id === 'energy' || product.id === 'maritime') && (
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Target Zone / Port</label>
+                                            <input type="text" placeholder={product.inputPlaceholder} value={zone} onChange={e => setZone(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                        </div>
+
+                                        {product.id === 'agri' && (
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Strike Index (mm)</label>
+                                                    <input type="number" placeholder="100" value={strikeInput} onChange={e => setStrikeInput(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Exit Index (mm)</label>
+                                                    <input type="number" placeholder="50" value={exitInput} onChange={e => setExitInput(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 
