@@ -5,7 +5,7 @@ import { pino } from 'pino';
 // Force v1 stable API to avoid v1beta resolution issues on some cloud providers
 const google = createGoogleGenerativeAI({
     apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-    apiVersion: 'v1'
+    baseURL: 'https://generativelanguage.googleapis.com/v1'
 });
 
 import { createUnderwriteTool } from './tools/UnderwriteTool';

@@ -80,6 +80,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
     const [flightId, setFlightId] = useState('');
     const [strikeInput, setStrikeInput] = useState("100");
     const [exitInput, setExitInput] = useState("50");
+    const [radiusInput, setRadiusInput] = useState("50");
     const [selectedDuration, setSelectedDuration] = useState(DURATION_OPTIONS[2]); // default 30d
 
     // Oracle Data & Dynamic Risk
@@ -321,12 +322,20 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                     ]
                 });
             } else {
+                // Determine target identifier (e.g. Zone for Agri, Port for Maritime, Lat:Lon:Radius for Cat)
+                let targetIdentifier = zone || "ZONE-A";
+                if (product?.id === 'cat') {
+                    targetIdentifier = `${coordinates.lat}:${coordinates.lon}:${radiusInput}`;
+                } else if (product?.id === 'energy' || product?.id === 'maritime') {
+                    targetIdentifier = zone;
+                }
+
                 purchasePolicy({
                     address: targetContractAddress as `0x${string}`,
                     abi: GENERIC_PRODUCT_ABI,
                     functionName: "purchasePolicy",
                     args: [
-                        zone || coordinates.lat || "ZONE-A",
+                        targetIdentifier,
                         parseUnits(payoutInput, 6),
                         BigInt(strikeInput),
                         BigInt(exitInput),
@@ -486,28 +495,36 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                                                 <input type="text" placeholder="-118.2437" value={coordinates.lon} onChange={e => setCoordinates({ ...coordinates, lon: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
                                             </div>
                                         </div>
+                                        <div className="space-y-2 col-span-2">
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Detection Radius (km)</label>
+                                            <input type="number" placeholder="50" value={radiusInput} onChange={e => setRadiusInput(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                        </div>
                                     </div>
                                 )}
 
                                 {(product.id === 'agri' || product.id === 'energy' || product.id === 'maritime') && (
                                     <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Target Zone / Port</label>
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                                {product.id === 'agri' ? 'Target Zone' : product.id === 'maritime' ? 'Target Port Code' : 'Grid Section'}
+                                            </label>
                                             <input type="text" placeholder={product.inputPlaceholder} value={zone} onChange={e => setZone(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
                                         </div>
 
-                                        {product.id === 'agri' && (
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Strike Index (mm)</label>
-                                                    <input type="number" placeholder="100" value={strikeInput} onChange={e => setStrikeInput(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Exit Index (mm)</label>
-                                                    <input type="number" placeholder="50" value={exitInput} onChange={e => setExitInput(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
-                                                </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                                    {product.id === 'agri' ? 'Strike Index (mm)' : product.id === 'energy' ? 'Strike (DD)' : 'Strike (Wind/Wave)'}
+                                                </label>
+                                                <input type="number" placeholder="100" value={strikeInput} onChange={e => setStrikeInput(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
                                             </div>
-                                        )}
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                                    {product.id === 'agri' ? 'Exit Index (mm)' : product.id === 'energy' ? 'Exit (DD)' : 'Exit (Wind/Wave)'}
+                                                </label>
+                                                <input type="number" placeholder="50" value={exitInput} onChange={e => setExitInput(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
 
