@@ -4,8 +4,7 @@ import { pino } from 'pino';
 
 // Force v1 stable API to avoid v1beta resolution issues on some cloud providers
 const google = createGoogleGenerativeAI({
-    apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-    baseURL: 'https://generativelanguage.googleapis.com/v1'
+    apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY
 });
 
 import { createUnderwriteTool } from './tools/UnderwriteTool';
@@ -81,7 +80,7 @@ export class ReflexAutonomousAgent {
 
         try {
             const { text } = await generateText({
-                model: google('gemini-1.5-flash'),
+                model: google('gemini-2.5-flash'),
                 system: `You are the Autonomous Risk and Treasury Agent for Reflex L1, a decentralized parametric micro-insurance protocol.
                 Your primary objectives are:
                 1. Monitor Aave V3 yield. If highly profitable (e.g. profit > 100 USDC), execute 'harvestYield'.
