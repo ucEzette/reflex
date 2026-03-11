@@ -1,6 +1,13 @@
 import { generateText } from 'ai';
-import { google } from '@ai-sdk/google';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { pino } from 'pino';
+
+// Force v1 stable API to avoid v1beta resolution issues on some cloud providers
+const google = createGoogleGenerativeAI({
+    apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+    apiVersion: 'v1'
+});
+
 import { createUnderwriteTool } from './tools/UnderwriteTool';
 import { createKeeperTool } from './tools/KeeperTool';
 import { createHarvestTool } from './tools/HarvestTool';
@@ -74,7 +81,7 @@ export class ReflexAutonomousAgent {
 
         try {
             const { text } = await generateText({
-                model: google('gemini-1.5-flash-latest'),
+                model: google('gemini-1.5-flash'),
                 system: `You are the Autonomous Risk and Treasury Agent for Reflex L1, a decentralized parametric micro-insurance protocol.
                 Your primary objectives are:
                 1. Monitor Aave V3 yield. If highly profitable (e.g. profit > 100 USDC), execute 'harvestYield'.
