@@ -142,7 +142,7 @@ export class ReflexAutonomousAgent {
             } catch (error) {
                 logger.error(`❌ Monitor loop error: ${error}`);
             }
-        }, 30000); // Poll every 30 seconds
+        }, 150000); // Poll every 2.5 minutes
     }
 }
 
