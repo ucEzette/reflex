@@ -77,7 +77,7 @@ export default function Home() {
                   <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[11px]">mainnet active</span>
                 </button>
               </a>
-              <a href="https://docs.google.com/presentation/d/1RAQHRFVr9NHClst8C7FdOXr4fHUsxcsug20wHwEC8Ak/edit?usp=sharing" target="_blank" rel="noopener noreferrer" className="dexter-btn-container w-52 relative z-30" style={{ '--btn-color': '#475569' } as React.CSSProperties}>
+              <a href="https://docs.google.com/presentation/d/1RAQHRFVr9NHClst8C7FdOXr4fHUsxcsug20wHwEC8Ak/present" target="_blank" rel="noopener noreferrer" className="dexter-btn-container w-52 relative z-30" style={{ '--btn-color': '#475569' } as React.CSSProperties}>
                 <button className="dexter-btn !min-w-[200px] !min-h-[50px] !px-6 !py-3 !rounded-xl opacity-90 hover:opacity-100" type="button">
                   <span className="dexter-btn-drawer dexter-transition-top !text-[11px]">DOCS</span>
                   <span className="dexter-btn-text flex items-center gap-2 !text-lg !text-foreground/90"><span className="material-symbols-outlined text-[20px]">description</span> Our Intro Deck</span>
@@ -306,7 +306,7 @@ export default function Home() {
                   <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[10px]">mainnet</span>
                 </button>
               </a>
-              <a href="https://docs.google.com/presentation/d/1RAQHRFVr9NHClst8C7FdOXr4fHUsxcsug20wHwEC8Ak/edit?usp=sharing" target="_blank" rel="noopener noreferrer" className="dexter-btn-container w-48 relative z-30" style={{ '--btn-color': '#475569' } as React.CSSProperties}>
+              <a href="https://docs.google.com/presentation/d/1RAQHRFVr9NHClst8C7FdOXr4fHUsxcsug20wHwEC8Ak/present" target="_blank" rel="noopener noreferrer" className="dexter-btn-container w-48 relative z-30" style={{ '--btn-color': '#475569' } as React.CSSProperties}>
                 <button className="dexter-btn !min-w-[180px] !min-h-[44px] !px-4 !py-2 opacity-90 hover:opacity-100" type="button">
                   <span className="dexter-btn-drawer dexter-transition-top">DOCS</span>
                   <span className="dexter-btn-text flex items-center gap-2 !text-base !text-foreground/90">Our Intro Deck</span>
