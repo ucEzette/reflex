@@ -13,7 +13,7 @@ const FUJI_START_BLOCK = BigInt(52515483);
 const MAX_BLOCKS_PER_QUERY = 2000;
 const MAX_TOTAL_BLOCKS = 500000;
 import { cn } from '@/lib/utils';
-import { Trophy, Users, Activity, Shield, TrendingUp, Award, RefreshCcw, ArrowUpRight, ArrowDownLeft, DollarSign, Clock, AlertCircle, CheckCircle2, Layers } from 'lucide-react';
+import { Trophy, Users, Activity, Shield, TrendingUp, Award, RefreshCcw, ArrowUpRight, ArrowDownLeft, DollarSign, Clock, AlertCircle, CheckCircle2, Layers, X, Sparkles, Landmark, PiggyBank, Wallet, ChevronDown, ChevronUp, BookOpen, Bot } from 'lucide-react';
 import { InstitutionalTooltip } from '@/components/ui/InstitutionalTooltip';
 
 const performanceData = [
@@ -27,6 +27,47 @@ const performanceData = [
 ];
 
 // No mock pools needed. using REAL POOLS from contracts.ts
+
+const INVEST_GUIDE_STEPS = [
+    {
+        number: 1,
+        icon: Shield,
+        title: 'Select a Risk Pool',
+        description: 'Choose from sector-isolated vaults: Travel, Agriculture, Energy, Catastrophe, or Maritime. Each pool backs a specific product line.',
+        accent: 'text-sky-400',
+        bg: 'bg-sky-500/10',
+        border: 'border-sky-500/20',
+    },
+    {
+        number: 2,
+        icon: PiggyBank,
+        title: 'Deposit USDC',
+        description: 'Approve and deposit USDC into the pool. Your liquidity is deployed to Aave V3 and used to collateralize parametric insurance policies.',
+        accent: 'text-violet-400',
+        bg: 'bg-violet-500/10',
+        border: 'border-violet-500/20',
+    },
+    {
+        number: 3,
+        icon: TrendingUp,
+        title: 'Earn Dual Yield',
+        description: 'Receive blended returns from Aave V3 lending rates plus underwriting risk premiums collected from policy purchases.',
+        accent: 'text-emerald-400',
+        bg: 'bg-emerald-500/10',
+        border: 'border-emerald-500/20',
+    },
+    {
+        number: 4,
+        icon: Wallet,
+        title: 'Withdraw Anytime',
+        description: 'Redeem your LP shares for USDC instantly, or schedule a future withdrawal to help the protocol manage capital buffers.',
+        accent: 'text-amber-400',
+        bg: 'bg-amber-500/10',
+        border: 'border-amber-500/20',
+    },
+];
+
+const INVEST_GUIDE_STORAGE_KEY = 'reflex_invest_guide_dismissed';
 
 export function InvestDashboardClient() {
     const [mounted, setMounted] = useState(false);
@@ -50,12 +91,18 @@ export function InvestDashboardClient() {
     const [isMinting, setIsMinting] = useState(false);
     const [isTxPending, setIsTxPending] = useState(false);
 
+    // Guide state
+    const [showInvestGuide, setShowInvestGuide] = useState(false);
+    const [guideCollapsed, setGuideCollapsed] = useState(false);
+
     useEffect(() => {
         setMounted(true);
         const savedHistory = localStorage.getItem("invest_history");
         if (savedHistory) {
             setHistory(JSON.parse(savedHistory));
         }
+        const guideDismissed = localStorage.getItem(INVEST_GUIDE_STORAGE_KEY);
+        if (!guideDismissed) setShowInvestGuide(true);
     }, []);
 
     useEffect(() => {
@@ -608,6 +655,98 @@ export function InvestDashboardClient() {
                     <div className="h-10 w-px bg-white/10" />
                 </div>
             </div>
+
+            {/* ── Invest Guide Banner ── */}
+            {showInvestGuide && (
+                <section className="relative bg-card border border-border rounded-2xl overflow-hidden animate-guide-fade-in">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-xl border border-primary/20">
+                                <Sparkles className="w-4 h-4 text-primary" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-bold text-foreground">How Underwriting Works</h3>
+                                <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">4-Step Guide to Earning Dual Yield</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setGuideCollapsed(!guideCollapsed)}
+                                className="p-2 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+                                aria-label={guideCollapsed ? 'Expand guide' : 'Collapse guide'}
+                            >
+                                {guideCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowInvestGuide(false);
+                                    localStorage.setItem(INVEST_GUIDE_STORAGE_KEY, 'true');
+                                }}
+                                className="p-2 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+                                aria-label="Dismiss guide"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {!guideCollapsed && (
+                        <div className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {INVEST_GUIDE_STEPS.map((step, index) => (
+                                    <div
+                                        key={step.number}
+                                        className={`relative group p-5 rounded-xl ${step.bg} border ${step.border} transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}
+                                        style={{ animationDelay: `${index * 100}ms` }}
+                                    >
+                                        <div className={`absolute -top-2 -left-2 w-7 h-7 rounded-full bg-background border-2 ${step.border} flex items-center justify-center`}>
+                                            <span className={`text-[10px] font-black ${step.accent}`}>{step.number}</span>
+                                        </div>
+                                        {index < INVEST_GUIDE_STEPS.length - 1 && (
+                                            <div className="hidden lg:block absolute top-1/2 -right-2 w-4 h-px bg-white/10" />
+                                        )}
+                                        <div className="flex items-start gap-3 mt-1">
+                                            <step.icon className={`w-5 h-5 ${step.accent} shrink-0 mt-0.5`} />
+                                            <div>
+                                                <h4 className={`text-sm font-bold ${step.accent} mb-1`}>{step.title}</h4>
+                                                <p className="text-[11px] text-zinc-400 leading-relaxed">{step.description}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="flex items-center justify-between mt-5 pt-4 border-t border-white/5">
+                                <p className="text-[10px] text-zinc-600 uppercase tracking-widest">
+                                    Powered by Aave V3 · Chainlink Keepers · Autonomous Agent via Tether WDK
+                                </p>
+                                <button
+                                    onClick={() => {
+                                        setShowInvestGuide(false);
+                                        localStorage.setItem(INVEST_GUIDE_STORAGE_KEY, 'true');
+                                    }}
+                                    className="text-[10px] font-bold text-zinc-500 hover:text-white uppercase tracking-widest transition-colors"
+                                >
+                                    Got it, dismiss →
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </section>
+            )}
+
+            {/* Reopen Guide Button */}
+            {!showInvestGuide && (
+                <button
+                    onClick={() => {
+                        setShowInvestGuide(true);
+                        setGuideCollapsed(false);
+                        localStorage.removeItem(INVEST_GUIDE_STORAGE_KEY);
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-zinc-500 hover:text-white hover:bg-white/10 transition-all text-xs font-bold"
+                >
+                    <BookOpen className="w-3.5 h-3.5" /> How Underwriting Works
+                </button>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
