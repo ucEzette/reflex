@@ -31,23 +31,23 @@ async function main() {
     const HARVESTER_ROLE = ethers.keccak256(ethers.toUtf8Bytes("HARVESTER_ROLE"));
     const UNDERWRITER_ROLE = ethers.keccak256(ethers.toUtf8Bytes("UNDERWRITER_ROLE"));
 
-    // 1. Grant HARVESTER_ROLE on the Liquidity Pool
+    // 1. Grant Treasury Role on the Liquidity Pool (using its custom access control)
     const poolAddress = process.env.LIQUIDITY_POOL_ADDRESS;
     if (poolAddress) {
-        console.log(`\nGranting HARVESTER_ROLE on Liquidity Pool (${poolAddress})...`);
+        console.log(`\nGranting Treasury Role on Liquidity Pool (${poolAddress})...`);
         const poolContract = new ethers.Contract(
             poolAddress,
-            ["function grantRole(bytes32 role, address account) external"],
+            ["function grantTreasuryRole(address _agent, bool _status) external"],
             adminSigner
         );
         
         try {
-            const tx = await poolContract.grantRole(HARVESTER_ROLE, agentAddress);
+            const tx = await poolContract.grantTreasuryRole(agentAddress, true);
             console.log(`Transaction broadcasted. Hash: ${tx.hash}`);
             await tx.wait();
-            console.log("✅ HARVESTER_ROLE granted successfully.");
+            console.log("✅ Treasury Role granted successfully.");
         } catch (error: any) {
-            console.error("❌ Failed to grant HARVESTER_ROLE:", error.message);
+            console.error("❌ Failed to grant Treasury Role:", error.message);
         }
     } else {
         console.log("\n⚠️ LIQUIDITY_POOL_ADDRESS not found in .env. Skipping Harvest whitelist.");

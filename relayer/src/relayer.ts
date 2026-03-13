@@ -161,7 +161,7 @@ async function main() {
     );
 
     // Initialize and start the Autonomous Agent
-    const agent = new ReflexAutonomousAgent(blockchain);
+    const agent = new ReflexAutonomousAgent(blockchain, weatherService, aviationStack);
     // Give it a moment to init WDK wallet before starting loop
     setTimeout(() => {
         agent.monitorEcosystem().catch(err => logger.error({ err }, "Agent loop failed"));

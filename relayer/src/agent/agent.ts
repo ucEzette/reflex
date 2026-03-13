@@ -11,6 +11,8 @@ const groq = createOpenAI({
 import { createUnderwriteTool } from './tools/UnderwriteTool';
 import { createHarvestTool } from './tools/HarvestTool';
 import { BlockchainService } from '../services/BlockchainService';
+import { WeatherService } from '../services/WeatherService';
+import { AviationStackService } from '../services/AviationStackService';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -26,9 +28,13 @@ export class ReflexAutonomousAgent {
     private account: any = null;
     private address: string = '';
     private blockchain: BlockchainService;
+    private weather: WeatherService;
+    private aviation: AviationStackService;
 
-    constructor(blockchain: BlockchainService) {
+    constructor(blockchain: BlockchainService, weather: WeatherService, aviation: AviationStackService) {
         this.blockchain = blockchain;
+        this.weather = weather;
+        this.aviation = aviation;
         if (!process.env.GROQ_API_KEY) {
             logger.warn('⚠️ GROQ_API_KEY is missing. Autonomous Agent will hibernate.');
             return;
@@ -113,23 +119,37 @@ export class ReflexAutonomousAgent {
                 const stats = await this.blockchain.getPoolStats();
                 const profitUsdc = Number(stats.profit) / 1e6;
 
-                // 2. Construct live context for LLM
+                // 2. Fetch Real-World Oracle Data (Risk Check)
+                // Demo coordinates: Miami, FL (Hurricane zone) and Iowa (Agri zone)
+                const temperature = await this.weather.getTemperature("25.7617", "-80.1918");
+                const rainfall = await this.weather.getRainfall("41.8780,-93.0977"); // Random Iowa bbox
+                
+                // Demo flight check (JFK to LHR)
+                const flight = await this.aviation.queryFlightStatus("flights/BA112");
+                const flightDelay = flight ? Math.floor(flight.delaySeconds / 60) : 0; // delay in mins
+
+                // 3. Construct live context for LLM
                 const scenario = `
                 [BLOCKCHAIN STATE]
                 - Liquidity Pool: ${stats.totalAssets.toString()} assets, ${stats.totalShares.toString()} shares.
                 - Harvestable Yield: ${profitUsdc.toFixed(2)} USDC.
                 
-                [MARKET SENTIMENT]
-                - External meteorology looks stable.
-                - Aviation traffic is normal.
+                [MARKET SENTIMENT (LIVE ORACLES)]
+                - Miami FL Temperature: ${temperature !== null ? temperature : 'N/A'}°C
+                - Iowa Rainfall (Last 24h): ${rainfall !== null ? rainfall : 'N/A'} mm
+                - JFK->LHR Aviation Delay: ${flightDelay} minutes
                 `;
 
-                // Only evaluate if there's actually something interesting (yield crossing threshold)
-                // Note: Keeper/Settlement is explicitly left to human intervention
-                if (profitUsdc > 1) {
+                // Only evaluate if there's actually something interesting to save API costs
+                // Thresholds: Profit > 50 USDC, Temp > 35C (heatwave), Rain > 100mm (flood), Flight delay > 120 mins
+                const isProfitable = profitUsdc > 50;
+                const isWeatherAnomaly = (temperature !== null && temperature > 35) || (rainfall !== null && rainfall > 100);
+                const isAviationAnomaly = flightDelay > 120;
+
+                if (isProfitable || isWeatherAnomaly || isAviationAnomaly) {
                     await this.evaluateEcosystem(scenario);
                 } else {
-                    logger.debug('Agent checked state: No immediate action required (Yield low).');
+                    logger.debug(`Agent checked state: No action required (Yield: $${profitUsdc.toFixed(2)}, Temp: ${temperature}°C, Rain: ${rainfall}mm, Delay: ${flightDelay}m).`);
                 }
 
             } catch (error) {
