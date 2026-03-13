@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { generateMarketProducts } from '../../../../lib/mockState';
 import { MarketProduct } from '../../../../types/market';
-import { Plane, CloudRain, Zap, Flame, Anchor, ArrowLeft, HelpCircle, Activity, Globe, Calendar, RefreshCcw, CheckCircle2, Clock, Radio, Satellite, Shield, AlertTriangle } from 'lucide-react';
+import { Plane, CloudRain, Zap, Flame, Anchor, ArrowLeft, HelpCircle, Activity, Globe, Calendar, RefreshCcw, CheckCircle2, Clock, Radio, Satellite, Shield, AlertTriangle, X, Lightbulb, PanelLeft, PanelRight, Radar } from 'lucide-react';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
 import { toast } from "sonner";
@@ -61,6 +61,12 @@ export default function ProductMarketPage({ params }: { params: { product: strin
     const { address, isConnected } = useAccount();
     const [mounted, setMounted] = useState(false);
     const [product, setProduct] = useState<MarketProduct | null>(null);
+    const [showProductTip, setShowProductTip] = useState(false);
+
+    useEffect(() => {
+        const dismissed = localStorage.getItem('reflex_product_tip_dismissed');
+        if (!dismissed) setShowProductTip(true);
+    }, []);
 
     // World ID / Hackathon States
     const [worldIDProof, setWorldIDProof] = useState<ISuccessResult | null>(null);
@@ -401,6 +407,46 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                         <p className="text-sm text-zinc-400 mt-1">{product.description}</p>
                     </div>
                 </div>
+
+                {/* ── Contextual Tip Banner ── */}
+                {showProductTip && (
+                    <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 animate-guide-fade-in">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-start gap-3">
+                                <div className="p-1.5 bg-amber-500/10 rounded-lg border border-amber-500/20 shrink-0 mt-0.5">
+                                    <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+                                </div>
+                                <div className="space-y-2">
+                                    <p className="text-xs font-bold text-foreground">Quick Guide — How This Page Works</p>
+                                    <div className="flex flex-wrap gap-4">
+                                        <div className="flex items-center gap-2">
+                                            <PanelLeft className="w-3.5 h-3.5 text-sky-400" />
+                                            <span className="text-[11px] text-zinc-400"><strong className="text-sky-400">Left Panel</strong> — Configure your protection parameters</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <PanelRight className="w-3.5 h-3.5 text-emerald-400" />
+                                            <span className="text-[11px] text-zinc-400"><strong className="text-emerald-400">Right Panel</strong> — View your live premium quote & purchase</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Radar className="w-3.5 h-3.5 text-cyan-400" />
+                                            <span className="text-[11px] text-zinc-400"><strong className="text-cyan-400">Oracle Feed</strong> — Real-time data powering your quote</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setShowProductTip(false);
+                                    localStorage.setItem('reflex_product_tip_dismissed', 'true');
+                                }}
+                                className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all shrink-0"
+                                aria-label="Dismiss tip"
+                            >
+                                <X className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {isPurchaseSuccess ? (
                     <div className="bg-card border border-border rounded-xl p-12 text-center space-y-8 animate-in zoom-in-95 duration-500 max-w-2xl mx-auto shadow-2xl shadow-emerald-500/10">

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { MarketCard } from '@/components/market/MarketCard';
-import { Search, Filter, Shield, Activity, Plane, Globe, CloudSun, Zap, Anchor, Truck, ShoppingBag, Droplets, HeartPulse, Building2 } from 'lucide-react';
+import { Search, Filter, Shield, Activity, Plane, Globe, CloudSun, Zap, Anchor, Truck, ShoppingBag, Droplets, HeartPulse, Building2, X, Sparkles, MousePointerClick, Settings2, CreditCard, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
 import { MarketDetail as Product } from '@/lib/market-data';
 
@@ -20,10 +20,71 @@ const categories = [
     { id: 'property', label: 'Property', icon: Building2 },
 ];
 
+const GUIDE_STEPS = [
+    {
+        number: 1,
+        icon: Search,
+        title: 'Browse & Filter',
+        description: 'Use the search bar and category filters to find the right parametric protection product for your needs.',
+        accent: 'text-sky-400',
+        bg: 'bg-sky-500/10',
+        border: 'border-sky-500/20',
+    },
+    {
+        number: 2,
+        icon: MousePointerClick,
+        title: 'Select a Product',
+        description: 'Click on any product card to open its detail page and explore coverage options.',
+        accent: 'text-violet-400',
+        bg: 'bg-violet-500/10',
+        border: 'border-violet-500/20',
+    },
+    {
+        number: 3,
+        icon: Settings2,
+        title: 'Configure & Quote',
+        description: 'Enter your parameters (flight number, zone, coordinates), set your payout, and get a live premium quote powered by on-chain oracles.',
+        accent: 'text-amber-400',
+        bg: 'bg-amber-500/10',
+        border: 'border-amber-500/20',
+    },
+    {
+        number: 4,
+        icon: CreditCard,
+        title: 'Verify & Purchase',
+        description: 'Verify your identity via World ID, approve USDC spending, and secure your parametric policy on-chain. Settlement is fully automatic.',
+        accent: 'text-emerald-400',
+        bg: 'bg-emerald-500/10',
+        border: 'border-emerald-500/20',
+    },
+];
+
+const GUIDE_STORAGE_KEY = 'reflex_marketplace_guide_dismissed';
+
 export function MarketplaceClient() {
     const { products, isLoading, error } = useProducts();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
+    const [showGuide, setShowGuide] = useState(false);
+    const [guideCollapsed, setGuideCollapsed] = useState(false);
+
+    useEffect(() => {
+        const dismissed = localStorage.getItem(GUIDE_STORAGE_KEY);
+        if (!dismissed) {
+            setShowGuide(true);
+        }
+    }, []);
+
+    const dismissGuide = () => {
+        setShowGuide(false);
+        localStorage.setItem(GUIDE_STORAGE_KEY, 'true');
+    };
+
+    const reopenGuide = () => {
+        setShowGuide(true);
+        setGuideCollapsed(false);
+        localStorage.removeItem(GUIDE_STORAGE_KEY);
+    };
 
     // Filter products based on search and category
     const filteredProducts = products.filter(product => {
@@ -67,6 +128,95 @@ export function MarketplaceClient() {
                     100% collateralized, zero-deductible, instant settlement.
                 </p>
             </header>
+
+            {/* ── Marketplace Guide Banner ── */}
+            {showGuide && (
+                <section className="relative bg-card border border-border rounded-2xl overflow-hidden animate-guide-fade-in">
+                    {/* Header Row */}
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-xl border border-primary/20">
+                                <Sparkles className="w-4 h-4 text-primary" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-bold text-foreground">How It Works</h3>
+                                <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">4-Step Guide to Parametric Protection</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setGuideCollapsed(!guideCollapsed)}
+                                className="p-2 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+                                aria-label={guideCollapsed ? 'Expand guide' : 'Collapse guide'}
+                            >
+                                {guideCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                            </button>
+                            <button
+                                onClick={dismissGuide}
+                                className="p-2 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+                                aria-label="Dismiss guide"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Steps Grid */}
+                    {!guideCollapsed && (
+                        <div className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {GUIDE_STEPS.map((step, index) => (
+                                    <div
+                                        key={step.number}
+                                        className={`relative group p-5 rounded-xl ${step.bg} border ${step.border} transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}
+                                        style={{ animationDelay: `${index * 100}ms` }}
+                                    >
+                                        {/* Step Number Badge */}
+                                        <div className={`absolute -top-2 -left-2 w-7 h-7 rounded-full bg-background border-2 ${step.border} flex items-center justify-center`}>
+                                            <span className={`text-[10px] font-black ${step.accent}`}>{step.number}</span>
+                                        </div>
+
+                                        {/* Connector Line (between cards) */}
+                                        {index < GUIDE_STEPS.length - 1 && (
+                                            <div className="hidden lg:block absolute top-1/2 -right-2 w-4 h-px bg-white/10" />
+                                        )}
+
+                                        <div className="flex items-start gap-3 mt-1">
+                                            <step.icon className={`w-5 h-5 ${step.accent} shrink-0 mt-0.5`} />
+                                            <div>
+                                                <h4 className={`text-sm font-bold ${step.accent} mb-1`}>{step.title}</h4>
+                                                <p className="text-[11px] text-zinc-400 leading-relaxed">{step.description}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex items-center justify-between mt-5 pt-4 border-t border-white/5">
+                                <p className="text-[10px] text-zinc-600 uppercase tracking-widest">
+                                    Powered by Chainlink Oracles · Avalanche C-Chain · World ID
+                                </p>
+                                <button
+                                    onClick={dismissGuide}
+                                    className="text-[10px] font-bold text-zinc-500 hover:text-white uppercase tracking-widest transition-colors"
+                                >
+                                    Got it, dismiss →
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </section>
+            )}
+
+            {/* Reopen Guide Button (shown when guide is dismissed) */}
+            {!showGuide && (
+                <button
+                    onClick={reopenGuide}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-zinc-500 hover:text-white hover:bg-white/10 transition-all text-xs font-bold"
+                >
+                    <BookOpen className="w-3.5 h-3.5" /> How It Works
+                </button>
+            )}
 
             {/* Controls */}
             <section className="sticky top-20 z-30 py-4 bg-background/80 backdrop-blur-xl border-y border-white/5 -mx-6 px-6">
