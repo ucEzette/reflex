@@ -1,6 +1,7 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import { pino } from 'pino';
+import { ethers } from 'ethers';
 
 
 const logger = pino({
@@ -35,10 +36,24 @@ export const createHarvestTool = (wallet: any) => tool({
         }
 
         try {
-            logger.info(`✅ WDK Agent successfully harvested $${expectedProfitUsdc} USDC profit into the Treasury.`);
+            // Setup an ethers contract instance wrapping the WDK wallet
+            // The WDK EVM wallet provider can act as a standard EIP-1193 provider
+            const provider = new ethers.BrowserProvider(wallet.getProvider() as any);
+            const signer = await provider.getSigner();
+
+            const POOL_ABI = ["function harvestYield() external"];
+            const poolContract = new ethers.Contract(poolAddress, POOL_ABI, signer);
+
+            logger.info('Broadcasting harvestYield transaction to Avalanche Fuji...');
+            const tx = await poolContract.harvestYield();
+            
+            logger.info(`Transaction broadcasted. Hash: ${tx.hash}. Waiting for confirmation...`);
+            const receipt = await tx.wait();
+
+            logger.info(`✅ WDK Agent successfully harvested $${expectedProfitUsdc} USDC profit. (Block: ${receipt.blockNumber})`);
             return {
                 success: true,
-                onChainConfirmation: '0xmockedharvesttx...',
+                onChainConfirmation: tx.hash,
                 error: undefined as string | undefined
             };
 

@@ -1,6 +1,7 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import { pino } from 'pino';
+import { ethers } from 'ethers';
 
 
 const logger = pino({
@@ -27,10 +28,37 @@ export const createUnderwriteTool = (wallet: any) => tool({
         logger.info(`🧠 Agent Reasoning: ${reasoning}`);
 
         try {
-            logger.info(`✅ WDK Agent successfully broadcasted risk update via Tether SDK.`);
+            // Setup an ethers contract instance wrapping the WDK wallet
+            const provider = new ethers.BrowserProvider(wallet.getProvider() as any);
+            const signer = await provider.getSigner();
+
+            // Map product target to specific contract address from environment
+            let contractAddress = '';
+            switch (productTarget) {
+                case 'TravelSolutions': contractAddress = process.env.TRAVEL_CONTRACT_ADDRESS || ''; break;
+                case 'AgricultureIndex': contractAddress = process.env.AGRI_CONTRACT_ADDRESS || ''; break;
+                case 'EnergySolutions': contractAddress = process.env.ENERGY_CONTRACT_ADDRESS || ''; break;
+                case 'MaritimeSolutions': contractAddress = process.env.MARITIME_CONTRACT_ADDRESS || ''; break;
+                case 'CatastropheProximity': contractAddress = process.env.CAT_CONTRACT_ADDRESS || ''; break;
+            }
+
+            if (!contractAddress) {
+                throw new Error(`Contract address not found for product: ${productTarget}`);
+            }
+
+            const PRODUCT_ABI = ["function updateProtocolMargin(uint256 newMargin) external"];
+            const productContract = new ethers.Contract(contractAddress, PRODUCT_ABI, signer);
+
+            logger.info(`Broadcasting updateProtocolMargin(${newRiskMarginBps}) to ${contractAddress}...`);
+            const tx = await productContract.updateProtocolMargin(newRiskMarginBps);
+            
+            logger.info(`Transaction broadcasted. Hash: ${tx.hash}. Waiting for confirmation...`);
+            const receipt = await tx.wait();
+
+            logger.info(`✅ WDK Agent successfully broadcasted risk update via Tether SDK. (Block: ${receipt.blockNumber})`);
             return {
                 success: true,
-                onChainConfirmation: '0xmockedtxhash...',
+                onChainConfirmation: tx.hash,
                 error: undefined as string | undefined
             };
 
