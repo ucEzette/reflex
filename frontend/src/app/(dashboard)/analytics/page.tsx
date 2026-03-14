@@ -98,7 +98,7 @@ export default function AnalyticsPage() {
                 {/* TVL */}
                 <div className="bg-card border border-border rounded-xl p-5">
                     <div className="flex items-center justify-between mb-2">
-                        <InstitutionalTooltip title="TVL" content="Total Value Locked. The total amount of USDC currently held in the liquidity pool to collateralize risk.">
+                        <InstitutionalTooltip title="TVL" content="Total Value Locked. The total amount of USDT currently held in the liquidity pool to collateralize risk.">
                             <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1.5 cursor-help">
                                 Total Value Locked
                                 <Info className="w-3 h-3 opacity-40" />
@@ -109,14 +109,14 @@ export default function AnalyticsPage() {
                     <div className="text-2xl font-bold text-foreground">${liveTVL > 0 ? liveTVL.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '0.00'}</div>
                     <div className="flex items-center gap-1 mt-1">
                         <Lock className="w-3 h-3 text-emerald-500" />
-                        <span className="text-xs text-emerald-500 font-medium">On-chain USDC</span>
+                        <span className="text-xs text-emerald-500 font-medium">On-chain USDT</span>
                     </div>
                 </div>
 
                 {/* Outstanding Payouts */}
                 <div className="bg-card border border-border rounded-xl p-5">
                     <div className="flex items-center justify-between mb-2">
-                        <InstitutionalTooltip title="Outstanding Payouts" content="Active Liability. The maximum potential USDC payout for all active, non-expired protection policies.">
+                        <InstitutionalTooltip title="Outstanding Payouts" content="Active Liability. The maximum potential USDT payout for all active, non-expired protection policies.">
                             <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1.5 cursor-help">
                                 Outstanding Payouts
                                 <Info className="w-3 h-3 opacity-40" />
@@ -151,7 +151,7 @@ export default function AnalyticsPage() {
                 {/* Available Capacity */}
                 <div className="bg-card border border-border rounded-xl p-5">
                     <div className="flex items-center justify-between mb-2">
-                        <InstitutionalTooltip title="Available Capacity" content="Free Liquid Capacity. The amount of USDC available to underwrite additional new protection policies.">
+                        <InstitutionalTooltip title="Available Capacity" content="Free Liquid Capacity. The amount of USDT available to underwrite additional new protection policies.">
                             <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1.5 cursor-help">
                                 Available Capacity
                                 <Info className="w-3 h-3 opacity-40" />
@@ -161,7 +161,7 @@ export default function AnalyticsPage() {
                     </div>
                     <div className="text-2xl font-bold text-foreground">${(liveTVL - livePayouts) > 0 ? (liveTVL - livePayouts).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '0.00'}</div>
                     <div className="flex items-center gap-1 mt-1">
-                        <span className="text-xs text-muted-foreground">USDC available for new policies</span>
+                        <span className="text-xs text-muted-foreground">USDT available for new policies</span>
                     </div>
                 </div>
             </div>
@@ -193,7 +193,7 @@ export default function AnalyticsPage() {
                     </ResponsiveContainer>
                     {liveTVL === 0 && (
                         <div className="text-center py-4">
-                            <p className="text-xs text-muted-foreground">No pool data — deposit USDC to begin underwriting</p>
+                            <p className="text-xs text-muted-foreground">No pool data — deposit USDT to begin underwriting</p>
                         </div>
                     )}
                 </div>

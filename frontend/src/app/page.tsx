@@ -143,7 +143,7 @@ export default function Home() {
             <div className="glass-group">
               <div className="glass-panel" data-text="1. Lock Premium" style={{ '--r': '-15' } as React.CSSProperties}>
                 <span className="material-symbols-outlined">lock</span>
-                <p className="text-foreground text-sm px-6 text-center leading-relaxed font-light mt-4 mb-6">Smart contract escrows your $5 USDC instantly in a secure vault.</p>
+                <p className="text-foreground text-sm px-6 text-center leading-relaxed font-light mt-4 mb-6">Smart contract escrows your $5 USDT instantly in a secure vault.</p>
               </div>
               <div className="glass-panel" data-text="2. Verification" style={{ '--r': '5' } as React.CSSProperties}>
                 <span className="material-symbols-outlined text-neon-cyan drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]">link</span>
@@ -194,7 +194,7 @@ export default function Home() {
                         <span className="material-symbols-outlined text-[16px]">payments</span>
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-foreground">Payout: 50 USDC</span>
+                        <span className="text-sm font-medium text-foreground">Payout: 50 USDT</span>
                         <span className="text-xs text-slate-500">Flight UA928 • 2m ago</span>
                       </div>
                     </div>

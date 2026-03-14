@@ -100,7 +100,7 @@ export default function DocsPage() {
                                         { icon: "shopping_cart_checkout", color: "neon-cyan", title: "1. Precision Purchase", desc: "Select a target (Flight BA205, Port of Rotterdam) and define risk parameters. Premiums are calculated from historical volatility and pool utilization." },
                                         { icon: "security", color: "purple-400", title: "2. Subnet Escrow", desc: "Premium commits to the ReflexLiquidityPool. Full Max Payout is locked from the shared treasury for the entire index period." },
                                         { icon: "satellite_alt", color: "primary", title: "3. Oracle Monitoring", desc: "Relayer + Chainlink DONs monitor active targets. If an event breaches the strike threshold, a consensus verification payload is pushed to L1." },
-                                        { icon: "payments", color: "emerald-400", title: "4. Atomic Settlement", desc: "No manual claim button. The contract triggers USDC release to the policyholder's wallet the moment consensus is confirmed." },
+                                        { icon: "payments", color: "emerald-400", title: "4. Atomic Settlement", desc: "No manual claim button. The contract triggers USDT release to the policyholder's wallet the moment consensus is confirmed." },
                                     ].map((step) => (
                                         <div key={step.title} className="glass-panel p-6 rounded-xl space-y-3 transition-transform hover:scale-[1.02]">
                                             <div className={`w-10 h-10 rounded-lg bg-${step.color}/10 flex items-center justify-center text-${step.color}`}>
@@ -122,7 +122,7 @@ export default function DocsPage() {
                             </h2>
                             <div className="glass-panel p-8 rounded-2xl space-y-10">
                                 <p className="text-foreground font-light leading-relaxed">
-                                    Liquidity Providers (LPs) act as the protocol&apos;s underwriters. By depositing USDC, they provide collateral to back Max Payouts and earn multifaceted yield.
+                                    Liquidity Providers (LPs) act as the protocol&apos;s underwriters. By depositing USDT, they provide collateral to back Max Payouts and earn multifaceted yield.
                                 </p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10 border-t border-white/5 pt-10">
                                     <div className="space-y-5">
@@ -132,7 +132,7 @@ export default function DocsPage() {
                                         </h4>
                                         {[
                                             { n: "01", title: "Premium Underwriting", desc: "97% of premiums (after 3% origination fee) flow to the LP pool as profit upon policy expiration." },
-                                            { n: "02", title: "Aave v3 Yield", desc: "Idle USDC is routed to Aave for base lending interest, compounded block-by-block." },
+                                            { n: "02", title: "Aave v3 Yield", desc: "Idle USDT is routed to Aave for base lending interest, compounded block-by-block." },
                                             { n: "03", title: "Protocol Incentives", desc: "Future native token emissions for long-term LPs to bootstrap deep liquidity." },
                                         ].map((item) => (
                                             <div key={item.n} className="flex gap-3 items-start">
@@ -248,7 +248,7 @@ export default function DocsPage() {
                                         <h3 className="text-xl font-bold text-foreground">Aave V3 Yield Optimization</h3>
                                     </div>
                                     <p className="text-slate-400 font-light leading-relaxed text-sm">
-                                        Reflex Liquidity Pools are deeply integrated with <strong>Aave V3</strong>. Idle USDC in the pools is automatically routed to Aave's lending markets, ensuring that liquidity providers earn base yield on their capital in addition to parametric insurance premiums.
+                                        Reflex Liquidity Pools are deeply integrated with <strong>Aave V3</strong>. Idle USDT in the pools is automatically routed to Aave's lending markets, ensuring that liquidity providers earn base yield on their capital in addition to parametric insurance premiums.
                                     </p>
                                 </div>
                             </div>
@@ -400,7 +400,7 @@ export default function DocsPage() {
                             </h2>
                             <div className="glass-panel p-8 rounded-2xl space-y-6">
                                 <p className="text-foreground font-light leading-relaxed">
-                                    LP shares follow an <strong>ERC-4626-style vault model</strong>. Shares represent a proportional claim on the pool&apos;s total assets (local USDC + Aave aUSDC balance).
+                                    LP shares follow an <strong>ERC-4626-style vault model</strong>. Shares represent a proportional claim on the pool&apos;s total assets (local USDT + Aave aUSDT balance).
                                 </p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="p-5 bg-black/40 rounded-xl border border-purple-500/20 space-y-2">
@@ -412,7 +412,7 @@ export default function DocsPage() {
                                     <div className="p-5 bg-black/40 rounded-xl border border-purple-500/20 space-y-2">
                                         <h4 className="text-purple-400 font-bold text-sm">Withdraw (Burn Shares)</h4>
                                         <div className="font-mono text-[11px] text-purple-300">
-                                            {`withdraw = (shares × totalAssets) / totalShares;\n// Proportional claim on USDC + aUSDC\n// No withdrawal cooldown currently`}
+                                            {`withdraw = (shares × totalAssets) / totalShares;\n// Proportional claim on USDT + aUSDT\n// No withdrawal cooldown currently`}
                                         </div>
                                     </div>
                                 </div>
@@ -492,7 +492,7 @@ export default function DocsPage() {
                                     <div className="p-5 bg-emerald-500/5 border border-emerald-500/10 rounded-xl text-center space-y-2">
                                         <div className="text-3xl font-black text-emerald-400">1</div>
                                         <p className="text-xs text-foreground font-bold">Claimed</p>
-                                        <p className="text-[10px] text-slate-500">Event breached threshold. USDC payout was released to the policyholder.</p>
+                                        <p className="text-[10px] text-slate-500">Event breached threshold. USDT payout was released to the policyholder.</p>
                                     </div>
                                     <div className="p-5 bg-slate-500/5 border border-slate-500/10 rounded-xl text-center space-y-2">
                                         <div className="text-3xl font-black text-slate-400">2</div>
@@ -560,7 +560,7 @@ export default function DocsPage() {
                                                 desc: "A central administrative registry for all protocol products. Handles official authorization of new risk products and enforces access control for pool capital."
                                             },
                                             { 
-                                                name: "USDC (Testnet Mock)", 
+                                                name: "USDT (Testnet Mock)", 
                                                 addr: "0x5425890298aed601595a70AB815c96711a31Bc65",
                                                 desc: "The primary settlement currency for the Reflex protocol on Fuji. Used for policy purchases, liquidity provision, and claim payouts."
                                             },
@@ -683,7 +683,7 @@ export default function DocsPage() {
                                         { term: "HDD / CDD", def: "Heating / Cooling Degree Days — measures of temperature deviation from 18.3°C base." },
                                         { term: "BPS", def: "Basis Points — 1 BPS = 0.01%. Used for fee and margin calculations." },
                                         { term: "EIP-712", def: "Ethereum typed structured data signing standard used for quote verification." },
-                                        { term: "aUSDC", def: "Aave v3 interest-bearing USDC token received when USDC is supplied to Aave." },
+                                        { term: "aUSDT", def: "Aave v3 interest-bearing USDT token received when USDT is supplied to Aave." },
                                         { term: "Keepers", def: "Chainlink Automation nodes that trigger policy expiration when timestamps pass." },
                                         { term: "totalMaxPayouts", def: "Sum of all maximum possible payouts across active policies." },
                                         { term: "Solvency Invariant", def: "totalAssets() ≥ totalMaxPayouts must hold at all times." },

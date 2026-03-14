@@ -257,9 +257,9 @@ export default function ProductMarketPage({ params }: { params: { product: strin
     const { writeContract: purchasePolicy, data: hash, isPending: isTxPending, error: purchaseError } = useWriteContract();
     const { isLoading: isConfirming, isSuccess: isPurchaseSuccess } = useWaitForTransactionReceipt({ hash });
 
-    // USDC Allowance Check
+    // USDT Allowance Check
     const { data: allowance, refetch: refetchAllowance } = useReadContract({
-        address: CONTRACTS.USDC as `0x${string}`,
+        address: CONTRACTS.USDT as `0x${string}`,
         abi: ERC20_ABI,
         functionName: "allowance",
         args: [address as `0x${string}`, targetContractAddress as `0x${string}`],
@@ -267,12 +267,12 @@ export default function ProductMarketPage({ params }: { params: { product: strin
         chainId: 43113
     });
 
-    const { writeContract: approveUSDC, isPending: isApprovePending, data: approveHash } = useWriteContract();
+    const { writeContract: approveUSDT, isPending: isApprovePending, data: approveHash } = useWriteContract();
     const { isLoading: isConfirmingApprove, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({ hash: approveHash });
 
     useEffect(() => {
         if (isApproveSuccess) {
-            toast.success("USDC Approved!");
+            toast.success("USDT Approved!");
             refetchAllowance();
         }
     }, [isApproveSuccess, refetchAllowance]);
@@ -298,9 +298,9 @@ export default function ProductMarketPage({ params }: { params: { product: strin
         }
 
         if (needsApproval) {
-            console.log("Requesting USDC Approval for:", targetContractAddress);
-            approveUSDC({
-                address: CONTRACTS.USDC as `0x${string}`,
+            console.log("Requesting USDT Approval for:", targetContractAddress);
+            approveUSDT({
+                address: CONTRACTS.USDT as `0x${string}`,
                 abi: ERC20_ABI,
                 functionName: "approve",
                 args: [targetContractAddress as `0x${string}`, premiumQuote as bigint]
@@ -575,7 +575,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                                 )}
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex justify-between">Requested Max Payout (USDC)</label>
+                                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex justify-between">Requested Max Payout (USDT)</label>
                                     <input type="number" value={payoutInput} onChange={e => setPayoutInput(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xl font-bold text-foreground focus:border-primary outline-none" />
                                 </div>
 
@@ -741,7 +741,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                                 ) : (product.id === 'flight' && !flightInsurable) ? null : premiumQuote ? (
                                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                         <div className="text-center">
-                                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Required Premium (USDC)</p>
+                                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Required Premium (USDT)</p>
                                             <span className="text-6xl font-black text-foreground">${(Number(premiumQuote) / 1e6).toFixed(2)}</span>
                                         </div>
 
@@ -871,7 +871,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                                 >
                                     {(isConfirming || isTxPending || isConfirmingApprove || isApprovePending) ? <><RefreshCcw className="w-4 h-4 animate-spin" /> {isApprovePending || isConfirmingApprove ? "Approving..." : "Confirming..."}</> :
                                         (product.id === 'flight' && !flightInsurable) ? <>Flight Not Insurable</> :
-                                            needsApproval ? <><CheckCircle2 className="w-4 h-4" /> Approve USDC for Policy</> :
+                                            needsApproval ? <><CheckCircle2 className="w-4 h-4" /> Approve USDT for Policy</> :
                                                 <><CheckCircle2 className="w-4 h-4" /> Finalize Policy (Wagmi Optimized)</>}
                                 </button>
                             </div>

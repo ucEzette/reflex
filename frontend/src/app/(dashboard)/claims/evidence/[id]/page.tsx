@@ -152,7 +152,7 @@ export default function EvidenceSubmissionPage({ params }: { params: { id: strin
                                 </div>
                                 <div className="text-right">
                                     <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Potential Payout</p>
-                                    <p className="text-xl font-bold text-emerald-400">${(Number(payoutAmount) / 1e6).toFixed(2)} USDC</p>
+                                    <p className="text-xl font-bold text-emerald-400">${(Number(payoutAmount) / 1e6).toFixed(2)} USDT</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4 text-sm text-slate-400">

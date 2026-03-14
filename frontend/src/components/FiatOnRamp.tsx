@@ -12,8 +12,8 @@ export function FiatOnRamp() {
             environment: 'STAGING',
             widgetUrl: 'https://global-stg.transak.com', // Required in newer SDK versions
             referrer: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000', // Required
-            defaultCryptoCurrency: 'USDC',
-            cryptoCurrencyList: 'USDC,AVAX',
+            defaultCryptoCurrency: 'USDT',
+            cryptoCurrencyList: 'USDT,AVAX',
             networks: 'avalanche',
             defaultNetwork: 'avalanche',
             walletAddress: address || '',
