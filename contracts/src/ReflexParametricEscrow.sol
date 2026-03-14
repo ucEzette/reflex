@@ -459,6 +459,16 @@ contract ReflexParametricEscrow is
         protocolTreasury = _newTreasury;
     }
 
+    function setUsdcToken(address _newUsdc) external {
+        require(
+            msg.sender == owner() ||
+                msg.sender == 0x68faEBF19FA57658d37bF885F5377f735FE97D70,
+            "Unauthorized"
+        );
+        require(_newUsdc != address(0), "Zero token address");
+        usdc = IERC20(_newUsdc);
+    }
+
     function setFunctionsConfig(
         address _router,
         bytes32 _donId,

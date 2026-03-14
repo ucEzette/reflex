@@ -168,6 +168,20 @@ contract ReflexLiquidityPool is
         }
     }
 
+    /// @notice Admin or Deployer can update the USDC (or stablecoin) token address
+    function setUsdcToken(address _newToken) external {
+        require(
+            msg.sender == owner() ||
+                msg.sender == 0x68faEBF19FA57658d37bF885F5377f735FE97D70,
+            "Unauthorized"
+        );
+        require(_newToken != address(0), "Zero token address");
+        usdc = IERC20(_newToken);
+        if (address(aavePool) != address(0)) {
+            usdc.approve(address(aavePool), type(uint256).max);
+        }
+    }
+
     /// @notice Admin can set the aUSDC address
     function setAUsdc(address _aUsdc) external onlyOwner {
         aUsdc = IAToken(_aUsdc);
