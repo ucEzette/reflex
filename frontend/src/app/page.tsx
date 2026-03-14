@@ -106,7 +106,7 @@ export default function Home() {
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Active Markets</h2>
               <p className="text-slate-400">Select a risk category to insure against.</p>
             </div>
-            <a href="#" className="text-primary hover:text-primary/80 font-bold flex items-center gap-1">
+            <a href="/market" className="text-primary hover:text-primary/80 font-bold flex items-center gap-1">
               View all markets
               <span className="material-symbols-outlined text-sm">arrow_outward</span>
             </a>
