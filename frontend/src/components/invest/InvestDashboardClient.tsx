@@ -8,12 +8,12 @@ import { LIQUIDITY_POOL_ABI, ERC20_ABI } from '@/lib/enterprise_abis';
 import { parseUnits, formatUnits } from 'viem';
 import { toast } from 'sonner';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { cn } from '@/lib/utils';
+import { Trophy, Users, Activity, Shield, TrendingUp, Award, RefreshCcw, ArrowUpRight, ArrowDownLeft, DollarSign, Clock, AlertCircle, CheckCircle2, Layers, X, Sparkles, Landmark, PiggyBank, Wallet, ChevronDown, ChevronUp, BookOpen, Bot } from 'lucide-react';
 
 const FUJI_START_BLOCK = BigInt(52515483);
 const MAX_BLOCKS_PER_QUERY = 2000;
 const MAX_TOTAL_BLOCKS = 500000;
-import { cn } from '@/lib/utils';
-import { Trophy, Users, Activity, Shield, TrendingUp, Award, RefreshCcw, ArrowUpRight, ArrowDownLeft, DollarSign, Clock, AlertCircle, CheckCircle2, Layers, X, Sparkles, Landmark, PiggyBank, Wallet, ChevronDown, ChevronUp, BookOpen, Bot } from 'lucide-react';
 import { InstitutionalTooltip } from '@/components/ui/InstitutionalTooltip';
 
 const performanceData = [
@@ -41,8 +41,8 @@ const INVEST_GUIDE_STEPS = [
     {
         number: 2,
         icon: PiggyBank,
-        title: 'Deposit USDC',
-        description: 'Approve and deposit USDC into the pool. Your liquidity is deployed to Aave V3 and used to collateralize parametric insurance policies.',
+        title: 'Deposit USDT',
+        description: 'Approve and deposit USDT into the pool. Your liquidity is deployed to Aave V3 and used to collateralize parametric insurance policies.',
         accent: 'text-violet-400',
         bg: 'bg-violet-500/10',
         border: 'border-violet-500/20',
@@ -60,7 +60,7 @@ const INVEST_GUIDE_STEPS = [
         number: 4,
         icon: Wallet,
         title: 'Withdraw Anytime',
-        description: 'Redeem your LP shares for USDC instantly, or schedule a future withdrawal to help the protocol manage capital buffers.',
+        description: 'Redeem your LP shares for USDT instantly, or schedule a future withdrawal to help the protocol manage capital buffers.',
         accent: 'text-amber-400',
         bg: 'bg-amber-500/10',
         border: 'border-amber-500/20',
@@ -90,6 +90,7 @@ export function InvestDashboardClient() {
     const [isApproving, setIsApproving] = useState(false);
     const [isMinting, setIsMinting] = useState(false);
     const [isTxPending, setIsTxPending] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     // Guide state
     const [showInvestGuide, setShowInvestGuide] = useState(false);
@@ -110,6 +111,19 @@ export function InvestDashboardClient() {
             localStorage.setItem("invest_history", JSON.stringify(history));
         }
     }, [history, mounted]);
+
+    const updateHistory = useCallback((newEntries: any[]) => {
+        setHistory(prev => {
+            const existingIds = new Set(prev.map(i => i.id));
+            // Ensure we handle entries with potentially different id formats (manual vs event)
+            const filtered = newEntries.filter(i => {
+                const isDuplicate = existingIds.has(i.id) || existingIds.has(`${i.hash}-0`) || existingIds.has(i.hash);
+                return !isDuplicate;
+            });
+            if (filtered.length === 0) return prev;
+            return [...filtered, ...prev].slice(0, 50);
+        });
+    }, []);
     const getLogsInChunks = async (pc: any, params: any) => {
         if (!pc) return [];
         try {
@@ -244,8 +258,8 @@ export function InvestDashboardClient() {
         }
     }, [address, chainId, mounted, syncProtocolData]);
 
-    const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
-        address: CONTRACTS.USDC as `0x${string}`,
+    const { data: usdtBalance, refetch: refetchBalance } = useReadContract({
+        address: CONTRACTS.USDT as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'balanceOf',
         args: address ? [address] : undefined,
@@ -256,8 +270,8 @@ export function InvestDashboardClient() {
         chainId: 43113
     });
 
-    const { data: usdcAllowance, refetch: refetchAllowance } = useReadContract({
-        address: CONTRACTS.USDC as `0x${string}`,
+    const { data: usdtAllowance, refetch: refetchAllowance } = useReadContract({
+        address: CONTRACTS.USDT as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'allowance',
         args: address ? [address, selectedPool.address as `0x${string}`] : undefined,
@@ -289,14 +303,14 @@ export function InvestDashboardClient() {
 
     // Robust approval check
     const needsApproval = useMemo(() => {
-        if (actionType !== "deposit" || !amount || usdcAllowance === undefined) return false;
+        if (actionType !== "deposit" || !amount || usdtAllowance === undefined) return false;
         try {
             const val = parseUnits(amount, 6);
-            return val > (usdcAllowance as bigint);
+            return val > (usdtAllowance as bigint);
         } catch (e) {
             return false;
         }
-    }, [actionType, amount, usdcAllowance]);
+    }, [actionType, amount, usdtAllowance]);
 
     // Pre-simulate approval to catch reverts early
     const depositAmountBigInt = useMemo(() => {
@@ -308,7 +322,7 @@ export function InvestDashboardClient() {
     }, [amount]);
 
     const { data: simulateApprove, error: simulateApproveError } = useSimulateContract({
-        address: CONTRACTS.USDC as `0x${string}`,
+        address: CONTRACTS.USDT as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [selectedPool.address as `0x${string}`, depositAmountBigInt],
@@ -323,13 +337,15 @@ export function InvestDashboardClient() {
             toast.loading("Confirming transaction...", { id: "tx" });
         } else if (isTxSuccess) {
             if (isApproving) {
-                toast.success("USDC Approved!", { id: "tx" });
+                toast.success("USDT Approved! You can now initiate your deposit.", { id: "tx" });
                 setIsApproving(false);
                 setIsSubmitting(false);
                 refetchAllowance();
-                // We keep amount so user can deposit immediately
+                // Crucially we do NOT setAmount("") here, so user can press Deposit immediately
             } else {
                 toast.success(`${actionType === 'deposit' ? 'Deposit' : 'Withdrawal'} successful!`, { id: "tx" });
+                setShowSuccess(true);
+                setTimeout(() => setShowSuccess(false), 5000);
 
                 // Add to history explicitly on success
                 const newEntry = {
@@ -339,7 +355,7 @@ export function InvestDashboardClient() {
                     timestamp: Date.now(),
                     hash: hash
                 };
-                setHistory(prev => [newEntry, ...prev].slice(0, 50));
+                updateHistory([newEntry]);
 
                 setAmount("");
                 refetchAssets();
@@ -358,7 +374,7 @@ export function InvestDashboardClient() {
             setIsApproving(false);
             setIsSubmitting(false);
         }
-    }, [isTxConfirming, isTxSuccess, confirmError, isApproving, actionType, refetchAllowance, refetchAssets, refetchTotalShares, refetchPayouts, syncProtocolData, refetchBalance, refetchIntentAmount, refetchIntentTimestamp]);
+    }, [isTxConfirming, isTxSuccess, confirmError, isApproving, actionType, refetchAllowance, refetchAssets, refetchTotalShares, refetchPayouts, syncProtocolData, refetchBalance, refetchIntentAmount, refetchIntentTimestamp, hash, amount, updateHistory]);
 
     useEffect(() => {
         if (writeError) {
@@ -384,8 +400,8 @@ export function InvestDashboardClient() {
         const value = parseUnits(amount, 6);
 
         // Pre-flight balance check
-        if (actionType === "deposit" && usdcBalance !== undefined && value > (usdcBalance as bigint)) {
-            return toast.error(`Insufficient USDC balance.`);
+        if (actionType === "deposit" && usdtBalance !== undefined && value > (usdtBalance as bigint)) {
+            return toast.error(`Insufficient USDT balance.`);
         }
 
         try {
@@ -399,12 +415,12 @@ export function InvestDashboardClient() {
             if (actionType === "deposit") {
                 if (needsApproval) {
                     setIsApproving(true);
-                    console.log("Invest Page: Requesting USDC Approval", {
+                    console.log("Invest Page: Requesting USDT Approval", {
                         spender: selectedPool.address,
                         amount: value.toString(),
-                        token: CONTRACTS.USDC
+                        token: CONTRACTS.USDT
                     });
-                    toast.loading("Requesting USDC Approval...", { id: "tx" });
+                    toast.loading("Requesting USDT Approval...", { id: "tx" });
 
                     const executeApprove = (isReset = false) => {
                         const approveValue = isReset ? BigInt(0) : value;
@@ -414,7 +430,7 @@ export function InvestDashboardClient() {
                         });
 
                         writeContract({
-                            address: CONTRACTS.USDC as `0x${string}`,
+                            address: CONTRACTS.USDT as `0x${string}`,
                             abi: ERC20_ABI,
                             functionName: 'approve',
                             args: [selectedPool.address as `0x${string}`, approveValue],
@@ -423,8 +439,8 @@ export function InvestDashboardClient() {
                         }, {
                             onError: (error: any) => {
                                 console.error("Invest Page: Transaction Error", error);
-                                // If it reverted, maybe it needs a reset (USDC race condition protection)
-                                toast.error("Approval failed. Some USDC contracts require a 0-allowance reset first.", {
+                                // If it reverted, maybe it needs a reset (USDT race condition protection)
+                                toast.error("Approval failed. Some USDT contracts require a 0-allowance reset first.", {
                                     id: "tx",
                                     action: {
                                         label: "Reset to 0",
@@ -495,7 +511,7 @@ export function InvestDashboardClient() {
         if (!address) return;
         setIsMinting(true);
         writeContract({
-            address: CONTRACTS.USDC,
+            address: CONTRACTS.USDT,
             abi: ERC20_ABI,
             functionName: 'mint',
             args: [address, parseUnits("1000", 6)],
@@ -511,13 +527,13 @@ export function InvestDashboardClient() {
         onLogs: (logs) => {
             const userLogs = logs.filter(l => (l.args as any).provider?.toLowerCase() === address?.toLowerCase());
             if (userLogs.length > 0) {
-                setHistory(prev => [...userLogs.map(l => ({
-                    id: l.transactionHash,
+                updateHistory(userLogs.map(l => ({
+                    id: `${l.transactionHash}-${l.logIndex}`,
                     type: 'deposit',
                     amount: formatUnits(((l.args as any).amount || BigInt(0)) as bigint, 6),
                     timestamp: Date.now(),
                     hash: l.transactionHash
-                })), ...prev].slice(0, 50));
+                })));
             }
         },
     });
@@ -529,13 +545,13 @@ export function InvestDashboardClient() {
         onLogs: (logs) => {
             const userLogs = logs.filter(l => (l.args as any).provider?.toLowerCase() === address?.toLowerCase());
             if (userLogs.length > 0) {
-                setHistory(prev => [...userLogs.map(l => ({
-                    id: l.transactionHash,
+                updateHistory(userLogs.map(l => ({
+                    id: `${l.transactionHash}-${l.logIndex}`,
                     type: 'withdraw',
                     amount: formatUnits(((l.args as any).amount || BigInt(0)) as bigint, 6),
                     timestamp: Date.now(),
                     hash: l.transactionHash
-                })), ...prev].slice(0, 50));
+                })));
             }
         },
     });
@@ -634,7 +650,7 @@ export function InvestDashboardClient() {
     }, [address, mounted]);
 
     const globalUtilization = totalAssets && totalMaxPayouts ? (Number(totalMaxPayouts) * 100) / Number(totalAssets) : 0;
-    const formattedBalance = usdcBalance ? formatUnits(usdcBalance as bigint, 6) : "0";
+    const formattedBalance = usdtBalance ? formatUnits(usdtBalance as bigint, 6) : "0";
 
     if (!mounted) return null;
 
@@ -645,12 +661,12 @@ export function InvestDashboardClient() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-black text-foreground">Underwriting Terminal</h1>
-                    <p className="text-sm text-zinc-400 mt-1">Provide USDC liquidity to back 100% collateralized institutional risk.</p>
+                    <p className="text-sm text-zinc-400 mt-1">Provide USDT liquidity to back 100% collateralized institutional risk.</p>
                 </div>
                 <div className="flex items-center gap-6">
                     <div className="text-right">
                         <p className="text-[10px] text-zinc-500 uppercase font-bold">Your Liquidity Position</p>
-                        <p className="text-xl font-black text-foreground">{userLiquidityValue ? formatUnits(userLiquidityValue, 6) : "0.00"} USDC</p>
+                        <p className="text-xl font-black text-foreground">{userLiquidityValue ? formatUnits(userLiquidityValue, 6) : "0.00"} USDT</p>
                     </div>
                     <div className="h-10 w-px bg-white/10" />
                 </div>
@@ -833,7 +849,7 @@ export function InvestDashboardClient() {
                             <div className="flex flex-wrap gap-4">
                                 <div className="flex items-center gap-2">
                                     <div className="w-2.5 h-2.5 rounded-full bg-primary" />
-                                    <span className="text-[9px] text-zinc-500 uppercase font-black">TVL (USDC M)</span>
+                                    <span className="text-[9px] text-zinc-500 uppercase font-black">TVL (USDT M)</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
@@ -930,7 +946,7 @@ export function InvestDashboardClient() {
                                                     </span>
                                                 </td>
                                                 <td className="py-4 text-foreground font-mono font-bold">
-                                                    {Number(item.amount).toLocaleString()} USDC
+                                                    {Number(item.amount).toLocaleString()} USDT
                                                 </td>
                                                 <td className="py-4 text-right">
                                                     <a
@@ -991,7 +1007,7 @@ export function InvestDashboardClient() {
 
                             <div className="space-y-3 relative">
                                 <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex justify-between items-center">
-                                    Liquidity Amount (USDC)
+                                    Liquidity Amount (USDT)
                                     <div className="flex items-center gap-2">
                                         <span className="text-primary font-black opacity-60">BAL: {Number(formattedBalance).toLocaleString()}</span>
                                         <button onClick={() => refetchBalance()} className="p-1 hover:bg-white/5 rounded-md transition-colors">
@@ -1020,7 +1036,7 @@ export function InvestDashboardClient() {
                                         className="w-full py-3 bg-primary/5 border border-primary/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/10 transition-all flex items-center justify-center gap-2"
                                     >
                                         {isMinting ? <RefreshCcw className="w-3 h-3 animate-spin" /> : <DollarSign className="w-3 h-3" />}
-                                        Get Test USDC (Faucet)
+                                        Get Test USDT (Faucet)
                                     </button>
                                 )}
                                 {actionType === "withdraw" && (
@@ -1072,18 +1088,18 @@ export function InvestDashboardClient() {
                                 onClick={handleTransaction}
                                 disabled={isSubmitting || isTxPending}
                                 className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-sm transition-all duration-500 relative flex items-center justify-center gap-2
-                                    ${isTxSuccess ? 'bg-emerald-500 text-black shadow-[0_0_30px_rgba(16,185,129,0.4)]' :
+                                    ${showSuccess ? 'bg-emerald-500 text-black shadow-[0_0_30px_rgba(16,185,129,0.4)]' :
                                         (isSubmitting || isTxPending) ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-white/5' :
                                             'bg-primary hover:bg-primary/90 text-white shadow-[0_10px_20px_rgba(128,0,32,0.3)]'}
                                     disabled:opacity-50`}
                             >
                                 {isTxPending ? <RefreshCcw className="w-4 h-4 animate-spin" /> :
                                     isSubmitting ? (isApproving ? 'Approving...' : 'Confirming...') :
-                                        (isTxSuccess && !isApproving && !amount) ? <><CheckCircle2 className="w-5 h-5" /> SUCCEEDED</> :
+                                        (showSuccess) ? <><CheckCircle2 className="w-5 h-5" /> SUCCEEDED</> :
                                             !isConnected ? <><Layers className="w-4 h-4" /> CONNECT WALLET</> :
                                                 chainId !== TARGET_CHAIN_ID ? <><Activity className="w-4 h-4" /> SWITCH TO FUJI</> : // Explicit CTA for network
                                                     !amount ? <><DollarSign className="w-4 h-4" /> ENTER AMOUNT</> :
-                                                        (actionType === 'deposit' ? (needsApproval ? 'APPROVE USDC' : 'INITIATE DEPOSIT') : 'REQUEST WITHDRAWAL')}
+                                                        (actionType === 'deposit' ? (needsApproval ? 'APPROVE USDT' : 'INITIATE DEPOSIT') : 'REQUEST WITHDRAWAL')}
                             </button>
                         </div>
 

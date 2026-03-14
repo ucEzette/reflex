@@ -8,7 +8,7 @@ import { parseUnits } from "viem";
 
 interface CrossChainCheckoutProps {
     marketId: string;
-    premiumUsdc: number;
+    premiumUsdt: number;
     targetIdentifier: string;
     onSuccess: () => void;
 }
@@ -19,7 +19,7 @@ const SUPPORTED_CHAINS = [
     { id: 84532, name: "Base Sepolia", selector: CCIP_CONFIG.DESTINATION_CHAIN_SELECTOR },
 ];
 
-export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, onSuccess }: CrossChainCheckoutProps) {
+export function CrossChainCheckout({ marketId, premiumUsdt, targetIdentifier, onSuccess }: CrossChainCheckoutProps) {
     const { address, isConnected } = useAccount();
     const chainId = useChainId();
     const { switchChain } = useSwitchChain();
@@ -28,9 +28,9 @@ export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, on
 
     const routerAddress = CCIP_CONFIG.ROUTERS[chainId.toString() as keyof typeof CCIP_CONFIG.ROUTERS];
 
-    // 1. Check USDC Balance on current chain
-    const { data: usdcBalance } = useReadContract({
-        address: CONTRACTS.USDC as `0x${string}`,
+    // 1. Check USDT Balance on current chain
+    const { data: usdtBalance } = useReadContract({
+        address: CONTRACTS.USDT as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'balanceOf',
         args: address ? [address as `0x${string}`] : undefined,
@@ -39,7 +39,7 @@ export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, on
 
     // 2. Check Allowance for CCIP Router
     const { data: allowance, refetch: refetchAllowance } = useReadContract({
-        address: CONTRACTS.USDC as `0x${string}`,
+        address: CONTRACTS.USDT as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'allowance',
         args: address && routerAddress ? [address as `0x${string}`, routerAddress as `0x${string}`] : undefined,
@@ -56,7 +56,7 @@ export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, on
             {
                 receiver: CONTRACTS.CROSS_CHAIN_RECEIVER as `0x${string}`,
                 data: "0x" as `0x${string}`, // Standard deposit
-                tokenAmounts: [{ token: CONTRACTS.USDC as `0x${string}`, amount: BigInt(premiumUsdc) }],
+                tokenAmounts: [{ token: CONTRACTS.USDT as `0x${string}`, amount: BigInt(premiumUsdt) }],
                 feeToken: "0x0000000000000000000000000000000000000000" as `0x${string}`, // Native gas
                 extraArgs: "0x" as `0x${string}`
             }
@@ -70,8 +70,8 @@ export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, on
     const [isInternalProcessing, setIsInternalProcessing] = useState(false);
     const isProcessing = isTxPending || isInternalProcessing;
 
-    const hasEnoughAllowance = allowance ? (BigInt(allowance.toString()) >= BigInt(premiumUsdc)) : false;
-    const hasEnoughBalance = usdcBalance ? (BigInt(usdcBalance.toString()) >= BigInt(premiumUsdc)) : false;
+    const hasEnoughAllowance = allowance ? (BigInt(allowance.toString()) >= BigInt(premiumUsdt)) : false;
+    const hasEnoughBalance = usdtBalance ? (BigInt(usdtBalance.toString()) >= BigInt(premiumUsdt)) : false;
 
     useEffect(() => {
         if (isTxSuccess) {
@@ -99,7 +99,7 @@ export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, on
                 {
                     receiver: CONTRACTS.CROSS_CHAIN_RECEIVER as `0x${string}`,
                     data: "0x" as `0x${string}`, // Simple deposit variant
-                    tokenAmounts: [{ token: CONTRACTS.USDC as `0x${string}`, amount: BigInt(premiumUsdc) }],
+                    tokenAmounts: [{ token: CONTRACTS.USDT as `0x${string}`, amount: BigInt(premiumUsdt) }],
                     feeToken: "0x0000000000000000000000000000000000000000" as `0x${string}`,
                     extraArgs: "0x97a312010000000000000000000000000000000000000000000000000000000000030d40" as `0x${string}` // Evm2EvmMessageV1 with gas limit
                 }
@@ -113,10 +113,10 @@ export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, on
         setIsInternalProcessing(true);
 
         writeContract({
-            address: CONTRACTS.USDC as `0x${string}`,
+            address: CONTRACTS.USDT as `0x${string}`,
             abi: ERC20_ABI,
             functionName: 'approve',
-            args: [routerAddress as `0x${string}`, BigInt(premiumUsdc)],
+            args: [routerAddress as `0x${string}`, BigInt(premiumUsdt)],
         });
     };
 
@@ -154,7 +154,7 @@ export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, on
             <div className="space-y-2">
                 <div className="flex justify-between text-[11px]">
                     <span className="text-slate-500">Premium Amount</span>
-                    <span className="text-foreground font-mono">{(premiumUsdc / 1e6).toFixed(2)} USDC</span>
+                    <span className="text-foreground font-mono">{(premiumUsdt / 1e6).toFixed(2)} USDT</span>
                 </div>
                 <div className="flex justify-between text-[11px]">
                     <span className="text-slate-500">Estimated CCIP Fee</span>
@@ -163,7 +163,7 @@ export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, on
                 <div className="h-[1px] bg-white/5 w-full my-2" />
                 <div className="flex justify-between text-xs font-bold">
                     <span className="text-slate-400">Total Est. Cost</span>
-                    <span className="text-primary tracking-tight">{(premiumUsdc / 1e6).toFixed(2)} USDC + Fee</span>
+                    <span className="text-primary tracking-tight">{(premiumUsdt / 1e6).toFixed(2)} USDT + Fee</span>
                 </div>
             </div>
 
@@ -186,7 +186,7 @@ export function CrossChainCheckout({ marketId, premiumUsdc, targetIdentifier, on
                             ? "Insufficient Balance"
                             : hasEnoughAllowance
                                 ? "Pay via CCIP"
-                                : "Approve USDC for Bridge"}
+                                : "Approve USDT for Bridge"}
                 </button>
             )}
         </div>

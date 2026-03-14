@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import { Providers } from "@/components/Providers";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 import { VerletBackground } from "@/components/VerletBackground";
 import { Toaster } from "sonner";
 
@@ -56,18 +56,18 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-transparent text-slate-900 dark:text-slate-100 font-display selection:bg-primary selection:text-white overflow-x-hidden transition-colors duration-500">
-        <Providers>
-          <VerletBackground />
-          <div className="relative z-10 flex flex-col min-h-screen">
-            <Navbar />
-            <ErrorBoundary>
+        <GlobalErrorBoundary>
+          <Providers>
+            <VerletBackground />
+            <div className="relative z-10 flex flex-col min-h-screen">
+              <Navbar />
               <main className="flex-1">
                 {children}
               </main>
-            </ErrorBoundary>
-            <Footer />
-          </div>
-        </Providers>
+              <Footer />
+            </div>
+          </Providers>
+        </GlobalErrorBoundary>
         <Toaster position="bottom-right" theme="dark" />
       </body>
     </html>

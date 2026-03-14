@@ -95,11 +95,14 @@ export function Footer() {
 
                 {/* Bottom Bar */}
                 <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-zinc-500 font-black uppercase tracking-widest">
-                    <p>© 2026 Reflex Protocol. All rights reserved.</p>
+                    <div className="flex flex-col gap-1 text-center md:text-left">
+                        <p>© 2026 Reflex Protocol. All rights reserved.</p>
+                        <p className="text-[8px] opacity-40 font-mono tracking-tight">Autonomous Agent Monitoring via Tether WDK • Active</p>
+                    </div>
                     <div className="flex items-center gap-8">
-                        <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-                        <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-                        <a href="#" className="hover:text-white transition-colors">Cookie Policy</a>
+                        <a href="#" className="hover:text-white transition-colors text-[9px]">Terms of Service</a>
+                        <a href="#" className="hover:text-white transition-colors text-[9px]">Privacy Policy</a>
+                        <a href="#" className="hover:text-white transition-colors text-[9px]">Cookie Policy</a>
                     </div>
                 </div>
             </div>
