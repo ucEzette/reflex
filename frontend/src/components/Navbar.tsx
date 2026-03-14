@@ -209,6 +209,10 @@ export function Navbar() {
                                 <FileText className="w-4 h-4" />
                                 Docs
                             </Link>
+                            <Link href="/whitepaper" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                                <span className="material-symbols-outlined text-base">description</span>
+                                Whitepaper
+                            </Link>
                         </div>
 
                         <div className="flex items-center gap-3">
