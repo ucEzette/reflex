@@ -115,13 +115,13 @@ export function PolicyCard({ policyId, policyData, onActionSuccess, txHash }: Po
                 <div className="flex justify-between items-baseline">
                     <span className="text-sm text-slate-400">Coverage</span>
                     <span className="text-lg font-bold text-foreground tracking-tight">
-                        {formatUnits(payoutAmount, 6)} <span className="text-xs text-slate-500 font-medium">USDC</span>
+                        {formatUnits(payoutAmount, 6)} <span className="text-xs text-slate-500 font-medium">USDT</span>
                     </span>
                 </div>
                 <div className="flex justify-between items-baseline">
                     <span className="text-sm text-slate-400">Premium</span>
                     <span className="text-sm font-medium text-foreground">
-                        {formatUnits(premiumPaid, 6)} <span className="text-[10px] text-slate-500">USDC</span>
+                        {formatUnits(premiumPaid, 6)} <span className="text-[10px] text-slate-500">USDT</span>
                     </span>
                 </div>
             </div>

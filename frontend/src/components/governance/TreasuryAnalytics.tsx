@@ -19,7 +19,7 @@ const treasuryData = [
 
 const reserveAllocation = [
     { name: 'Claims Buffer', value: 4500000, color: '#800020' },
-    { name: 'Aave aUSDC', value: 8200000, color: '#22c55e' },
+    { name: 'Aave aUSDT', value: 8200000, color: '#22c55e' },
     { name: 'Protocol Treasury', value: 1200000, color: '#8b5cf6' },
     { name: 'Operational Fund', value: 300000, color: '#f59e0b' },
 ];
@@ -43,26 +43,26 @@ export function TreasuryAnalytics() {
         query: { enabled: mounted }
     });
 
-    const { data: usdcBalance } = useReadContract({
-        address: CONTRACTS.USDC as `0x${string}`,
+    const { data: usdtBalance } = useReadContract({
+        address: CONTRACTS.USDT as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'balanceOf',
         args: [CONTRACTS.LP_POOL as `0x${string}`],
         query: { enabled: mounted }
     });
 
-    // Note: aUSDC address might not be available in all test environments
-    // We'll derive it if totalAssets > usdcBalance
+    // Note: aUSDT address might not be available in all test environments
+    // We'll derive it if totalAssets > usdtBalance
     const liveTotalAssets = totalAssets ? Number(formatUnits(totalAssets as bigint, 6)) : 0;
-    const liveUsdcBalance = usdcBalance ? Number(formatUnits(usdcBalance as bigint, 6)) : 0;
-    const liveAaveBalance = Math.max(0, liveTotalAssets - liveUsdcBalance);
+    const liveUsdtBalance = usdtBalance ? Number(formatUnits(usdtBalance as bigint, 6)) : 0;
+    const liveAaveBalance = Math.max(0, liveTotalAssets - liveUsdtBalance);
     const liveProfit = totalAssets && totalShares && (totalAssets as bigint) > (totalShares as bigint)
         ? Number(formatUnits((totalAssets as bigint) - (totalShares as bigint), 6))
         : 0;
 
     const reserveAllocation = [
-        { name: 'Pure Liquidity (USDC)', value: liveUsdcBalance, color: '#800020' },
-        { name: 'Aave Yield (aUSDC)', value: liveAaveBalance, color: '#22c55e' },
+        { name: 'Pure Liquidity (USDT)', value: liveUsdtBalance, color: '#800020' },
+        { name: 'Aave Yield (aUSDT)', value: liveAaveBalance, color: '#22c55e' },
         { name: 'Accumulated Fees', value: (liveProfit * 0.1), color: '#8b5cf6' },
     ];
 
@@ -117,7 +117,7 @@ export function TreasuryAnalytics() {
 
                 <div className="bg-black/40 border border-white/5 rounded-2xl p-6 backdrop-blur-xl">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-slate-500 uppercase font-bold tracking-widest">Aave Yield (aUSDC)</span>
+                        <span className="text-xs text-slate-500 uppercase font-bold tracking-widest">Aave Yield (aUSDT)</span>
                         <TrendingUp className="w-4 h-4 text-purple-500" />
                     </div>
                     <div className="text-2xl font-bold text-foreground">${liveAaveBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
@@ -138,11 +138,11 @@ export function TreasuryAnalytics() {
                         <p className="text-sm text-zinc-400 max-w-sm">Historical trend analysis is currently being synchronized from the sub-graph. Real-time reserve distribution is available on the right.</p>
                         <div className="mt-8 flex gap-8">
                             <div>
-                                <p className="text-[10px] text-zinc-500 uppercase font-black">Local USDC</p>
-                                <p className="text-xl font-bold text-foreground">${liveUsdcBalance.toLocaleString()}</p>
+                                <p className="text-[10px] text-zinc-500 uppercase font-black">Local USDT</p>
+                                <p className="text-xl font-bold text-foreground">${liveUsdtBalance.toLocaleString()}</p>
                             </div>
                             <div>
-                                <p className="text-[10px] text-zinc-500 uppercase font-black">Aave aUSDC</p>
+                                <p className="text-[10px] text-zinc-500 uppercase font-black">Aave aUSDT</p>
                                 <p className="text-xl font-bold text-primary">${liveAaveBalance.toLocaleString()}</p>
                             </div>
                         </div>

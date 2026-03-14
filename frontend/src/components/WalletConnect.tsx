@@ -20,11 +20,20 @@ export function WalletConnect() {
 
     // Prompt user to switch to Fuji testnet if they are connected to another network
     useEffect(() => {
-        if (isConnected && chainId !== avalancheFuji.id) {
-            toast.warning(`Please switch to Avalanche Fuji`, {
-                description: "Reflex requires this network for parametric settlements.",
-            });
-            switchChain?.({ chainId: avalancheFuji.id });
+        if (isConnected && chainId && chainId !== avalancheFuji.id) {
+            const timer = setTimeout(() => {
+                try {
+                    toast.warning(`Please switch to Avalanche Fuji`, {
+                        description: "Reflex requires this network for parametric settlements.",
+                    });
+                    if (switchChain) {
+                        switchChain({ chainId: avalancheFuji.id });
+                    }
+                } catch (err) {
+                    console.error("Auto-switch chain failed:", err);
+                }
+            }, 500);
+            return () => clearTimeout(timer);
         }
     }, [isConnected, chainId, switchChain]);
 
@@ -45,7 +54,14 @@ export function WalletConnect() {
             <div className="flex items-center gap-3">
                 <div className="dexter-btn-container w-32 relative z-30">
                     <button
-                        onClick={() => disconnect()}
+                        onClick={() => {
+                            try {
+                                disconnect();
+                            } catch (err) {
+                                console.error("Disconnect failed:", err);
+                                toast.error("Failed to disconnect wallet");
+                            }
+                        }}
                         className="dexter-btn !min-w-[124px] !min-h-[36px] !px-3 !py-1.5" type="button"
                     >
                         <span className="dexter-btn-drawer dexter-transition-top flex items-center justify-center gap-1.5 !text-[9px] w-full left-0 right-0">
@@ -102,22 +118,26 @@ export function WalletConnect() {
                             <button
                                 key={connector.id}
                                 onClick={() => {
+                                    setIsOpen(false);
                                     try {
                                         connect({ connector }, {
                                             onError: (error) => {
                                                 console.error("Connection failed:", error);
-                                                toast.error(`Connection failed: ${error.message || 'Unknown error'}`);
+                                                // Check for "User rejected the request" or "Connector already connected"
+                                                if (error.message.includes("rejected") || error.name === "UserRejectedRequestError") {
+                                                    toast.error("Connection rejected by user");
+                                                } else {
+                                                    toast.error(`Connection failed: ${error.message || 'Unknown error'}`);
+                                                }
                                             },
                                             onSuccess: () => {
                                                 toast.success(`Connected with ${connector.name}`);
-                                                setIsOpen(false);
                                             }
                                         });
                                     } catch (err) {
-                                        console.error("Connect error:", err);
-                                        toast.error("Failed to initiate connection");
+                                        console.error("Connect error wrap:", err);
+                                        toast.error("Failed to initiate connection process");
                                     }
-                                    setIsOpen(false);
                                 }}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 group"
                             >

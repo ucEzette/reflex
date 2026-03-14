@@ -21,7 +21,7 @@ const MOCK_PROPOSALS: Proposal[] = [
     {
         id: 'RGP-042',
         title: 'Increase Catastrophe Proximity Capacity',
-        description: 'Proposal to increase the maximum coverage limit for Catastrophe markets from $5M to $10M USDC based on current pool utilization.',
+        description: 'Proposal to increase the maximum coverage limit for Catastrophe markets from $5M to $10M USDT based on current pool utilization.',
         status: 'Active',
         endsIn: '2 days',
         votesFor: 1250400,
