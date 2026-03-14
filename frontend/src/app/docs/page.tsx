@@ -24,7 +24,8 @@ export default function DocsPage() {
                                 <li><a href="#overview" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">Protocol Overview</a></li>
                                 <li><a href="#policyholders" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">For Policyholders</a></li>
                                 <li><a href="#investors" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">For Investors</a></li>
-                                <li><a href="#integrations" className="block px-4 py-1.5 text-sm font-bold text-primary hover:text-primary transition-colors border-l border-primary">Protocol Integrations</a></li>
+                                <li><a href="#integrations" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">Protocol Integrations</a></li>
+                                <li><a href="#autonomous-agent" className="block px-4 py-1.5 text-sm font-bold text-primary hover:text-primary transition-colors border-l border-primary">Autonomous Agent (WDK)</a></li>
                             </ul>
                         </nav>
                         <nav className="space-y-3">
@@ -250,6 +251,102 @@ export default function DocsPage() {
                                     <p className="text-slate-400 font-light leading-relaxed text-sm">
                                         Reflex Liquidity Pools are deeply integrated with <strong>Aave V3</strong>. Idle USDT in the pools is automatically routed to Aave's lending markets, ensuring that liquidity providers earn base yield on their capital in addition to parametric insurance premiums.
                                     </p>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        {/* ═══════════ AUTONOMOUS AGENT (WDK) ═══════════ */}
+                        <section id="autonomous-agent" className="scroll-mt-32">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
+                                <span className="material-symbols-outlined text-amber-400 text-4xl">psychology</span>
+                                Autonomous Agent (Tether WDK)
+                            </h2>
+                            <div className="glass-panel p-8 rounded-2xl space-y-12">
+                                <div className="space-y-4">
+                                    <h3 className="text-xl font-bold text-foreground italic">The Protocol Backstop</h3>
+                                    <p className="text-slate-400 font-light leading-relaxed text-sm">
+                                        Reflex L1 is managed by a self-custodial <strong>Autonomous Risk Agent</strong>. This agent serves as a "Backstop Keeper," monitoring both on-chain yield and off-chain risks to ensure the protocol remains solvent and capital-efficient without manual intervention.
+                                    </p>
+                                </div>
+
+                                {/* Flowchart Wrapper */}
+                                <div className="relative py-12 px-4 bg-black/20 rounded-2xl border border-white/5 overflow-hidden">
+                                    <div className="absolute inset-0 bg-grid-pattern opacity-[0.03]" />
+                                    
+                                    <div className="relative flex flex-col items-center gap-12 z-10">
+                                        {/* Step 1: Sensing */}
+                                        <div className="flex flex-col md:flex-row items-center gap-6 w-full max-w-2xl group">
+                                            <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shadow-lg shadow-blue-500/5 transition-transform group-hover:scale-110">
+                                                <span className="material-symbols-outlined text-3xl">sensors</span>
+                                            </div>
+                                            <div className="flex-1 text-center md:text-left">
+                                                <h4 className="text-foreground font-bold text-sm">1. Sensing (Data Ingestion)</h4>
+                                                <p className="text-[10px] text-slate-500">Relayer polls Aave V3 yield stats and Meteorological/Aviation oracles (NOAA, FlightAware).</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="h-8 w-px bg-gradient-to-b from-blue-500/50 to-purple-500/50" />
+
+                                        {/* Step 2: Reasoning */}
+                                        <div className="flex flex-col md:flex-row items-center gap-6 w-full max-w-2xl group">
+                                            <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shadow-lg shadow-purple-500/5 transition-transform group-hover:scale-110">
+                                                <span className="material-symbols-outlined text-3xl">brain</span>
+                                            </div>
+                                            <div className="flex-1 text-center md:text-left">
+                                                <h4 className="text-foreground font-bold text-sm">2. Reasoning (LLM Analysis)</h4>
+                                                <p className="text-[10px] text-slate-500">Groq-hosted Llama 3.3 evaluates the context. If yield &gt; gas or risk anomaly detected, it initiates an "Acting" phase.</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="h-8 w-px bg-gradient-to-b from-purple-500/50 to-amber-500/50" />
+
+                                        {/* Step 3: Acting */}
+                                        <div className="flex flex-col md:flex-row items-center gap-6 w-full max-w-2xl group">
+                                            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shadow-lg shadow-amber-500/5 transition-transform group-hover:scale-110">
+                                                <span className="material-symbols-outlined text-3xl">key</span>
+                                            </div>
+                                            <div className="flex-1 text-center md:text-left border-l-2 border-amber-500/30 pl-4 py-1">
+                                                <h4 className="text-amber-400 font-bold text-sm">3. Acting (Tether WDK)</h4>
+                                                <p className="text-[10px] text-slate-400 leading-relaxed font-medium">
+                                                    The Agent utilizes the <strong>Tether Wallet Development Kit (WDK)</strong> to securely sign transactions. Unlike traditional bots, the agent manages its own self-custodial EVM wallet, broadcasting instructions directly to Avalanche Fuji.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="h-8 w-px bg-gradient-to-b from-amber-500/50 to-emerald-500/50" />
+
+                                        {/* Step 4: Settlement */}
+                                        <div className="flex flex-col md:flex-row items-center gap-6 w-full max-w-2xl group">
+                                            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/5 transition-transform group-hover:scale-110">
+                                                <span className="material-symbols-outlined text-3xl">check_circle</span>
+                                            </div>
+                                            <div className="flex-1 text-center md:text-left">
+                                                <h4 className="text-foreground font-bold text-sm">4. Settlement (Blockchain)</h4>
+                                                <p className="text-[10px] text-slate-500">Avalanche Fuji executes on-chain actions: <code className="text-emerald-400">harvestYield()</code> or <code className="text-emerald-400">updateProtocolMargin()</code>.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
+                                    <div className="space-y-3">
+                                        <h4 className="text-foreground font-bold text-sm flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-amber-400 text-sm">verified_user</span>
+                                            Self-Custodial Autonomy
+                                        </h4>
+                                        <p className="text-[11px] text-slate-400 leading-relaxed font-light">
+                                            By integrating the <code className="text-amber-400 text-[10px]">@tetherto/wdk-wallet-evm</code>, our agent operates outside of centralized relayers. It holds its own keys, manages gas, and executes logic as a first-class participant in the Avalanche ecosystem.
+                                        </p>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <h4 className="text-foreground font-bold text-sm flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-primary text-sm">settings_suggest</span>
+                                            Dynamic Risk Adjustment
+                                        </h4>
+                                        <p className="text-[11px] text-slate-400 leading-relaxed font-light">
+                                            The agent can dynamically adjust risk margins by up to <strong>1000 BPS</strong> in response to detected meteorological anomalies, protecting Liquidity Providers before major disaster events are fully realized.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </section>
@@ -684,6 +781,7 @@ export default function DocsPage() {
                                         { term: "BPS", def: "Basis Points — 1 BPS = 0.01%. Used for fee and margin calculations." },
                                         { term: "EIP-712", def: "Ethereum typed structured data signing standard used for quote verification." },
                                         { term: "aUSDT", def: "Aave v3 interest-bearing USDT token received when USDT is supplied to Aave." },
+                                        { term: "Tether WDK", def: "Wallet Development Kit — A self-custodial EVM wallet framework used by the AI Agent for on-chain execution." },
                                         { term: "Keepers", def: "Chainlink Automation nodes that trigger policy expiration when timestamps pass." },
                                         { term: "totalMaxPayouts", def: "Sum of all maximum possible payouts across active policies." },
                                         { term: "Solvency Invariant", def: "totalAssets() ≥ totalMaxPayouts must hold at all times." },
