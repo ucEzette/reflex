@@ -61,11 +61,11 @@ export function ActivePolicyCard({ policy }: { policy: ActivePolicy }) {
                 <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-border/50">
                     <div>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Premium</p>
-                        <p className="font-mono text-sm text-foreground">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(policy.premium)} USDC</p>
+                        <p className="font-mono text-sm text-foreground">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(policy.premium)} USDT</p>
                     </div>
                     <div>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Max Payout</p>
-                        <p className="font-mono text-sm text-foreground font-bold">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(policy.payout)} USDC</p>
+                        <p className="font-mono text-sm text-foreground font-bold">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(policy.payout)} USDT</p>
                     </div>
                 </div>
             </div>

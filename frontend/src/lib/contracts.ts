@@ -4,7 +4,7 @@ export const ESCROW_ABI = [
     {
         inputs: [
             { name: "_teleporter", type: "address" },
-            { name: "_usdc", type: "address" },
+            { name: "_usdt", type: "address" },
             { name: "_reflexL1ChainId", type: "bytes32" },
             { name: "_protocolTreasury", type: "address" },
         ],
@@ -94,7 +94,7 @@ export const MARITIME_ABI = GENERIC_PRODUCT_ABI;
 
 export const CONTRACTS = {
     ESCROW: "0xd8218d83e4fe4927aff7bcd0bed316a3c39be7b4" as `0x${string}`,
-    USDC: "0x5425890298aed601595a70ab815c96711a31bc65" as `0x${string}`,
+    USDT: "0x4F6d9867564b31bD7Bd1ADA8376640201bf15e0B" as `0x${string}`,
 
     // Phase 97: Redeployment with PROTOCOL_MARGIN=3000 (30%)
     // Institutional Sector Isolated Pools
@@ -180,6 +180,6 @@ export const CCIP_CONFIG = {
 };
 
 // Policy constants
-export const POLICY_PREMIUM = BigInt(5_000_000); // $5 USDC (6 decimals)
-export const POLICY_PAYOUT = BigInt(50_000_000); // $50 USDC (6 decimals)
+export const POLICY_PREMIUM = BigInt(5_000_000); // $5 USDT (6 decimals)
+export const POLICY_PAYOUT = BigInt(50_000_000); // $50 USDT (6 decimals)
 export const POLICY_DURATION_HOURS = BigInt(24); // 24 hours coverage

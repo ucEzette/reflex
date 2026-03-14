@@ -20,8 +20,8 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
     /* ── Web3 Integration ── */
     const { address, isConnected } = useAccount();
 
-    const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
-        address: CONTRACTS.USDC,
+    const { data: usdtBalance, refetch: refetchBalance } = useReadContract({
+        address: CONTRACTS.USDT,
         abi: ERC20_ABI,
         functionName: "balanceOf",
         args: address ? [address] : undefined,
@@ -29,14 +29,14 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
     });
 
     const { data: allowance, refetch: refetchAllowance } = useReadContract({
-        address: CONTRACTS.USDC,
+        address: CONTRACTS.USDT,
         abi: ERC20_ABI,
         functionName: "allowance",
         args: address ? [address, CONTRACTS.ESCROW] : undefined,
         query: { enabled: !!address },
     });
 
-    const { writeContract: approveUsdc, data: approveTxHash, isPending: isApproving, error: approveError } = useWriteContract();
+    const { writeContract: approveUsdt, data: approveTxHash, isPending: isApproving, error: approveError } = useWriteContract();
     const { isLoading: isApproveConfirming, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({ hash: approveTxHash });
 
     const { writeContract: purchasePolicy, data: purchaseTxHash, isPending: isContractPending, error: purchaseError } = useWriteContract();
@@ -47,19 +47,19 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
 
     const [isPinning, setIsPinning] = useState(false);
 
-    // We use a mock numeric premium based on the display string if it contains USDC
-    const numPremium = market.price.includes("USDC") ? Number(market.price.replace(/[^0-9.-]+/g, "")) * 1e6 : POLICY_PREMIUM;
+    // We use a mock numeric premium based on the display string if it contains USDT
+    const numPremium = market.price.includes("USDT") ? Number(market.price.replace(/[^0-9.-]+/g, "")) * 1e6 : POLICY_PREMIUM;
     // Default max payout scaling if not strictly defined for this specific UI
-    const numPayout = market.marketData.maxPayout.includes("USDC") ? Number(market.marketData.maxPayout.replace(/[^0-9.-]+/g, "")) * 1e6 : POLICY_PAYOUT;
+    const numPayout = market.marketData.maxPayout.includes("USDT") ? Number(market.marketData.maxPayout.replace(/[^0-9.-]+/g, "")) * 1e6 : POLICY_PAYOUT;
 
     const hasEnoughAllowance = allowance ? (Number(allowance) >= numPremium) : false;
-    const hasEnoughBalance = usdcBalance ? (Number(usdcBalance) >= numPremium) : false;
+    const hasEnoughBalance = usdtBalance ? (Number(usdtBalance) >= numPremium) : false;
     const isProcessing = isApproving || isApproveConfirming || isContractPending || isPurchaseConfirming || isPinning;
     const canPurchase = inputValue.trim().length > 3 && isConnected && hasEnoughBalance;
 
     const handleApprove = () => {
-        approveUsdc({
-            address: CONTRACTS.USDC,
+        approveUsdt({
+            address: CONTRACTS.USDT,
             abi: ERC20_ABI,
             functionName: "approve",
             args: [CONTRACTS.ESCROW, BigInt(numPremium)],
@@ -451,7 +451,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                                 className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("pair", e.target.value)}
                             >
-                                <option value="USDC/USD">USDC/USD</option>
+                                <option value="USDT/USD">USDT/USD</option>
                                 <option value="USDT/USD">USDT/USD</option>
                                 <option value="DAI/USD">DAI/USD</option>
                             </select>
@@ -522,7 +522,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                     </div>
                     <div className="flex items-end gap-2 mb-2 relative z-10">
                         <span className="text-4xl font-bold text-foreground tracking-tighter">{market.price.split(' ')[0]}</span>
-                        <span className="text-lg font-medium text-slate-500 mb-1.5">{market.price.split(' ')[1] || 'USDC'}</span>
+                        <span className="text-lg font-medium text-slate-500 mb-1.5">{market.price.split(' ')[1] || 'USDT'}</span>
                     </div>
                     <p className="text-[11px] text-slate-500 leading-relaxed text-left relative z-10">
                         Guaranteed 24/7 monitoring. Immediate <span className="text-foreground font-bold">{market.marketData.maxPayout} payout</span> if oracle verifies failure conditions.
@@ -531,11 +531,11 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
 
                 {renderSpecializedInputs()}
 
-                {usdcBalance !== undefined && isConnected && (
+                {usdtBalance !== undefined && isConnected && (
                     <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono tracking-tight bg-white/5 px-4 py-3 rounded-lg border border-white/5">
                         <span className="flex items-center gap-1.5">
                             <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                            BAL: {(Number(usdcBalance) / 1e6).toFixed(2)} USDC
+                            BAL: {(Number(usdtBalance) / 1e6).toFixed(2)} USDT
                         </span>
                         <span className={hasEnoughAllowance ? "text-green-400" : "text-yellow-500"}>
                             {hasEnoughAllowance ? "ALLOWANCE READY" : "APPROVAL REQ."}
@@ -557,7 +557,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                     <div className={`dexter-btn-container w-full relative z-30 mb-2 transition-opacity ${(!canPurchase || isProcessing) ? 'opacity-50 pointer-events-none' : ''}`} style={{ '--btn-color': hasEnoughAllowance ? '#22c55e' : `rgb(${market.rgb})` } as React.CSSProperties}>
                         <button onClick={canPurchase ? (hasEnoughAllowance ? handlePurchase : handleApprove) : undefined} disabled={!canPurchase || isProcessing} className="dexter-btn w-full !h-14 !px-6 !rounded-xl" type="button">
                             <span className="dexter-btn-drawer dexter-transition-top !text-[10px] uppercase font-mono tracking-widest">{hasEnoughAllowance ? 'Purchase Policy' : 'Unlock Assets'}</span>
-                            <span className="dexter-btn-text !text-sm tracking-wide font-bold">{isProcessing ? "Processing..." : (!hasEnoughBalance ? "Insufficient Balance" : (hasEnoughAllowance ? "Confirm Coverage" : "Approve USDC"))}</span>
+                            <span className="dexter-btn-text !text-sm tracking-wide font-bold">{isProcessing ? "Processing..." : (!hasEnoughBalance ? "Insufficient Balance" : (hasEnoughAllowance ? "Confirm Coverage" : "Approve USDT"))}</span>
                             <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
                             <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
                             <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
@@ -582,7 +582,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                         {showCrossChain && (
                             <CrossChainCheckout
                                 marketId={market.id}
-                                premiumUsdc={Number(numPremium)}
+                                premiumUsdt={Number(numPremium)}
                                 targetIdentifier={inputValue}
                                 onSuccess={() => setPurchaseSuccess(true)}
                             />

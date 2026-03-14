@@ -22,7 +22,7 @@ export function WalletManager() {
     const isWrongNetwork = isConnected && chainId !== TARGET_CHAIN_ID;
 
     const { data: balanceData, refetch } = useReadContract({
-        address: CONTRACTS.USDC as `0x${string}`,
+        address: CONTRACTS.USDT as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'balanceOf',
         args: address ? [address as `0x${string}`] : undefined,
@@ -37,7 +37,7 @@ export function WalletManager() {
 
     useEffect(() => {
         if (isTxSuccess) {
-            toast.success("Successfully deposited 10,000 test USDC!");
+            toast.success("Successfully deposited 10,000 test USDT!");
             setIsInternalProcessing(false);
             refetch();
         }
@@ -46,10 +46,10 @@ export function WalletManager() {
     const handleDeposit = () => {
         if (!address) return;
         setIsInternalProcessing(true);
-        toast.info("Minting 10,000 MOCK USDC...");
+        toast.info("Minting 10,000 MOCK USDT...");
 
         writeContract({
-            address: CONTRACTS.USDC as `0x${string}`,
+            address: CONTRACTS.USDT as `0x${string}`,
             abi: ERC20_ABI,
             functionName: 'mint',
             args: [address as `0x${string}`, parseUnits('10000', 6)],
@@ -114,7 +114,7 @@ export function WalletManager() {
 
                     <h3 className="text-3xl font-bold text-foreground mb-1 flex items-baseline gap-2">
                         {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(displayBalance)}
-                        <span className="text-sm font-medium text-muted-foreground uppercase">usdc</span>
+                        <span className="text-sm font-medium text-muted-foreground uppercase">usdt</span>
                     </h3>
                     <p className="text-xs text-muted-foreground flex items-center gap-2">
                         Available balance on Avalanche Fuji

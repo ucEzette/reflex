@@ -43,8 +43,8 @@ export function MarketInterface() {
     /* ── Web3 Integration ── */
     const { address, isConnected } = useAccount();
 
-    const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
-        address: CONTRACTS.USDC,
+    const { data: usdtBalance, refetch: refetchBalance } = useReadContract({
+        address: CONTRACTS.USDT,
         abi: ERC20_ABI,
         functionName: "balanceOf",
         args: address ? [address] : undefined,
@@ -52,14 +52,14 @@ export function MarketInterface() {
     });
 
     const { data: allowance, refetch: refetchAllowance } = useReadContract({
-        address: CONTRACTS.USDC,
+        address: CONTRACTS.USDT,
         abi: ERC20_ABI,
         functionName: "allowance",
         args: address ? [address, CONTRACTS.ESCROW] : undefined,
         query: { enabled: !!address },
     });
 
-    const { writeContract: approveUsdc, data: approveTxHash, isPending: isApproving } = useWriteContract();
+    const { writeContract: approveUsdt, data: approveTxHash, isPending: isApproving } = useWriteContract();
     const { isLoading: isApproveConfirming, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({ hash: approveTxHash });
 
     const { writeContract: purchasePolicy, data: purchaseTxHash, isPending: isContractPending } = useWriteContract();
@@ -68,13 +68,13 @@ export function MarketInterface() {
     const [isInternalProcessing, setIsInternalProcessing] = useState(false);
 
     const hasEnoughAllowance = allowance ? (BigInt(allowance.toString()) >= POLICY_PREMIUM) : false;
-    const hasEnoughBalance = usdcBalance ? (BigInt(usdcBalance.toString()) >= POLICY_PREMIUM) : false;
+    const hasEnoughBalance = usdtBalance ? (BigInt(usdtBalance.toString()) >= POLICY_PREMIUM) : false;
     const isProcessing = isApproving || isApproveConfirming || isContractPending || isPurchaseConfirming || isInternalProcessing;
     const canPurchase = flightDetails !== null && isConnected && hasEnoughBalance;
 
     const handleApprove = () => {
-        approveUsdc({
-            address: CONTRACTS.USDC,
+        approveUsdt({
+            address: CONTRACTS.USDT,
             abi: ERC20_ABI,
             functionName: "approve",
             args: [CONTRACTS.ESCROW, POLICY_PREMIUM],
@@ -194,9 +194,9 @@ export function MarketInterface() {
                             </div>
                             <div className="flex items-end gap-2 mb-2">
                                 <span className="text-4xl font-bold text-foreground tracking-tighter">50.00</span>
-                                <span className="text-lg font-medium text-slate-500 mb-1.5">USDC</span>
+                                <span className="text-lg font-medium text-slate-500 mb-1.5">USDT</span>
                             </div>
-                            <p className="text-[11px] text-slate-500 leading-relaxed text-left">Guaranteed 24/7 monitoring via decentralized oracles. Immediate <span className="text-foreground font-bold">500.00 USDC payout</span> if departure delay exceeds 120 minutes or the flight is cancelled.</p>
+                            <p className="text-[11px] text-slate-500 leading-relaxed text-left">Guaranteed 24/7 monitoring via decentralized oracles. Immediate <span className="text-foreground font-bold">500.00 USDT payout</span> if departure delay exceeds 120 minutes or the flight is cancelled.</p>
 
                             <div className="mt-6">
                                 <div className="flex items-center gap-2 text-xs text-slate-400">
@@ -206,11 +206,11 @@ export function MarketInterface() {
                             </div>
                         </div>
 
-                        {usdcBalance !== undefined && isConnected && (
+                        {usdtBalance !== undefined && isConnected && (
                             <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono tracking-tight bg-white/5 px-4 py-3 rounded-lg border border-white/5">
                                 <span className="flex items-center gap-1.5">
                                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                                    BAL: {(Number(usdcBalance) / 1e6).toFixed(2)} USDC
+                                    BAL: {(Number(usdtBalance) / 1e6).toFixed(2)} USDT
                                 </span>
                                 <span className={hasEnoughAllowance ? "text-green-400" : "text-yellow-500"}>
                                     {hasEnoughAllowance ? "ALLOWANCE READY" : "APPROVAL REQ."}
@@ -237,7 +237,7 @@ export function MarketInterface() {
                                             <span className="text-red-400 font-bold">INSUFFICIENT BALANCE</span>
                                         ) : (
                                             <>
-                                                <span>{hasEnoughAllowance ? '50.00 USDC' : 'Approve Contract'}</span>
+                                                <span>{hasEnoughAllowance ? '50.00 USDT' : 'Approve Contract'}</span>
                                             </>
                                         )}
                                         {isProcessing ? (
