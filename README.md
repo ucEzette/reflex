@@ -61,7 +61,7 @@ Every core protocol component is verified on Snowtrace for auditability and tran
 | :--- | :--- | :--- | :--- |
 | **ReflexParametricEscrow** | The primary micro-insurance engine and policy vault. Manages policy issuance, handles parametric triggers via **Chainlink Functions**, and coordinates cross-chain settlements via **Avalanche Teleporter**. | `0xd8218d83e4fe4927aff7bcd0bed316a3c39be7b4` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0xd8218d83e4fe4927aff7bcd0bed316a3c39be7b4) |
 | **ProductFactory** | A central administrative registry for all protocol products. Handles official authorization of new risk products and enforces access control for pool capital. | `0x870268aafe40b15f6bf14d42c435e6d2c7b660fe` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0x870268aafe40b15f6bf14d42c435e6d2c7b660fe) |
-| **Mock USDC** | The primary settlement currency for the Reflex protocol on Fuji. Used for policy purchases, liquidity provision, and payouts. | `0x5425890298aed601595a70ab815c96711a31bc65` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0x5425890298aed601595a70ab815c96711a31bc65) |
+| **Mock USDT** | The primary settlement currency for the Reflex protocol on Fuji. Used for policy purchases, liquidity provision, and payouts. | `0x4F6d9867564b31bD7Bd1ADA8376640201bf15e0B` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0x4F6d9867564b31bD7Bd1ADA8376640201bf15e0B) |
 
 ### 📊 Sector Risk Pools (Liquidity Management)
 *All sector pools utilize the **ReflexLiquidityPool** engine, routing idle capital to **Aave V3** for yield optimization.*

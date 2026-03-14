@@ -561,7 +561,7 @@ export default function DocsPage() {
                                             },
                                             { 
                                                 name: "USDT (Testnet Mock)", 
-                                                addr: "0x5425890298aed601595a70AB815c96711a31Bc65",
+                                                addr: "0x4F6d9867564b31bD7Bd1ADA8376640201bf15e0B",
                                                 desc: "The primary settlement currency for the Reflex protocol on Fuji. Used for policy purchases, liquidity provision, and claim payouts."
                                             },
                                         ].map((c) => (
