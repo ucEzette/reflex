@@ -33,7 +33,7 @@ export const mockPolicies: Policy[] = [
 export const mockOracleLogs: OracleLog[] = [
     { id: "LOG-[...991]", target: "FlightAware API", status: "Success", timestamp: new Date(Date.now() - 120000).toISOString(), message: "EK202 departed on time." },
     { id: "LOG-[...990]", target: "AWS Status Page", status: "Reverted", timestamp: new Date(Date.now() - 3600000).toISOString(), message: "us-east-1 outage detected. Fetching confirmation." },
-    { id: "LOG-[...989]", target: "Chainlink Data Feed", status: "Success", timestamp: new Date(Date.now() - 7200000).toISOString(), message: "USDC/USD peg verified." }
+    { id: "LOG-[...989]", target: "Chainlink Data Feed", status: "Success", timestamp: new Date(Date.now() - 7200000).toISOString(), message: "USDT/USD peg verified." }
 ];
 
 export const mockTreasuryStats: TreasuryStat[] = Array.from({ length: 30 }).map((_, i) => ({

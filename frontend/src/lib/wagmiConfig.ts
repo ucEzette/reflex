@@ -50,6 +50,6 @@ export const config = createConfig({
 export { CONTRACTS } from "./contracts";
 
 // Policy constants
-export const POLICY_PREMIUM = BigInt(5_000_000); // $5 USDC (6 decimals)
-export const POLICY_PAYOUT = BigInt(50_000_000); // $50 USDC (6 decimals)
+export const POLICY_PREMIUM = BigInt(5_000_000); // $5 USDT (6 decimals)
+export const POLICY_PAYOUT = BigInt(50_000_000); // $50 USDT (6 decimals)
 export const POLICY_DURATION_HOURS = BigInt(24); // 24 hours coverage

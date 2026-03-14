@@ -14,15 +14,15 @@ export const generateMarketProducts = (): MarketProduct[] => [
         tooltipSummary: {
             oracle: "FlightAware AeroAPI via Chainlink DON",
             riskModel: "Binary trigger — delay ≥ 120 min = full payout",
-            settlement: "USDC on Avalanche C-Chain",
-            premiumRange: "$15 – $120 USDC per flight (2.5× loading)",
+            settlement: "USDT on Avalanche C-Chain",
+            premiumRange: "$15 – $120 USDT per flight (2.5× loading)",
             trigger: "Arrival delay exceeds 120 minutes or cancellation"
         },
         calculationMethod: {
             formula: "Premium = P(delay) × MaxPayout × LoadingFactor × (1 + ProtocolMargin)",
             variables: [
                 "P(delay) — Historical delay probability for the route (FlightAware)",
-                "MaxPayout — User-selected coverage cap (e.g. $1000 USDC)",
+                "MaxPayout — User-selected coverage cap (e.g. $1000 USDT)",
                 "LoadingFactor — 2.5× actuarial loading for capital reserves",
                 "ProtocolMargin — 30% fee for LP reserve contribution"
             ],
@@ -41,8 +41,8 @@ export const generateMarketProducts = (): MarketProduct[] => [
         tooltipSummary: {
             oracle: "NOAA / OpenWeather via Chainlink Any-API",
             riskModel: "Cumulative index — linear payout between Strike and Exit",
-            settlement: "USDC on Avalanche C-Chain",
-            premiumRange: "$50 – $500 USDC per season",
+            settlement: "USDT on Avalanche C-Chain",
+            premiumRange: "$50 – $500 USDT per season",
             trigger: "Accumulated rainfall below Strike (drought) or above Exit (flood)"
         },
         calculationMethod: {
@@ -67,8 +67,8 @@ export const generateMarketProducts = (): MarketProduct[] => [
         tooltipSummary: {
             oracle: "ECMWF / NOAA Climate Data via Chainlink DON",
             riskModel: "Degree Days deviation — tick-based linear scaling",
-            settlement: "USDC on Avalanche C-Chain",
-            premiumRange: "$100 – $1,000 USDC per month",
+            settlement: "USDT on Avalanche C-Chain",
+            premiumRange: "$100 – $1,000 USDT per month",
             trigger: "Cooling/Heating Degree Days exceed the seasonal baseline by ≥ 15%"
         },
         calculationMethod: {
@@ -93,8 +93,8 @@ export const generateMarketProducts = (): MarketProduct[] => [
         tooltipSummary: {
             oracle: "NASA FIRMS / Copernicus Satellite via Chainlink External Adapter",
             riskModel: "Proximity tiered — 100%/50%/0% based on distance from epicenter",
-            settlement: "USDC on Avalanche C-Chain",
-            premiumRange: "$200 – $5,000 USDC per policy",
+            settlement: "USDT on Avalanche C-Chain",
+            premiumRange: "$200 – $5,000 USDT per policy",
             trigger: "Confirmed wildfire/earthquake epicenter within registered radius"
         },
         calculationMethod: {
@@ -120,8 +120,8 @@ export const generateMarketProducts = (): MarketProduct[] => [
         tooltipSummary: {
             oracle: "MarineTraffic AIS / NOAA Buoy Data via Chainlink Any-API",
             riskModel: "Threshold breach — binary trigger on windspeed or wave height",
-            settlement: "USDC on Avalanche C-Chain",
-            premiumRange: "$100 – $2,000 USDC per voyage",
+            settlement: "USDT on Avalanche C-Chain",
+            premiumRange: "$100 – $2,000 USDT per voyage",
             trigger: "Sustained winds > 50kn or wave height > 4m for ≥ 6 consecutive hours"
         },
         calculationMethod: {

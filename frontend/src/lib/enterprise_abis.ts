@@ -1,7 +1,7 @@
 import { parseAbi } from 'viem';
 
 export const LIQUIDITY_POOL_ABI = parseAbi([
-    "function usdc() view returns (address)",
+    "function usdt() view returns (address)",
     "function totalAssets() view returns (uint256)",
     "function totalMaxPayouts() view returns (uint256)",
     "function lpShares(address) view returns (uint256)",
