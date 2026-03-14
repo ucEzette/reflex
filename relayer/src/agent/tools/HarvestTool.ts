@@ -20,13 +20,13 @@ const logger = pino({
 export const createHarvestTool = (wallet: any) => tool({
     description: 'Execute the harvestYield function on the ReflexLiquidityPool to sweep idle Aave V3 interest into the Protocol Treasury. Only execute this if the expected yield profit exceeds gas costs.',
     parameters: z.object({
-        expectedProfitUsdc: z.number().describe('The estimated profit in USDC after subtracting gas costs.'),
+        expectedProfitUsdt: z.number().describe('The estimated profit in USDT after subtracting gas costs.'),
         poolAddress: z.string().startsWith('0x').length(42).describe('The contract address of the ReflexLiquidityPool.')
     }),
-    execute: async ({ expectedProfitUsdc, poolAddress }: any) => {
+    execute: async ({ expectedProfitUsdt, poolAddress }: any) => {
         logger.info(`🤖 AGENT HARVEST INITIATED: Sweeping Yield from Aave V3 Pool...`);
 
-        if (expectedProfitUsdc <= 0) {
+        if (expectedProfitUsdt <= 0) {
             logger.warn('⚠️ Agent aborted harvest: Expected profit is 0 or negative.');
             return {
                 success: false,
@@ -50,7 +50,7 @@ export const createHarvestTool = (wallet: any) => tool({
             logger.info(`Transaction broadcasted. Hash: ${tx.hash}. Waiting for confirmation...`);
             const receipt = await tx.wait();
 
-            logger.info(`✅ WDK Agent successfully harvested $${expectedProfitUsdc} USDC profit. (Block: ${receipt.blockNumber})`);
+            logger.info(`✅ WDK Agent successfully harvested $${expectedProfitUsdt} USDT profit. (Block: ${receipt.blockNumber})`);
             return {
                 success: true,
                 onChainConfirmation: tx.hash,

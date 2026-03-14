@@ -44,7 +44,7 @@ const POOL_ABI = [
     "function totalAssets() view returns (uint256)",
     "function totalShares() view returns (uint256)",
     "function harvestYield() external",
-    "function usdc() view returns (address)",
+    "function usdt() view returns (address)",
     "function protocolTreasury() view returns (address)"
 ];
 
