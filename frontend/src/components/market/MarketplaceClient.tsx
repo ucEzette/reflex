@@ -52,7 +52,7 @@ const GUIDE_STEPS = [
         number: 4,
         icon: CreditCard,
         title: 'Verify & Purchase',
-        description: 'Verify your identity via World ID, approve USDC spending, and secure your parametric policy on-chain. Settlement is fully automatic.',
+        description: 'Verify your identity via World ID, approve USDT spending, and secure your parametric policy on-chain. Settlement is fully automatic.',
         accent: 'text-emerald-400',
         bg: 'bg-emerald-500/10',
         border: 'border-emerald-500/20',
@@ -290,7 +290,7 @@ export function MarketplaceClient() {
                     <div className="flex items-center gap-2 justify-center md:justify-start text-primary font-black uppercase text-[10px] tracking-widest">
                         <Shield className="w-3 h-3" /> Fully Collateralized
                     </div>
-                    <p className="text-xs text-slate-500 leading-relaxed">All protection policies are 100% backed by USDC liquidity in smart contract vaults.</p>
+                    <p className="text-xs text-slate-500 leading-relaxed">All protection policies are 100% backed by USDT liquidity in smart contract vaults.</p>
                 </div>
                 <div className="space-y-2">
                     <div className="flex items-center gap-2 justify-center md:justify-start text-primary font-black uppercase text-[10px] tracking-widest">

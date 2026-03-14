@@ -45,9 +45,9 @@ export function PolicyDashboard() {
     const [validationError, setValidationError] = useState<string | null>(null);
     const [flightDetails, setFlightDetails] = useState<FlightData | null>(null);
 
-    /* ── Read USDC balance & allowance ── */
-    const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
-        address: CONTRACTS.USDC as `0x${string}`,
+    /* ── Read USDT balance & allowance ── */
+    const { data: usdtBalance, refetch: refetchBalance } = useReadContract({
+        address: CONTRACTS.USDT as `0x${string}`,
         abi: ERC20_ABI,
         functionName: "balanceOf",
         args: address ? [address as `0x${string}`] : undefined,
@@ -55,7 +55,7 @@ export function PolicyDashboard() {
     });
 
     const { data: allowance, refetch: refetchAllowance } = useReadContract({
-        address: CONTRACTS.USDC as `0x${string}`,
+        address: CONTRACTS.USDT as `0x${string}`,
         abi: ERC20_ABI,
         functionName: "allowance",
         args: address ? [address as `0x${string}`, CONTRACTS.ESCROW as `0x${string}`] : undefined,
@@ -77,7 +77,7 @@ export function PolicyDashboard() {
     const handleApprove = () => {
         setIsApproving(true);
         writeContract({
-            address: CONTRACTS.USDC as `0x${string}`,
+            address: CONTRACTS.USDT as `0x${string}`,
             abi: ERC20_ABI,
             functionName: "approve",
             args: [CONTRACTS.ESCROW as `0x${string}`, POLICY_PREMIUM],
@@ -202,7 +202,7 @@ export function PolicyDashboard() {
     }, [apiTarget]);
 
     const isProcessing = isApproving || isPurchasing || isTxPending || isConfirming;
-    const hasEnoughBalance = usdcBalance ? (usdcBalance as bigint) >= POLICY_PREMIUM : false;
+    const hasEnoughBalance = usdtBalance ? (usdtBalance as bigint) >= POLICY_PREMIUM : false;
     const canPurchase = flightDetails !== null && !isValidating && flightDate && isConnected && hasEnoughBalance;
 
     /* ── SSR Hydration Guard ── */
@@ -368,7 +368,7 @@ export function PolicyDashboard() {
                         </div>
                         <div className="flex items-end gap-2 mb-2">
                             <span className="text-4xl font-bold text-foreground tracking-tighter">50.00</span>
-                            <span className="text-lg font-medium text-slate-500 mb-1.5">USDC</span>
+                            <span className="text-lg font-medium text-slate-500 mb-1.5">USDT</span>
                         </div>
                         <p className="text-[11px] text-slate-500 leading-relaxed">Guaranteed 24/7 monitoring. Immediate payout if departure delay exceeds 120 minutes.</p>
 
@@ -381,11 +381,11 @@ export function PolicyDashboard() {
                     </div>
 
                     {/* Balance Info */}
-                    {usdcBalance !== undefined && (
+                    {usdtBalance !== undefined && (
                         <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono tracking-tight bg-white/5 px-4 py-2 rounded-lg border border-white/5">
                             <span className="flex items-center gap-1.5">
                                 <div className="w-1 h-1 rounded-full bg-primary" />
-                                BALANCE: {(Number(usdcBalance) / 1e6).toFixed(2)} USDC
+                                BALANCE: {(Number(usdtBalance) / 1e6).toFixed(2)} USDT
                             </span>
                             <span className={hasEnoughAllowance ? "text-green-500" : "text-yellow-500"}>
                                 {hasEnoughAllowance ? "• ALLOWANCE READY" : "• APPROVAL REQUIRED"}
@@ -402,7 +402,7 @@ export function PolicyDashboard() {
                         >
                             <span className="dexter-btn-drawer dexter-transition-top !text-[10px] uppercase font-mono tracking-widest text-[#0009]">Insurance Premium</span>
                             <span className="dexter-btn-text w-full flex items-center justify-between gap-2 !text-lg">
-                                <span>$5.00 USDC</span>
+                                <span>$5.00 USDT</span>
                                 {isProcessing ? (
                                     <span className="flex items-center gap-2 text-sm">
                                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" strokeDasharray="32" strokeDashoffset="12" /></svg>

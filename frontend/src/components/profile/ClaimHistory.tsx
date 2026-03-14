@@ -128,7 +128,7 @@ function ClaimHistoryRow({ policyId, filter, search }: { policyId: string; filte
                                 <Calendar className="w-3 h-3" />
                                 {new Date(Number(expirationTime) * 1000).toLocaleDateString()}
                             </span>
-                            <span className="font-medium">Premium: ${(Number(premiumPaid) / 1e6).toFixed(2)} USDC</span>
+                            <span className="font-medium">Premium: ${(Number(premiumPaid) / 1e6).toFixed(2)} USDT</span>
                         </div>
                     </div>
                 </div>
@@ -137,7 +137,7 @@ function ClaimHistoryRow({ policyId, filter, search }: { policyId: string; filte
                     <div className="text-right">
                         <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-0.5">Settlement</p>
                         <p className={`text-lg font-black tracking-tighter ${isClaimed ? "text-emerald-400" : "text-slate-400 line-through opacity-50"}`}>
-                            ${(Number(payoutAmount) / 1e6).toFixed(2)} USDC
+                            ${(Number(payoutAmount) / 1e6).toFixed(2)} USDT
                         </p>
                     </div>
 

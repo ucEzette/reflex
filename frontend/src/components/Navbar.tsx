@@ -77,7 +77,7 @@ export function Navbar() {
         if (!searchQuery.trim()) {
             // Show popular/featured markets when empty but focused
             const popular = ALL_MARKETS.filter(m =>
-                ['flight', 'rainfall', 'usdc'].includes(m.id)
+                ['flight', 'rainfall', 'usdt'].includes(m.id)
             ).slice(0, 3);
             setSearchResults(popular);
             return;
