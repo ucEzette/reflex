@@ -161,11 +161,15 @@ async function main() {
     );
 
     // Initialize and start the Autonomous Agent
-    const agent = new ReflexAutonomousAgent(blockchain, weatherService, aviationStack);
-    // Give it a moment to init WDK wallet before starting loop
-    setTimeout(() => {
-        agent.monitorEcosystem().catch(err => logger.error({ err }, "Agent loop failed"));
-    }, 5000);
+    if (!config.pauseOracle) {
+        const agent = new ReflexAutonomousAgent(blockchain, weatherService, aviationStack);
+        // Give it a moment to init WDK wallet before starting loop
+        setTimeout(() => {
+            agent.monitorEcosystem().catch(err => logger.error({ err }, "Agent loop failed"));
+        }, 5000);
+    } else {
+        logger.warn("[Relayer] Autonomous Agent disabled (PAUSE_ORACLE=true)");
+    }
 
     console.log(`[Relayer] Operator Wallet: ${blockchain.getWalletAddress()}`);
     console.log(`[Relayer] Poll Interval: ${config.pollIntervalSeconds}s`);
@@ -176,14 +180,23 @@ async function main() {
     }
 
     // Initial run
-    if (config.escrowAddress) {
-        await monitorEscrow(blockchain, aviationStack);
+    if (!config.pauseOracle) {
+        if (config.escrowAddress) {
+            await monitorEscrow(blockchain, aviationStack);
+        }
+        await monitorEnterprise(blockchain, weatherService);
+    } else {
+        logger.warn("[Relayer] Oracle scanning is PAUSED (PAUSE_ORACLE=true)");
     }
-    await monitorEnterprise(blockchain, weatherService);
 
     // Schedule periodic monitoring
     const pollCron = `*/${Math.max(1, Math.floor(config.pollIntervalSeconds / 60))} * * * *`;
     cron.schedule(pollCron, async () => {
+        if (config.pauseOracle) {
+            logger.debug("[Relayer] Skipping scan cycle (PAUSE_ORACLE=true)");
+            return;
+        }
+
         if (config.escrowAddress) {
             await monitorEscrow(blockchain, aviationStack);
         }

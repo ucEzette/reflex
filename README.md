@@ -112,6 +112,9 @@ cd frontend && npm install && npm run dev
 
 # Relayer
 cd relayer && npm install && npm run dev
+
+# Pausing Oracles (AviationStack/Weather)
+# Set PAUSE_ORACLE=true in relayer/.env to stop auto-querying
 ```
 
 ---

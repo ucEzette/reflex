@@ -25,6 +25,7 @@ export interface Config {
     openWeatherMapApiKey: string;
     stormglassApiKey: string;
     pollIntervalSeconds: number;
+    pauseOracle: boolean;
 }
 
 export function loadConfig(): Config {
@@ -52,5 +53,6 @@ export function loadConfig(): Config {
         openWeatherMapApiKey: process.env.ENERGY_WEATHER_API_KEY || "",
         stormglassApiKey: process.env.MARITIME_STORMGLASS_API_KEY || "",
         pollIntervalSeconds: parseInt(process.env.POLL_INTERVAL_SECONDS || "60", 10),
+        pauseOracle: process.env.PAUSE_ORACLE === "true",
     };
 }
