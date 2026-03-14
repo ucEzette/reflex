@@ -189,26 +189,30 @@ function PolicyRow({ policy, txHash }: { policy: any, txHash?: string }) {
             </td>
             <td className="px-4 py-4">
                 <div className="flex flex-col gap-1.5 align-start">
-                    <span className="text-xs font-mono text-zinc-400">
+                    <a 
+                        href={txHash ? `https://testnet.snowscan.xyz/tx/${txHash}` : `https://testnet.snowscan.xyz/address/${policy.contract}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-mono text-zinc-400 hover:text-sky-400 transition-colors"
+                        title={txHash ? "View Transaction" : "View Contract"}
+                    >
                         {policy.id.slice(0, 10)}...
-                    </span>
-                    {txHash && (
-                        <div className="flex items-center gap-2">
-                            <a
-                                href={`https://testnet.snowscan.xyz/tx/${txHash}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex max-w-max items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-800/50 text-[10px] text-sky-400 hover:text-sky-300 hover:bg-zinc-800 transition-colors border border-zinc-800"
-                            >
-                                <span>Explorer</span>
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                                    <polyline points="15 3 21 3 21 9" />
-                                    <line x1="10" y1="14" x2="21" y2="3" />
-                                </svg>
-                            </a>
-                        </div>
-                    )}
+                    </a>
+                    <div className="flex items-center gap-2">
+                        <a
+                            href={txHash ? `https://testnet.snowscan.xyz/tx/${txHash}` : `https://testnet.snowscan.xyz/address/${policy.contract}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-800/50 text-[10px] ${txHash ? 'text-sky-400' : 'text-zinc-500'} hover:text-sky-300 hover:bg-zinc-800 transition-colors border border-zinc-800`}
+                        >
+                            <span>{txHash ? 'Explorer' : 'Contract'}</span>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                <polyline points="15 3 21 3 21 9" />
+                                <line x1="10" y1="14" x2="21" y2="3" />
+                            </svg>
+                        </a>
+                    </div>
                 </div>
             </td>
         </tr>
@@ -259,7 +263,11 @@ export const ActivePolicies: React.FC<ActivePoliciesProps> = ({
 
     useEffect(() => {
         if (initialTxHashes) {
-            setTxHashes(prev => ({ ...prev, ...initialTxHashes }));
+            const normalized: Record<string, string> = {};
+            Object.entries(initialTxHashes).forEach(([k, v]) => {
+                normalized[k.toLowerCase()] = v;
+            });
+            setTxHashes(prev => ({ ...prev, ...normalized }));
         }
     }, [initialTxHashes]);
     const [policyDetails, setPolicyDetails] = useState<any[]>([]);
@@ -489,7 +497,7 @@ export const ActivePolicies: React.FC<ActivePoliciesProps> = ({
                     if (address && holder?.toLowerCase() === address.toLowerCase()) {
                         const pid = args.id || args.policyId;
                         if (pid) {
-                            newHashes[pid] = log.transactionHash;
+                            newHashes[pid.toLowerCase()] = log.transactionHash;
                         }
                     }
                 });
@@ -508,25 +516,7 @@ export const ActivePolicies: React.FC<ActivePoliciesProps> = ({
         <div id="active-policies" className="relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-900/50 backdrop-blur-xl">
             <div className="absolute inset-0 bg-gradient-to-br from-sky-500/3 to-transparent" />
 
-            {/* Header */}
-            <div className="relative border-b border-zinc-800/50 p-6">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-500 flex items-center justify-center">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-foreground">
-                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" fill="currentColor" />
-                                <path d="M7 12h2v5H7v-5zm4-3h2v8h-2V9zm4-2h2v10h-2V7z" fill="currentColor" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h2 className="text-xl font-bold text-foreground">Your Policies</h2>
-                            <p className="text-sm text-zinc-500">
-                                {policyDetails.length} protocol policies found
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {/* Table */}
 
             {/* Table */}
             <div className="relative overflow-x-auto min-h-[200px]">
@@ -558,7 +548,7 @@ export const ActivePolicies: React.FC<ActivePoliciesProps> = ({
                         </thead>
                         <tbody>
                             {policyDetails.map((policy) => (
-                                <PolicyRow key={policy.id} policy={policy} txHash={txHashes[policy.id]} />
+                                <PolicyRow key={policy.id} policy={policy} txHash={txHashes[policy.id.toLowerCase()] || txHashes[policy.id]} />
                             ))}
                         </tbody>
                     </table>

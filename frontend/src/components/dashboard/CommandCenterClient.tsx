@@ -394,7 +394,7 @@ export function CommandCenterClient() {
                     const args = (log as any).args;
                     const pid = args.id || args.policyId;
                     if (pid) {
-                        hashes[pid] = log.transactionHash;
+                        hashes[pid.toLowerCase()] = log.transactionHash;
                     }
                 });
                 setTxHashes(hashes);
