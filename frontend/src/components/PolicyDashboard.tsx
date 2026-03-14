@@ -234,7 +234,7 @@ export function PolicyDashboard() {
                     <h3 className="text-xl font-bold text-foreground mb-2">Policy Secured</h3>
                     <p className="text-sm text-slate-400 mb-4">Coverage for {flightNumber.toUpperCase()} is active.</p>
                     <a
-                        href={`https://testnet.snowtrace.io/tx/${purchaseTxHash}`}
+                        href={`https://testnet.snowscan.xyz/tx/${purchaseTxHash}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 text-primary text-xs font-mono hover:underline bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20"

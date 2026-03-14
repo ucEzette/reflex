@@ -163,14 +163,14 @@ export function WalletManager() {
                     <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">Security & Advanced</h4>
                     <div className="space-y-2">
                         <a
-                            href={`https://testnet.snowtrace.io/address/${address}`}
+                            href={`https://testnet.snowscan.xyz/address/${address}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-accent transition-all group"
                         >
                             <div className="flex items-center gap-3">
                                 <ExternalLink className="w-4 h-4" />
-                                <span className="text-sm font-medium">View on Snowtrace</span>
+                                <span className="text-sm font-medium">View on Snowscan</span>
                             </div>
                             <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </a>

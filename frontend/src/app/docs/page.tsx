@@ -665,8 +665,8 @@ export default function DocsPage() {
                                             <div key={c.name} className="flex flex-col p-4 rounded-xl bg-white/5 border border-white/10 hover:border-violet-500/30 transition-all group">
                                                 <div className="flex justify-between items-start mb-2">
                                                     <span className="text-sm text-foreground font-bold">{c.name}</span>
-                                                    <a href={`https://testnet.snowtrace.io/address/${c.addr}`} target="_blank" rel="noopener noreferrer" className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-violet-400 flex items-center gap-1">
-                                                        Snowtrace <span className="material-symbols-outlined text-[12px]">open_in_new</span>
+                                                    <a href={`https://testnet.snowscan.xyz/address/${c.addr}`} target="_blank" rel="noopener noreferrer" className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-violet-400 flex items-center gap-1">
+                                                        Snowscan <span className="material-symbols-outlined text-[12px]">open_in_new</span>
                                                     </a>
                                                 </div>
                                                 <p className="text-xs text-slate-400 leading-relaxed mb-3">{c.desc}</p>
@@ -694,8 +694,8 @@ export default function DocsPage() {
                                             <div key={c.name} className="flex flex-col p-4 rounded-xl bg-white/5 border border-white/10 hover:border-emerald-500/30 transition-all group">
                                                 <div className="flex justify-between items-start mb-2">
                                                     <span className="text-sm text-foreground font-bold">{c.name}</span>
-                                                    <a href={`https://testnet.snowtrace.io/address/${c.addr}`} target="_blank" rel="noopener noreferrer" className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-emerald-400 flex items-center gap-1">
-                                                        Snowtrace <span className="material-symbols-outlined text-[12px]">open_in_new</span>
+                                                    <a href={`https://testnet.snowscan.xyz/address/${c.addr}`} target="_blank" rel="noopener noreferrer" className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-emerald-400 flex items-center gap-1">
+                                                        Snowscan <span className="material-symbols-outlined text-[12px]">open_in_new</span>
                                                     </a>
                                                 </div>
                                                 <p className="text-xs text-slate-400 leading-relaxed mb-3">{c.desc}</p>
@@ -722,8 +722,8 @@ export default function DocsPage() {
                                             <div key={c.name} className="flex flex-col p-4 rounded-xl bg-white/5 border border-white/10 hover:border-blue-500/30 transition-all group">
                                                 <div className="flex justify-between items-start mb-2">
                                                     <span className="text-sm text-foreground font-bold">{c.name}</span>
-                                                    <a href={`https://testnet.snowtrace.io/address/${c.addr}`} target="_blank" rel="noopener noreferrer" className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-blue-400 flex items-center gap-1">
-                                                        Snowtrace <span className="material-symbols-outlined text-[12px]">open_in_new</span>
+                                                    <a href={`https://testnet.snowscan.xyz/address/${c.addr}`} target="_blank" rel="noopener noreferrer" className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-blue-400 flex items-center gap-1">
+                                                        Snowscan <span className="material-symbols-outlined text-[12px]">open_in_new</span>
                                                     </a>
                                                 </div>
                                                 <p className="text-xs text-slate-400 leading-relaxed mb-3">{c.desc}</p>

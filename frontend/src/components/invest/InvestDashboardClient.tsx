@@ -950,7 +950,7 @@ export function InvestDashboardClient() {
                                                 </td>
                                                 <td className="py-4 text-right">
                                                     <a
-                                                        href={`https://testnet.snowtrace.io/tx/${item.hash}`}
+                                                        href={`https://testnet.snowscan.xyz/tx/${item.hash}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="inline-flex items-center gap-1.5 text-primary hover:text-primary/80 font-black uppercase tracking-widest text-[10px] group-hover:translate-x-1 transition-all"
