@@ -26,7 +26,7 @@ export async function GET(request: Request) {
         const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
 
         const response = await fetch(
-            `http://api.aviationstack.com/v1/flights?access_key=${apiKey}&flight_iata=${flightIata}`,
+            `https://api.aviationstack.com/v1/flights?access_key=${apiKey}&flight_iata=${flightIata}`,
             {
                 signal: controller.signal,
                 cache: "no-store"

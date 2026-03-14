@@ -2,7 +2,7 @@ import { FlightData } from "../types";
 import { withRetry } from "../utils/retry";
 
 export class AviationStackService {
-    private readonly baseUrl = "http://api.aviationstack.com/v1/flights";
+    private readonly baseUrl = "https://api.aviationstack.com/v1/flights";
 
     constructor(private readonly apiKey: string) { }
 
@@ -14,11 +14,22 @@ export class AviationStackService {
             async () => {
                 const response = await fetch(url);
 
+                if (response.status === 429) {
+                    console.warn(`[Aviationstack] Rate limit reached (429) for ${flightCode}.`);
+                    return null;
+                }
+
                 if (!response.ok) {
                     throw new Error(`AviationStack API error: ${response.status} ${response.statusText}`);
                 }
 
-                const data = await response.json() as { data: any[] };
+                const data = await response.json() as { data: any[], error?: any };
+                
+                if (data.error) {
+                    console.warn(`[Aviationstack] API returned error: ${data.error.code} - ${data.error.message}`);
+                    return null;
+                }
+
                 const flights = data.data;
 
                 if (!flights || flights.length === 0) {
@@ -27,6 +38,7 @@ export class AviationStackService {
                 }
 
                 const flight = flights[0];
+                console.log(`[Aviationstack] Successfully retrieved data for ${flightCode}: ${flight.flight_status}`);
                 const delayMinutes = flight.arrival?.delay || 0;
 
                 return {

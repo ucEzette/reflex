@@ -195,7 +195,7 @@ function PolicyRow({ policy, txHash }: { policy: any, txHash?: string }) {
                     {txHash && (
                         <div className="flex items-center gap-2">
                             <a
-                                href={`https://testnet.snowtrace.io/tx/${txHash}`}
+                                href={`https://testnet.snowscan.xyz/tx/${txHash}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex max-w-max items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-800/50 text-[10px] text-sky-400 hover:text-sky-300 hover:bg-zinc-800 transition-colors border border-zinc-800"

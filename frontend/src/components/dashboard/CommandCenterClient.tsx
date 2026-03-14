@@ -569,7 +569,7 @@ export function CommandCenterClient() {
                                         </div>
                                         <p className="text-xs text-zinc-400 leading-snug">{log.desc}</p>
                                         <a
-                                            href={`https://testnet.snowtrace.io/tx/${log.hash}`}
+                                            href={`https://testnet.snowscan.xyz/tx/${log.hash}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-[9px] text-primary font-bold uppercase hover:underline inline-block pt-1"
