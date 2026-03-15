@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { PolicyDashboard } from "@/components/PolicyDashboard";
+import { PayoutSimulator } from "@/components/PayoutSimulator";
 import { ActivePolicies } from "@/components/ActivePolicies";
 import { ALL_MARKETS } from "@/lib/market-data";
 import { GlobalStats } from "@/components/GlobalStats";
@@ -157,69 +157,24 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ═══ POLICY DASHBOARD / APP SECTION ═══ */}
-        <section id="dashboard" className="w-full max-w-6xl mx-auto px-6 py-24 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Left Column — Marketing */}
-            <div className="lg:col-span-5 flex flex-col gap-8 pt-4">
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neon-cyan/10 border border-neon-cyan/20 text-neon-cyan text-xs font-bold tracking-wider uppercase">
-                  <span className="material-symbols-outlined text-[14px]">verified_user</span>
-                  Chainlink Verified
-                </div>
-                <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-foreground">
-                  Flight Delay <br />
-                  <span className="text-neon-cyan">
-                    Insurance Terminal
-                  </span>
-                </h2>
-                <p className="text-slate-400 text-lg leading-relaxed max-w-md">
-                  Instant, parametric protection powered by Chainlink Oracles. If your flight is delayed by &gt;2 hours, you get paid automatically.
-                </p>
+        {/* ═══ PAYOUT SIMULATOR SECTION ═══ */}
+        <section id="simulator" className="w-full max-w-6xl mx-auto px-6 py-24 relative z-10">
+          <div className="flex flex-col gap-12">
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neon-cyan/10 border border-neon-cyan/20 text-neon-cyan text-xs font-bold tracking-wider uppercase mb-6">
+                <span className="material-symbols-outlined text-[14px]">analytics</span>
+                What-If Simulator
               </div>
-              <GlobalStats />
-              {/* Live Feed */}
-              <div className="hidden lg:flex flex-col gap-4 mt-8">
-                <div className="flex items-center justify-between text-sm text-slate-400 border-b border-white/5 pb-2">
-                  <span className="font-mono uppercase tracking-wider">Recent Activity</span>
-                  <span className="flex items-center gap-1 text-xs">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                    Live Feed
-                  </span>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-transparent hover:border-white/10 transition-all">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-500">
-                        <span className="material-symbols-outlined text-[16px]">payments</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-foreground">Payout: 50 USDT</span>
-                        <span className="text-xs text-slate-500">Flight UA928 • 2m ago</span>
-                      </div>
-                    </div>
-                    <span className="text-xs font-mono text-slate-600">0x8a...29c</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-transparent hover:border-white/10 transition-all">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500">
-                        <span className="material-symbols-outlined text-[16px]">security</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-foreground">Policy Created</span>
-                        <span className="text-xs text-slate-500">Flight BA145 • 5m ago</span>
-                      </div>
-                    </div>
-                    <span className="text-xs font-mono text-slate-600">0x3f...e11</span>
-                  </div>
-                </div>
-              </div>
+              <h2 className="text-4xl md:text-6xl font-black leading-[0.9] tracking-tighter text-white mb-6 uppercase italic">
+                Visualize Your <br />
+                <span className="text-primary drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]">Protection Scaling</span>
+              </h2>
+              <p className="text-slate-400 text-lg leading-relaxed font-light">
+                Drag the slider below to simulate real-world events. See exactly how the <span className="text-white font-bold italic tracking-tighter">Reflex Parametric Engine</span> calculates and authorizes instant payouts based on verifiable data thresholds.
+              </p>
             </div>
 
-            {/* Right Column — Interactive Dashboard */}
-            <div className="lg:col-span-7 w-full">
-              <PolicyDashboard />
-            </div>
+            <PayoutSimulator />
           </div>
         </section>
 
