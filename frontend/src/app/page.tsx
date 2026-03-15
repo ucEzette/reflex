@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { PayoutSimulator } from "@/components/PayoutSimulator";
-import { ActivePolicies } from "@/components/ActivePolicies";
+import { SolvencyDashboard } from "@/components/SolvencyDashboard";
 import { ALL_MARKETS } from "@/lib/market-data";
 import { GlobalStats } from "@/components/GlobalStats";
 
@@ -60,8 +60,8 @@ export default function Home() {
             </h1>
 
             {/* Subhead */}
-            <p className="text-lg md:text-xl text-slate-400 max-w-2xl font-light leading-relaxed">
-              Reflex is a <strong>Protection Market</strong>. Instead of speculating on outcomes, Reflex is a micro-insurance platform where crypto natives and traditional users can browse a marketplace of real-world risks, find a policy that matches their daily needs, and buy it to instantly insure themselves against negative events.
+            <p className="text-lg md:text-xl text-white/80 max-w-2xl font-light leading-relaxed">
+              Reflex is a <strong className="text-primary">Protection Market</strong>. Instead of speculating on outcomes, Reflex is a micro-insurance platform where crypto natives and traditional users can browse a marketplace of real-world risks, find a policy that matches their daily needs, and buy it to instantly insure themselves against negative events.
             </p>
 
             {/* CTAs */}
@@ -103,8 +103,8 @@ export default function Home() {
         <section id="markets" className="w-full max-w-7xl mx-auto px-6 py-12 xl:py-16 relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Active Markets</h2>
-              <p className="text-slate-400">Select a risk category to insure against.</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2 uppercase italic tracking-tighter">Active Markets</h2>
+              <p className="text-primary font-bold uppercase tracking-widest text-xs">Select a risk category to insure against.</p>
             </div>
             <a href="/market" className="text-primary hover:text-primary/80 font-bold flex items-center gap-1">
               View all markets
@@ -134,8 +134,8 @@ export default function Home() {
                 Speed of Code
               </span>
             </h2>
-            <p className="mt-6 text-lg text-slate-400 font-light max-w-2xl mx-auto">
-              Reflex is the first decentralized <strong>Protection Market</strong>, leveraging Chainlink Decentralized Oracle Networks (DONs) to provide transparent, parametric micro-insurance. No centralized claims adjusters, just code.
+            <p className="mt-6 text-lg text-white/70 font-light max-w-2xl mx-auto">
+              Reflex is the first decentralized <strong className="text-primary">Protection Market</strong>, leveraging Chainlink Decentralized Oracle Networks (DONs) to provide transparent, parametric micro-insurance. No centralized claims adjusters, just code.
             </p>
           </div>
 
@@ -169,8 +169,8 @@ export default function Home() {
                 Visualize Your <br />
                 <span className="text-primary drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]">Protection Scaling</span>
               </h2>
-              <p className="text-slate-400 text-lg leading-relaxed font-light">
-                Drag the slider below to simulate real-world events. See exactly how the <span className="text-white font-bold italic tracking-tighter">Reflex Parametric Engine</span> calculates and authorizes instant payouts based on verifiable data thresholds.
+              <p className="text-white/80 text-lg leading-relaxed font-light">
+                Drag the slider below to simulate real-world events. See exactly how the <span className="text-primary font-bold italic tracking-tighter underline underline-offset-4 decoration-primary/30">Reflex Parametric Engine</span> calculates and authorizes instant payouts based on verifiable data thresholds.
               </p>
             </div>
 
@@ -178,76 +178,17 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ═══ ACTIVE POLICIES TABLE ═══ */}
-        <section className="w-full max-w-6xl mx-auto px-6 pb-24 relative z-10">
-          <ActivePolicies />
-        </section>
-
-        {/* ═══ TECH / CHAINLINK SECTION ═══ */}
-        <section className="w-full bg-surface-dark/30 border-y border-white/5 py-24 relative overflow-hidden">
-          <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center gap-16">
-            <div className="flex-1 space-y-8">
-              <h2 className="text-4xl font-bold text-foreground leading-tight">
-                Powered by <span className="text-neon-cyan">Chainlink</span> DONs
-              </h2>
-              <p className="text-slate-400 text-lg leading-relaxed">
-                Reflex leverages Chainlink Functions to verify real-world events in a decentralized, trust-minimized way. Our oracle network validates flight statuses and pushes the consensus to the blockchain instantly.
-              </p>
-              <div className="flex flex-col gap-4">
-                <div className="flex items-start gap-4 p-4 rounded-lg bg-background-dark/50 border border-white/5">
-                  <div className="bg-primary/20 p-2 rounded text-primary">
-                    <span className="material-symbols-outlined">lock</span>
-                  </div>
-                  <div>
-                    <h4 className="text-foreground font-bold mb-1">Private Data Handling</h4>
-                    <p className="text-sm text-slate-400">Your personal data never leaves the secure enclave.</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4 p-4 rounded-lg bg-background-dark/50 border border-white/5">
-                  <div className="bg-neon-cyan/20 p-2 rounded text-neon-cyan">
-                    <span className="material-symbols-outlined">bolt</span>
-                  </div>
-                  <div>
-                    <h4 className="text-foreground font-bold mb-1">Avalanche Subnets</h4>
-                    <p className="text-sm text-slate-400">Dedicated high-throughput infrastructure for insurance events.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* Animated visualization */}
-            <div className="flex-1 w-full flex justify-center">
-              <div className="relative w-full max-w-md aspect-square bg-gradient-to-br from-background-dark to-surface-dark rounded-2xl border border-white/10 shadow-2xl p-8 flex items-center justify-center">
-                <div className="absolute inset-0 rounded-2xl border border-white/5" />
-                <div className="absolute inset-4 rounded-xl border border-dashed border-white/10 animate-[spin_20s_linear_infinite]" />
-                <div className="relative z-10 flex flex-col items-center gap-4">
-                  <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center cyan-glow">
-                    <span className="material-symbols-outlined text-5xl text-primary">verified_user</span>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-foreground font-mono text-sm mb-1">Status: VERIFIED</div>
-                    <div className="text-neon-cyan font-mono text-xs">Block #23948102</div>
-                  </div>
-                </div>
-                <div className="absolute top-10 left-10 p-2 bg-background-dark rounded border border-white/10 shadow-lg animate-float" style={{ animationDelay: "0.5s" }}>
-                  <span className="material-symbols-outlined text-slate-400">flight</span>
-                </div>
-                <div className="absolute bottom-10 right-10 p-2 bg-background-dark rounded border border-white/10 shadow-lg animate-float" style={{ animationDelay: "1.5s" }}>
-                  <span className="material-symbols-outlined text-slate-400">cloud</span>
-                </div>
-                <div className="absolute top-1/2 right-4 p-2 bg-background-dark rounded border border-white/10 shadow-lg animate-float" style={{ animationDelay: "1s" }}>
-                  <span className="material-symbols-outlined text-slate-400">code</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* ═══ PROOF OF SOLVENCY SECTION ═══ */}
+        <section id="solvency" className="w-full max-w-6xl mx-auto px-6 py-24 relative z-10">
+          <SolvencyDashboard />
         </section>
 
         {/* ═══ CTA SECTION ═══ */}
         <section className="py-20 bg-background-dark relative z-10">
           <div className="max-w-4xl mx-auto px-6 text-center">
             <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground mb-6">Ready to secure your future?</h2>
-            <p className="text-slate-400 mb-10 max-w-xl mx-auto">
-              Connect your wallet and explore available micro-insurance pools powered by Reflex.
+            <p className="text-white/80 mb-10 max-w-xl mx-auto font-light leading-relaxed">
+              Connect your wallet and explore available micro-insurance pools powered by <span className="text-primary font-bold">Reflex</span>.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a href="/market" className="dexter-btn-container w-48 relative z-30">
