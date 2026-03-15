@@ -58,4 +58,27 @@ export class WeatherService {
             return null;
         }
     }
+
+    /**
+     * Fetches current risk-related atmosphere metrics for specific coordinates.
+     * Used for real-time premium adjustments.
+     */
+    async getRiskIndicators(lat: string, lon: string): Promise<{ windSpeed: number; rainProbability: number; temperature: number } | null> {
+        try {
+            const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${this.owmApiKey}`;
+            const response = await axios.get(url, { timeout: 4000 });
+
+            if (response.data) {
+                return {
+                    windSpeed: response.data.wind?.speed || 0,
+                    rainProbability: response.data.clouds?.all || 0, // Mocked prob from cloud cover if pop not available
+                    temperature: response.data.main?.temp || 0
+                };
+            }
+            return null;
+        } catch (error: any) {
+            logger.error({ lat, lon, error: error.message }, "Error fetching risk indicators");
+            return null;
+        }
+    }
 }
