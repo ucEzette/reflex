@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ALL_MARKETS } from "@/lib/market-data";
 
 const SIMULATION_PROFILES = {
     flight: {
@@ -12,8 +13,6 @@ const SIMULATION_PROFILES = {
         inputLabel: "Delay Duration",
         threshold: 120,
         maxInput: 360,
-        minPayout: 50,
-        maxPayout: 450,
         color: "#00f0ff",
         description: (val: number) => `Trigger detected. A decentralized consensus of Chainlink Nodes has verified the ${val}m delay, authorizing an instant settlement.`,
         noActionDescription: "Reflex monitors your flight 24/7. An instant payout activates exactly at the 120-minute mark.",
@@ -27,8 +26,6 @@ const SIMULATION_PROFILES = {
         inputLabel: "Rainfall Deficit",
         threshold: 50,
         maxInput: 250,
-        minPayout: 100,
-        maxPayout: 2500,
         color: "#22c55e",
         description: (val: number) => `Drought index verified. Rainfall at ${val}mm is below the 50mm strike threshold. Linear payout scaling initiated.`,
         noActionDescription: "Rainfall index is within safe seasonal boundaries. No payout triggered.",
@@ -42,8 +39,6 @@ const SIMULATION_PROFILES = {
         inputLabel: "Peak Temperature",
         threshold: 35,
         maxInput: 55,
-        minPayout: 200,
-        maxPayout: 5000,
         color: "#f59e0b",
         description: (val: number) => `Heatwave intensity at ${val}°C exceeds grid safety margins. Degree-day tick settlement authorized.`,
         noActionDescription: "Ambient temperature remains within operational tolerance. Grid stability maintained.",
@@ -57,8 +52,6 @@ const SIMULATION_PROFILES = {
         inputLabel: "Epicenter Distance",
         threshold: 100,
         maxInput: 150,
-        minPayout: 1000,
-        maxPayout: 50000,
         color: "#ef4444",
         isInverted: true, // Closer is higher payout
         description: (val: number) => `Seismic event confirmed. Proximity of ${val}km to coordinates triggers tiered structural remediation coverage.`,
@@ -70,25 +63,44 @@ const SIMULATION_PROFILES = {
 export const PayoutSimulator = () => {
     const [activeId, setActiveId] = useState<keyof typeof SIMULATION_PROFILES>("flight");
     const profile = SIMULATION_PROFILES[activeId];
+    
+    // Find protocol market data
+    const market = useMemo(() => ALL_MARKETS.find(m => m.id === activeId) || ALL_MARKETS[0], [activeId]);
+    
+    const defaultPremium = useMemo(() => {
+        const priceStr = market.price.replace(/[^0-9.]/g, '');
+        return parseFloat(priceStr) || 5;
+    }, [market]);
+
+    const [premium, setPremium] = useState(defaultPremium);
     const [inputValue, setInputValue] = useState(profile.threshold + 20);
 
-    // Update value when switching profiles to stay near threshold
-    const handleProfileChange = (id: keyof typeof SIMULATION_PROFILES) => {
-        setActiveId(id);
-        setInputValue(SIMULATION_PROFILES[id].threshold + 10);
-    };
+    // Reset premium when switching profiles
+    useEffect(() => {
+        setPremium(defaultPremium);
+        setInputValue(profile.threshold + 10);
+    }, [activeId, defaultPremium, profile.threshold]);
+
+    // Calculate leverage from riskPremium (e.g. "5%" -> 20x)
+    const leverage = useMemo(() => {
+        const risk = parseFloat(market.marketData.riskPremium) || 5;
+        return 100 / risk;
+    }, [market]);
+
+    const minPayout = premium * (leverage * 0.5); // Start payout at half of max leverage at threshold
+    const maxPayout = premium * leverage;
 
     const payout = useMemo(() => {
         if (profile.isInverted) {
             if (inputValue > profile.threshold) return 0;
-            const scale = (profile.threshold - inputValue) / profile.threshold; // 0 at threshold, 1 at 0km
-            return Math.floor(profile.minPayout + scale * (profile.maxPayout - profile.minPayout));
+            const scale = (profile.threshold - inputValue) / profile.threshold; 
+            return Math.floor(minPayout + scale * (maxPayout - minPayout));
         } else {
             if (inputValue < profile.threshold) return 0;
             const scale = (inputValue - profile.threshold) / (profile.maxInput - profile.threshold);
-            return Math.floor(profile.minPayout + scale * (profile.maxPayout - profile.minPayout));
+            return Math.floor(minPayout + scale * (maxPayout - minPayout));
         }
-    }, [inputValue, profile]);
+    }, [inputValue, profile, minPayout, maxPayout]);
 
     // Graph path calculation
     const points = useMemo(() => {
@@ -99,20 +111,20 @@ export const PayoutSimulator = () => {
             if (profile.isInverted) {
                 if (i <= profile.threshold) {
                     const s = (profile.threshold - i) / profile.threshold;
-                    val = profile.minPayout + s * (profile.maxPayout - profile.minPayout);
+                    val = minPayout + s * (maxPayout - minPayout);
                 }
             } else {
                 if (i >= profile.threshold) {
                     const s = (i - profile.threshold) / (profile.maxInput - profile.threshold);
-                    val = profile.minPayout + s * (profile.maxPayout - profile.minPayout);
+                    val = minPayout + s * (maxPayout - minPayout);
                 }
             }
             const x = (i / profile.maxInput) * 100;
-            const y = 100 - (val / profile.maxPayout) * 80;
+            const y = 100 - (val / maxPayout) * 80;
             pts.push(`${x},${y}`);
         }
         return pts.join(" ");
-    }, [profile]);
+    }, [profile, minPayout, maxPayout]);
 
     return (
         <div className="relative w-full p-8 rounded-3xl bg-zinc-900/40 border border-white/5 backdrop-blur-2xl overflow-hidden group">
@@ -127,7 +139,7 @@ export const PayoutSimulator = () => {
                         {Object.values(SIMULATION_PROFILES).map((p) => (
                             <button
                                 key={p.id}
-                                onClick={() => handleProfileChange(p.id as any)}
+                                onClick={() => setActiveId(p.id as any)}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${
                                     activeId === p.id 
                                     ? "bg-white text-black shadow-lg shadow-white/10" 
@@ -143,7 +155,9 @@ export const PayoutSimulator = () => {
                     <div className="flex items-center justify-between">
                         <div>
                             <h3 className="text-2xl font-black italic tracking-tighter text-white uppercase">{profile.title} Curve</h3>
-                            <p className="text-xs text-zinc-500 font-mono tracking-widest uppercase mt-1">Real-time settlement simulation</p>
+                            <p className="text-xs text-zinc-500 font-mono tracking-widest uppercase mt-1">
+                                {leverage}x Leverage • {market.marketData.riskPremium} Risk Premium
+                            </p>
                         </div>
                         <div className="flex flex-col items-end">
                             <span className="text-3xl font-black drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]" style={{ color: profile.color }}>
@@ -170,7 +184,7 @@ export const PayoutSimulator = () => {
                             
                             {/* Area Fill */}
                             <motion.path
-                                key={`fill-${activeId}`}
+                                key={`fill-${activeId}-${maxPayout}`}
                                 d={`M 0,100 L ${points} L 100,100 Z`}
                                 fill={`url(#grad-${activeId})`}
                                 initial={{ opacity: 0 }}
@@ -180,7 +194,7 @@ export const PayoutSimulator = () => {
 
                             {/* Main Stroke */}
                             <motion.polyline
-                                key={`line-${activeId}`}
+                                key={`line-${activeId}-${maxPayout}`}
                                 points={points}
                                 fill="none"
                                 stroke={profile.color}
@@ -200,11 +214,11 @@ export const PayoutSimulator = () => {
                             {/* Current Position Dot */}
                             <motion.circle
                                 cx={(inputValue / profile.maxInput) * 100}
-                                cy={100 - (payout / profile.maxPayout) * 80}
+                                cy={100 - (payout / maxPayout) * 80}
                                 r="2"
                                 fill="#fff"
                                 className="drop-shadow-[0_0_10px_#fff]"
-                                animate={{ cx: (inputValue / profile.maxInput) * 100, cy: 100 - (payout / profile.maxPayout) * 80 }}
+                                animate={{ cx: (inputValue / profile.maxInput) * 100, cy: 100 - (payout / maxPayout) * 80 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             />
                         </svg>
@@ -212,7 +226,7 @@ export const PayoutSimulator = () => {
                         {/* Labels */}
                         <div className="absolute bottom-1 left-4 text-[9px] text-zinc-600 font-mono">0 {profile.unit}</div>
                         <div className="absolute bottom-1 right-4 text-[9px] text-zinc-600 font-mono">{profile.maxInput} {profile.unit}</div>
-                        <div className="absolute top-1 left-4 text-[9px] text-zinc-600 font-mono">$ {profile.maxPayout.toLocaleString()} USDT</div>
+                        <div className="absolute top-1 left-4 text-[9px] text-zinc-600 font-mono">$ {maxPayout.toLocaleString()} USDT CAP</div>
                         <div 
                             className="absolute top-[52%] text-[10px] text-red-500/80 font-bold tracking-tighter uppercase whitespace-nowrap -rotate-90 origin-center"
                             style={{ left: `${(profile.threshold / profile.maxInput) * 100}%`, transform: 'translateX(-50%) rotate(-90deg)' }}
@@ -224,6 +238,25 @@ export const PayoutSimulator = () => {
 
                 {/* Control Side */}
                 <div className="flex flex-col gap-8">
+                    {/* Premium Input */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="text-sm font-bold text-zinc-300 uppercase tracking-widest flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary text-sm">payments</span>
+                                Purchase Amount
+                            </label>
+                            <div className="flex items-center gap-2 bg-zinc-800 p-2 rounded-lg border border-white/5">
+                                <input 
+                                    type="number"
+                                    value={premium}
+                                    onChange={(e) => setPremium(Math.max(1, parseFloat(e.target.value) || 0))}
+                                    className="bg-transparent text-white font-black font-mono w-16 text-right focus:outline-none"
+                                />
+                                <span className="text-xs text-zinc-500 font-bold uppercase">USDT</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="space-y-4">
                         <div className="flex items-center justify-between mb-2">
                             <label className="text-sm font-bold text-zinc-300 uppercase tracking-widest flex items-center gap-2">
@@ -281,7 +314,7 @@ export const PayoutSimulator = () => {
                         className="w-full py-4 rounded-xl text-black font-black uppercase tracking-widest text-xs hover:scale-[1.02] transition-all"
                         style={{ backgroundColor: profile.color, boxShadow: `0 0 20px ${profile.color}44` }}
                     >
-                        Buy {profile.title} Protection
+                        Purchase — {premium} USDT
                     </button>
                 </div>
             </div>
