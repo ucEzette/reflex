@@ -99,7 +99,7 @@ export default function DocsPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {[
                                         { icon: "shopping_cart_checkout", color: "neon-cyan", title: "1. Precision Purchase", desc: "Select a target (Flight BA205, Port of Rotterdam) and define risk parameters. Premiums are calculated from historical volatility and pool utilization." },
-                                        { icon: "security", color: "purple-400", title: "2. Subnet Escrow", desc: "Premium commits to the ReflexLiquidityPool. Full Max Payout is locked from the shared treasury for the entire index period." },
+                                        { icon: "security", color: "purple-400", title: "2. Secure Escrow", desc: "Premium commits to the ReflexLiquidityPool. Full Max Payout is locked from the shared treasury for the entire index period." },
                                         { icon: "satellite_alt", color: "primary", title: "3. Oracle Monitoring", desc: "Relayer + Chainlink DONs monitor active targets. If an event breaches the strike threshold, a consensus verification payload is pushed to L1." },
                                         { icon: "payments", color: "emerald-400", title: "4. Atomic Settlement", desc: "No manual claim button. The contract triggers USDT release to the policyholder's wallet the moment consensus is confirmed." },
                                     ].map((step) => (

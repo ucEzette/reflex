@@ -35,29 +35,31 @@ export const SolvencyDashboard = () => {
         query: { 
             enabled: mounted,
             refetchInterval: 30000 // Refresh every 30s
-        },
-        chainId: 43113
+        }
     });
 
     const metrics = useMemo(() => {
-        if (!solvencyData) return { totalAssets: 0, totalLiabilities: 0, ratio: 0 };
+        if (!solvencyData || !Array.isArray(solvencyData)) return { totalAssets: 0, totalLiabilities: 0, ratio: 0 };
         
-        const assets = (solvencyData.slice(0, 5) as any[]).reduce((acc, res) => acc + (res.result as bigint || BigInt(0)), BigInt(0));
-        const liabilities = (solvencyData.slice(5, 10) as any[]).reduce((acc, res) => acc + (res.result as bigint || BigInt(0)), BigInt(0));
+        const assets = solvencyData.slice(0, 5).reduce((acc: bigint, res: any) => {
+            const val = res?.status === 'success' && typeof res.result === 'bigint' ? res.result : BigInt(0);
+            return acc + val;
+        }, BigInt(0));
+
+        const liabilities = solvencyData.slice(5, 10).reduce((acc: bigint, res: any) => {
+            const val = res?.status === 'success' && typeof res.result === 'bigint' ? res.result : BigInt(0);
+            return acc + val;
+        }, BigInt(0));
         
         const assetsNum = Number(formatUnits(assets, 6));
         const liabilitiesNum = Number(formatUnits(liabilities, 6));
         
-        // Add a slight buffer for Aave yield simulation if not already in totalAssets
-        // In a real env, totalAssets() would include interest. 
-        // For this demo dashboard, we'll assume totalAssets covers the full reserve.
-        
-        const ratio = liabilitiesNum > 0 ? (assetsNum / liabilitiesNum) * 100 : 1000; // Default to high health if no liabilities
+        const ratio = liabilitiesNum > 0 ? (assetsNum / liabilitiesNum) * 100 : 1000; 
         
         return {
             totalAssets: assetsNum,
             totalLiabilities: liabilitiesNum,
-            ratio: Math.min(ratio, 999.9) // Cap display
+            ratio: Math.min(ratio, 999.9) 
         };
     }, [solvencyData]);
 
@@ -147,7 +149,7 @@ export const SolvencyDashboard = () => {
                             </div>
                             <h3 className="text-lg font-bold text-white leading-tight">Institutional Trust Guarantee</h3>
                             <p className="text-xs text-zinc-400 leading-relaxed font-light">
-                                Reflex operates as a 100% collateralized protocol. Every active policy is backed by liquid USDT in Avalanche Subnets and Aave V3.
+                                Reflex operates as a 100% collateralized protocol. Every active policy is backed by liquid USDT in Avalanche and Aave V3.
                             </p>
                         </div>
                         <div className="mt-6 pt-6 border-t border-white/5 flex items-center gap-3">
