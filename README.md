@@ -1,148 +1,103 @@
-# Reflex — Protection Market for Parametric Micro-Insurance
+# Reflex: Decentralized Parametric Risk Marketplace
 
-Reflex is a decentralized **Protection Market** for parametric micro-insurance built on **Avalanche**. It enables trustless hedging against real-world risks (weather, aviation, maritime) via verifiable data triggers and algorithmic payout models, designed for everyday people.
-
----
-
-## 🏆 The Convergence Index: Sybil-Resistant & Gasless UX
-
-Reflex is engineered for the real world, integrating state-of-the-art technologies to create a seamless user experience.
-
-### 1. Avalanche Teleporter & ZK-Proofs
-- **Cross-Chain Consensus**: We leverage **Avalanche Teleporter** to pass ZK-proofs and settlement messages across the Avalanche ecosystem.
-- **Implementation**: The `ReflexParametricEscrow.sol` contract acts as a `ITeleporterReceiver`, processing verified flight delay proofs from remote chains.
-
-### 2. Sybil Resistance via World ID
-- **The Human Layer**: Integrated **World ID** to ensure every policyholder is a unique human, preventing bot attacks on the protection market and ensuring fair access.
-
-### 3. thirdweb Account Abstraction (Gasless Transactions)
-- **The UX Layer**: Integrated **thirdweb Paymasters** and Smart Accounts to provide a 1-click, 0-gas experience. Users can purchase policies without holding AVAX or worrying about gas fees.
-
-### 4. Chainlink Runtime Environment (CRE) Orchestration
-- **The Brain**: Orchestrates off-chain verification and on-chain execution, acting as a secure gatekeeper via the `cre/PolicyVerifier.ts` action.
-
-### 5. Dynamic Risk Engine (Surge Pricing)
-- **Real-Time Actuarial Logic**: Automatically adjusts premiums based on high-frequency meteorological and market data (e.g., wind speed, stablecoin deviation, solar yield).
-- **Universal Coverage**: Live risk scoring implemented for all 10 product markets including **Peg Shield**, **Sun Yield**, and **Freight Wait**.
-
-### 6. Enterprise SDK (@reflex/widget-sdk)
-- **Modular Micro-Frontend**: A themeable, customizable "Protection Toggle" for partner checkouts.
-- **Dynamic Customization**: Supports light/dark/glass themes, custom branding, and market-specific accent colors.
-- **Implementation**: Powered by the `useReflexWidget` hook for zero-friction integration.
-
-### 7. Real-Time Risk Simulation (Solvency Engine)
-- **Stress Testing**: A proprietary simulator that evaluates protocol resilience against extreme tail-risk scenarios (e.g., Cat-5 Hurricanes, Global Aviation Halt).
-- **Proactive Scaling**: Automatically adjusts liquidity reservations based on simulated liability spikes.
+Reflex is an institutional-grade parametric risk infrastructure built on Avalanche. By replacing subjective claims assessments with deterministic smart contract logic, Reflex enables trustless, high-velocity protection for real-world risks (Aviation, Agriculture, Energy, and Maritime) using verifiable data triggers and algorithmic settlement.
 
 ---
 
-## 🏛️ Technical Architecture & Design
+## Technical Overview
 
-Reflex utilizes a **Hub-and-Spoke** architecture designed for modularity and high capital efficiency.
+Reflex utilizes a **Hub-and-Spoke** architecture designed for maximum capital efficiency and risk isolation.
 
-### 1. Segmented Risk Vaults (The Spoke System)
-- **Isolated Liquidity**: Liquidity is compartmentalized into sector-specific pools (Travel, Agri, Energy, etc.). This ensures that a localized disaster (e.g., a drought) doesn't drain capital from unrelated sectors (e.g., aviation).
-- **Aggregated Transparency**: The Solvency Dashboard provides a unified view of these isolated reserves via the `usePoolMetrics` infrastructure.
+### 1. Segmented Risk Vaults
+Liquidity is compartmentalized into sector-specific pools. This design ensures that a catastrophic event in one vertical (e.g., a regional drought) cannot drain capital reserved for unrelated risks (e.g., flight delays).
 
-### 2. Operational Health HUD
-- **Real-Time Monitoring**: Direct visibility into Chainlink Oracle heartbeats, ZK Relayer status, and Risk Engine polling frequency.
-- **Protocol Resiliency**: Ensures that all automated systems are functioning within optimal latency thresholds.
+### 2. Dual-Yield Architecture
+Reflex eliminates the "dead capital" problem in insurance. Unutilized USDC in risk pools is automatically routed to **Aave V3** to earn baseline yield. Underwriters earn from both premium spreads and DeFi interest, while the protocol retains a 10% performance fee on the generated yield.
 
-### 2. The Oracle Fabric (Chainlink Triple-Threat)
-- **Chainlink Functions**: Pulls RWA data (FlightAware, NOAA, OpenWeather) to trigger policy evaluations.
-- **Chainlink Automation**: Autonomously expires policies and releases locked liquidity.
-- **Chainlink CCIP**: Facilitates cross-chain settlement orchestration.
+### 3. The Oracle Fabric
+Deterministic settlement is powered by a multi-layered oracle integration:
+- **Chainlink Functions:** Retrieves tamper-proof RWA data (NOAA, FlightAware, OpenWeather).
+- **Chainlink Automation:** Autonomously executes payout logic the moment risk thresholds are breached.
+- **Avalanche Teleporter:** Coordinates cross-chain settlement and ZK-proof verification.
 
-### 3. The Relayer Layer (Node.js)
-- **EIP-712 Quote Signing**: Ensures cryptographically secure, time-bound premium quotes.
-- **Risk Simulation**: Pre-calculating probability distributions to ensure accurate pricing.
-- **RiskEngineService**: A high-speed actuarial engine polling oracles via Chainlink DONs to provide real-time risk multipliers.
-
-### 4. Solvency Dashboard (Proof of Reserves)
-- **Real-Time Transparency**: Direct on-chain monitoring of pool assets vs. outstanding liabilities.
-- **Aave V3 Tracking**: Visualizing interest-bearing collateral (aUSDT) utilized for protocol backing.
+### 4. Invisible UX (Account Abstraction)
+Integrated with **thirdweb Smart Accounts** and **Paymasters**, Reflex provides a gasless, "one-tap" purchase experience. Users interact with the protocol via an Enterprise SDK that abstracts all blockchain complexity.
 
 ---
 
-## 🧬 Security & Invariants
+## Smart Contract Registry (Avalanche Fuji)
 
-Reflex is hardened through extensive stateful fuzzing and strictly enforced protocol invariants:
-1. **Solvency Invariant**: `Total Pool Assets >= Current Locked Payouts + New Max Payout`.
-2. **Deterministic Identity**: PII-free reputation layer using wallet-hash-based warrior avatars.
-3. **Strict Payout Caps**: Hard `MAX_PAYOUT_CAP` per sector pool to mitigate tail-risk.
+All core protocol components are verified on Snowtrace to ensure total transparency and auditable solvency.
 
----
+### Core Protocol Engine
 
-## 📜 Verified Smart Contracts (Avalanche Fuji)
+| Contract | Description | Address |
+| :--- | :--- | :--- |
+| **ReflexParametricEscrow** | Primary policy vault and settlement engine. | `0xd8218d83e4fe4927aff7bcd0bed316a3c39be7b4` |
+| **ProductFactory** | Central registry for administrative product authorization. | `0x870268aafe40b15f6bf14d42c435e6d2c7b660fe` |
+| **Mock USDT** | Primary settlement and reserve currency. | `0x4F6d9867564b31bD7Bd1ADA8376640201bf15e0B` |
 
-Every core protocol component is verified on Snowtrace for auditability and transparency.
+### Sector Liquidity Vaults
 
-### 🏛️ Core Protocol Engine
-| Contract | Description | Address | Explorer Link |
-| :--- | :--- | :--- | :--- |
-| **ReflexParametricEscrow** | The primary micro-insurance engine and policy vault. Manages policy issuance, handles parametric triggers via **Chainlink Functions**, and coordinates cross-chain settlements via **Avalanche Teleporter**. | `0xd8218d83e4fe4927aff7bcd0bed316a3c39be7b4` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0xd8218d83e4fe4927aff7bcd0bed316a3c39be7b4) |
-| **ProductFactory** | A central administrative registry for all protocol products. Handles official authorization of new risk products and enforces access control for pool capital. | `0x870268aafe40b15f6bf14d42c435e6d2c7b660fe` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0x870268aafe40b15f6bf14d42c435e6d2c7b660fe) |
-| **Mock USDT** | The primary settlement currency for the Reflex protocol on Fuji. Used for policy purchases, liquidity provision, and payouts. | `0x4F6d9867564b31bD7Bd1ADA8376640201bf15e0B` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0x4F6d9867564b31bD7Bd1ADA8376640201bf15e0B) |
-
-### 📊 Sector Risk Pools (Liquidity Management)
-*All sector pools utilize the **ReflexLiquidityPool** engine, routing idle capital to **Aave V3** for yield optimization.*
-
-| Pool | Description | Address | Explorer Link |
-| :--- | :--- | :--- | :--- |
-| **Travel Pool** | Aggregated institutional capital backing the Travel risk sector. | `0xbcfeeaea01b9ddd2f8a1092676681c6b52dbe81c` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0xbcfeeaea01b9ddd2f8a1092676681c6b52dbe81c) |
-| **Agriculture Pool** | Capital reserve for agricultural productivity and weather hazards. | `0xcb4c97087ed4c858281c39df44ae0997561ffe8c` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0xcb4c97087ed4c858281c39df44ae0997561ffe8c) |
-| **Energy Pool** | Dedicated liquidity for renewable energy supply and grid risk. | `0xe8b7b01b2b4ec0f400f37f2d894e3654f05852f6` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0xe8b7b01b2b4ec0f400f37f2d894e3654f05852f6) |
-| **Catastrophe Pool** | High-intensity capital backing natural disaster risk protection. | `0x9d803a3066c858d714c4f5ee286eaa6249d451ab` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0x9d803a3066c858d714c4f5ee286eaa6249d451ab) |
-| **Maritime Pool** | Global trade liquidity backing ocean logistics and port risks. | `0x6586035d5e39e30bf37445451b43eeaeeaa1405a` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0x6586035d5e39e30bf37445451b43eeaeeaa1405a) |
-
-### 🛠️ Parametric Risk Products
-| Product | Description | Address | Explorer Link |
-| :--- | :--- | :--- | :--- |
-| **TravelSolutions** | Flight delay protection using real-time aviation oracles to automate claim payouts. | `0x98ce0538928303b6e31a9c376a1d4a37374f1d93` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0x98ce0538928303b6e31a9c376a1d4a37374f1d93) |
-| **AgricultureIndex** | Drought and extreme weather protection triggered by verifiable climatic indices. | `0xfaab070d6f017955252e0a19cc532f227edb2425` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0xfaab070d6f017955252e0a19cc532f227edb2425) |
-| **EnergySolutions** | Hedging for energy production shortfalls and renewable volatility. | `0x762285536f8f07fe75706bb429d230a0e7b22966` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0x762285536f8f07fe75706bb429d230a0e7b22966) |
-| **CatastropheProximity** | Geography-based protection against earthquakes and high-magnitude disasters. | `0x9b0378eeb2b22367183c09dc79966a32c79074c5` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0x9b0378eeb2b22367183c09dc79966a32c79074c5) |
-| **MaritimeSolutions** | Shipping risk management covering logistics delays and offshore disruptions. | `0x255ff883066744bf2d2914da1ebc26ff4d4b58c8` | [View on Snowtrace](https://testnet.snowscan.xyz/address/0x255ff883066744bf2d2914da1ebc26ff4d4b58c8) |
+| Vault | Risk Sector | Address |
+| :--- | :--- | :--- |
+| **Travel Pool** | Aviation & Transit Disruption | `0xbcfeeaea01b9ddd2f8a1092676681c6b52dbe81c` |
+| **Agriculture Pool** | Climatic & Crop Yield Risk | `0xcb4c97087ed4c858281c39df44ae0997561ffe8c` |
+| **Energy Pool** | Renewable Output & Grid Volatility | `0xe8b7b01b2b4ec0f400f37f2d894e3654f05852f6` |
+| **Catastrophe Pool** | Extreme Event Reinsurance | `0x9d803a3066c858d714c4f5ee286eaa6249d451ab` |
+| **Maritime Pool** | Global Logistics & Freight Risk | `0x6586035d5e39e30bf37445451b43eeaeeaa1405a` |
 
 ---
 
-## 🛠️ Technology Stack
+## Enterprise SDK (@reflex/widget-sdk)
 
-- **Blockchain**: Avalanche (Fuji Testnet, Teleporter).
-- **Smart Contracts**: Solidity 0.8.24, Foundry, OpenZeppelin UUPS.
-- **Infrastructure**: Chainlink (Functions, Automation, CCIP, CRE).
-- **UX & Identity**: thirdweb (Account Abstraction), World ID (Sybil Resistance).
-- **DeFi**: Aave v3 (Yield Optimization).
-- **Frontend**: Next.js 14, Tailwind CSS, Framer Motion (3D/Glassmorphism).
+Reflex is designed for frictionless distribution via a themeable micro-frontend widget.
 
----
+### Quick Integration
+```typescript
+import { ReflexWidget } from '@reflex/widget-sdk';
 
-## 🏁 Development & Verification
-
-### 1. Smart Contract Verification
-Run the comprehensive suite of **640k+ invariant tests**:
-```bash
-cd contracts
-forge test --match-path test/SecurityInvariants.t.sol -vv
-```
-
-### 2. Local Environment
-```bash
-# Frontend
-cd frontend && npm install && npm run dev
-
-# Relayer
-cd relayer && npm install && npm run dev
-
-# Pausing Oracles (AviationStack/Weather)
-# Set PAUSE_ORACLE=true in relayer/.env to stop auto-querying
+const MyCheckout = () => (
+  <ReflexWidget 
+    market="travel"
+    assetId="AF-123"
+    theme="glassmorphism"
+    onPurchase={(id) => console.log(`Policy Secured: ${id}`)}
+  />
+);
 ```
 
 ---
 
-## 📄 Documentation
-For detailed mathematical formulas and integration guides, see the [Detailed Technical Workflow](file:///Users/adam/.gemini/antigravity/brain/a0747a8a-ade6-4a9e-993f-a22bf31e2913/detailed_workflow.md).
+## Security & Solvency Invariants
 
-## ⚖️ License
-MIT
+The protocol is hardened through extensive stateful fuzzing (640k+ tests) enforcing the following invariants:
+1. **Solvency Guarantee:** `Total Assets >= Reserved Payouts + Premium Float`.
+2. **Access Control:** Only authorized risk products can reserve capital from sector vaults.
+3. **Upgradeability:** All core contracts utilize the UUPS (ERC-1967) proxy pattern for secure protocol evolution.
 
+---
+
+## Development & Setup
+
+### Prerequisites
+- **Foundry** (Smart Contract testing)
+- **Node.js v20+** (Frontend and Relayer)
+- **PNPM** (Recommended for monorepo management)
+
+### Local Implementation
+```bash
+# Install dependencies
+pnpm install
+
+# Start Local Environment
+pnpm dev
+
+# Run Security Suite
+cd contracts && forge test --match-path test/SecurityInvariants.t.sol
+```
+
+---
+
+## License
+Reflex Protocol is released under the **MIT License**. Created for the Avalanche Global Hackathon.
