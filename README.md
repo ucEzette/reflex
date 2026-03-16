@@ -25,10 +25,14 @@ Reflex is engineered for the real world, integrating state-of-the-art technologi
 - **Real-Time Actuarial Logic**: Automatically adjusts premiums based on high-frequency meteorological and market data (e.g., wind speed, stablecoin deviation, solar yield).
 - **Universal Coverage**: Live risk scoring implemented for all 10 product markets including **Peg Shield**, **Sun Yield**, and **Freight Wait**.
 
-### 6. Mobile-First Quick-Policy Widget
-- **Embeddable Micro-Frontend**: A simple protection toggle that can be integrated into any travel checkout flow.
-- **Blockchain Abstraction**: Simplifies the purchase flow into a single tap, handling z-k payments and encrypted vault minting behind the scenes.
-- **Demo**: [View the Quick-Policy Integration Demo](/widget-demo)
+### 6. Enterprise SDK (@reflex/widget-sdk)
+- **Modular Micro-Frontend**: A themeable, customizable "Protection Toggle" for partner checkouts.
+- **Dynamic Customization**: Supports light/dark/glass themes, custom branding, and market-specific accent colors.
+- **Implementation**: Powered by the `useReflexWidget` hook for zero-friction integration.
+
+### 7. Real-Time Risk Simulation (Solvency Engine)
+- **Stress Testing**: A proprietary simulator that evaluates protocol resilience against extreme tail-risk scenarios (e.g., Cat-5 Hurricanes, Global Aviation Halt).
+- **Proactive Scaling**: Automatically adjusts liquidity reservations based on simulated liability spikes.
 
 ---
 
@@ -36,10 +40,13 @@ Reflex is engineered for the real world, integrating state-of-the-art technologi
 
 Reflex utilizes a **Hub-and-Spoke** architecture designed for modularity and high capital efficiency.
 
-### 1. The Core Engine (Avalanche Fuji)
-- **ReflexLiquidityPool (The Hub)**: A central treasury utilizing the **UUPS Upgradeable Proxy** pattern. It manages global solvency and LP accounting. 
-- **Parametric Products (The Spokes)**: Stateless logic contracts that calculate payouts based on diverse mathematical models (Linear Interpolation, Tiered, Binary).
-- **Aave v3 Integration**: Idle USDC is programmatically supplied to Aave v3, harvesting baseline yield for LPs.
+### 1. Segmented Risk Vaults (The Spoke System)
+- **Isolated Liquidity**: Liquidity is compartmentalized into sector-specific pools (Travel, Agri, Energy, etc.). This ensures that a localized disaster (e.g., a drought) doesn't drain capital from unrelated sectors (e.g., aviation).
+- **Aggregated Transparency**: The Solvency Dashboard provides a unified view of these isolated reserves via the `usePoolMetrics` infrastructure.
+
+### 2. Operational Health HUD
+- **Real-Time Monitoring**: Direct visibility into Chainlink Oracle heartbeats, ZK Relayer status, and Risk Engine polling frequency.
+- **Protocol Resiliency**: Ensures that all automated systems are functioning within optimal latency thresholds.
 
 ### 2. The Oracle Fabric (Chainlink Triple-Threat)
 - **Chainlink Functions**: Pulls RWA data (FlightAware, NOAA, OpenWeather) to trigger policy evaluations.
