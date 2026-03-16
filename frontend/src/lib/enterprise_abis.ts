@@ -18,7 +18,19 @@ export const LIQUIDITY_POOL_ABI = parseAbi([
 
     "event LiquidityDeposited(address indexed provider, uint256 amount, uint256 shares)",
     "event LiquidityWithdrawn(address indexed provider, uint256 amount, uint256 shares)",
-    "event WithdrawalScheduled(address indexed provider, uint256 shares, uint256 unlockTimestamp)"
+    "event WithdrawalScheduled(address indexed provider, uint256 shares, uint256 unlockTimestamp)",
+    "function sectorName() view returns (string)",
+    "function reservePremiumAndAssets(uint256 premium, uint256 maxPayout) external",
+    "function releasePayout(uint256 originalMaxPayout, uint256 actualPayout, address policyholder) external"
+]);
+
+export const VAULT_FACTORY_ABI = parseAbi([
+    "function implementation() view returns (address)",
+    "function allVaults(uint256) view returns (address)",
+    "function getVaultCount() view returns (uint256)",
+    "function sectorToVault(string) view returns (address)",
+    "function deployVault(string, address, address, address, address, address) external returns (address)",
+    "event VaultDeployed(string sector, address vault)"
 ]);
 
 export const PRODUCT_ABI = parseAbi([

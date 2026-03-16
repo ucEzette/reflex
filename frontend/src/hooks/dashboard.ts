@@ -1,26 +1,47 @@
-import { useReadContract } from 'wagmi';
-import { CONTRACTS } from '@/lib/contracts';
+import { useReadContracts } from 'wagmi';
+import { CONTRACTS, POOLS } from '@/lib/contracts';
 import { LIQUIDITY_POOL_ABI } from '@/lib/enterprise_abis';
 import { formatUnits } from 'viem';
+import { useMemo } from 'react';
 
 export function usePoolMetrics() {
-    const { data: totalAssets } = useReadContract({
-        address: CONTRACTS.LP_POOL as `0x${string}`,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'totalAssets',
-        chainId: 43113,
+    const poolAddresses = POOLS.map(p => p.address as `0x${string}`);
+
+    const { data: results, isLoading } = useReadContracts({
+        contracts: [
+            ...poolAddresses.map(address => ({
+                address,
+                abi: LIQUIDITY_POOL_ABI,
+                functionName: 'totalAssets',
+            })),
+            ...poolAddresses.map(address => ({
+                address,
+                abi: LIQUIDITY_POOL_ABI,
+                functionName: 'totalMaxPayouts',
+            }))
+        ],
+        query: {
+            refetchInterval: 20000,
+        }
     });
 
-    const { data: totalMaxPayouts } = useReadContract({
-        address: CONTRACTS.LP_POOL as `0x${string}`,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'totalMaxPayouts',
-        chainId: 43113,
-    });
+    const metrics = useMemo(() => {
+        if (!results || !Array.isArray(results)) return { tvl: 0, payouts: 0, utilization: 0, isLoading };
 
-    const tvl = totalAssets ? Number(formatUnits(totalAssets as bigint, 6)) : 0;
-    const payouts = totalMaxPayouts ? Number(formatUnits(totalMaxPayouts as bigint, 6)) : 0;
-    const utilization = tvl > 0 ? (payouts / tvl) * 100 : 0;
+        const totalAssetsBigInt = results.slice(0, poolAddresses.length).reduce((acc: bigint, res: any) => {
+            return acc + (res?.status === 'success' ? (res.result as bigint) : BigInt(0));
+        }, BigInt(0));
 
-    return { tvl, payouts, utilization };
+        const totalPayoutsBigInt = results.slice(poolAddresses.length).reduce((acc: bigint, res: any) => {
+            return acc + (res?.status === 'success' ? (res.result as bigint) : BigInt(0));
+        }, BigInt(0));
+
+        const tvl = Number(formatUnits(totalAssetsBigInt, 6));
+        const payouts = Number(formatUnits(totalPayoutsBigInt, 6));
+        const utilization = tvl > 0 ? (payouts / tvl) * 100 : 0;
+
+        return { tvl, payouts, utilization, isLoading };
+    }, [results, poolAddresses.length, isLoading]);
+
+    return metrics;
 }
