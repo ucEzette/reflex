@@ -20,7 +20,17 @@ Deterministic settlement is powered by a multi-layered oracle integration:
 - **Chainlink Automation:** Autonomously executes payout logic the moment risk thresholds are breached.
 - **Avalanche Teleporter:** Coordinates cross-chain settlement and ZK-proof verification.
 
-### 4. Invisible UX (Account Abstraction)
+### 4. Autonomous Risk & Treasury Agent
+Reflex is governed by a decentralized autonomous agent (running **Llama 3.3 70B** via Groq) that monitors both on-chain and off-chain data in real-time. 
+- **Dynamic Underwriting:** The agent polls global meteorological (NOAA) and aviation (FlightAware) APIs. If an anomaly is detected (e.g., a Category 5 hurricane or systemic flight grounded), it executes on-chain transactions to adjust protocol margins.
+- **Yield Harvesting:** The agent monitors the profitability of Aave V3 reserves and autonomously triggers yield harvests when a predefined profit threshold (e.g., >100 USDC) is met.
+
+### 5. Tether WDK Integration
+The Autonomous Agent utilizes the **Tether Wallet Development Kit (WDK)** for secure, self-custodial wallet management.
+- **Self-Custody:** Multi-chain EVM account management via Tether's specialized SDK, ensuring the agent retains full control over its own treasury roles.
+- **Deterministic Scaling:** Precise coordinate-based risk evaluation utilizing Tether's high-performance blockchain interaction layer.
+
+### 6. Invisible UX (Account Abstraction)
 Integrated with **thirdweb Smart Accounts** and **Paymasters**, Reflex provides a gasless, "one-tap" purchase experience. Users interact with the protocol via an Enterprise SDK that abstracts all blockchain complexity.
 
 ---
