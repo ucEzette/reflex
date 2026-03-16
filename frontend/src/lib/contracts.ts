@@ -1,4 +1,4 @@
-import { LIQUIDITY_POOL_ABI, PRODUCT_ABI, GENERIC_PRODUCT_ABI, ERC20_ABI as ENTERPRISE_ERC20 } from './enterprise_abis';
+import { LIQUIDITY_POOL_ABI, PRODUCT_ABI, GENERIC_PRODUCT_ABI, VAULT_FACTORY_ABI, ERC20_ABI as ENTERPRISE_ERC20 } from './enterprise_abis';
 
 export const ESCROW_ABI = [
     {
@@ -84,7 +84,7 @@ export const ESCROW_ABI = [
 ] as const;
 
 
-export { ENTERPRISE_ERC20 as ERC20_ABI, PRODUCT_ABI, GENERIC_PRODUCT_ABI };
+export { ENTERPRISE_ERC20 as ERC20_ABI, PRODUCT_ABI, GENERIC_PRODUCT_ABI, VAULT_FACTORY_ABI };
 export const LP_POOL_ABI = LIQUIDITY_POOL_ABI;
 export const TRAVEL_ABI = PRODUCT_ABI;
 export const AGRI_ABI = GENERIC_PRODUCT_ABI;
@@ -93,6 +93,7 @@ export const CATASTROPHE_ABI = GENERIC_PRODUCT_ABI;
 export const MARITIME_ABI = GENERIC_PRODUCT_ABI;
 
 export const CONTRACTS = {
+    VAULT_FACTORY: "0xFaAb070d6f017955252e0a19CC532f227eDb2425" as `0x${string}`, // Placeholder for new deployment
     ESCROW: "0xd8218d83e4fe4927aff7bcd0bed316a3c39be7b4" as `0x${string}`,
     USDT: "0x4F6d9867564b31bD7Bd1ADA8376640201bf15e0B" as `0x${string}`,
 

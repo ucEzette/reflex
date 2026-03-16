@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useReadContracts } from "wagmi";
-import { CONTRACTS } from "@/lib/contracts";
+import { CONTRACTS, POOLS } from "@/lib/contracts";
 import { LIQUIDITY_POOL_ABI } from "@/lib/enterprise_abis";
 import { formatUnits } from "viem";
 
@@ -11,23 +11,17 @@ export const SolvencyDashboard = () => {
     const [mounted, setMounted] = useState(false);
     useEffect(() => setMounted(true), []);
 
-    const poolAddresses = [
-        CONTRACTS.LP_TRAVEL,
-        CONTRACTS.LP_AGRI,
-        CONTRACTS.LP_ENERGY,
-        CONTRACTS.LP_CAT,
-        CONTRACTS.LP_MARITIME
-    ];
+    const poolAddresses = POOLS.map(p => p.address);
 
     const { data: solvencyData, isLoading } = useReadContracts({
         contracts: [
-            ...poolAddresses.map(address => ({
-                address: address as `0x${string}`,
+            ...poolAddresses.map((addr) => ({
+                address: addr as `0x${string}`,
                 abi: LIQUIDITY_POOL_ABI,
                 functionName: 'totalAssets',
             })),
-            ...poolAddresses.map(address => ({
-                address: address as `0x${string}`,
+            ...poolAddresses.map((addr) => ({
+                address: addr as `0x${string}`,
                 abi: LIQUIDITY_POOL_ABI,
                 functionName: 'totalMaxPayouts',
             }))
@@ -41,12 +35,12 @@ export const SolvencyDashboard = () => {
     const metrics = useMemo(() => {
         if (!solvencyData || !Array.isArray(solvencyData)) return { totalAssets: 0, totalLiabilities: 0, ratio: 0 };
         
-        const assets = solvencyData.slice(0, 5).reduce((acc: bigint, res: any) => {
+        const assets = solvencyData.slice(0, poolAddresses.length).reduce((acc: bigint, res: any) => {
             const val = res?.status === 'success' && typeof res.result === 'bigint' ? res.result : BigInt(0);
             return acc + val;
         }, BigInt(0));
 
-        const liabilities = solvencyData.slice(5, 10).reduce((acc: bigint, res: any) => {
+        const liabilities = solvencyData.slice(poolAddresses.length, poolAddresses.length * 2).reduce((acc: bigint, res: any) => {
             const val = res?.status === 'success' && typeof res.result === 'bigint' ? res.result : BigInt(0);
             return acc + val;
         }, BigInt(0));
