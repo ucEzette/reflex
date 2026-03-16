@@ -74,6 +74,76 @@ const SIMULATION_PROFILES = {
         description: (val: number) => `Gale force wind detected. Port operations at ${val}kt exceed safety thresholds. Binary settlement triggered via Stormglass.io.`,
         noActionDescription: "Wind conditions are within safe operational parameters for dockside logistics.",
         triggerLabel: "PORT CLOSURE"
+    },
+    'heat-wave': {
+        id: "heat-wave",
+        title: "Heat",
+        icon: "thermostat",
+        unit: "°C",
+        inputLabel: "Ambient Temp",
+        threshold: 40,
+        maxInput: 60,
+        color: "#fb7185",
+        isInverted: false,
+        description: (val: number) => `Industrial thermal safety threshold breached at ${val}°C. Productivity subsidy settlement active.`,
+        noActionDescription: "Regional temperature is within standard seasonal ranges.",
+        triggerLabel: "THERMAL SUBSIDY"
+    },
+    'powder-protect': {
+        id: "powder-protect",
+        title: "Powder",
+        icon: "ac_unit",
+        unit: "CM",
+        inputLabel: "Base Depth",
+        threshold: 80,
+        maxInput: 200,
+        color: "#cbd5e1",
+        isInverted: true,
+        description: (val: number) => `Snow base at ${val}cm is below the required 80cm depth. Resort utility protection triggered.`,
+        noActionDescription: "Snow conditions meet the optimal depth for premium alpine operations.",
+        triggerLabel: "THAW PROTECTION"
+    },
+    'peg-shield': {
+        id: "peg-shield",
+        title: "Peg",
+        icon: "currency_exchange",
+        unit: "USD",
+        inputLabel: "Market Price",
+        threshold: 0.98,
+        maxInput: 1.05,
+        color: "#34d399",
+        isInverted: true,
+        description: (val: number) => `De-peg event verified at $${val}. Automated tail risk liquidity release authorized by Chainlink Price Feeds.`,
+        noActionDescription: "Stablecoin maintains parity within the defined safety margin.",
+        triggerLabel: "DE-PEG SHIELD"
+    },
+    'sun-yield': {
+        id: "sun-yield",
+        title: "Solar",
+        icon: "solar_power",
+        unit: "kWh",
+        inputLabel: "Daily Output",
+        threshold: 400,
+        maxInput: 1000,
+        color: "#fbbf24",
+        isInverted: true,
+        description: (val: number) => `Solar irradiance output at ${val}kWh is below the performance benchmark. Yield smoothing payout initiated.`,
+        noActionDescription: "Photovoltaic generation is tracking at or above historical performance averages.",
+        triggerLabel: "YIELD SMOOTH"
+    },
+    'freight-wait': {
+        id: "freight-wait",
+        title: "Freight",
+        icon: "directions_boat",
+        unit: "DAYS",
+        inputLabel: "Berthing Delay",
+        threshold: 2,
+        maxInput: 10,
+        color: "#818cf8",
+        isInverted: false,
+        description: (val: number) => `Port congestion at ${val} days exceeds the demurrage threshold. Supply chain liquidity release active.`,
+        noActionDescription: "Maritime traffic flow is within scheduled logistics windows.",
+        triggerLabel: "CONGESTION COVER"
     }
 };
 
@@ -96,16 +166,25 @@ export const PayoutSimulator = () => {
     // Simulate real-time risk engine polling
     useEffect(() => {
         const checkRisk = () => {
-            // Logic: If input value is within 20% of threshold, or some other "stress" factor
-            // For demo: Let's trigger surge if inputValue is high or randomly for "real-time feel"
-            const isHighRisk = (activeId === 'flight' && inputValue > 180) || 
-                              (activeId === 'maritime' && inputValue > 130) ||
-                              (activeId === 'energy' && inputValue > 45);
+            const isHighRisk = 
+                (activeId === 'flight' && inputValue > 180) || 
+                (activeId === 'maritime' && inputValue > 130) ||
+                (activeId === 'energy' && inputValue > 45) ||
+                (activeId === 'heat-wave' && inputValue > 52) ||
+                (activeId === 'peg-shield' && inputValue < 0.985) ||
+                (activeId === 'sun-yield' && inputValue < 500) ||
+                (activeId === 'powder-protect' && inputValue < 60) ||
+                (activeId === 'freight-wait' && inputValue > 6);
             
             if (isHighRisk) {
                 setSurgeData({
-                    multiplier: activeId === 'energy' ? 2.5 : 1.8,
-                    reason: activeId === 'energy' ? "Extreme Heat Warning" : "High Volatility Forecast"
+                    multiplier: (activeId === 'energy' || activeId === 'heat-wave') ? 2.5 : 
+                                (activeId === 'peg-shield' || activeId === 'sun-yield') ? 1.4 : 1.8,
+                    reason: activeId === 'energy' ? "Extreme Heat Warning" : 
+                            activeId === 'peg-shield' ? "Stablecoin Volatility Alert" :
+                            activeId === 'sun-yield' ? "Low Irradiance Forecast" :
+                            activeId === 'powder-protect' ? "Base Depth Integrity Risk" :
+                            "High Volatility Forecast"
                 });
             } else {
                 setSurgeData(null);
@@ -179,22 +258,24 @@ export const PayoutSimulator = () => {
                 
                 {/* Visual Graph Side */}
                 <div className="flex flex-col gap-6">
-                    {/* Product Tabs */}
-                    <div className="flex p-1 bg-black/40 rounded-xl border border-white/5 self-start">
-                        {Object.values(SIMULATION_PROFILES).map((p) => (
-                            <button
-                                key={p.id}
-                                onClick={() => setActiveId(p.id as any)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${
-                                    activeId === p.id 
-                                    ? "bg-white text-black shadow-lg shadow-white/10" 
-                                    : "text-zinc-500 hover:text-white"
-                                }`}
-                            >
-                                <span className="material-symbols-outlined text-[16px]">{p.icon}</span>
-                                <span className="hidden sm:inline">{p.title}</span>
-                            </button>
-                        ))}
+                    {/* Product Tabs - Scrollable for 10 products */}
+                    <div className="flex bg-black/40 rounded-xl border border-white/5 self-start w-full overflow-hidden">
+                        <div className="flex items-center gap-1 p-1 overflow-x-auto scrollbar-hide no-scrollbar max-w-full">
+                            {Object.values(SIMULATION_PROFILES).map((p) => (
+                                <button
+                                    key={p.id}
+                                    onClick={() => setActiveId(p.id as any)}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                                        activeId === p.id 
+                                        ? "bg-white text-black shadow-lg shadow-white/10" 
+                                        : "text-zinc-500 hover:text-white"
+                                    }`}
+                                >
+                                    <span className="material-symbols-outlined text-[14px]">{p.icon}</span>
+                                    <span>{p.title}</span>
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     <div className="flex items-center justify-between">
