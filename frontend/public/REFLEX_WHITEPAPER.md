@@ -32,7 +32,8 @@ Reflex replaces the traditional insurance carrier with a decentralized matching 
 
 *   **Zero-Touch Parametric Payouts:** Policies are defined by code, not paper. Payouts are triggered instantly by verifiable off-chain data (e.g., flight status, weather metrics, or seismic activity) via decentralized oracles.
 *   **Dual-Yield Architecture:** Reflex solves the "dead capital" problem by routing unutilized USDC from risk pools directly into Aave v3, allowing capital to earn passive yield *before* and *during* its time as a risk reserve.
-*   **API-First "Invisible" Distribution:** Designed as a B2B "Trojan Horse," Reflex allows Web2 platforms to integrate comprehensive protection directly at the point of sale via a simple SDK, abstracting away the blockchain complexity for the end-user.
+*   **API-First "Invisible" Distribution:** Designed as a B2B "Trojan Horse," Reflex allows Web2 platforms to integrate comprehensive protection directly at the point of sale via a simple SDK. The **Quick-Policy Widget** abstracts all blockchain complexity, enabling "one-tap" protection.
+*   **Dynamic Risk Engine:** An actuarial layer that adjusts premiums in real-time based on high-frequency meteorological and market data. This ensures that the protocol remains solvent during "Surge" risk events (e.g., storms or depegs).
 
 ---
 
@@ -47,6 +48,9 @@ Liquidity is held in compartmentalized, sector-specific USDC vaults (e.g., Aviat
 ### 5.3 Oracle Layer: Chainlink Triple-Threat
 *   **Chainlink Data Feeds/Functions:** Acts as the bridge for reliable, tamper-proof off-chain state data (like flight tracking or satellite weather) into the smart contracts.
 *   **Chainlink Automation:** Decentralized "cron jobs" (`checkUpkeep` and `performUpkeep`) constantly monitor the state of real-world triggers. The exact second a threshold is crossed, Automation executes the on-chain payout transaction.
+
+### 5.4 Solvency Architecture (Proof of Reserves)
+Reflex maintains a real-time **Solvency Dashboard** that monitors pool assets vs. outstanding liabilities. This provides total transparency, ensuring that 100% of maximum potential payouts are always locked and verifiable on-chain.
 
 ---
 
@@ -82,7 +86,7 @@ Governance is transitioned progressively to the stakeholders providing the proto
 
 *   **Phase 1: Supply Bootstrapping (Q2 2026)** — Avalanche Fuji Testnet launch, tier-1 audits, and "Early Underwriter" waitlist campaigns.
 *   **Phase 2: Mainnet Genesis (Q3 2026)** — Avalanche Mainnet deployment, activation of Aave v3 Dual-Yield logic, and launch of the flagship Flight Delay pool.
-*   **Phase 3: The Trojan Horse (Q4 2026)** — Release of the B2B API widget for travel/ticketing platforms and fiat-to-policy checkout integration.
+*   **Phase 3: The Trojan Horse (Q4 2026)** — Release of the **Quick-Policy Widget** for travel/ticketing platforms and fiat-to-policy checkout integration. [COMPLETED]
 *   **Phase 4: Maturation & Scale (Q1 2027)** — CCIP-enabled cross-chain liquidity and deployment of auto-compounding LP vaults.
 
 ---

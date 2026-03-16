@@ -66,6 +66,7 @@ export function Footer() {
                         <ul className="space-y-4">
                             <li><a href="https://docs.google.com/presentation/d/1RAQHRFVr9NHClst8C7FdOXr4fHUsxcsug20wHwEC8Ak/present" target="_blank" rel="noopener noreferrer" className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-2"><Terminal className="w-3 h-3" /> Our Intro Deck</a></li>
                             <li><a href="https://github.com/ucEzette/reflex" target="_blank" rel="noopener noreferrer" className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-2"><Github className="w-3 h-3" /> GitHub Org</a></li>
+                            <li><Link href="/widget-demo" className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-2"><Activity className="w-3 h-3" /> Widget Demo</Link></li>
                             <li><Link href="/docs#contracts" className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-2"><Globe className="w-3 h-3" /> API Reference</Link></li>
                             <li><Link href="/docs#security" className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-2"><Shield className="w-3 h-3" /> Bug Bounty</Link></li>
                             <li><a href="mailto:sneppsezette@gmail.com" className="text-sm text-primary hover:text-primary/80 transition-colors flex items-center gap-2 font-bold"><Activity className="w-3 h-3" /> Report Issue</a></li>

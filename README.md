@@ -19,7 +19,16 @@ Reflex is engineered for the real world, integrating state-of-the-art technologi
 - **The UX Layer**: Integrated **thirdweb Paymasters** and Smart Accounts to provide a 1-click, 0-gas experience. Users can purchase policies without holding AVAX or worrying about gas fees.
 
 ### 4. Chainlink Runtime Environment (CRE) Orchestration
-- **The Brain**: Used to orchestrate off-chain verification and on-chain execution, acting as a secure gatekeeper via the `cre/PolicyVerifier.ts` action.
+- **The Brain**: Orchestrates off-chain verification and on-chain execution, acting as a secure gatekeeper via the `cre/PolicyVerifier.ts` action.
+
+### 5. Dynamic Risk Engine (Surge Pricing)
+- **Real-Time Actuarial Logic**: Automatically adjusts premiums based on high-frequency meteorological and market data (e.g., wind speed, stablecoin deviation, solar yield).
+- **Universal Coverage**: Live risk scoring implemented for all 10 product markets including **Peg Shield**, **Sun Yield**, and **Freight Wait**.
+
+### 6. Mobile-First Quick-Policy Widget
+- **Embeddable Micro-Frontend**: A simple protection toggle that can be integrated into any travel checkout flow.
+- **Blockchain Abstraction**: Simplifies the purchase flow into a single tap, handling z-k payments and encrypted vault minting behind the scenes.
+- **Demo**: [View the Quick-Policy Integration Demo](/widget-demo)
 
 ---
 
@@ -40,6 +49,11 @@ Reflex utilizes a **Hub-and-Spoke** architecture designed for modularity and hig
 ### 3. The Relayer Layer (Node.js)
 - **EIP-712 Quote Signing**: Ensures cryptographically secure, time-bound premium quotes.
 - **Risk Simulation**: Pre-calculating probability distributions to ensure accurate pricing.
+- **RiskEngineService**: A high-speed actuarial engine polling oracles via Chainlink DONs to provide real-time risk multipliers.
+
+### 4. Solvency Dashboard (Proof of Reserves)
+- **Real-Time Transparency**: Direct on-chain monitoring of pool assets vs. outstanding liabilities.
+- **Aave V3 Tracking**: Visualizing interest-bearing collateral (aUSDT) utilized for protocol backing.
 
 ---
 

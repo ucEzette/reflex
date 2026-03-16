@@ -10,9 +10,15 @@ export default function DocsPage() {
                     <h1 className="text-5xl md:text-7xl font-black text-foreground tracking-tighter leading-tight drop-shadow-2xl text-center md:text-left">
                         Protocol <span className="text-primary">Manual</span>
                     </h1>
-                    <p className="text-slate-400 text-xl font-light max-w-3xl leading-relaxed mx-auto md:mx-0 text-center md:text-left">
-                        An industry-standard guide to the Reflex Parametric Architecture, Liquidity Dynamics, and the Event-Driven Settlement Engine.
-                    </p>
+                    <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                        <p className="text-slate-400 text-xl font-light max-w-3xl leading-relaxed">
+                            An industry-standard guide to the Reflex Parametric Architecture, Liquidity Dynamics, and the Event-Driven Settlement Engine.
+                        </p>
+                        <span className="hidden md:block w-px h-8 bg-white/10" />
+                        <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+                            v2.1 — MAR 2026
+                        </div>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -25,7 +31,9 @@ export default function DocsPage() {
                                 <li><a href="#policyholders" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">For Policyholders</a></li>
                                 <li><a href="#investors" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">For Investors</a></li>
                                 <li><a href="#integrations" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">Protocol Integrations</a></li>
-                                <li><a href="#autonomous-agent" className="block px-4 py-1.5 text-sm font-bold text-primary hover:text-primary transition-colors border-l border-primary">Autonomous Agent (WDK)</a></li>
+                                <li><a href="#autonomous-agent" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">Autonomous Agent (WDK)</a></li>
+                                <li><a href="#dynamic-risk" className="block px-4 py-1.5 text-sm font-bold text-primary hover:text-primary transition-colors border-l border-primary">Dynamic Risk Engine</a></li>
+                                <li><a href="#quick-widget" className="block px-4 py-1.5 text-sm font-bold text-primary hover:text-primary transition-colors border-l border-primary">Quick-Policy Widget</a></li>
                             </ul>
                         </nav>
                         <nav className="space-y-3">
@@ -795,6 +803,65 @@ export default function DocsPage() {
                             </div>
                         </section>
 
+                        {/* ═══════════ DYNAMIC RISK ENGINE ═══════════ */}
+                        <section id="dynamic-risk" className="scroll-mt-32">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
+                                <span className="material-symbols-outlined text-red-500 text-4xl">dynamic_form</span>
+                                Dynamic Risk Engine (Surge Pricing)
+                            </h2>
+                            <div className="glass-panel p-8 rounded-2xl space-y-6">
+                                <p className="text-foreground leading-relaxed font-light text-lg">
+                                    The **Dynamic Risk Engine** (DRE) is a high-frequency actuarial layer that prevents protocol insolvency during extreme volatility events. Unlike static insurance quotes, Reflex premiums adjust every 8 seconds based on live environmental and market telemetry.
+                                </p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="p-5 bg-white/5 rounded-xl border border-white/10 space-y-3">
+                                        <h4 className="text-sm font-bold text-red-400 uppercase tracking-widest">Surge Triggers</h4>
+                                        <ul className="text-[11px] text-slate-400 space-y-2">
+                                            <li>• <strong>Aviation</strong>: Wind Speeds &gt; 25 knots / Hail probability &gt; 40%.</li>
+                                            <li>• <strong>Stablecoins</strong>: Oracle price deviation &gt; 1.5% from peg.</li>
+                                            <li>• <strong>Agriculture</strong>: Rain probability &lt; 10% during peak season.</li>
+                                        </ul>
+                                    </div>
+                                    <div className="p-5 bg-white/5 rounded-xl border border-white/10 space-y-3">
+                                        <h4 className="text-sm font-bold text-white uppercase tracking-widest">Pricing Formula</h4>
+                                        <code className="block text-[10px] text-primary bg-black/40 p-3 rounded font-mono">
+                                            Premium = BaseP &times; riskMultiplier(DON_DATA)<br/>
+                                            // riskMultiplier ranges from 1.0x to 5.0x
+                                        </code>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* ═══════════ QUICK-POLICY WIDGET ═══════════ */}
+                        <section id="quick-widget" className="scroll-mt-32">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
+                                <span className="material-symbols-outlined text-primary text-4xl">widgets</span>
+                                Quick-Policy Widget (B2B Integration)
+                            </h2>
+                            <div className="glass-panel p-8 rounded-2xl space-y-6">
+                                <div className="flex flex-col md:flex-row gap-8 items-center">
+                                    <div className="flex-1 space-y-4">
+                                        <p className="text-foreground font-light leading-relaxed">
+                                            The **Quick-Policy Widget** is a mobile-first micro-frontend that travel and logistics platforms can embed directly in their checkout flows. It abstracts all blockchain complexity, providing a "Web2.5" experience.
+                                        </p>
+                                        <ul className="text-[11px] text-slate-400 space-y-2">
+                                            <li className="flex items-center gap-2"><span className="material-symbols-outlined text-primary text-sm">check_circle</span> Gasless UX via thirdweb Paymasters</li>
+                                            <li className="flex items-center gap-2"><span className="material-symbols-outlined text-primary text-sm">check_circle</span> One-tap transaction signing</li>
+                                            <li className="flex items-center gap-2"><span className="material-symbols-outlined text-primary text-sm">check_circle</span> Real-time surge pricing visualization</li>
+                                        </ul>
+                                    </div>
+                                    <div className="w-full md:w-64 p-6 bg-primary/10 border border-primary/20 rounded-2xl text-center space-y-4">
+                                        <span className="material-symbols-outlined text-5xl text-primary animate-bounce">ads_click</span>
+                                        <h4 className="text-sm font-black italic">Integration Showcase</h4>
+                                        <a href="/widget-demo" target="_blank" className="block w-full py-3 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-105 transition-transform">
+                                            View Widget Demo
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
                         {/* ═══════════ FAQ ═══════════ */}
                         <section id="faq" className="scroll-mt-32">
                             <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
@@ -807,7 +874,7 @@ export default function DocsPage() {
                                     { q: "What if pool utilization reaches 100%?", a: "The routePremiumAndReserve() function reverts with 'InsufficientCapitalCap'. New policy sales are effectively halted until existing policies expire or more liquidity is deposited." },
                                     { q: "Can a policy be claimed after it expires?", a: "No. Once status transitions to 2 (Expired), the executeClaim() function reverts with 'Not active'. This is enforced by the status check and verified in 640k+ fuzz sequences." },
                                     { q: "What happens during chain congestion?", a: "Chainlink Keepers will retry expiration calls. Claim settlements may be delayed by block inclusion time, but the payout amount is deterministic and cannot change." },
-                                    { q: "Can LPs withdraw during active policies?", a: "Yes, but only up to the point where the solvency invariant holds. If withdrawal would cause totalAssets < totalMaxPayouts, the available withdrawal amount is reduced proportionally." },
+                                    { q: "Can LPs withdraw during active policies?", a: "Yes, but only up to the point where the solvency invariant holds. If withdrawal would cause totalAssets &lt; totalMaxPayouts, the available withdrawal amount is reduced proportionally." },
                                     { q: "How are gas costs handled?", a: "Policyholders pay gas for purchasePolicy(). Claim execution and policy expiration gas is covered by the Relayer/Keeper infrastructure." },
                                 ].map((faq) => (
                                     <div key={faq.q} className="glass-panel p-6 rounded-xl">
