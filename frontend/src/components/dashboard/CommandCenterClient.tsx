@@ -10,6 +10,7 @@ import { config } from '@/lib/wagmiConfig';
 import { CONTRACTS, ESCROW_ABI, TRAVEL_ABI, GENERIC_PRODUCT_ABI, LP_POOL_ABI } from '@/lib/contracts';
 import { formatUnits } from 'viem';
 import { useState, useEffect, useMemo } from 'react';
+import { usePoolMetrics } from '@/hooks/dashboard';
 
 const FUJI_START_BLOCK = BigInt(52515483);
 const MAX_BLOCKS_PER_QUERY = 2000; // Safer value for 2048 limit
@@ -29,19 +30,6 @@ export function CommandCenterClient() {
         setMounted(true);
     }, []);
 
-    // Global Stats Aggregation
-    const [protocolData, setProtocolData] = useState<{
-        totalAssets: bigint;
-        totalMaxPayouts: bigint;
-        activePolicyCount: number;
-        userTotalShares: bigint;
-    }>({
-        totalAssets: BigInt(0),
-        totalMaxPayouts: BigInt(0),
-        activePolicyCount: 0,
-        userTotalShares: BigInt(0)
-    });
-
     const poolAddresses = [
         CONTRACTS.LP_TRAVEL,
         CONTRACTS.LP_AGRI,
@@ -50,105 +38,51 @@ export function CommandCenterClient() {
         CONTRACTS.LP_MARITIME
     ];
 
-    const productContracts = [
-        { address: CONTRACTS.TRAVEL, abi: TRAVEL_ABI },
-        { address: CONTRACTS.AGRI, abi: GENERIC_PRODUCT_ABI },
-        { address: CONTRACTS.ENERGY, abi: GENERIC_PRODUCT_ABI },
-        { address: CONTRACTS.CATASTROPHE, abi: GENERIC_PRODUCT_ABI },
-        { address: CONTRACTS.MARITIME, abi: GENERIC_PRODUCT_ABI }
-    ];
+    // Use unified hook for global protocol metrics
+    const { 
+        tvl: totalTVLRaw, 
+        payouts: totalPayoutsRaw, 
+        utilization, 
+        isLoading: isMetricsLoading 
+    } = usePoolMetrics();
 
-    // Aggressive Sync Effect
+    const totalAssets = BigInt(Math.floor(totalTVLRaw * 1e6));
+    const totalMaxPayouts = BigInt(Math.floor(totalPayoutsRaw * 1e6));
+    const activePolicyCount = policies.filter(p => p.data[5]).length; // Derived from fetched policies
+
+    // Personal Governance Power (Shares) still needs manual fetch across pools
+    const [userTotalShares, setUserTotalShares] = useState(BigInt(0));
+
     useEffect(() => {
-        const syncData = async () => {
-            const pc = getPublicClient(config);
-            if (!pc) return;
-
-            console.log("Starting Aggressive Sync...");
-
-            try {
-                // Fetch Total Assets and Payouts from all pools
-                const poolDataResults = await Promise.all(poolAddresses.map(async (addr) => {
-                    try {
-                        const [assets, payouts] = await Promise.all([
-                            pc.readContract({
-                                address: addr as `0x${string}`,
-                                abi: LP_POOL_ABI,
-                                functionName: 'totalAssets',
-                            }),
-                            pc.readContract({
-                                address: addr as `0x${string}`,
-                                abi: LP_POOL_ABI,
-                                functionName: 'totalMaxPayouts',
-                            })
-                        ]);
-                        return { assets: assets as bigint, payouts: payouts as bigint };
-                    } catch (e) {
-                        console.error(`Failed to read pool ${addr}:`, e);
-                        return { assets: BigInt(0), payouts: BigInt(0) };
-                    }
-                }));
-
-                const totalAssetsSum = poolDataResults.reduce((acc, curr) => acc + curr.assets, BigInt(0));
-                const totalMaxPayoutSum = poolDataResults.reduce((acc, curr) => acc + curr.payouts, BigInt(0));
-
-                // Fetch Active Policy Counts from all products
-                const policyCountResults = await Promise.all(productContracts.map(async (c) => {
-                    try {
-                        const count = await pc.readContract({
-                            address: c.address as `0x${string}`,
-                            abi: c.abi,
-                            functionName: 'getActivePolicyCount',
-                        });
-                        return Number(count);
-                    } catch (e) {
-                        console.error(`Failed to read product ${c.address}:`, e);
-                        return 0;
-                    }
-                }));
-
-                const totalActivePolicies = policyCountResults.reduce((acc, curr) => acc + curr, 0);
-
-                // Fetch User Shares for Gov Power
-                let userShares = BigInt(0);
-                if (address) {
-                    const shareResults = await Promise.all(poolAddresses.map(async (addr) => {
-                        try {
-                            const s = await pc.readContract({
-                                address: addr as `0x${string}`,
-                                abi: LP_POOL_ABI,
-                                functionName: 'lpShares',
-                                args: [address],
-                            });
-                            return s as bigint;
-                        } catch (e) {
-                            return BigInt(0);
-                        }
-                    }));
-                    userShares = shareResults.reduce((acc, curr) => acc + curr, BigInt(0));
+        if (!address) return;
+        
+        const fetchShares = async () => {
+             const pc = getPublicClient(config);
+             if (!pc) return;
+             
+             const shareResults = await Promise.all(poolAddresses.map(async (addr) => {
+                try {
+                    const s = await pc.readContract({
+                        address: addr as `0x${string}`,
+                        abi: LP_POOL_ABI,
+                        functionName: 'lpShares',
+                        args: [address],
+                    });
+                    return s as bigint;
+                } catch (e) {
+                    return BigInt(0);
                 }
-
-                setProtocolData({
-                    totalAssets: totalAssetsSum,
-                    totalMaxPayouts: totalMaxPayoutSum,
-                    activePolicyCount: totalActivePolicies,
-                    userTotalShares: userShares
-                });
-
-                // console.log("Aggressive Sync Complete:", { totalAssetsSum, totalActivePolicies });
-
-            } catch (err) {
-                console.error("Aggressive Sync failed:", err);
-            }
+            }));
+            const sum = shareResults.reduce((acc: bigint, curr: bigint) => acc + curr, BigInt(0));
+            setUserTotalShares(sum);
         };
 
-        syncData();
-        const interval = setInterval(syncData, 30000); // Sync every 30s
+        fetchShares();
+        const interval = setInterval(fetchShares, 30000);
         return () => clearInterval(interval);
     }, [address, mounted]);
 
-    // Derived values from aggressive sync
-    const { totalAssets, totalMaxPayouts, activePolicyCount, userTotalShares } = protocolData;
+    // PERSONAL POLICIES FETCHING (Keep existing logic)
 
     // Multi-contract User Policy Fetching
     const { data: escrowIds } = useReadContract({ address: CONTRACTS.ESCROW as `0x${string}`, abi: ESCROW_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address }, chainId: 43113 });

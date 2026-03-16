@@ -32,8 +32,9 @@ export default function DocsPage() {
                                 <li><a href="#investors" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">For Investors</a></li>
                                 <li><a href="#integrations" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">Protocol Integrations</a></li>
                                 <li><a href="#autonomous-agent" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">Autonomous Agent (WDK)</a></li>
-                                <li><a href="#dynamic-risk" className="block px-4 py-1.5 text-sm font-bold text-primary hover:text-primary transition-colors border-l border-primary">Dynamic Risk Engine</a></li>
-                                <li><a href="#quick-widget" className="block px-4 py-1.5 text-sm font-bold text-primary hover:text-primary transition-colors border-l border-primary">Quick-Policy Widget</a></li>
+                                <li><a href="#dynamic-risk" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">Dynamic Risk Engine</a></li>
+                                <li><a href="#enterprise-sdk" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">Enterprise SDK</a></li>
+                                <li><a href="#risk-simulation" className="block px-4 py-1.5 text-sm text-foreground hover:text-primary transition-colors border-l border-white/5 hover:border-primary">Risk Simulation</a></li>
                             </ul>
                         </nav>
                         <nav className="space-y-3">
@@ -577,6 +578,53 @@ export default function DocsPage() {
                                             </div>
                                         ))}
                                     </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* ═══════════ ENTERPRISE SDK ═══════════ */}
+                        <section id="quick-widget" className="scroll-mt-32">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
+                                <span className="material-symbols-outlined text-primary text-4xl">sdk</span>
+                                Enterprise SDK (@reflex/widget-sdk)
+                            </h2>
+                            <div className="glass-panel p-8 rounded-2xl space-y-6">
+                                <p className="text-slate-400 font-light leading-relaxed">
+                                    The Reflex Enterprise SDK is a modular micro-frontend designed for seamless checkout integration. It abstracts all blockchain complexity while providing high-fidelity branding controls.
+                                </p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="p-5 bg-white/5 rounded-xl border border-white/10">
+                                        <h4 className="text-primary font-bold text-sm mb-2">useReflexWidget Hook</h4>
+                                        <p className="text-[10px] text-slate-500 leading-relaxed italic">Headless business logic for premium estimation, risk polling, and purchase state management.</p>
+                                    </div>
+                                    <div className="p-5 bg-white/5 rounded-xl border border-white/10">
+                                        <h4 className="text-primary font-bold text-sm mb-2">Themeable UI</h4>
+                                        <p className="text-[10px] text-slate-500 leading-relaxed italic">Pre-built Light, Dark, and Glassmorphism themes. Customizable accent colors and iconography.</p>
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-black/40 rounded-xl font-mono text-[11px] text-primary border border-primary/20">
+                                    {`// Partner Integration Example\nimport { ReflexWidget } from "@reflex/widget-sdk";\n\n<ReflexWidget \n  market="TRAVEL" \n  theme="glass" \n  brandName="FlyGlobal"\n  accentColor="#6366f1"\n/>`}
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* ═══════════ RISK SIMULATION ═══════════ */}
+                        <section id="risk-simulation" className="scroll-mt-32">
+                            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
+                                <span className="material-symbols-outlined text-red-500 text-4xl">model_training</span>
+                                Risk Simulation & Stress Testing
+                            </h2>
+                            <div className="glass-panel p-8 rounded-2xl space-y-6">
+                                <p className="text-slate-400 font-light leading-relaxed">
+                                    Reflex includes a real-time <strong>Solvency Stress Test</strong> engine. This allows Liquidity Providers to simulate extreme risk scenarios and visualize the impact on protocol capital reserves before an event occur.
+                                </p>
+                                <div className="p-5 bg-red-500/5 border border-red-500/10 rounded-xl">
+                                    <h5 className="text-red-400 font-bold text-xs uppercase mb-3">Simulated Scenarios</h5>
+                                    <ul className="text-[10px] text-slate-500 space-y-2">
+                                        <li>• <strong>Hurricane (Cat-5)</strong> — Simultaneous total loss across Catastrophe and Agriculture sectors.</li>
+                                        <li>• <strong>Global Heatwave</strong> — Massive HDD accumulation across all Energy spokes.</li>
+                                        <li>• <strong>Aviation System Halt</strong> — 100% payout trigger for all active Travel policies globally.</li>
+                                    </ul>
                                 </div>
                             </div>
                         </section>

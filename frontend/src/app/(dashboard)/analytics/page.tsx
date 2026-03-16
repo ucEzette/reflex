@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { BarChart3, Activity, Shield, AlertTriangle, DollarSign, Layers, PieChart, Zap, Lock, Unlock } from 'lucide-react';
+import { BarChart3, Activity, Shield, AlertTriangle, DollarSign, Layers, PieChart, Zap, Lock, Unlock, Info } from 'lucide-react';
 import { useAccount, useReadContract } from 'wagmi';
 import { CONTRACTS } from '@/lib/contracts';
 import { LIQUIDITY_POOL_ABI, ERC20_ABI, PRODUCT_ABI } from '@/lib/enterprise_abis';
@@ -15,10 +15,11 @@ import { GlobalRiskLeaderboard } from '@/components/analytics/GlobalRiskLeaderbo
 import { ReportingSummary } from '@/components/analytics/ReportingSummary';
 import { GovernanceVoting } from '@/components/governance/GovernanceVoting';
 import { InstitutionalTooltip } from '@/components/ui/InstitutionalTooltip';
-import { Info } from 'lucide-react';
+import { RiskSimulator } from '@/components/analytics/RiskSimulator';
+import { HealthHUD } from '@/components/analytics/HealthHUD';
+import { usePoolMetrics } from '@/hooks/dashboard';
 
 // ── On-Chain Derived Analytics ──
-// No mock data — all values come from contract reads or are derived from on-chain state
 const PIE_COLORS = ['#ef4444', '#22c55e', '#f59e0b', '#8b5cf6', '#06b6d4'];
 const PRODUCT_NAMES = ['Travel Solutions', 'Agriculture', 'Energy', 'Catastrophe', 'Maritime'];
 
@@ -28,30 +29,18 @@ export default function AnalyticsPage() {
 
     useEffect(() => { setMounted(true); }, []);
 
-    // Live on-chain data
-    const { data: totalAssets } = useReadContract({
-        address: CONTRACTS.LP_POOL as `0x${string}`,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'totalAssets',
-        query: { enabled: mounted }
-    });
+    // Aggregated real-time metrics from all segmented vaults
+    const { tvl, payouts, utilization, isLoading } = usePoolMetrics();
 
-    const { data: totalMaxPayouts } = useReadContract({
-        address: CONTRACTS.LP_POOL as `0x${string}`,
-        abi: LIQUIDITY_POOL_ABI,
-        functionName: 'totalMaxPayouts',
-        query: { enabled: mounted }
-    });
+    const liveTVL = tvl;
+    const livePayouts = payouts;
+    const liveUtilization = utilization;
 
-    const liveTVL = totalAssets ? Number(formatUnits(totalAssets as bigint, 6)) : 0;
-    const livePayouts = totalMaxPayouts ? Number(formatUnits(totalMaxPayouts as bigint, 6)) : 0;
-    const liveUtilization = liveTVL > 0 ? (livePayouts / liveTVL) * 100 : 0;
-
-    // All metrics derived from on-chain state — no mock data
+    // All metrics derived from on-chain state
     const liveTvlM = liveTVL / 1_000_000;
     const livePayoutsM = livePayouts / 1_000_000;
 
-    // Real-time chart data (single current data point from on-chain)
+    // Real-time chart data
     const liveChartData = [
         { label: 'Now', tvl: liveTvlM, utilization: liveUtilization, payouts: livePayoutsM }
     ];
@@ -91,6 +80,11 @@ export default function AnalyticsPage() {
                     LP Performance Analytics
                 </h1>
                 <p className="text-muted-foreground mt-2">Real-time on-chain metrics for liquidity providers. All data sourced from smart contracts.</p>
+            </div>
+
+            {/* ── Operational HUD ── */}
+            <div className="mb-8">
+                <HealthHUD />
             </div>
 
             {/* ── KPI Cards ── */}
@@ -274,6 +268,11 @@ export default function AnalyticsPage() {
                         <p className="text-xs text-muted-foreground mt-1">Solvency Ratio</p>
                     </div>
                 </div>
+            </div>
+            
+            {/* ── Risk Simulation Engine (Stress Test) ── */}
+            <div className="mb-8">
+                <RiskSimulator currentAssets={liveTVL} currentLiabilities={livePayouts} />
             </div>
 
             {/* ── Claim Events & Leaderboard ── */}

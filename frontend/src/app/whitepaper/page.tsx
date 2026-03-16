@@ -145,13 +145,28 @@ export default function WhitepaperPage() {
                     <p className="text-slate-700">Built on the Avalanche C-Chain for high-throughput, low-fee EVM finality. This ensures that the protocol can handle thousands of micro-policies and instant payouts without gas bottlenecks.</p>
                   </div>
                   <div className="group">
-                    <h4 className="font-black font-sans text-slate-900 mb-2 uppercase tracking-tight text-lg">5.2 Hub-and-Spoke Risk Pools</h4>
-                    <p className="text-slate-700">Liquidity is compartmentalized in sector-specific USDC vaults (e.g., Aviation Spoke). These vaults act as the automated counterparties to user policies, ensuring risk isolation.</p>
+                    <h4 className="font-black font-sans text-slate-900 mb-2 uppercase tracking-tight text-lg">5.2 Segmented Risk Vaults</h4>
+                    <p className="text-slate-700">Liquidity is compartmentalized in sector-specific USDC vaults (Travel, Agriculture, Energy). This "Isolation Engine" ensures that catastrophic events in one sector do not impact the solvency of others, providing superior risk management for institutional underwriters.</p>
                   </div>
                   <div className="group">
                     <h4 className="font-black font-sans text-slate-900 mb-2 uppercase tracking-tight text-lg">5.3 Oracle Layer: Chainlink Triple-Threat</h4>
                     <p className="text-slate-700">Utilizing Chainlink Functions for reliable data ingestion and Chainlink Automation for decentralized "cron jobs" to trigger payouts the exact second a threshold is crossed.</p>
                   </div>
+                </div>
+            </section>
+
+            {/* Section 7 - Roadmap */}
+            <section className="space-y-8">
+                <h2 className="text-2xl font-black font-sans text-slate-900 uppercase tracking-tighter border-b-2 border-slate-100 pb-2">7. Enterprise Roadmap (Phase 2-4)</h2>
+                <div className="space-y-6">
+                    <div className="p-6 bg-slate-50 border border-slate-200">
+                        <h4 className="font-black text-slate-900 uppercase text-xs tracking-widest mb-3">Modular SDK Architecture</h4>
+                        <p className="text-sm text-slate-600">The Reflex Enterprise SDK allows partners to embed parametric protection toggles with full theme customization, supporting Light, Dark, and Glassmorphism aesthetics to match any existing checkout flow.</p>
+                    </div>
+                    <div className="p-6 bg-slate-50 border border-slate-200">
+                        <h4 className="font-black text-slate-900 uppercase text-xs tracking-widest mb-3">Real-Time Risk Simulation</h4>
+                        <p className="text-sm text-slate-600">Reflex integrates a proprietary "Solvency Stress Test" engine, allowing LPs to simulate catastrophic tail-risks (e.g. Category 5 Hurricanes) and witness real-time liability adjustments on-chain.</p>
+                    </div>
                 </div>
             </section>
 
