@@ -1,6 +1,6 @@
 # Reflex: Decentralized Parametric Risk Marketplace
 
-Reflex is an institutional-grade parametric risk infrastructure built on Avalanche. By replacing subjective claims assessments with deterministic smart contract logic, Reflex enables trustless, high-velocity protection for real-world risks (Aviation, Agriculture, Energy, and Maritime) using verifiable data triggers and algorithmic settlement.
+Reflex is an institutional-grade parametric risk infrastructure built on the Polkadot Hub (Moonbeam). By replacing subjective claims assessments with deterministic smart contract logic, Reflex enables trustless, high-velocity protection for real-world risks (Aviation, Agriculture, Energy, and Maritime) using verifiable data triggers and algorithmic settlement.
 
 ---
 
@@ -18,7 +18,7 @@ Reflex eliminates the "dead capital" problem in insurance. Unutilized USDC in ri
 Deterministic settlement is powered by a multi-layered oracle integration:
 - **Chainlink Functions:** Retrieves tamper-proof RWA data (NOAA, FlightAware, OpenWeather).
 - **Chainlink Automation:** Autonomously executes payout logic the moment risk thresholds are breached.
-- **Avalanche Teleporter:** Coordinates cross-chain settlement and ZK-proof verification.
+- **Moonbeam XCM/Transactor:** Coordinates cross-chain settlement and Polkadot parachain liquidity logic.
 
 ### 4. Autonomous Risk & Treasury Agent
 Reflex is governed by a decentralized autonomous agent (running **Llama 3.3 70B** via Groq) that monitors both on-chain and off-chain data in real-time. 
@@ -35,9 +35,9 @@ Integrated with **thirdweb Smart Accounts** and **Paymasters**, Reflex provides 
 
 ---
 
-## Smart Contract Registry (Avalanche Fuji)
+## Smart Contract Registry (Moonbase Alpha)
 
-All core protocol components are verified on Snowtrace to ensure total transparency and auditable solvency.
+All core protocol components are verified on Moonscan to ensure total transparency and auditable solvency.
 
 ### Core Protocol Engine
 
@@ -110,4 +110,4 @@ cd contracts && forge test --match-path test/SecurityInvariants.t.sol
 ---
 
 ## License
-Reflex Protocol is released under the **MIT License**. Created for the Avalanche Global Hackathon.
+Reflex Protocol is released under the **MIT License**. Created for the Polkadot Solidity Hackathon 2026.
