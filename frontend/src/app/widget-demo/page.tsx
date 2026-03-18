@@ -16,7 +16,7 @@ export default function WidgetDemo() {
     const total = baseFare + taxes + (protectionEnabled ? protectionPremium : 0);
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 font-sans p-4 pb-20 sm:p-8">
+        <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 font-sans p-4 pt-20 pb-20 sm:p-8 sm:pt-24">
             <div className="max-w-xl mx-auto space-y-8">
                 {/* Mock Browser/Header */}
                 <div className="flex items-center justify-between border-b border-white/5 pb-4">
