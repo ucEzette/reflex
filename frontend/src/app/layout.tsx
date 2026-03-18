@@ -31,6 +31,10 @@ export default function RootLayout({
           rel="preconnect"
         />
         <link
+          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap"
+          rel="stylesheet"
+        />
+        <link
           href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-sans@5.0.18/index.min.css"
           rel="stylesheet"
         />
@@ -58,6 +62,7 @@ export default function RootLayout({
       <body className="bg-transparent text-slate-900 dark:text-slate-100 font-display selection:bg-primary selection:text-white overflow-x-hidden transition-colors duration-500">
         <GlobalErrorBoundary>
           <Providers>
+            <div className="noise-overlay pointer-events-none fixed inset-0 z-[100] opacity-[0.03] mix-blend-overlay"></div>
             <VerletBackground />
             <div className="relative z-10 flex flex-col min-h-screen">
               <Navbar />

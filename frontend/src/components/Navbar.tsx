@@ -113,7 +113,7 @@ export function Navbar() {
 
     return (
         <>
-            <nav className="fixed top-0 w-full z-50 border-b border-border bg-background/80 backdrop-blur-md transition-all duration-300 h-16">
+            <nav className="fixed top-0 w-full z-50 border-b border-white/5 glass-panel-premium !rounded-none !border-t-0 !border-x-0 transition-all duration-300 h-16">
                 <div className="max-w-[1600px] mx-auto px-4 h-full flex items-center justify-between gap-4">
 
                     {/* Left: Logo + Mobile Hamburger */}

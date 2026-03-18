@@ -64,7 +64,7 @@ export default function WidgetDemo() {
                 </div>
 
                 {/* Booking Info Card */}
-                <div className="p-6 rounded-3xl bg-zinc-900/50 border border-white/5 space-y-6">
+                <div className="p-6 rounded-[2rem] glass-panel-premium space-y-6 transform-gpu hover:shadow-[0_0_40px_rgba(255,255,255,0.05)] transition-all duration-500">
                     <div className="flex items-center justify-between">
                         <div className="space-y-1">
                             <span className="text-[10px] font-black text-primary uppercase tracking-widest">Description</span>
@@ -99,7 +99,7 @@ export default function WidgetDemo() {
                 </div>
 
                 {/* Price Breakdown */}
-                <div className="p-6 rounded-3xl bg-zinc-900/50 border border-white/5 space-y-4">
+                <div className="p-6 rounded-[2rem] glass-panel-premium space-y-4">
                     <div className="flex justify-between text-sm text-zinc-400 font-medium">
                         <span>Base Amount</span>
                         <span className="font-mono">${baseFare.toFixed(2)}</span>

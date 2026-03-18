@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useMemo, useState, useEffect } from "react";
+import { motion, useSpring } from "framer-motion";
 import { useReadContracts } from "wagmi";
 import { CONTRACTS, POOLS } from "@/lib/contracts";
 import { LIQUIDITY_POOL_ABI } from "@/lib/enterprise_abis";
@@ -67,8 +67,32 @@ export const SolvencyDashboard = () => {
 
     const healthColor = metrics.ratio > 150 ? "#22c55e" : metrics.ratio > 110 ? "#f59e0b" : "#ef4444";
 
+    // Framer Motion Spring for rolling numbers
+    const ratioSpring = useSpring(0, { bounce: 0, stiffness: 50, damping: 20 });
+    const assetsSpring = useSpring(0, { bounce: 0, stiffness: 50, damping: 20 });
+    const liabilitiesSpring = useSpring(0, { bounce: 0, stiffness: 50, damping: 20 });
+
+    const ratioRef = React.useRef<HTMLDivElement>(null);
+    const assetsRef = React.useRef<HTMLDivElement>(null);
+    const liabRef = React.useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        ratioSpring.set(metrics.ratio);
+        assetsSpring.set(metrics.totalAssets);
+        liabilitiesSpring.set(metrics.totalLiabilities);
+    }, [metrics, ratioSpring, assetsSpring, liabilitiesSpring]);
+
+    useEffect(() => {
+        const unsubs = [
+            ratioSpring.on("change", (v) => { if (ratioRef.current) ratioRef.current.textContent = `${v.toFixed(1)}%`; }),
+            assetsSpring.on("change", (v) => { if (assetsRef.current && !isLoading) assetsRef.current.textContent = formatCurrency(v); }),
+            liabilitiesSpring.on("change", (v) => { if (liabRef.current && !isLoading) liabRef.current.textContent = formatCurrency(v); })
+        ];
+        return () => unsubs.forEach(u => u());
+    }, [ratioSpring, assetsSpring, liabilitiesSpring, isLoading]);
+
     return (
-        <div className="w-full p-8 rounded-3xl bg-zinc-900/40 border border-white/5 backdrop-blur-2xl relative overflow-hidden group">
+        <div className="w-full p-8 rounded-[2rem] glass-panel-premium relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-neon-cyan/5 via-transparent to-transparent opacity-50" />
             
             <div className="relative z-10 space-y-12">
@@ -91,10 +115,10 @@ export const SolvencyDashboard = () => {
                     </div>
 
                     <div className="flex flex-col items-end">
-                        <div className="text-4xl font-black tabular-nums tracking-tighter" style={{ color: healthColor }}>
+                        <div ref={ratioRef} className="text-5xl font-black font-mono tracking-tighter drop-shadow-md" style={{ color: healthColor }}>
                             {metrics.ratio.toFixed(1)}%
                         </div>
-                        <div className="text-[10px] text-zinc-600 font-bold uppercase tracking-tighter">SOLVENCY RATIO</div>
+                        <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] mt-1">SOLVENCY RATIO</div>
                     </div>
                 </div>
 
@@ -115,22 +139,22 @@ export const SolvencyDashboard = () => {
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="p-6 rounded-2xl bg-zinc-950/50 border border-white/5 hover:border-neon-cyan/30 transition-colors">
-                                <div className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-1">Capital Reserves (Aave)</div>
-                                <div className="text-2xl font-black text-white tabular-nums">
+                            <div className="p-6 rounded-2xl bg-black/40 border border-white/5 hover:border-neon-cyan/50 hover:shadow-[0_0_30px_rgba(0,240,255,0.15)] transition-all duration-300">
+                                <div className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.15em] mb-2">Capital Reserves (Aave)</div>
+                                <div ref={assetsRef} className="text-3xl font-black font-mono text-white drop-shadow-sm">
                                     {isLoading ? "Fetching..." : formatCurrency(metrics.totalAssets)}
                                 </div>
-                                <div className="text-[10px] text-green-500 font-bold mt-1 flex items-center gap-1">
+                                <div className="text-[10px] text-green-500 font-bold mt-2 flex items-center gap-1">
                                     <span className="material-symbols-outlined text-[12px]">verified</span>
                                     On-Chain Verified
                                 </div>
                             </div>
-                            <div className="p-6 rounded-2xl bg-zinc-950/50 border border-white/5 hover:border-red-500/30 transition-colors">
-                                <div className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-1">Max Potential Liabilities</div>
-                                <div className="text-2xl font-black text-white tabular-nums">
+                            <div className="p-6 rounded-2xl bg-black/40 border border-white/5 hover:border-red-500/50 hover:shadow-[0_0_30px_rgba(239,68,68,0.15)] transition-all duration-300">
+                                <div className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.15em] mb-2">Max Potential Liabilities</div>
+                                <div ref={liabRef} className="text-3xl font-black font-mono text-white drop-shadow-sm">
                                     {isLoading ? "Fetching..." : formatCurrency(metrics.totalLiabilities)}
                                 </div>
-                                <div className="text-[10px] text-zinc-600 font-bold mt-1 uppercase">Continuous Exposure</div>
+                                <div className="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-wide">Continuous Exposure</div>
                             </div>
                         </div>
                     </div>

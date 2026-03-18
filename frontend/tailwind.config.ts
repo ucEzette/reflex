@@ -52,9 +52,10 @@ const config: Config = {
         ring: "var(--ring)",
       },
       fontFamily: {
-        display: ["'Open Sauce Sans'", "sans-serif"],
+        display: ["'Space Grotesk'", "sans-serif"],
         body: ["'Open Sauce Sans'", "sans-serif"],
         sans: ["'Open Sauce Sans'", "sans-serif"],
+        mono: ["'JetBrains Mono'", "monospace"],
       },
       animation: {
         float: "float 6s ease-in-out infinite",
