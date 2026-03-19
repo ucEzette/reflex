@@ -1,6 +1,7 @@
 import cron from "node-cron";
 import { loadConfig } from "./config";
 import { AviationStackService } from "./services/AviationStackService";
+import { OracleAggregatorService } from "./services/OracleAggregatorService";
 import { BlockchainService } from "./services/BlockchainService";
 import { PolicyInfo } from "./types";
 import { logger } from "./utils/logger";
@@ -20,7 +21,7 @@ if (!(Array.prototype as any).with) {
 async function processPolicy(
     policy: PolicyInfo,
     blockchain: BlockchainService,
-    aviationStack: AviationStackService
+    aviationStack: OracleAggregatorService
 ) {
     const policyIdShort = policy.policyId.slice(0, 18);
 
@@ -68,7 +69,7 @@ async function processPolicy(
 // ── Legacy Escrow Monitor ──
 async function monitorEscrow(
     blockchain: BlockchainService,
-    aviationStack: AviationStackService
+    aviationStack: OracleAggregatorService
 ) {
     console.log(`\n[Relayer] ─── Escrow scan at ${new Date().toISOString()} ───`);
     try {
@@ -143,7 +144,8 @@ async function main() {
 
     const config = loadConfig();
 
-    const aviationStack = new AviationStackService(config.aviationStackApiKey);
+    const aviationStackBase = new AviationStackService(config.aviationStackApiKey);
+    const aviationStack = new OracleAggregatorService(aviationStackBase, process.env.FLIGHTAWARE_API_KEY);
     const weatherService = new WeatherService(config.noaaApiKey, config.openWeatherMapApiKey);
 
     const blockchain = new BlockchainService(

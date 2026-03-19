@@ -1,0 +1,50 @@
+name: Reflex Institutional CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  validate:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      run: npm install -g pnpm
+
+    - name: Install Dependencies
+      run: |
+        cd frontend
+        pnpm install
+
+    - name: Lint Rules
+      run: |
+        cd frontend
+        pnpm lint
+
+    - name: Smart Contract Verification (Foundry)
+      uses: foundry-rs/foundry-toolchain@v1
+      with:
+        version: nightly
+    - run: |
+        cd contracts
+        forge test -vvv --gas-report
+
+    # In a full setup, we'd run Playwright here too:
+    # - name: Run Playwright E2E
+    #   run: |
+    #     cd frontend
+    #     npx playwright install --with-deps
+    #     npx playwright test
