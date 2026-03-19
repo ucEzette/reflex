@@ -29,10 +29,7 @@ contract MainnetRollout is Script {
         );
         address aavePool = vm.envOr("AAVE_POOL", address(0));
         address protocolTreasury = vm.envOr("PROTOCOL_TREASURY", deployer);
-        address teleporterMessenger = vm.envOr(
-            "TELEPORTER_ADDRESS",
-            address(0)
-        );
+
 
         console2.log("--- Starting Mainnet Rollout Candidate ---");
         console2.log("Deployer:", deployer);
@@ -98,9 +95,7 @@ contract MainnetRollout is Script {
         ReflexParametricEscrow implementation = new ReflexParametricEscrow();
         bytes memory initData = abi.encodeWithSelector(
             ReflexParametricEscrow.initialize.selector,
-            teleporterMessenger,
             usdcAddress,
-            bytes32(uint256(43114)), // Mainnet L1 Chain ID
             protocolTreasury,
             deployer,
             2 // Required Quorum

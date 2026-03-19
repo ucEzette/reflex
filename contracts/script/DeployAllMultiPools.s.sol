@@ -13,7 +13,9 @@ contract DeployAllMultiPools is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployer = vm.addr(deployerPrivateKey);
 
-        address usdc = 0x5425890298aed601595a70AB815c96711a31Bc65; // Fuji USDC
+        address usdc = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913; // Base Mainnet USDC
+        address aavePool = 0xA238Dd80C259a72e81d7e4664a9801593F98d1c5; // Base Mainnet Aave V3 Pool
+        address aUsdc = 0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB; // Base Mainnet aBaseUSDC
         address protocolTreasury = deployer;
 
         vm.startBroadcast(deployerPrivateKey);
@@ -29,8 +31,8 @@ contract DeployAllMultiPools is Script {
                 ReflexLiquidityPool.initialize.selector,
                 usdc,
                 protocolTreasury,
-                address(0),
-                address(0),
+                aavePool,
+                aUsdc,
                 deployer
             )
         );
@@ -45,8 +47,8 @@ contract DeployAllMultiPools is Script {
                 ReflexLiquidityPool.initialize.selector,
                 usdc,
                 protocolTreasury,
-                address(0),
-                address(0),
+                aavePool,
+                aUsdc,
                 deployer
             )
         );
@@ -59,8 +61,8 @@ contract DeployAllMultiPools is Script {
                 ReflexLiquidityPool.initialize.selector,
                 usdc,
                 protocolTreasury,
-                address(0),
-                address(0),
+                aavePool,
+                aUsdc,
                 deployer
             )
         );
@@ -75,8 +77,8 @@ contract DeployAllMultiPools is Script {
                 ReflexLiquidityPool.initialize.selector,
                 usdc,
                 protocolTreasury,
-                address(0),
-                address(0),
+                aavePool,
+                aUsdc,
                 deployer
             )
         );
@@ -89,8 +91,8 @@ contract DeployAllMultiPools is Script {
                 ReflexLiquidityPool.initialize.selector,
                 usdc,
                 protocolTreasury,
-                address(0),
-                address(0),
+                aavePool,
+                aUsdc,
                 deployer
             )
         );

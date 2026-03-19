@@ -24,12 +24,7 @@ contract DeployReflex is Script {
         address deployer = vm.addr(deployerPrivateKey);
 
         // Configuration — override with env vars for production
-        address teleporterAddress = vm.envOr("TELEPORTER_ADDRESS", address(0));
         address usdcAddress = vm.envOr("USDC_ADDRESS", address(0));
-        bytes32 reflexL1ChainId = vm.envOr(
-            "REFLEX_L1_CHAIN_ID",
-            bytes32(uint256(43113)) // Fuji chain ID as default
-        );
         address treasury = vm.envOr("PROTOCOL_TREASURY", deployer);
 
         console2.log("=== Reflex L1 Deployment ===");
@@ -48,22 +43,17 @@ contract DeployReflex is Script {
             console2.log("Minted 1,000,000 USDC to deployer");
         }
 
-        if (teleporterAddress == address(0)) {
-            MockTeleporterMessenger mockTeleporter = new MockTeleporterMessenger();
-            teleporterAddress = address(mockTeleporter);
-            console2.log("MockTeleporter deployed:", teleporterAddress);
-        }
+
 
         // Deploy the escrow contract
         ReflexParametricEscrow implementation = new ReflexParametricEscrow();
 
         bytes memory initData = abi.encodeWithSelector(
             ReflexParametricEscrow.initialize.selector,
-            teleporterAddress,
             usdcAddress,
-            reflexL1ChainId,
             treasury,
-            deployer // Initial owner
+            deployer, // Initial owner
+            2 // Required Quorum
         );
 
         ERC1967Proxy proxy = new ERC1967Proxy(
@@ -74,13 +64,13 @@ contract DeployReflex is Script {
 
         console2.log("ReflexParametricEscrow deployed:", address(escrow));
         console2.log("Protocol Treasury:", treasury);
-        console2.log("Reflex L1 Chain ID:", vm.toString(reflexL1ChainId));
+
 
         vm.stopBroadcast();
 
         // Log summary
         console2.log("\n=== Deployment Summary ===");
-        console2.log("Teleporter:", teleporterAddress);
+
         console2.log("USDC:", usdcAddress);
         console2.log("Escrow:", address(escrow));
     }

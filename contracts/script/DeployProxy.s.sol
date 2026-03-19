@@ -11,9 +11,7 @@ contract DeployProxy is Script {
         address initialOwner = vm.addr(deployerPrivateKey);
 
         // Fuji Testnet Addresses
-        address teleporter = 0xC7a297DE87890728453daa240A8373D7D5Cee90b;
         address usdc = 0x5425890298aed601595a70AB815c96711a31Bc65;
-        bytes32 L1_CHAIN_ID = 0x535a96753066606a000000000000000000000000000000000000000000000000;
         address treasury = 0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf; // Placeholder, update as needed
 
         vm.startBroadcast(deployerPrivateKey);
@@ -24,11 +22,10 @@ contract DeployProxy is Script {
         // 2. Prepare Initialization Data
         bytes memory initData = abi.encodeWithSelector(
             ReflexParametricEscrow.initialize.selector,
-            teleporter,
             usdc,
-            L1_CHAIN_ID,
             treasury,
-            initialOwner
+            initialOwner,
+            2 // Quorum
         );
 
         // 3. Deploy Proxy
