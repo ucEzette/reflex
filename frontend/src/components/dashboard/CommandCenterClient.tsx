@@ -134,13 +134,14 @@ export function CommandCenterClient() {
                                         (group.addr === CONTRACTS.CATASTROPHE ? 'Catastrophe' : 'Maritime')));
 
                             if (group.isEscrow) {
-                                return { id, data, type };
+                                return { id, data, type, contract: group.addr };
                             } else {
                                 if (group.abi === TRAVEL_ABI) {
                                     const [holder, premium, payout, status, expiry, target] = data;
                                     return {
                                         id,
                                         type,
+                                        contract: group.addr,
                                         data: [holder, target, premium, payout, expiry, Number(status) === 0, Number(status) === 1]
                                     };
                                 } else {
@@ -148,6 +149,7 @@ export function CommandCenterClient() {
                                     return {
                                         id,
                                         type,
+                                        contract: group.addr,
                                         data: [holder, target, premium, payout, expiry, Number(status) === 0, Number(status) === 1]
                                     };
                                 }

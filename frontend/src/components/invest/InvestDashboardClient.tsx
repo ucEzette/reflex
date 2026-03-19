@@ -89,7 +89,6 @@ export function InvestDashboardClient() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isApproving, setIsApproving] = useState(false);
     const [isMinting, setIsMinting] = useState(false);
-    const [isTxPending, setIsTxPending] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
 
     // Guide state
@@ -300,6 +299,8 @@ export function InvestDashboardClient() {
     // Contract Writes
     const { writeContract, data: hash, error: writeError, isPending: isWritePending } = useWriteContract();
     const { isLoading: isTxConfirming, isSuccess: isTxSuccess, error: confirmError } = useWaitForTransactionReceipt({ hash });
+    
+    const isTxPending = isWritePending || isTxConfirming;
 
     // Robust approval check
     const needsApproval = useMemo(() => {
@@ -332,10 +333,14 @@ export function InvestDashboardClient() {
         chainId: TARGET_CHAIN_ID
     });
 
+    const handledTxHash = React.useRef<string | null>(null);
+
     useEffect(() => {
         if (isTxConfirming) {
             toast.loading("Confirming transaction...", { id: "tx" });
-        } else if (isTxSuccess) {
+        } else if (isTxSuccess && hash && hash !== handledTxHash.current) {
+            handledTxHash.current = hash;
+            
             if (isApproving) {
                 toast.success("USDT Approved! You can now initiate your deposit.", { id: "tx" });
                 setIsApproving(false);
@@ -346,16 +351,6 @@ export function InvestDashboardClient() {
                 toast.success(`${actionType === 'deposit' ? 'Deposit' : 'Withdrawal'} successful!`, { id: "tx" });
                 setShowSuccess(true);
                 setTimeout(() => setShowSuccess(false), 5000);
-
-                // Add to history explicitly on success
-                const newEntry = {
-                    id: hash,
-                    type: actionType,
-                    amount: amount,
-                    timestamp: Date.now(),
-                    hash: hash
-                };
-                updateHistory([newEntry]);
 
                 setAmount("");
                 refetchAssets();
@@ -368,13 +363,15 @@ export function InvestDashboardClient() {
                 refetchIntentTimestamp();
                 setIsSubmitting(false);
             }
-        } else if (confirmError) {
+        } else if (confirmError && hash && hash !== handledTxHash.current) {
+            handledTxHash.current = hash;
             console.error("Transaction Confirmation Error:", confirmError);
             toast.error(confirmError.message || "Transaction failed during confirmation", { id: "tx" });
             setIsApproving(false);
             setIsSubmitting(false);
         }
     }, [isTxConfirming, isTxSuccess, confirmError, isApproving, actionType, refetchAllowance, refetchAssets, refetchTotalShares, refetchPayouts, syncProtocolData, refetchBalance, refetchIntentAmount, refetchIntentTimestamp, hash, amount, updateHistory]);
+
 
     useEffect(() => {
         if (writeError) {
@@ -1093,13 +1090,24 @@ export function InvestDashboardClient() {
                                             'bg-primary hover:bg-primary/90 text-white shadow-[0_10px_20px_rgba(128,0,32,0.3)]'}
                                     disabled:opacity-50`}
                             >
-                                {isTxPending ? <RefreshCcw className="w-4 h-4 animate-spin" /> :
-                                    isSubmitting ? (isApproving ? 'Approving...' : 'Confirming...') :
-                                        (showSuccess) ? <><CheckCircle2 className="w-5 h-5" /> SUCCEEDED</> :
-                                            !isConnected ? <><Layers className="w-4 h-4" /> CONNECT WALLET</> :
-                                                chainId !== TARGET_CHAIN_ID ? <><Activity className="w-4 h-4" /> SWITCH TO FUJI</> : // Explicit CTA for network
-                                                    !amount ? <><DollarSign className="w-4 h-4" /> ENTER AMOUNT</> :
-                                                        (actionType === 'deposit' ? (needsApproval ? 'APPROVE USDT' : 'INITIATE DEPOSIT') : 'REQUEST WITHDRAWAL')}
+                                {isTxPending || isSubmitting ? (
+                                    <>
+                                        <RefreshCcw className="w-4 h-4 animate-spin" />
+                                        {isApproving ? 'APPROVING USDT...' : 'CONFIRMING TX...'}
+                                    </>
+                                ) : showSuccess ? (
+                                    <><CheckCircle2 className="w-5 h-5" /> SUCCEEDED</>
+                                ) : !isConnected ? (
+                                    <><Layers className="w-4 h-4" /> CONNECT WALLET</>
+                                ) : chainId !== TARGET_CHAIN_ID ? (
+                                    <><Activity className="w-4 h-4" /> SWITCH TO FUJI</>
+                                ) : !amount ? (
+                                    <><DollarSign className="w-4 h-4" /> ENTER AMOUNT</>
+                                ) : actionType === 'deposit' ? (
+                                    needsApproval ? 'APPROVE USDT' : 'INITIATE DEPOSIT'
+                                ) : (
+                                    'REQUEST WITHDRAWAL'
+                                )}
                             </button>
                         </div>
 
