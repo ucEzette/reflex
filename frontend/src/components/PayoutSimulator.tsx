@@ -251,7 +251,7 @@ export const PayoutSimulator = () => {
     }, [profile, minPayout, maxPayout]);
 
     return (
-        <div className="relative w-full p-8 rounded-3xl bg-zinc-900/40 border border-white/5 backdrop-blur-2xl overflow-hidden group">
+        <div className="relative w-full p-4 md:p-8 rounded-3xl bg-zinc-900/40 border border-white/5 backdrop-blur-2xl overflow-hidden group">
             <div className={`absolute inset-0 bg-gradient-to-br transition-opacity duration-1000 ${surgeData ? 'from-red-500/10 via-transparent to-transparent opacity-80' : 'from-primary/5 via-transparent to-transparent opacity-50'}`} />
             
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -293,15 +293,15 @@ export const PayoutSimulator = () => {
                                 )}
                             </div>
                         </div>
-                        <div className="flex flex-col items-end">
-                            <span className="text-3xl font-black drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]" style={{ color: profile.color }}>
+                        <div className="flex flex-col items-end mt-4 sm:mt-0">
+                            <span className="text-2xl sm:text-3xl font-black drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]" style={{ color: profile.color }}>
                                 {payout.toLocaleString()} <span className="text-sm font-light">USDT</span>
                             </span>
                             <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-tighter">ESTIMATED PAYOUT</span>
                         </div>
                     </div>
 
-                    <div className="relative h-64 w-full bg-zinc-950/50 rounded-2xl border border-white/5 p-4 flex items-end">
+                    <div className="relative h-48 sm:h-64 w-full bg-zinc-950/50 rounded-2xl border border-white/5 p-4 flex items-end">
                         {/* Grid Lines */}
                         <div className="absolute inset-4 flex flex-col justify-between opacity-10 pointer-events-none">
                             {[1, 2, 3, 4].map(i => <div key={i} className="w-full h-[1px] bg-white border-t border-dashed" />)}

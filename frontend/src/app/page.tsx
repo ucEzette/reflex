@@ -49,7 +49,7 @@ export default function Home() {
             {/* Badge Removed per request */}
 
             {/* Headline */}
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.9] text-white drop-shadow-2xl">
+            <h1 className="text-4xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.9] text-white drop-shadow-2xl">
               Micro-Insurance, <br />
               <span className="text-primary relative inline-block">
                 Macro Speed.
@@ -65,9 +65,9 @@ export default function Home() {
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 mt-4 w-full justify-center">
-              <a href="/market" className="dexter-btn-container w-52 relative z-30">
-                <button className="dexter-btn !min-w-[200px] !min-h-[50px] !px-6 !py-3 !rounded-xl" type="button">
+            <div className="flex flex-col sm:flex-row items-center gap-4 mt-4 w-full justify-center">
+              <a href="/market" className="dexter-btn-container w-full max-w-[220px] sm:w-52 relative z-30">
+                <button className="dexter-btn w-full !min-h-[50px] !px-6 !py-3 !rounded-xl" type="button">
                   <span className="dexter-btn-drawer dexter-transition-top !text-[11px]">DAPP</span>
                   <span className="dexter-btn-text flex items-center gap-2 !text-lg">Launch App <span className="material-symbols-outlined text-[20px]">arrow_forward</span></span>
                   <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
@@ -77,8 +77,8 @@ export default function Home() {
                   <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[11px]">mainnet active</span>
                 </button>
               </a>
-              <a href="https://docs.google.com/presentation/d/1RAQHRFVr9NHClst8C7FdOXr4fHUsxcsug20wHwEC8Ak/present" target="_blank" rel="noopener noreferrer" className="dexter-btn-container w-52 relative z-30" style={{ '--btn-color': '#475569' } as React.CSSProperties}>
-                <button className="dexter-btn !min-w-[200px] !min-h-[50px] !px-6 !py-3 !rounded-xl opacity-90 hover:opacity-100" type="button">
+              <a href="https://docs.google.com/presentation/d/1RAQHRFVr9NHClst8C7FdOXr4fHUsxcsug20wHwEC8Ak/present" target="_blank" rel="noopener noreferrer" className="dexter-btn-container w-full max-w-[220px] sm:w-52 relative z-30" style={{ '--btn-color': '#475569' } as React.CSSProperties}>
+                <button className="dexter-btn w-full !min-h-[50px] !px-6 !py-3 !rounded-xl opacity-90 hover:opacity-100" type="button">
                   <span className="dexter-btn-drawer dexter-transition-top !text-[11px]">DOCS</span>
                   <span className="dexter-btn-text flex items-center gap-2 !text-lg !text-foreground/90"><span className="material-symbols-outlined text-[20px]">description</span> Our Intro Deck</span>
                   <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
@@ -190,9 +190,9 @@ export default function Home() {
             <p className="text-white/80 mb-10 max-w-xl mx-auto font-light leading-relaxed">
               Connect your wallet and explore available micro-insurance pools powered by <span className="text-primary font-bold">Reflex</span>.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="/market" className="dexter-btn-container w-48 relative z-30">
-                <button className="dexter-btn !min-w-[180px] !min-h-[44px] !px-4 !py-2" type="button">
+            <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
+              <a href="/market" className="dexter-btn-container w-full max-w-[200px] sm:w-48 relative z-30">
+                <button className="dexter-btn w-full !min-h-[44px] !px-4 !py-2" type="button">
                   <span className="dexter-btn-drawer dexter-transition-top">DAPP</span>
                   <span className="dexter-btn-text flex items-center gap-2 !text-base">Launch App <span className="material-symbols-outlined text-[18px]">arrow_forward</span></span>
                   <svg className="dexter-btn-corner" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
@@ -202,8 +202,8 @@ export default function Home() {
                   <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[10px]">mainnet</span>
                 </button>
               </a>
-              <a href="https://docs.google.com/presentation/d/1RAQHRFVr9NHClst8C7FdOXr4fHUsxcsug20wHwEC8Ak/present" target="_blank" rel="noopener noreferrer" className="dexter-btn-container w-48 relative z-30" style={{ '--btn-color': '#475569' } as React.CSSProperties}>
-                <button className="dexter-btn !min-w-[180px] !min-h-[44px] !px-4 !py-2 opacity-90 hover:opacity-100" type="button">
+              <a href="https://docs.google.com/presentation/d/1RAQHRFVr9NHClst8C7FdOXr4fHUsxcsug20wHwEC8Ak/present" target="_blank" rel="noopener noreferrer" className="dexter-btn-container w-full max-w-[200px] sm:w-48 relative z-30" style={{ '--btn-color': '#475569' } as React.CSSProperties}>
+                <button className="dexter-btn w-full !min-h-[44px] !px-4 !py-2 opacity-90 hover:opacity-100" type="button">
                   <span className="dexter-btn-drawer dexter-transition-top">DOCS</span>
                   <span className="dexter-btn-text flex items-center gap-2 !text-base !text-foreground/90">Our Intro Deck</span>
                   <svg className="dexter-btn-corner" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>

@@ -1248,18 +1248,16 @@
     height: 80px;
   }
 
-  .homepage-card-3d .card-item:nth-child(1),
-  .homepage-card-3d .card-item:nth-child(2),
-  .homepage-card-3d .card-item:nth-child(3),
-  .homepage-card-3d .card-item:nth-child(4),
-  .homepage-card-3d .card-item:nth-child(5),
-  .homepage-card-3d .card-item:nth-child(6),
-  .homepage-card-3d .card-item:nth-child(7),
-  .homepage-card-3d .card-item:nth-child(8),
-  .homepage-card-3d .card-item:nth-child(9),
-  .homepage-card-3d .card-item:nth-child(10) {
-    transform: translate(-50%, -50%) rotateY(var(--ry, 0deg)) translateZ(130px);
-  }
+  .homepage-card-3d .card-item:nth-child(1) { transform: translate(-50%, -50%) rotateY(0deg) translateZ(120px); }
+  .homepage-card-3d .card-item:nth-child(2) { transform: translate(-50%, -50%) rotateY(36deg) translateZ(120px); }
+  .homepage-card-3d .card-item:nth-child(3) { transform: translate(-50%, -50%) rotateY(72deg) translateZ(120px); }
+  .homepage-card-3d .card-item:nth-child(4) { transform: translate(-50%, -50%) rotateY(108deg) translateZ(120px); }
+  .homepage-card-3d .card-item:nth-child(5) { transform: translate(-50%, -50%) rotateY(144deg) translateZ(120px); }
+  .homepage-card-3d .card-item:nth-child(6) { transform: translate(-50%, -50%) rotateY(180deg) translateZ(120px); }
+  .homepage-card-3d .card-item:nth-child(7) { transform: translate(-50%, -50%) rotateY(216deg) translateZ(120px); }
+  .homepage-card-3d .card-item:nth-child(8) { transform: translate(-50%, -50%) rotateY(252deg) translateZ(120px); }
+  .homepage-card-3d .card-item:nth-child(9) { transform: translate(-50%, -50%) rotateY(288deg) translateZ(120px); }
+  .homepage-card-3d .card-item:nth-child(10) { transform: translate(-50%, -50%) rotateY(324deg) translateZ(120px); }
 
   .homepage-card-3d .card-item .material-symbols-outlined {
     font-size: 24px;
@@ -1270,16 +1268,27 @@
   }
 
   /* Glass group — stack on mobile */
+  .glass-group {
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 20px 0;
+  }
+
   .glass-group .glass-panel {
-    width: 180px;
-    height: 220px;
-    margin: 0 -40px;
+    width: 250px;
+    height: 250px;
+    margin: 0;
     font-size: 0.85rem;
+    transform: rotate(0deg) !important;
+  }
+
+  .glass-group:hover .glass-panel {
+    margin: 0;
   }
 
   .glass-group .glass-panel p {
-    font-size: 0.7rem;
-    padding: 0 10px;
+    font-size: 0.8rem;
+    padding: 0 15px;
   }
 
   /* 3D Market Card — smaller */
@@ -1316,6 +1325,17 @@
     width: 80px;
     height: 90px;
   }
+
+  .homepage-card-3d .card-item:nth-child(1) { transform: translate(-50%, -50%) rotateY(0deg) translateZ(160px); }
+  .homepage-card-3d .card-item:nth-child(2) { transform: translate(-50%, -50%) rotateY(36deg) translateZ(160px); }
+  .homepage-card-3d .card-item:nth-child(3) { transform: translate(-50%, -50%) rotateY(72deg) translateZ(160px); }
+  .homepage-card-3d .card-item:nth-child(4) { transform: translate(-50%, -50%) rotateY(108deg) translateZ(160px); }
+  .homepage-card-3d .card-item:nth-child(5) { transform: translate(-50%, -50%) rotateY(144deg) translateZ(160px); }
+  .homepage-card-3d .card-item:nth-child(6) { transform: translate(-50%, -50%) rotateY(180deg) translateZ(160px); }
+  .homepage-card-3d .card-item:nth-child(7) { transform: translate(-50%, -50%) rotateY(216deg) translateZ(160px); }
+  .homepage-card-3d .card-item:nth-child(8) { transform: translate(-50%, -50%) rotateY(252deg) translateZ(160px); }
+  .homepage-card-3d .card-item:nth-child(9) { transform: translate(-50%, -50%) rotateY(288deg) translateZ(160px); }
+  .homepage-card-3d .card-item:nth-child(10) { transform: translate(-50%, -50%) rotateY(324deg) translateZ(160px); }
 }
 
 /* Loading state animation for buttons */

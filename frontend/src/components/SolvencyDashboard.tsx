@@ -115,7 +115,7 @@ export const SolvencyDashboard = () => {
                     </div>
 
                     <div className="flex flex-col items-end">
-                        <div ref={ratioRef} className="text-5xl font-black font-mono tracking-tighter drop-shadow-md" style={{ color: healthColor }}>
+                        <div ref={ratioRef} className="text-4xl md:text-5xl font-black font-mono tracking-tighter drop-shadow-md" style={{ color: healthColor }}>
                             {metrics.ratio.toFixed(1)}%
                         </div>
                         <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] mt-1">SOLVENCY RATIO</div>
@@ -138,7 +138,7 @@ export const SolvencyDashboard = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="p-6 rounded-2xl bg-black/40 border border-white/5 hover:border-neon-cyan/50 hover:shadow-[0_0_30px_rgba(0,240,255,0.15)] transition-all duration-300">
                                 <div className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.15em] mb-2">Capital Reserves (Aave)</div>
                                 <div ref={assetsRef} className="text-3xl font-black font-mono text-white drop-shadow-sm">
