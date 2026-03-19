@@ -14,23 +14,17 @@ contract MockUSDC is ERC20 {
     }
 }
 
-contract MockTeleporter {
-    function sendCrossChainMessage(
-        TeleporterMessageInput memory
-    ) public returns (bytes32) {
-        return keccak256("teleporter_msg");
-    }
-}
+
 
 contract ReflexParametricEscrowTest is Test {
     ReflexParametricEscrow public escrow;
     MockUSDC public usdc;
-    MockTeleporter public teleporter;
+
 
     address public admin = address(1);
     address public user = address(2);
     address public treasury = address(3);
-    bytes32 public constant L1_CHAIN_ID = keccak256("reflex-l1");
+
 
     uint256 public constant PREMIUM = 5e6;
     uint256 public constant PAYOUT = 200e6;
@@ -39,15 +33,13 @@ contract ReflexParametricEscrowTest is Test {
     function setUp() public {
         vm.startPrank(admin);
         usdc = new MockUSDC();
-        teleporter = new MockTeleporter();
+
 
         // Deploy via Proxy
         ReflexParametricEscrow implementation = new ReflexParametricEscrow();
         bytes memory initData = abi.encodeWithSelector(
             ReflexParametricEscrow.initialize.selector,
-            address(teleporter),
             address(usdc),
-            L1_CHAIN_ID,
             treasury,
             admin,
             1
@@ -100,26 +92,5 @@ contract ReflexParametricEscrowTest is Test {
         vm.stopPrank();
     }
 
-    function testClaimPolicyFlow() public {
-        vm.startPrank(user);
-        bytes32 policyId = escrow.purchasePolicy(
-            "AA123",
-            PREMIUM,
-            PAYOUT,
-            DURATION
-        );
-        vm.stopPrank();
 
-        bytes memory proof = new bytes(100);
-        proof[0] = 0x01; // non-zero claim hash
-        bytes memory message = abi.encode(policyId, proof);
-
-        vm.prank(address(teleporter));
-        escrow.receiveTeleporterMessage(L1_CHAIN_ID, address(0), message);
-
-        (, , , , , bool isActive, bool isClaimed) = escrow.getPolicy(policyId);
-        assertFalse(isActive);
-        assertTrue(isClaimed);
-        assertEq(usdc.balanceOf(user), 100e6 - PREMIUM + PAYOUT);
-    }
 }

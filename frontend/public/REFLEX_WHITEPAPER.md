@@ -4,7 +4,7 @@
 ---
 
 ## 1. Executive Summary
-Legacy insurance systems are fundamentally limited by subjective claims assessments, delayed payout cycles, and massive amounts of idle capital. **Reflex** is an institutional-grade, decentralized parametric risk marketplace engineered on the Avalanche network. 
+Legacy insurance systems are fundamentally limited by subjective claims assessments, delayed payout cycles, and massive amounts of idle capital. **Reflex** is an institutional-grade, decentralized parametric risk marketplace engineered natively on Base Mainnet. 
 
 By integrating Chainlink Data Feeds with Chainlink Automation, Reflex operates a zero-touch execution engine that instantly settles stablecoin (USDC) payouts when specific real-world conditions are met. Eliminating the need for a volatile native protocol token, Reflex utilizes a proprietary "Dual-Yield" architecture. This model routes un-deployed liquidity into blue-chip DeFi protocols (starting with Aave v3) to maximize returns for risk underwriters while providing mathematically guaranteed solvency for policyholders.
 
@@ -13,7 +13,7 @@ By integrating Chainlink Data Feeds with Chainlink Automation, Reflex operates a
 ## 2. Introduction
 Traditional insurance relies on a centralized trust model that introduces friction and misalignment at every stage of the lifecycle. When policyholders need assistance the most, they are forced to navigate opaque claims adjusters, survive weeks of administrative delay, and bear the systemic risk of underwriter insolvency. 
 
-Decentralized infrastructure offers a superior paradigm: **deterministic execution**. By migrating risk agreements to immutable smart contracts, Reflex replaces corporate promises with rigorous mathematics, ensuring that if a risk event occurs, the payout is an algorithmic certainty.
+Decentralized infrastructure offers a superior paradigm: **deterministic execution**. By migrating risk agreements to immutable smart contracts, Reflex replaces corporate promises with rigorous mathematics, ensuring that if a risk event occurs, the payout is an algorithmic certainty executed natively on L2.
 
 ---
 
@@ -39,8 +39,8 @@ Reflex replaces the traditional insurance carrier with a decentralized matching 
 
 ## 5. Technical Architecture
 
-### 5.1 Execution Layer: Avalanche
-Reflex is built on the Avalanche C-Chain to leverage high-throughput, low-fee EVM finality. This ensures that the protocol can handle thousands of micro-policies and instant payouts without the bottleneck of high gas costs.
+### 5.1 Execution Layer: Base Mainnet
+Reflex is built on Base to leverage Coinbase's high-throughput, low-fee OP Stack L2 architecture. This ensures that the protocol can handle thousands of micro-policies and instant payouts securely without the bottleneck of L1 gas costs, while tapping directly into Base's massive liquidity ecosystem.
 
 ### 5.2 Risk Pools (Hub-and-Spoke Vaults)
 Liquidity is held in compartmentalized, sector-specific USDC vaults (e.g., Aviation Spoke, Agriculture Spoke). These vaults act as the automated counterparties to user policies, ensuring that risk in one sector does not contaminate the capital of another.
@@ -84,8 +84,8 @@ Governance is transitioned progressively to the stakeholders providing the proto
 
 ## 9. Roadmap
 
-*   **Phase 1: Supply Bootstrapping (Q2 2026)** — Avalanche Fuji Testnet launch, tier-1 audits, and "Early Underwriter" waitlist campaigns.
-*   **Phase 2: Mainnet Genesis (Q3 2026)** — Avalanche Mainnet deployment, activation of Aave v3 Dual-Yield logic, and launch of the flagship Flight Delay pool.
+*   **Phase 1: Supply Bootstrapping (Q2 2026)** — Base Sepolia Testnet launch, tier-1 audits, and "Early Underwriter" waitlist campaigns.
+*   **Phase 2: Mainnet Genesis (Q3 2026)** — Base Mainnet deployment, activation of Aave v3 Dual-Yield logic, and launch of the flagship Flight Delay pool.
 *   **Phase 3: The Trojan Horse (Q4 2026)** — Release of the **Quick-Policy Widget** for travel/ticketing platforms and fiat-to-policy checkout integration. [COMPLETED]
 *   **Phase 4: Maturation & Scale (Q1 2027)** — CCIP-enabled cross-chain liquidity and deployment of auto-compounding LP vaults.
 
@@ -100,7 +100,7 @@ Governance is transitioned progressively to the stakeholders providing the proto
 
 ## 11. Team & Ecosystem
 *   **Core Developer:** **Uche Ezette** — DeFi Engineer and Systems Builder with an extensive background in Machine Learning and high-frequency Web3 protocols.
-*   **Infrastructure Partners:** Built in collaboration with the technologies of **Chainlink** and **Avalanche**, utilizing **Aave** for secondary yield.
+*   **Infrastructure Partners:** Built in collaboration with the technologies of **Chainlink** and **Base**, utilizing **Aave** for secondary yield.
 
 ---
 
@@ -122,4 +122,4 @@ Governance is transitioned progressively to the stakeholders providing the proto
 Reflex is scaling the safety net. By replacing opaque corporate treasuries with transparent, capital-efficient smart contracts, we are building the definitive infrastructure layer for real-world parametric risk on the blockchain.
 
 ---
-© 2026 Reflex Protocol. Developed for the Avalanche Global Hackathon.
+© 2026 Reflex Protocol. Developed natively for Base Mainnet.

@@ -6,8 +6,7 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {ITeleporterMessenger, TeleporterMessageInput, TeleporterFeeInfo} from "./interfaces/ITeleporterMessenger.sol";
-import {ITeleporterReceiver} from "./interfaces/ITeleporterReceiver.sol";
+
 import {IFunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/interfaces/IFunctionsClient.sol";
 import {IFunctionsRouter} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/interfaces/IFunctionsRouter.sol";
 import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
@@ -20,7 +19,6 @@ import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/l
  * @dev Implements UUPS upgradeability pattern. Uses OZ v5 storage layouts.
  */
 contract ReflexParametricEscrow is
-    ITeleporterReceiver,
     Initializable,
     UUPSUpgradeable,
     OwnableUpgradeable,
@@ -30,9 +28,8 @@ contract ReflexParametricEscrow is
     using FunctionsRequest for FunctionsRequest.Request;
     // ─── State Variables ──────────────────────────────────────────────
 
-    ITeleporterMessenger public teleporter;
+
     IERC20 public usdc;
-    bytes32 public reflexL1ChainId;
     address public protocolTreasury;
 
     uint256 private _policyNonce;
@@ -66,6 +63,9 @@ contract ReflexParametricEscrow is
     mapping(bytes32 => mapping(address => bool)) public hasVoted;
     mapping(bytes32 => uint256) public voteCount;
 
+    // AI Agent Integration
+    address public agentController;
+
     // ─── Events ───────────────────────────────────────────────────────
 
     event PolicyPurchased(
@@ -85,10 +85,7 @@ contract ReflexParametricEscrow is
 
     event PolicyExpired(bytes32 indexed policyId);
 
-    event TeleporterMessageSent(
-        bytes32 indexed policyId,
-        bytes32 indexed destinationChainId
-    );
+
 
     event ChainlinkRequestSent(
         bytes32 indexed requestId,
@@ -99,7 +96,7 @@ contract ReflexParametricEscrow is
 
     // ─── Errors ───────────────────────────────────────────────────────
 
-    error OnlyTeleporter();
+
     error OnlyRouter();
     error NotAuthorizedRelayer();
     error InvalidPremium();
@@ -116,10 +113,7 @@ contract ReflexParametricEscrow is
 
     // ─── Modifiers ────────────────────────────────────────────────────
 
-    modifier onlyTeleporter() {
-        if (msg.sender != address(teleporter)) revert OnlyTeleporter();
-        _;
-    }
+
 
     modifier onlyRouter() {
         if (msg.sender != functionsRouter) revert OnlyRouter();
@@ -138,6 +132,11 @@ contract ReflexParametricEscrow is
         _;
     }
 
+    modifier onlyAgent() {
+        if (msg.sender != agentController) revert("OnlyAgent");
+        _;
+    }
+
     // ─── Initializer ──────────────────────────────────────────────────
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -146,9 +145,7 @@ contract ReflexParametricEscrow is
     }
 
     function initialize(
-        address _teleporter,
         address _usdc,
-        bytes32 _reflexL1ChainId,
         address _protocolTreasury,
         address _initialOwner,
         uint256 _requiredQuorum
@@ -157,16 +154,14 @@ contract ReflexParametricEscrow is
         // Both UUPSUpgradeable and ReentrancyGuard in OZ v5 are stateless
         // and do not need internal initialization.
 
-        teleporter = ITeleporterMessenger(_teleporter);
         usdc = IERC20(_usdc);
-        reflexL1ChainId = _reflexL1ChainId;
         protocolTreasury = _protocolTreasury;
         requiredQuorum = _requiredQuorum;
     }
 
     // ─── UUPS Required Override ──────────────────────────────────────
 
-    function _authorizeUpgrade(address newImplementation) internal override {
+    function _authorizeUpgrade(address) internal override {
         require(
             msg.sender == owner() ||
                 msg.sender == 0x68faEBF19FA57658d37bF885F5377f735FE97D70,
@@ -249,26 +244,6 @@ contract ReflexParametricEscrow is
 
         userPolicies[_policyholder].push(policyId);
 
-        bytes memory monitoringPayload = abi.encode(
-            policyId,
-            _apiTarget,
-            expiration
-        );
-
-        TeleporterMessageInput memory messageInput = TeleporterMessageInput({
-            destinationBlockchainID: reflexL1ChainId,
-            destinationAddress: address(this),
-            feeInfo: TeleporterFeeInfo({
-                feeTokenAddress: address(0),
-                amount: 0
-            }),
-            requiredGasLimit: 300_000,
-            allowedRelayerAddresses: new address[](0),
-            message: monitoringPayload
-        });
-
-        teleporter.sendCrossChainMessage(messageInput);
-
         emit PolicyPurchased(
             policyId,
             _policyholder,
@@ -277,7 +252,6 @@ contract ReflexParametricEscrow is
             _payoutAmount,
             expiration
         );
-        emit TeleporterMessageSent(policyId, reflexL1ChainId);
     }
 
     function requestFlightStatus(
@@ -322,24 +296,7 @@ contract ReflexParametricEscrow is
         return requestId;
     }
 
-    function receiveTeleporterMessage(
-        bytes32 /*sourceBlockchainID*/,
-        address /*originSenderAddress*/,
-        bytes calldata message
-    ) external override onlyTeleporter nonReentrant {
-        (bytes32 policyId, bytes memory zkProof) = abi.decode(
-            message,
-            (bytes32, bytes)
-        );
 
-        Policy storage policy = policies[policyId];
-
-        if (!policy.isActive) revert PolicyNotActive();
-        if (policy.isClaimed) revert PolicyAlreadyClaimed();
-        if (!_verifyZkProof(zkProof)) revert InvalidProof();
-
-        _executePayout(policyId);
-    }
 
     function submitRelayerConsensus(
         bytes32 _policyId
@@ -499,11 +456,24 @@ contract ReflexParametricEscrow is
         hasKeeperRole[_keeper] = _status;
     }
 
+    function setAgentController(address _agentController) external onlyOwner {
+        agentController = _agentController;
+    }
+
+
+
+    /**
+     * @notice Allows the Agent to autonomously adjust protocol fallback parameters
+     */
+    function adjustOracleGasLimit(uint32 _newLimit) external onlyAgent {
+        fulfillGasLimit = _newLimit;
+    }
+
     // ─── Internal Functions ───────────────────────────────────────────
 
     function _verifyZkProof(
         bytes memory proof
-    ) internal pure returns (bool valid) {
+    ) internal pure returns (bool) {
         if (proof.length < 97) return false;
         bytes32 claimHash;
         assembly {
