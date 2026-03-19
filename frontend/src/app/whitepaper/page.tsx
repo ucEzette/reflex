@@ -69,7 +69,7 @@ export default function WhitepaperPage() {
                 <h2 className="text-2xl font-black font-sans text-slate-900 uppercase tracking-tighter border-b-2 border-slate-100 pb-2">1. Executive Summary</h2>
                 <div className="space-y-6">
                     <p className="first-letter:text-5xl first-letter:font-black first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:text-slate-900">
-                        Legacy insurance systems are fundamentally limited by subjective claims assessments, delayed payout cycles, and massive amounts of idle capital. <strong className="font-bold text-slate-900">Reflex</strong> is an institutional-grade, decentralized parametric risk marketplace engineered on the Avalanche network.
+                        Legacy insurance systems are fundamentally limited by subjective claims assessments, delayed payout cycles, and massive amounts of idle capital. <strong className="font-bold text-slate-900">Reflex</strong> is an institutional-grade, decentralized parametric risk marketplace engineered natively on Base Mainnet.
                     </p>
                     <p>
                         By integrating Chainlink Data Feeds with Chainlink Automation, Reflex operates a zero-touch execution engine that instantly settles stablecoin (USDC) payouts when specific real-world conditions are met. Eliminating the need for a volatile native protocol token, Reflex utilizes a proprietary "Dual-Yield" architecture. This model routes un-deployed liquidity into blue-chip DeFi protocols (starting with Aave v3) to maximize returns for risk underwriters while providing mathematically guaranteed solvency for policyholders.
@@ -141,8 +141,8 @@ export default function WhitepaperPage() {
                 <h2 className="text-2xl font-black font-sans text-slate-900 uppercase tracking-tighter border-b-2 border-slate-100 pb-2">5. Technical Architecture</h2>
                 <div className="space-y-10">
                   <div className="group">
-                    <h4 className="font-black font-sans text-slate-900 mb-2 uppercase tracking-tight text-lg">5.1 Execution Layer: Avalanche</h4>
-                    <p className="text-slate-700">Built on the Avalanche C-Chain for high-throughput, low-fee EVM finality. This ensures that the protocol can handle thousands of micro-policies and instant payouts without gas bottlenecks.</p>
+                    <h4 className="font-black font-sans text-slate-900 mb-2 uppercase tracking-tight text-lg">5.1 Execution Layer: Base Mainnet</h4>
+                    <p className="text-slate-700">Built on Base to leverage Coinbase's high-throughput, low-fee OP Stack L2 architecture. This ensures that the protocol can handle thousands of micro-policies and instant payouts securely without L1 gas bottlenecks.</p>
                   </div>
                   <div className="group">
                     <h4 className="font-black font-sans text-slate-900 mb-2 uppercase tracking-tight text-lg">5.2 Segmented Risk Vaults</h4>
@@ -280,7 +280,7 @@ export default function WhitepaperPage() {
              <Image src="/logoW.png" alt="Reflex Logo" width={100} height={32} className="dark:opacity-100 opacity-0" />
              <Image src="/logoD.png" alt="Reflex Logo" width={100} height={32} className="dark:opacity-0 opacity-100 dark:hidden" />
           </div>
-          <p className="text-slate-400 dark:text-slate-600 text-[0.6rem] tracking-[0.4em] uppercase font-black">Powered by Avalanche & Chainlink</p>
+          <p className="text-slate-400 dark:text-slate-600 text-[0.6rem] tracking-[0.4em] uppercase font-black">Powered by Base & Chainlink</p>
       </div>
 
       <style jsx global>{`

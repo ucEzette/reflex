@@ -13,6 +13,7 @@ import { createHarvestTool } from './tools/HarvestTool';
 import { BlockchainService } from '../services/BlockchainService';
 import { WeatherService } from '../services/WeatherService';
 import { AviationStackService } from '../services/AviationStackService';
+import { OracleAggregatorService } from '../services/OracleAggregatorService';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -29,9 +30,9 @@ export class ReflexAutonomousAgent {
     private address: string = '';
     private blockchain: BlockchainService;
     private weather: WeatherService;
-    private aviation: AviationStackService;
+    private aviation: OracleAggregatorService;
 
-    constructor(blockchain: BlockchainService, weather: WeatherService, aviation: AviationStackService) {
+    constructor(blockchain: BlockchainService, weather: WeatherService, aviation: OracleAggregatorService) {
         this.blockchain = blockchain;
         this.weather = weather;
         this.aviation = aviation;
