@@ -20,18 +20,65 @@ Deterministic settlement is powered by a multi-layered oracle integration:
 - **Chainlink Automation:** Autonomously executes payout logic the moment risk thresholds are breached.
 - **Avalanche Teleporter:** Coordinates cross-chain settlement and ZK-proof verification.
 
-### 4. Autonomous Risk & Treasury Agent
-Reflex is governed by a decentralized autonomous agent (running **Llama 3.3 70B** via Groq) that monitors both on-chain and off-chain data in real-time. 
-- **Dynamic Underwriting:** The agent polls global meteorological (NOAA) and aviation (FlightAware) APIs. If an anomaly is detected (e.g., a Category 5 hurricane or systemic flight grounded), it executes on-chain transactions to adjust protocol margins.
-- **Yield Harvesting:** The agent monitors the profitability of Aave V3 reserves and autonomously triggers yield harvests when a predefined profit threshold (e.g., >100 USDC) is met.
+### Tether Hackathon Galactica: Autonomous DeFi Agent Track
 
-### 5. Tether WDK Integration
-The Autonomous Agent utilizes the **Tether Wallet Development Kit (WDK)** for secure, self-custodial wallet management.
-- **Self-Custody:** Multi-chain EVM account management via Tether's specialized SDK, ensuring the agent retains full control over its own treasury roles.
-- **Deterministic Scaling:** Precise coordinate-based risk evaluation utilizing Tether's high-performance blockchain interaction layer.
+Reflex is governed by a **truly autonomous on-chain agent** designed to completely satisfy the *Autonomous DeFi Agent* track requirements. It goes far beyond a simple LLM text-generation call: it is a self-custodial, deterministic execution engine that constantly monitors the ecosystem, reasons about opportunity and risk, and signs transactions trustlessly.
 
-### 6. Invisible UX (Account Abstraction)
-Integrated with **thirdweb Smart Accounts** and **Paymasters**, Reflex provides a gasless, "one-tap" purchase experience. Users interact with the protocol via an Enterprise SDK that abstracts all blockchain complexity.
+#### 🧠 1. Deciding WHEN and WHY (Not Just How)
+The agent operates as a persistent daemon independent of human intervention. It runs a continuous `150s` polling loop assessing real-world conditions.
+- **Why**: The agent uses an LLM (running **Llama 3.3 70B** via the Vercel AI SDK) to reason over fetched context. It compares live Aave V3 yield against pre-configured targets, and checks meteorological/aviation APIs for anomalies (e.g., Cat-5 hurricanes or systemic flight groundings).
+- **When**: It actively determines whether current thresholds warrant executing smart-contract tools. If an anomaly is identified, the agent uses its `UnderwriteTool` or `HarvestTool`.
+
+#### 💸 2. USDT as Base Asset & Settlement Layer
+The entire protocol and its vaults are collateralized by **USDT**. The agent's core function is protecting and managing this USDT liquidity, harvesting USDT yields from Aave, and triggering USDT payouts when parametric conditions are met.
+
+#### 🔑 3. WDK Integration for Transaction Execution
+Crucially, the agent holds its own private keys using the **Tether Wallet Development Kit (WDK)** (`@tetherto/wdk-wallet-evm`). By holding its own multi-chain EVM wallet derived from its `AGENT_MNEMONIC`, it independently signs and broadcasts transactions to the Avalanche Fuji network.
+
+#### 🏦 4. Institutional Guardrails & DeFi Composability
+To ensure the AI agent cannot act maliciously, it interacts with a dedicated supervisor contract (`ReflexAgentController.sol`). The contract strictly limits its daily actions and restricts its powers to only `harvestYield()` and `adjustOracleGasLimit()`.
+
+---
+
+### 👨‍⚖️ How Judges Can Run & Test the Agent
+
+You can spin up the autonomous agent on your end to watch it evaluate risk and execute USDT-denominated transactions via the WDK wallet.
+
+**Step 1. Configure the Environment**
+Navigate to the `relayer` directory and create a `.env` file:
+```env
+AGENT_MNEMONIC="your 12 or 24 word standard seed phrase"
+GROQ_API_KEY="your_groq_api_key" # Or use Google via AI SDK
+RPC_URL="https://api.avax-test.network/ext/bc/C/rpc"
+# PLUS: The private key of the admin wallet to whitelist the agent
+PRIVATE_KEY="admin_private_key"
+```
+
+**Step 2. Fund & Whitelist the Agent**
+The agent will derive a WDK wallet address upon booting. Fund this address with a small amount of testnet AVAX for gas. Then, authorize the agent on the smart contracts using the admin key:
+```bash
+cd relayer
+npx ts-node scripts/whitelist_agent.ts
+```
+
+**Step 3. Run the Autonomous Daemon**
+Spin up the relayer to initialize the Tether WDK wallet and start the continuous monitoring loop:
+```bash
+npm run dev
+```
+
+**Step 4. Force a Test Execution**
+By default, the agent only spends API credits and gas if actual risks (e.g., flight delays > 120 mins, harvest yield > $50) are detected. 
+To force it to execute immediately for testing, simply hop into `relayer/src/agent/agent.ts` (~ line 146), and temporarily hardcode the triggers:
+```typescript
+const isProfitable = true; 
+const isWeatherAnomaly = true;
+const isAviationAnomaly = true;
+```
+When the loop runs, the agent will analyze the scenario, articulate its reasoning (e.g., *"Detected high Aave yield, executing harvestYield"*), and sign the transaction automatically via the WDK wallet.
+
+### 5. Invisible UX (Future Roadmap)
+While the backend is fully autonomous, the frontend is designed for seamless user onboarding. We plan to integrate **thirdweb Smart Accounts** and **Paymasters** to provide a gasless, "one-tap" purchase experience, abstracting all blockchain complexity for retail users.
 
 ---
 
