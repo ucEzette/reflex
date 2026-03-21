@@ -14,13 +14,50 @@ Liquidity is compartmentalized into sector-specific pools. This design ensures t
 ### 2. Dual-Yield Architecture
 Reflex eliminates the "dead capital" problem in insurance. Unutilized USDC in risk pools is automatically routed to **Aave V3** to earn baseline yield. Underwriters earn from both premium spreads and DeFi interest, while the protocol retains a 10% performance fee on the generated yield.
 
-### 3. The Oracle Fabric
-Deterministic settlement is powered by a multi-layered oracle integration:
-- **Chainlink Functions:** Retrieves tamper-proof RWA data (NOAA, FlightAware, OpenWeather).
-- **Chainlink Automation:** Autonomously executes payout logic the moment risk thresholds are breached.
-- **Avalanche Teleporter:** Coordinates cross-chain settlement and ZK-proof verification.
+### ⬡ Chainlink Convergence: RWA & Oracles Track
 
-### Tether Hackathon Galactica: Autonomous DeFi Agent Track
+Reflex is designed as the ultimate showcase of Chainlink's decentralized infrastructure, perfectly aligning with the **Real-World Assets (RWA) & Oracles** track. We utilize every major Chainlink service to build a fully automated, trustless parametric risk protocol.
+
+#### 📡 1. Chainlink Functions (Off-Chain Data)
+Secures external Real-World Asset data directly into the EVM. When a policy expires, `ReflexParametricEscrow.sol` calls Chainlink Functions to query premium Web2 APIs (NOAA, FlightAware, OpenWeather). The oracle strictly evaluates parameters like hurricane wind speeds or aviation delays, returning a cryptographic consensus that unlocks deterministic payouts.
+
+#### ⚙️ 2. Chainlink Automation (Keepers)
+Eliminates human dependency in the settlement lifecycle. Chainlink Automation nodes monitor the state of the risk vaults and automatically trigger time-sensitive lifecycle functions (e.g., `submitConsensusClaim()`) the exact moment a policy's condition timeframe expires.
+
+#### 🌉 3. Chainlink CCIP (Cross-Chain Settlement)
+Reflex leverages the Cross-Chain Interoperability Protocol (CCIP) natively within `ReflexCrossChainReceiver.sol` to allow global liquidity mapping. 
+
+#### 📉 4. Chainlink Data Feeds (Solvency Audits)
+Provides cryptographic proof-of-reserve. Integrated into our frontend Solvency Dashboard, Chainlink Data Feeds continuously verify the **USDT/USD** peg to guarantee that the core collateral reserves used for underwriting remain solvent and properly valued.
+
+#### 🏗️ 5. Chainlink Runtime Environment (CRE)
+To prevent massive on-chain gas costs for complex meteorological algorithms, Reflex utilizes the `@chainlink/cre-sdk` to run an off-chain `PolicyVerifier` Action. This evaluates massive data arrays securely on the edge network before committing a consolidated output on-chain.
+
+---
+
+### How to Test the Chainlink Integrations
+
+**Testing Chainlink Functions:**
+1. Clone the repo and navigate to the root directory.
+2. Ensure you have the `.env` variables set up (see Tether WDK section).
+3. Open the frontend:
+```bash
+cd frontend && npm install && npm run dev
+```
+4. Connect an Avalanche Fuji web3 wallet and purchase a "Travel" policy for a simulated flight. Ensure the expiration time is set dynamically.
+5. You can view the on-chain emitted `ChainlinkRequestSent` and `ChainlinkRequestFulfilled` transaction events directly on Snowtrace mapped to the Escrow contract.
+
+**Testing Chainlink CRE Execution:**
+The local environment simulates the CRE verifier logic.
+1. Navigate to the `cre/` directory:
+```bash
+cd cre
+npm install
+npm run simulate
+```
+This triggers the `PolicyVerifier` locally, taking mock risk variables and processing the deterministic payload using the CRE SDK.
+
+### WDK INTEGRATION: Autonomous DeFi Agent Track
 
 Reflex is governed by a **truly autonomous on-chain agent** designed to completely satisfy the *Autonomous DeFi Agent* track requirements. It goes far beyond a simple LLM text-generation call: it is a self-custodial, deterministic execution engine that constantly monitors the ecosystem, reasons about opportunity and risk, and signs transactions trustlessly.
 
@@ -40,7 +77,7 @@ To ensure the AI agent cannot act maliciously, it interacts with a dedicated sup
 
 ---
 
-### 👨‍⚖️ How Judges Can Run & Test the Agent
+### 👨‍⚖️ How YOU Can Run & Test the Agent
 
 You can spin up the autonomous agent on your end to watch it evaluate risk and execute USDT-denominated transactions via the WDK wallet.
 
