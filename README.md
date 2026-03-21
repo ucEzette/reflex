@@ -19,19 +19,19 @@ Reflex eliminates the "dead capital" problem in insurance. Unutilized USDC in ri
 Reflex is designed as the ultimate showcase of Chainlink's decentralized infrastructure, perfectly aligning with the **Real-World Assets (RWA) & Oracles** track. We utilize every major Chainlink service to build a fully automated, trustless parametric risk protocol.
 
 #### 📡 1. Chainlink Functions (Off-Chain Data)
-Secures external Real-World Asset data directly into the EVM. When a policy expires, `ReflexParametricEscrow.sol` calls Chainlink Functions to query premium Web2 APIs (NOAA, FlightAware, OpenWeather). The oracle strictly evaluates parameters like hurricane wind speeds or aviation delays, returning a cryptographic consensus that unlocks deterministic payouts.
+Secures external Real-World Asset data directly into the EVM. When a policy expires, [`ReflexParametricEscrow.sol`](./contracts/src/ReflexParametricEscrow.sol) calls Chainlink Functions to query premium Web2 APIs (NOAA, FlightAware, OpenWeather). The oracle strictly evaluates parameters like hurricane wind speeds or aviation delays, returning a cryptographic consensus that unlocks deterministic payouts.
 
 #### ⚙️ 2. Chainlink Automation (Keepers)
-Eliminates human dependency in the settlement lifecycle. Chainlink Automation nodes monitor the state of the risk vaults and automatically trigger time-sensitive lifecycle functions (e.g., `submitConsensusClaim()`) the exact moment a policy's condition timeframe expires.
+Eliminates human dependency in the settlement lifecycle. Chainlink Automation nodes monitor the state of the risk vaults and automatically trigger time-sensitive lifecycle functions (e.g., [`submitConsensusClaim()`](./contracts/src/ReflexParametricEscrow.sol)) the exact moment a policy's condition timeframe expires.
 
 #### 🌉 3. Chainlink CCIP (Cross-Chain Settlement)
-Reflex leverages the Cross-Chain Interoperability Protocol (CCIP) natively within `ReflexCrossChainReceiver.sol` to allow global liquidity mapping. 
+Reflex leverages the Cross-Chain Interoperability Protocol (CCIP) natively within [`ReflexCrossChainReceiver.sol`](./contracts/src/ReflexCrossChainReceiver.sol) to allow global liquidity mapping. 
 
 #### 📉 4. Chainlink Data Feeds (Solvency Audits)
-Provides cryptographic proof-of-reserve. Integrated into our frontend Solvency Dashboard, Chainlink Data Feeds continuously verify the **USDT/USD** peg to guarantee that the core collateral reserves used for underwriting remain solvent and properly valued.
+Provides cryptographic proof-of-reserve. Integrated into our frontend [`SolvencyDashboard.tsx`](./frontend/src/components/SolvencyDashboard.tsx), Chainlink Data Feeds continuously verify the **USDT/USD** peg to guarantee that the core collateral reserves used for underwriting remain solvent and properly valued.
 
 #### 🏗️ 5. Chainlink Runtime Environment (CRE)
-To prevent massive on-chain gas costs for complex meteorological algorithms, Reflex utilizes the `@chainlink/cre-sdk` to run an off-chain `PolicyVerifier` Action. This evaluates massive data arrays securely on the edge network before committing a consolidated output on-chain.
+To prevent massive on-chain gas costs for complex meteorological algorithms, Reflex utilizes the `@chainlink/cre-sdk` to run an off-chain [`PolicyVerifier` Action](./cre/PolicyVerifier.ts). This evaluates massive data arrays securely on the edge network before committing a consolidated output on-chain.
 
 ---
 
@@ -64,16 +64,16 @@ Reflex is governed by a **truly autonomous on-chain agent** designed to complete
 #### 🧠 1. Deciding WHEN and WHY (Not Just How)
 The agent operates as a persistent daemon independent of human intervention. It runs a continuous `150s` polling loop assessing real-world conditions.
 - **Why**: The agent uses an LLM (running **Llama 3.3 70B** via the Vercel AI SDK) to reason over fetched context. It compares live Aave V3 yield against pre-configured targets, and checks meteorological/aviation APIs for anomalies (e.g., Cat-5 hurricanes or systemic flight groundings).
-- **When**: It actively determines whether current thresholds warrant executing smart-contract tools. If an anomaly is identified, the agent uses its `UnderwriteTool` or `HarvestTool`.
+- **When**: It actively determines whether current thresholds warrant executing smart-contract tools. If an anomaly is identified, the agent uses its [`UnderwriteTool`](./relayer/src/agent/tools/UnderwriteTool.ts) or [`HarvestTool`](./relayer/src/agent/tools/HarvestTool.ts).
 
 #### 💸 2. USDT as Base Asset & Settlement Layer
 The entire protocol and its vaults are collateralized by **USDT**. The agent's core function is protecting and managing this USDT liquidity, harvesting USDT yields from Aave, and triggering USDT payouts when parametric conditions are met.
 
 #### 🔑 3. WDK Integration for Transaction Execution
-Crucially, the agent holds its own private keys using the **Tether Wallet Development Kit (WDK)** (`@tetherto/wdk-wallet-evm`). By holding its own multi-chain EVM wallet derived from its `AGENT_MNEMONIC`, it independently signs and broadcasts transactions to the Avalanche Fuji network.
+Crucially, the agent holds its own private keys using the **Tether Wallet Development Kit (WDK)** (`@tetherto/wdk-wallet-evm`). By holding its own multi-chain EVM wallet derived from its `AGENT_MNEMONIC`, it independently signs and broadcasts transactions to the Avalanche Fuji network from its core loop inside [`agent.ts`](./relayer/src/agent/agent.ts).
 
 #### 🏦 4. Institutional Guardrails & DeFi Composability
-To ensure the AI agent cannot act maliciously, it interacts with a dedicated supervisor contract (`ReflexAgentController.sol`). The contract strictly limits its daily actions and restricts its powers to only `harvestYield()` and `adjustOracleGasLimit()`.
+To ensure the AI agent cannot act maliciously, it interacts with strict access-controlled smart contracts. It only has whitelisted execute capabilities on specific functions, such as `harvestYield()` within [`ReflexLiquidityPool.sol`](./contracts/src/ReflexLiquidityPool.sol), ensuring it can never withdraw capital arbitrarily.
 
 ---
 
