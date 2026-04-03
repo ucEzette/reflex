@@ -85,12 +85,12 @@ export function CommandCenterClient() {
     // PERSONAL POLICIES FETCHING (Keep existing logic)
 
     // Multi-contract User Policy Fetching
-    const { data: escrowIds } = useReadContract({ address: CONTRACTS.ESCROW as `0x${string}`, abi: ESCROW_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address }, chainId: 43113 });
-    const { data: travelIds } = useReadContract({ address: CONTRACTS.TRAVEL as `0x${string}`, abi: TRAVEL_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address }, chainId: 43113 });
-    const { data: agriIds } = useReadContract({ address: CONTRACTS.AGRI as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address }, chainId: 43113 });
-    const { data: energyIds } = useReadContract({ address: CONTRACTS.ENERGY as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address }, chainId: 43113 });
-    const { data: catIds } = useReadContract({ address: CONTRACTS.CATASTROPHE as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address }, chainId: 43113 });
-    const { data: maritimeIds } = useReadContract({ address: CONTRACTS.MARITIME as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address }, chainId: 43113 });
+    const { data: escrowIds } = useReadContract({ address: CONTRACTS.ESCROW as `0x${string}`, abi: ESCROW_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address }, chainId: 421614 });
+    const { data: travelIds } = useReadContract({ address: CONTRACTS.TRAVEL as `0x${string}`, abi: TRAVEL_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address }, chainId: 421614 });
+    const { data: agriIds } = useReadContract({ address: CONTRACTS.AGRI as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address }, chainId: 421614 });
+    const { data: energyIds } = useReadContract({ address: CONTRACTS.ENERGY as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address }, chainId: 421614 });
+    const { data: catIds } = useReadContract({ address: CONTRACTS.CATASTROPHE as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address }, chainId: 421614 });
+    const { data: maritimeIds } = useReadContract({ address: CONTRACTS.MARITIME as `0x${string}`, abi: GENERIC_PRODUCT_ABI, functionName: 'getUserPolicies', args: address ? [address] : undefined, query: { enabled: !!address }, chainId: 421614 });
 
     useEffect(() => {
         let timer: NodeJS.Timeout;
@@ -505,7 +505,7 @@ export function CommandCenterClient() {
                                         </div>
                                         <p className="text-xs text-zinc-400 leading-snug">{log.desc}</p>
                                         <a
-                                            href={`https://testnet.snowscan.xyz/tx/${log.hash}`}
+                                            href={`https://sepolia.arbiscan.io/tx/${log.hash}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-[9px] text-primary font-bold uppercase hover:underline inline-block pt-1"

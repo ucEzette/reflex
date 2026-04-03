@@ -51,18 +51,13 @@ export function TreasuryAnalytics() {
         query: { enabled: mounted }
     });
 
-    // Note: aUSDT address might not be available in all test environments
-    // We'll derive it if totalAssets > usdtBalance
     const liveTotalAssets = totalAssets ? Number(formatUnits(totalAssets as bigint, 6)) : 0;
-    const liveUsdtBalance = usdtBalance ? Number(formatUnits(usdtBalance as bigint, 6)) : 0;
-    const liveAaveBalance = Math.max(0, liveTotalAssets - liveUsdtBalance);
     const liveProfit = totalAssets && totalShares && (totalAssets as bigint) > (totalShares as bigint)
         ? Number(formatUnits((totalAssets as bigint) - (totalShares as bigint), 6))
         : 0;
 
     const reserveAllocation = [
-        { name: 'Pure Liquidity (USDT)', value: liveUsdtBalance, color: '#800020' },
-        { name: 'Aave Yield (aUSDT)', value: liveAaveBalance, color: '#22c55e' },
+        { name: 'Pure Liquidity (USDT)', value: liveTotalAssets, color: '#800020' },
         { name: 'Accumulated Fees', value: (liveProfit * 0.1), color: '#8b5cf6' },
     ];
 
@@ -72,14 +67,14 @@ export function TreasuryAnalytics() {
         <div className="space-y-8">
             <div className="flex items-center justify-between">
                 <div>
-                    <InstitutionalTooltip title="DAO Treasury Oversight" content="Provides transparency into protocol revenue, administrative reserves, and secondary yield performance from Aave V3.">
+                    <InstitutionalTooltip title="DAO Treasury Oversight" content="Provides transparency into protocol revenue, administrative reserves, and accumulated underwriting fees.">
                         <h2 className="text-2xl font-bold text-foreground flex items-center gap-3 cursor-help">
                             <Landmark className="w-6 h-6 text-emerald-400" />
                             DAO Treasury Oversight
                             <Info className="w-4 h-4 text-zinc-500 opacity-50" />
                         </h2>
                     </InstitutionalTooltip>
-                    <p className="text-slate-400 text-sm mt-1">Real-time transparency into protocol revenue, reserves, and yield performance.</p>
+                    <p className="text-slate-400 text-sm mt-1">Real-time transparency into protocol revenue, reserves, and underwriting performance.</p>
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
@@ -115,17 +110,6 @@ export function TreasuryAnalytics() {
                     </div>
                 </div>
 
-                <div className="bg-black/40 border border-white/5 rounded-2xl p-6 backdrop-blur-xl">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-slate-500 uppercase font-bold tracking-widest">Aave Yield (aUSDT)</span>
-                        <TrendingUp className="w-4 h-4 text-purple-500" />
-                    </div>
-                    <div className="text-2xl font-bold text-foreground">${liveAaveBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
-                    <div className="flex items-center gap-1 mt-1 text-[10px]">
-                        <Activity className="w-3 h-3 text-purple-400" />
-                        <span className="text-purple-400 font-bold">Active Reserve</span>
-                    </div>
-                </div>
             </div>
 
             {/* Charts Grid */}
@@ -138,12 +122,8 @@ export function TreasuryAnalytics() {
                         <p className="text-sm text-zinc-400 max-w-sm">Historical trend analysis is currently being synchronized from the sub-graph. Real-time reserve distribution is available on the right.</p>
                         <div className="mt-8 flex gap-8">
                             <div>
-                                <p className="text-[10px] text-zinc-500 uppercase font-black">Local USDT</p>
-                                <p className="text-xl font-bold text-foreground">${liveUsdtBalance.toLocaleString()}</p>
-                            </div>
-                            <div>
-                                <p className="text-[10px] text-zinc-500 uppercase font-black">Aave aUSDT</p>
-                                <p className="text-xl font-bold text-primary">${liveAaveBalance.toLocaleString()}</p>
+                                <p className="text-[10px] text-zinc-500 uppercase font-black">Underwriting Capital</p>
+                                <p className="text-xl font-bold text-foreground">${liveTotalAssets.toLocaleString()}</p>
                             </div>
                         </div>
                     </div>
