@@ -5,7 +5,7 @@ import { CONTRACTS } from '@/lib/contracts';
 import { PRODUCT_ABI, GENERIC_PRODUCT_ABI } from '@/lib/enterprise_abis';
 import { useEffect, useState } from 'react';
 import { createPublicClient, http, parseAbiItem } from 'viem';
-import { avalancheFuji } from 'viem/chains';
+import { arbitrumSepolia } from 'viem/chains';
 
 export interface UserPolicy {
     policyId: `0x${string}`;
@@ -49,7 +49,7 @@ export function useUserPolicies() {
 
             try {
                 const client = createPublicClient({
-                    chain: avalancheFuji,
+                    chain: arbitrumSepolia,
                     transport: http(),
                 });
 
