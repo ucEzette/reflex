@@ -4,7 +4,7 @@ import { InvestDashboardClient } from "@/components/invest/InvestDashboardClient
 
 export const metadata = constructMetadata({
     title: "Invest & Underwrite",
-    description: "Provide liquidity to parametric risk pools and earn a blended yield from Aave and risk premiums.",
+    description: "Provide liquidity to parametric risk pools and earn underwriting premiums.",
 });
 
 export default function InvestPage() {

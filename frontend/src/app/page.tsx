@@ -151,7 +151,7 @@ export default function Home() {
               </div>
               <div className="glass-panel" data-text="3. Instant Payout" style={{ '--r': '25' } as React.CSSProperties}>
                 <span className="material-symbols-outlined text-primary drop-shadow-[0_0_8px_var(--primary)]">bolt</span>
-                <p className="text-foreground text-sm px-6 text-center leading-relaxed font-light mt-4 mb-6">Avalanche Teleporter enables instant settlement in sub-seconds.</p>
+                <p className="text-foreground text-sm px-6 text-center leading-relaxed font-light mt-4 mb-6">Arbitrum native messaging enables instant settlement in sub-seconds.</p>
               </div>
             </div>
           </div>

@@ -201,7 +201,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
             ? [BigInt(dynamicRisk.nDelayed), BigInt(dynamicRisk.nTotal), parseUnits(payoutInput || "0", 6)] as const
             : [expectedRiskBase] as const,
         query: { enabled: mounted && !!targetContractAddress && (product?.id === 'flight' ? !!flightId : !!payoutInput) },
-        chainId: 43113
+        chainId: 421614
     });
 
     const { data: activePolicyCount } = useReadContract({
@@ -209,7 +209,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
         abi: product?.id === 'flight' ? PRODUCT_ABI : GENERIC_PRODUCT_ABI,
         functionName: "getActivePolicyCount",
         query: { enabled: mounted && !!targetContractAddress },
-        chainId: 43113
+        chainId: 421614
     });
 
     // Pool Diagnostics
@@ -218,7 +218,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
         abi: product?.id === 'flight' ? PRODUCT_ABI : GENERIC_PRODUCT_ABI,
         functionName: "pool",
         query: { enabled: mounted && !!targetContractAddress },
-        chainId: 43113
+        chainId: 421614
     });
 
     const { data: poolAssets } = useReadContract({
@@ -226,7 +226,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
         abi: LP_POOL_ABI,
         functionName: "totalAssets",
         query: { enabled: mounted && !!poolAddress },
-        chainId: 43113
+        chainId: 421614
     });
 
     const { data: poolMaxPayouts } = useReadContract({
@@ -234,7 +234,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
         abi: LP_POOL_ABI,
         functionName: "totalMaxPayouts",
         query: { enabled: mounted && !!poolAddress },
-        chainId: 43113
+        chainId: 421614
     });
 
     const { data: isProductAuthorized } = useReadContract({
@@ -243,7 +243,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
         functionName: "authorizedProducts",
         args: [targetContractAddress as `0x${string}`],
         query: { enabled: mounted && !!poolAddress && !!targetContractAddress },
-        chainId: 43113
+        chainId: 421614
     });
 
     const remainingCapacity = poolAssets !== undefined && poolMaxPayouts !== undefined
@@ -264,7 +264,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
         functionName: "allowance",
         args: [address as `0x${string}`, targetContractAddress as `0x${string}`],
         query: { enabled: !!address && !!targetContractAddress },
-        chainId: 43113
+        chainId: 421614
     });
 
     const { writeContract: approveUSDT, isPending: isApprovePending, data: approveHash } = useWriteContract();
@@ -458,7 +458,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                         <div className="space-y-4">
                             <h2 className="text-4xl font-black text-foreground">Policy Secured!</h2>
                             <p className="text-zinc-400">
-                                Your parametric protection for <span className="text-white font-bold">{flightId || zone || "your asset"}</span> is now active on the Avalanche Fuji network.
+                                Your parametric protection for <span className="text-white font-bold">{flightId || zone || "your asset"}</span> is now active on the Arbitrum Sepolia network.
                             </p>
                         </div>
 
@@ -475,7 +475,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
 
                         <div className="flex flex-col gap-4">
                             <a
-                                href={`https://testnet.snowscan.xyz/tx/${hash}`}
+                                href={`https://sepolia.arbiscan.io/tx/${hash}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="w-full py-4 rounded-xl bg-sky-500 text-black font-black uppercase tracking-widest text-sm hover:bg-sky-400 transition-all flex items-center justify-center gap-2"
@@ -491,7 +491,7 @@ export default function ProductMarketPage({ params }: { params: { product: strin
                         </div>
 
                         <div className="flex items-center justify-center gap-2 pt-4 border-t border-white/5">
-                            <span className="text-[10px] text-zinc-600 uppercase tracking-widest">Powered by Chainlink DON & Avalanche CCIP</span>
+                            <span className="text-[10px] text-zinc-600 uppercase tracking-widest">Powered by Chainlink DON & Arbitrum CCIP</span>
                         </div>
                     </div>
                 ) : (

@@ -66,7 +66,7 @@ export default function ProfilePage() {
                                 <div className="glass-panel p-6 rounded-2xl border border-white/5">
                                     <span className="text-xs font-mono text-slate-500 uppercase tracking-widest block mb-2">Avg. Payout Time</span>
                                     <span className="text-3xl font-bold text-foreground">~45s</span>
-                                    <p className="text-xs text-slate-400 mt-2 italic">Cross-chain settlement via Avalanche</p>
+                                    <p className="text-xs text-slate-400 mt-2 italic">Cross-chain settlement via Arbitrum Sepolia</p>
                                 </div>
                                 <div className="glass-panel p-6 rounded-2xl border border-white/5">
                                     <span className="text-xs font-mono text-slate-500 uppercase tracking-widest block mb-2">Total Savings</span>
