@@ -44,7 +44,7 @@ export const ALL_MARKETS: MarketDetail[] = [
         marketData: {
             resolutionSource: "FlightAware AeroAPI",
             oracleNode: "Chainlink DON",
-            settlement: "USDT on Avalanche",
+            settlement: "USDT on Arbitrum Sepolia",
             riskPremium: "5%",
             maxPayout: "$100 USDT",
             basePremium: 5,
@@ -70,7 +70,7 @@ export const ALL_MARKETS: MarketDetail[] = [
         marketData: {
             resolutionSource: "NOAA Climate API",
             oracleNode: "Chainlink DON",
-            settlement: "USDT on Avalanche",
+            settlement: "USDT on Arbitrum Sepolia",
             riskPremium: "5%",
             maxPayout: "Up to $10,000 USDT",
             basePremium: 50,
@@ -96,7 +96,7 @@ export const ALL_MARKETS: MarketDetail[] = [
         marketData: {
             resolutionSource: "OpenWeatherMap API",
             oracleNode: "Chainlink DON",
-            settlement: "USDT on Avalanche",
+            settlement: "USDT on Arbitrum Sepolia",
             riskPremium: "5%",
             maxPayout: "Up to $50,000 USDT",
             basePremium: 100,
@@ -122,7 +122,7 @@ export const ALL_MARKETS: MarketDetail[] = [
         marketData: {
             resolutionSource: "USGS Earthquake API",
             oracleNode: "Chainlink DON",
-            settlement: "USDT on Avalanche",
+            settlement: "USDT on Arbitrum Sepolia",
             riskPremium: "5%",
             maxPayout: "Up to $100,000 USDT",
             basePremium: 200,
@@ -148,7 +148,7 @@ export const ALL_MARKETS: MarketDetail[] = [
         marketData: {
             resolutionSource: "Stormglass.io API",
             oracleNode: "Chainlink DON",
-            settlement: "USDT on Avalanche",
+            settlement: "USDT on Arbitrum Sepolia",
             riskPremium: "5%",
             maxPayout: "Up to $50,000 USDT",
             basePremium: 150,
@@ -174,7 +174,7 @@ export const ALL_MARKETS: MarketDetail[] = [
         marketData: {
             resolutionSource: "NOAA Climate Data",
             oracleNode: "Chainlink DON",
-            settlement: "USDT on Avalanche",
+            settlement: "USDT on Arbitrum Sepolia",
             riskPremium: "15%",
             maxPayout: "$1,000 USDT",
             basePremium: 100,
@@ -200,7 +200,7 @@ export const ALL_MARKETS: MarketDetail[] = [
         marketData: {
             resolutionSource: "OnTheSnow API",
             oracleNode: "Chainlink External Adapter",
-            settlement: "USDT on Avalanche",
+            settlement: "USDT on Arbitrum Sepolia",
             riskPremium: "20%",
             maxPayout: "$5,000 USDT",
             basePremium: 500,
@@ -226,7 +226,7 @@ export const ALL_MARKETS: MarketDetail[] = [
         marketData: {
             resolutionSource: "Chainlink Price Feeds",
             oracleNode: "Chainlink Data Streams",
-            settlement: "USDT on Avalanche",
+            settlement: "USDT on Arbitrum Sepolia",
             riskPremium: "1.5%",
             maxPayout: "100% of Covered TVL",
             basePremium: 1000,
@@ -252,7 +252,7 @@ export const ALL_MARKETS: MarketDetail[] = [
         marketData: {
             resolutionSource: "Solcast and ECMWF",
             oracleNode: "Chainlink DON",
-            settlement: "USDT on Avalanche",
+            settlement: "USDT on Arbitrum Sepolia",
             riskPremium: "9%",
             maxPayout: "$2,500 USDT",
             basePremium: 100,
@@ -278,7 +278,7 @@ export const ALL_MARKETS: MarketDetail[] = [
         marketData: {
             resolutionSource: "MarineTraffic AIS",
             oracleNode: "Chainlink Any-API",
-            settlement: "USDT on Avalanche",
+            settlement: "USDT on Arbitrum Sepolia",
             riskPremium: "6%",
             maxPayout: "$10,000 USDT",
             basePremium: 200,
