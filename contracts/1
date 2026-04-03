@@ -1,0 +1,5 @@
+error: unexpected argument '2' found
+
+Usage: forge verify-contract [OPTIONS] <ADDRESS> [CONTRACT]
+
+For more information, try '--help'.
