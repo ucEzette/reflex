@@ -2270,7 +2270,7 @@ abstract contract UUPSUpgradeable is IERC1822Proxiable {
  * @title ReflexParametricEscrow
  * @notice Parametric micro-insurance escrow contract for flight delay insurance.
  *         Policies are purchased with USDC, and payouts are triggered automatically
- *         when a zkTLS proof of flight delay is submitted via Avalanche Teleporter.
+ *         when a zkTLS proof of flight delay is submitted via Arbitrum native messaging.
  * @dev Implements UUPS upgradeability pattern. Uses OZ v5 storage layouts.
  */
 contract ReflexParametricEscrow is
