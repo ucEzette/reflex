@@ -68,7 +68,7 @@ export default function AdminPage() {
                 <div className="space-y-1">
                     <p className="text-sm font-bold text-amber-500">Security Invariant Enforcement</p>
                     <p className="text-xs text-amber-500/70 leading-relaxed">
-                        All administrative actions executed here are permanently recorded on the Avalanche Fuji network.
+                        All administrative actions executed here are permanently recorded on the Arbitrum Sepolia network.
                         Actions involving treasury movement or protocol pausing require either direct owner signatures or decentralized relayer quorum consensus.
                     </p>
                 </div>
