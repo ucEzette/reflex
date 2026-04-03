@@ -69,10 +69,10 @@ export default function WhitepaperPage() {
                 <h2 className="text-2xl font-black font-sans text-slate-900 uppercase tracking-tighter border-b-2 border-slate-100 pb-2">1. Executive Summary</h2>
                 <div className="space-y-6">
                     <p className="first-letter:text-5xl first-letter:font-black first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:text-slate-900">
-                        Legacy insurance systems are fundamentally limited by subjective claims assessments, delayed payout cycles, and massive amounts of idle capital. <strong className="font-bold text-slate-900">Reflex</strong> is an institutional-grade, decentralized parametric risk marketplace engineered on the Avalanche network.
+                        Legacy insurance systems are fundamentally limited by subjective claims assessments, delayed payout cycles, and massive amounts of idle capital. <strong className="font-bold text-slate-900">Reflex</strong> is an institutional-grade, decentralized parametric risk marketplace engineered on the Arbitrum Sepolia network.
                     </p>
                     <p>
-                        By integrating Chainlink Data Feeds with Chainlink Automation, Reflex operates a zero-touch execution engine that instantly settles stablecoin (USDC) payouts when specific real-world conditions are met. Eliminating the need for a volatile native protocol token, Reflex utilizes a proprietary "Dual-Yield" architecture. This model routes un-deployed liquidity into blue-chip DeFi protocols (starting with Aave v3) to maximize returns for risk underwriters while providing mathematically guaranteed solvency for policyholders.
+                        By integrating Chainlink Data Feeds with Chainlink Automation, Reflex operates a zero-touch execution engine that instantly settles stablecoin (USDC) payouts when specific real-world conditions are met. Eliminating the need for a volatile native protocol token, Reflex utilizes a strictly deterministic architecture. This model isolates liquidity in sector-specific vaults to provide mathematically guaranteed solvency for policyholders.
                     </p>
                 </div>
             </section>
@@ -126,8 +126,8 @@ export default function WhitepaperPage() {
                     <p className="text-sm leading-relaxed text-slate-600">Policies are defined by code, not paper. Payouts are triggered instantly by verifiable off-chain data (e.g., flight status, weather metrics) via decentralized oracles.</p>
                   </div>
                   <div className="p-8 bg-slate-50 rounded-sm border-l-4 border-slate-900">
-                    <h3 className="font-black text-slate-900 mb-3 uppercase tracking-tighter">Dual-Yield Architecture</h3>
-                    <p className="text-sm leading-relaxed text-slate-600">Reflex solves the "dead capital" problem by routing unutilized USDC from risk pools directly into Aave v3, allowing capital to earn passive yield before and during its time as a risk reserve.</p>
+                    <h3 className="font-black text-slate-900 mb-3 uppercase tracking-tighter">Deterministic Ring-Fencing</h3>
+                    <p className="text-sm leading-relaxed text-slate-600">Reflex enforces absolute capital safety by isolating unutilized USDC in sector-specific risk vaults, ensuring every policy is 100% physically backed by unencumbered collateral.</p>
                   </div>
                   <div className="p-8 bg-slate-50 rounded-sm border-l-4 border-slate-900">
                     <h3 className="font-black text-slate-900 mb-3 uppercase tracking-tighter">API-First "Invisible" Distribution</h3>
@@ -141,8 +141,8 @@ export default function WhitepaperPage() {
                 <h2 className="text-2xl font-black font-sans text-slate-900 uppercase tracking-tighter border-b-2 border-slate-100 pb-2">5. Technical Architecture</h2>
                 <div className="space-y-10">
                   <div className="group">
-                    <h4 className="font-black font-sans text-slate-900 mb-2 uppercase tracking-tight text-lg">5.1 Execution Layer: Avalanche</h4>
-                    <p className="text-slate-700">Built on the Avalanche C-Chain for high-throughput, low-fee EVM finality. This ensures that the protocol can handle thousands of micro-policies and instant payouts without gas bottlenecks.</p>
+                    <h4 className="font-black font-sans text-slate-900 mb-2 uppercase tracking-tight text-lg">5.1 Execution Layer: Arbitrum Sepolia</h4>
+                    <p className="text-slate-700">Built on the Arbitrum Sepolia for high-throughput, low-fee EVM finality. This ensures that the protocol can handle thousands of micro-policies and instant payouts without gas bottlenecks.</p>
                   </div>
                   <div className="group">
                     <h4 className="font-black font-sans text-slate-900 mb-2 uppercase tracking-tight text-lg">5.2 Segmented Risk Vaults</h4>
@@ -176,7 +176,7 @@ export default function WhitepaperPage() {
                 <p>Reflex operates entirely on USDC, intentionally avoiding the volatility risk associated with native protocol tokens.</p>
                 <div className="bg-slate-950 text-white p-12 rounded-sm font-sans relative overflow-hidden group">
                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 relative z-10">
+                   <div className="grid grid-cols-1 md:grid-cols-1 gap-12 relative z-10 w-1/2">
                       <div>
                         <span className="text-[0.65rem] text-slate-500 uppercase font-black tracking-[0.3em] block mb-2">Origination Fee</span>
                         <div className="flex items-baseline gap-1">
@@ -185,20 +185,9 @@ export default function WhitepaperPage() {
                         </div>
                         <p className="text-[0.7rem] mt-3 text-slate-500 font-bold uppercase tracking-tight">Per Policy Premium</p>
                       </div>
-                      <div>
-                        <span className="text-[0.65rem] text-slate-500 uppercase font-black tracking-[0.3em] block mb-2">Performance Fee</span>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-5xl font-black tracking-tighter">10</span>
-                          <span className="text-xl font-bold text-slate-400">%</span>
-                        </div>
-                        <p className="text-[0.7rem] mt-3 text-slate-500 font-bold uppercase tracking-tight">On Earned DeFi Interest</p>
-                      </div>
                    </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-[0.8rem] italic text-slate-500 font-sans tracking-tight">
-                  <div className="p-4 border border-slate-100 rounded-sm">
-                    LPs retain 90% of the interest generated by routing idle pool capital to Aave.
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-1 gap-8 text-[0.8rem] italic text-slate-500 font-sans tracking-tight">
                   <div className="p-4 border border-slate-100 rounded-sm">
                     LPs retain 100% of premium spreads while bearing strictly defined financial risk.
                   </div>
@@ -280,7 +269,7 @@ export default function WhitepaperPage() {
              <Image src="/logoW.png" alt="Reflex Logo" width={100} height={32} className="dark:opacity-100 opacity-0" />
              <Image src="/logoD.png" alt="Reflex Logo" width={100} height={32} className="dark:opacity-0 opacity-100 dark:hidden" />
           </div>
-          <p className="text-slate-400 dark:text-slate-600 text-[0.6rem] tracking-[0.4em] uppercase font-black">Powered by Avalanche & Chainlink</p>
+          <p className="text-slate-400 dark:text-slate-600 text-[0.6rem] tracking-[0.4em] uppercase font-black">Powered by Arbitrum Sepolia & Chainlink</p>
       </div>
 
       <style jsx global>{`

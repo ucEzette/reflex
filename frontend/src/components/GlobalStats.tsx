@@ -34,7 +34,7 @@ export function GlobalStats() {
             }))
         ],
         query: { enabled: mounted },
-        chainId: 43113
+        chainId: 421614
     });
 
     const totalAssets = globalData ? (globalData.slice(0, 5) as any[]).reduce((acc, res) => acc + (res.result as bigint || BigInt(0)), BigInt(0)) : BigInt(0);

@@ -190,7 +190,7 @@ function PolicyRow({ policy, txHash }: { policy: any, txHash?: string }) {
             <td className="px-4 py-4">
                 <div className="flex flex-col gap-1.5 align-start">
                     <a 
-                        href={txHash ? `https://testnet.snowscan.xyz/tx/${txHash}` : `https://testnet.snowscan.xyz/address/${policy.contract}`}
+                        href={txHash ? `https://sepolia.arbiscan.io/tx/${txHash}` : `https://sepolia.arbiscan.io/address/${policy.contract}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs font-mono text-zinc-400 hover:text-sky-400 transition-colors"
@@ -200,7 +200,7 @@ function PolicyRow({ policy, txHash }: { policy: any, txHash?: string }) {
                     </a>
                     <div className="flex items-center gap-2">
                         <a
-                            href={txHash ? `https://testnet.snowscan.xyz/tx/${txHash}` : `https://testnet.snowscan.xyz/address/${policy.contract}`}
+                            href={txHash ? `https://sepolia.arbiscan.io/tx/${txHash}` : `https://sepolia.arbiscan.io/address/${policy.contract}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-800/50 text-[10px] ${txHash ? 'text-sky-400' : 'text-zinc-500'} hover:text-sky-300 hover:bg-zinc-800 transition-colors border border-zinc-800`}
@@ -284,7 +284,7 @@ export const ActivePolicies: React.FC<ActivePoliciesProps> = ({
         functionName: 'getUserPolicies',
         args: address ? [address as `0x${string}`] : undefined,
         query: { enabled: !!address && mounted },
-        chainId: 43113
+        chainId: 421614
     });
 
     const { data: travelIds } = useReadContract({
@@ -293,7 +293,7 @@ export const ActivePolicies: React.FC<ActivePoliciesProps> = ({
         functionName: 'getUserPolicies',
         args: address ? [address as `0x${string}`] : undefined,
         query: { enabled: !!address && mounted },
-        chainId: 43113
+        chainId: 421614
     });
 
     const { data: agriIds } = useReadContract({
@@ -302,7 +302,7 @@ export const ActivePolicies: React.FC<ActivePoliciesProps> = ({
         functionName: 'getUserPolicies',
         args: address ? [address as `0x${string}`] : undefined,
         query: { enabled: !!address && mounted },
-        chainId: 43113
+        chainId: 421614
     });
 
     const { data: energyIds } = useReadContract({
@@ -311,7 +311,7 @@ export const ActivePolicies: React.FC<ActivePoliciesProps> = ({
         functionName: 'getUserPolicies',
         args: address ? [address as `0x${string}`] : undefined,
         query: { enabled: !!address && mounted },
-        chainId: 43113
+        chainId: 421614
     });
 
     const { data: catIds } = useReadContract({
@@ -320,7 +320,7 @@ export const ActivePolicies: React.FC<ActivePoliciesProps> = ({
         functionName: 'getUserPolicies',
         args: address ? [address as `0x${string}`] : undefined,
         query: { enabled: !!address && mounted },
-        chainId: 43113
+        chainId: 421614
     });
 
     const { data: maritimeIds } = useReadContract({
@@ -329,7 +329,7 @@ export const ActivePolicies: React.FC<ActivePoliciesProps> = ({
         functionName: 'getUserPolicies',
         args: address ? [address as `0x${string}`] : undefined,
         query: { enabled: !!address && mounted },
-        chainId: 43113
+        chainId: 421614
     });
 
     const allPolicyIds = useMemo(() => {
