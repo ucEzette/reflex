@@ -35,8 +35,8 @@ def main():
             
         files.append(file_path)
 
-    # Chunk into 5s
-    chunks = [files[i:i + 5] for i in range(0, len(files), 5)]
+    # Chunk into 3s
+    chunks = [files[i:i + 3] for i in range(0, len(files), 3)]
     
     print(f"Divided {len(files)} files into {len(chunks)} chunks.")
 
@@ -52,17 +52,17 @@ def main():
         lib_count = sum("lib" in f for f in chunk)
         
         if agent_count > 0:
-            msg = "refactor: transition autonomous agent to pure risk underwriting algorithm (remove Aave logic)"
+            msg = "refactor: optimize Agent underwriting and verification flows"
         elif contract_count > 0:
-            msg = "feat(contracts): deploy Arbitrum Sepolia pure parametric architecture & remove Aave yield routers"
+            msg = "feat(contracts): update Arbitrum Sepolia lockfiles and dependencies"
         elif docs_count > 0:
-            msg = "docs: overhaul protocol documentation for Arbitrum ring-fenced risk model"
-        elif comp_count > 0:
-            msg = "refactor(ui): update dashboard and solver components for Aave-free parametric model"
+            msg = "docs: clean up legacy assets and consolidate branding assets"
+        elif comp_count > 0 or "page.tsx" in str(chunk):
+            msg = "design(ui): overhaul Landing Page branding, responsive layout scaling, and simulator UX"
         elif lib_count > 0:
-            msg = "chore(frontend): update smart contract registry and Wagmi configs for Arbitrum Sepolia"
+            msg = "refactor(config): map frontend product logic and update dynamic oracle thresholds"
         else:
-            msg = "refactor: system-wide transition to Arbitrum Sepolia architectural standard"
+            msg = "chore: finalize protocol deployment configurations"
             
         # Add files safely
         for f in chunk:
@@ -85,10 +85,10 @@ def main():
         except Exception as e:
             print(f"Failed to push (might skip if no remote tracking): {e}")
 
-        # Sleep logic: 5 minutes if not the last chunk
+        # Sleep logic: 3 minutes if not the last chunk
         if idx < len(chunks) - 1:
-            print("Sleeping for 300 seconds (5 minutes) before next commit...")
-            time.sleep(300)
+            print("Sleeping for 180 seconds (3 minutes) before next commit...")
+            time.sleep(180)
 
     print("All chunks processed successfully!")
 

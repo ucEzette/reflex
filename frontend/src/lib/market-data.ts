@@ -50,7 +50,7 @@ export const ALL_MARKETS: MarketDetail[] = [
             basePremium: 5,
             surgeMultiplier: 1.0,
         },
-        about: "This parametric protection protocol activates automatically when a registered commercial flight suffers an arrival delay exceeding one hundred twenty minutes. The infrastructure utilizes the FlightAware AeroAPI and a Decentralized Oracle Network to ensure mathematical certainty in settlement. Upon verification of the delay event, capital is routed directly to the policyholder with no administrative claims process required.",
+        about: "This parametric protection protocol activates automatically when a registered commercial flight suffers a flight delay of over two hours. The infrastructure utilizes the FlightAware AeroAPI and a Decentralized Oracle Network to ensure mathematical certainty in settlement. Upon verification of the delay event, capital is routed directly to the policyholder with no administrative claims process required.",
         rules: "1. Policy acquisition must occur at least two hours before scheduled departure. 2. Resolution evaluates as Triggered if official arrival exceeds the schedule by two hours or in the event of cancellation. 3. Binary settlement provides the full maximum payout upon trigger and zero otherwise."
     },
     {
