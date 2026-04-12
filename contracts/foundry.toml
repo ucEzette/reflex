@@ -18,8 +18,7 @@ fs_permissions = [{ access = "read", path = "./script/" }]
 runs = 256
 
 [rpc_endpoints]
-fuji = "${FUJI_RPC_URL}"
-mainnet = "${AVAX_RPC_URL}"
+arbitrum_sepolia = "${ARBITRUM_SEPOLIA_RPC_URL}"
 
 [etherscan]
-fuji = { key = "${SNOWTRACE_API_KEY}", url = "https://api-testnet.snowtrace.io/api" }
+arbitrum_sepolia = { key = "${ARBISCAN_API_KEY}", url = "https://api-sepolia.arbiscan.io/api" }

@@ -1,10 +1,10 @@
 # Reflex L1 - Mainnet Deployment Checklist
 
-This document outlines the critical steps required for a safe and successful production transition to Avalanche Mainnet.
+This document outlines the critical steps required for a safe and successful production transition to Arbitrum Sepolia Mainnet.
 
 ## 1. Smart Contract Hardening
 - [ ] **Final Audit Review**: Ensure all finding from Phase 72 (USDC flow, Keeper hooks) are verified.
-- [ ] **Contract Verification**: Verify all contracts on Snowtrace (Avalanche Explorer).
+- [ ] **Contract Verification**: Verify all contracts on Snowtrace (Arbitrum Sepolia Explorer).
 - [ ] **Ownership Renouncement**: Transfer `ProxyAdmin` and `ReflexLiquidityPool` owner to a multi-sig (e.g., Gnosis Safe).
 - [ ] **Pausability Test**: Verify `pause()` and `unpause()` functionality on a mainnet fork.
 
@@ -19,7 +19,7 @@ This document outlines the critical steps required for a safe and successful pro
 
 ## 3. Frontend Production Build
 - [ ] **Environment Variables**:
-    - `NEXT_PUBLIC_CHAIN_ID=43114` (Avalanche C-Chain)
+    - `NEXT_PUBLIC_CHAIN_ID=43114` (Arbitrum Sepolia)
     - Update all `CONTRACT_ADDRESS` pointers in `lib/contracts.ts` to Mainnet deployments.
 - [ ] **Performance Audit**: Run Lighthouse audit and ensure >90 score in all categories.
 - [ ] **Global Search Index**: Ensure `ALL_MARKETS` configuration matches Mainnet market parameters.

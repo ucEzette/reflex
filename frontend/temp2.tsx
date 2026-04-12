@@ -353,12 +353,11 @@ export default function MarketDetailPage() {
     catastrophe: { label: "Coordinates (Lat, Lon)", placeholder: "e.g. 34.05, -118.24", icon: "my_location" },
     maritime: { label: "Port / IMO Code", placeholder: "e.g. USNYC or IMO:9811000", icon: "sailing" },
   };
-  const inputConfig = market && market.category ? configMap[market.category] || DEFAULT_CONFIG : DEFAULT_CONFIG;
+  const inputConfig = configMap[market.category] || DEFAULT_CONFIG;
 
   return (
-    <>
-      <main className="pt-28 pb-24 px-6 lg:px-8 max-w-[1600px] mx-auto">
-        {/* --- Breadcrumb --- */}
+    <main className="pt-28 pb-24 px-6 lg:px-8 max-w-[1600px] mx-auto">
+      {/* --- Breadcrumb --- */}
       <div className="flex items-center gap-2 mb-8 text-xs text-zinc-500">
         <Link href="/market" className="hover:text-on-surface transition-colors">Markets</Link>
         <span className="material-symbols-outlined text-[10px]">chevron_right</span>
@@ -382,6 +381,20 @@ export default function MarketDetailPage() {
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="text-institutional">Insurance Market</span>
+                <span
+                  className="px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest"
+                  style={{
+                    background: `rgba(${market.rgb}, 0.1)`,
+                    color: `rgb(${market.rgb})`,
+                    border: `1px solid rgba(${market.rgb}, 0.2)`,
+                  }}
+                >
+                  {market.category}
+                </span>
+                <span className="px-2 py-0.5 rounded bg-tertiary-container flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[10px] text-tertiary">hub</span>
+                  <span className="text-[9px] font-bold text-tertiary uppercase">CCIP Enabled</span>
+                </span>
               </div>
               <h1 className="text-4xl md:text-5xl font-headline font-bold tracking-tight text-on-surface">
                 {market.title}
@@ -1003,6 +1016,7 @@ export default function MarketDetailPage() {
             </div>
           </div>
         </div>
+        </div>
       </div>
       {/* --- End Layout Wrapper --- */}
 
@@ -1040,6 +1054,5 @@ export default function MarketDetailPage() {
             </div>
           </div>
     </main>
-    </>
   );
 }

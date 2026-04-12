@@ -13,9 +13,9 @@ export function FiatOnRamp() {
             widgetUrl: 'https://global-stg.transak.com', // Required in newer SDK versions
             referrer: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000', // Required
             defaultCryptoCurrency: 'USDT',
-            cryptoCurrencyList: 'USDT,AVAX',
-            networks: 'avalanche',
-            defaultNetwork: 'avalanche',
+            cryptoCurrencyList: 'USDT,ETH',
+            networks: 'arbitrum',
+            defaultNetwork: 'arbitrum',
             walletAddress: address || '',
             themeColor: '#800020',
             widgetHeight: '650px',

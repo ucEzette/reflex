@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { useAccount, useConnect, useDisconnect, useSwitchChain, useChainId } from "wagmi";
-import { avalancheFuji } from "viem/chains";
+import { arbitrumSepolia } from "viem/chains";
 
 export function WalletConnect() {
     const { address, isConnected } = useAccount();
@@ -18,16 +18,16 @@ export function WalletConnect() {
         setMounted(true);
     }, []);
 
-    // Prompt user to switch to Fuji testnet if they are connected to another network
+    // Prompt user to switch to Arbitrum Sepolia testnet if they are connected to another network
     useEffect(() => {
-        if (isConnected && chainId && chainId !== avalancheFuji.id) {
+        if (isConnected && chainId && chainId !== arbitrumSepolia.id) {
             const timer = setTimeout(() => {
                 try {
-                    toast.warning(`Please switch to Avalanche Fuji`, {
+                    toast.warning(`Please switch to Arbitrum Sepolia`, {
                         description: "Reflex requires this network for parametric settlements.",
                     });
                     if (switchChain) {
-                        switchChain({ chainId: avalancheFuji.id });
+                        switchChain({ chainId: arbitrumSepolia.id });
                     }
                 } catch (err) {
                     console.error("Auto-switch chain failed:", err);
@@ -69,7 +69,7 @@ export function WalletConnect() {
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
                             </span>
-                            FUJI TESTNET
+                            ARB SEPOLIA
                         </span>
                         <span className="dexter-btn-text flex items-center justify-center gap-1.5 !text-xs w-full"><span className="material-symbols-outlined text-[16px]">account_balance_wallet</span> {address.slice(0, 4)}...{address.slice(-4)}</span>
                         <svg className="dexter-btn-corner !w-[24px]" viewBox="0 0 100 100">
