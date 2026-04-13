@@ -1,8 +1,11 @@
-import { useAccount, useReadContract, usePublicClient, useReadContracts } from 'wagmi';
-import { useSmartWallets } from '@privy-io/react-auth/smart-wallets';
-import { CONTRACTS, ESCROW_ABI, LP_POOL_ABI } from '@/lib/contracts';
+"use client";
+
+import { useAccount, useReadContracts } from 'wagmi';
+import { CONTRACTS } from '@/lib/contracts';
+import { PRODUCT_ABI, GENERIC_PRODUCT_ABI } from '@/lib/enterprise_abis';
 import { useEffect, useState } from 'react';
-import { parseAbiItem, formatUnits } from 'viem';
+import { createPublicClient, http, parseAbiItem } from 'viem';
+import { arbitrumSepolia } from 'viem/chains';
 
 export interface UserPolicy {
     policyId: `0x${string}`;
@@ -15,7 +18,6 @@ export interface UserPolicy {
     expiresAt: bigint;
     identifier: string; // flightId, zone, port, etc.
     icon: string;
-    txHash?: string;
 }
 
 const PRODUCT_CONFIGS = [
@@ -30,135 +32,105 @@ const policyCreatedEvent = parseAbiItem('event PolicyCreated(bytes32 id, address
 const travelPolicyCreatedEvent = parseAbiItem('event PolicyCreated(bytes32 id, address indexed holder, uint256 premium, uint256 payout, uint256 expiresAt)');
 
 export function useUserPolicies() {
-    const { address: eoaAddress, isConnected } = useAccount();
-    const { client } = useSmartWallets();
-    const address = client?.account?.address || eoaAddress;
-    const publicClient = usePublicClient();
+    const { address, isConnected } = useAccount();
     const [policies, setPolicies] = useState<UserPolicy[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const { data: policyIds, isLoading: listLoading, refetch } = useReadContract({
-        address: CONTRACTS.ESCROW as `0x${string}`,
-        abi: ESCROW_ABI,
-        functionName: 'getUserPolicies',
-        args: address ? [address as `0x${string}`] : undefined,
-        query: { enabled: !!address && isConnected }
-    });
-
-    // Fetch LP Shares from all 5 pools for voting power
-    const POOL_ADDRESSES = [
-        CONTRACTS.LP_TRAVEL,
-        CONTRACTS.LP_AGRI,
-        CONTRACTS.LP_ENERGY,
-        CONTRACTS.LP_CAT,
-        CONTRACTS.LP_MARITIME
-    ];
-
-    const { data: lpSharesData } = useReadContracts({
-        contracts: POOL_ADDRESSES.map(pool => ({
-            address: pool as `0x${string}`,
-            abi: LP_POOL_ABI,
-            functionName: 'lpShares',
-            args: [address as `0x${string}`]
-        })),
-        query: { enabled: !!address && isConnected }
-    });
-
-    const totalVotingPower = lpSharesData 
-        ? lpSharesData.reduce((acc, curr) => acc + (curr.result ? Number(formatUnits(curr.result as bigint, 18)) : 0), 0)
-        : 0;
-
     useEffect(() => {
-        if (!isConnected || !address || !policyIds || !publicClient) {
+        if (!isConnected || !address) {
             setPolicies([]);
             return;
         }
 
-        const fetchDetails = async () => {
+        const fetchPolicies = async () => {
             setIsLoading(true);
+            setError(null);
+
             try {
-                const results: UserPolicy[] = [];
-                const ids = (policyIds as `0x${string}`[]) || [];
-                const userAddress = address as `0x${string}`;
-
-                // Fetch logs for all PolicyPurchased events to find transaction hashes
-                const purchasedLogs = await publicClient.getLogs({
-                    address: CONTRACTS.ESCROW,
-                    event: parseAbiItem('event PolicyPurchased(bytes32 indexed policyId, address indexed policyholder, string apiTarget, uint256 premium, uint256 payoutAmount, uint256 expirationTime)'),
-                    args: { policyholder: userAddress },
-                    fromBlock: BigInt(0),
-                    toBlock: 'latest'
+                const client = createPublicClient({
+                    chain: arbitrumSepolia,
+                    transport: http(),
                 });
 
-                const txMap: Record<string, string> = {};
-                purchasedLogs.forEach(log => {
-                    const pid = (log as any).args.policyId;
-                    if (pid) txMap[pid.toLowerCase()] = log.transactionHash;
-                });
+                const allPolicies: UserPolicy[] = [];
 
-                for (const pid of ids) {
+                for (const config of PRODUCT_CONFIGS) {
                     try {
-                        const data = await publicClient.readContract({
-                            address: CONTRACTS.ESCROW,
-                            abi: ESCROW_ABI,
-                            functionName: 'getPolicy',
-                            args: [pid],
-                        }) as any;
+                        const eventAbi = config.isTravel ? travelPolicyCreatedEvent : policyCreatedEvent;
 
-                        if (!data || !Array.isArray(data) || data.length < 7) continue;
-
-                        const apiTarget = data[1] || "";
-                        const isFlight = apiTarget.match(/^[A-Za-z]{2}\d{2,4}$/);
-                        const isActive = data[5];
-                        const isClaimed = data[6];
-                        
-                        // status: 0=active, 1=claimed, 2=expired
-                        let status = 2; // Default Expired
-                        if (isActive) status = 0;
-                        else if (isClaimed) status = 1;
-
-                        results.push({
-                            policyId: pid,
-                            product: isFlight ? 'flight' : 'weather',
-                            productLabel: isFlight ? 'Travel Solutions' : 'Weather Index',
-                            policyholder: data[0],
-                            premium: data[2],
-                            maxPayout: data[3],
-                            status,
-                            expiresAt: data[4],
-                            identifier: apiTarget,
-                            icon: isFlight ? 'Plane' : 'CloudRain',
-                            txHash: txMap[pid.toLowerCase()]
+                        const logs = await client.getLogs({
+                            address: config.contract,
+                            event: eventAbi,
+                            args: { holder: address },
+                            fromBlock: 'earliest',
+                            toBlock: 'latest',
                         });
-                    } catch (e) {
-                        console.error("Failed to fetch policy detail", pid, e);
+
+                        for (const log of logs) {
+                            const policyId = log.args.id as `0x${string}`;
+                            if (!policyId) continue;
+
+                            // Read current policy status from contract
+                            try {
+                                const data = (await client.readContract({
+                                    address: config.contract,
+                                    abi: config.isTravel ? PRODUCT_ABI : GENERIC_PRODUCT_ABI,
+                                    functionName: 'policies' as any,
+                                    args: [policyId],
+                                })) as unknown as any[];
+
+                                if (!data || !data[0]) continue;
+
+                                allPolicies.push({
+                                    policyId,
+                                    product: config.key,
+                                    productLabel: config.label,
+                                    policyholder: data[0] as string,
+                                    premium: data[1] as bigint,
+                                    maxPayout: data[2] as bigint,
+                                    status: Number(data[3]),
+                                    expiresAt: data[4] as bigint,
+                                    identifier: (data[5] as string) || '',
+                                    icon: config.icon,
+                                });
+                            } catch {
+                                // Policy may not have a readable struct
+                            }
+                        }
+                    } catch {
+                        // Contract may not be deployed yet
                     }
                 }
 
-                setPolicies(results.sort((a, b) => Number(b.expiresAt - a.expiresAt)));
+                // Sort by expiry descending (most recent first)
+                allPolicies.sort((a, b) => Number(b.expiresAt - a.expiresAt));
+                setPolicies(allPolicies);
             } catch (err: any) {
-                setError(err.message);
+                setError(err.message || 'Failed to fetch policies');
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchDetails();
-    }, [address, isConnected, policyIds, publicClient]);
+        fetchPolicies();
+    }, [address, isConnected]);
 
     const activePolicies = policies.filter(p => p.status === 0);
     const claimedPolicies = policies.filter(p => p.status === 1);
     const expiredPolicies = policies.filter(p => p.status === 2);
+
+    const totalPremiumsPaid = policies.reduce((sum, p) => sum + p.premium, BigInt(0));
+    const totalPayoutsReceived = claimedPolicies.reduce((sum, p) => sum + p.maxPayout, BigInt(0));
 
     return {
         policies,
         activePolicies,
         claimedPolicies,
         expiredPolicies,
-        totalVotingPower,
-        isLoading: isLoading || listLoading,
+        totalPremiumsPaid,
+        totalPayoutsReceived,
+        isLoading,
         error,
-        refetch
     };
 }

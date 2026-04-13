@@ -9,6 +9,7 @@ const MAX_BLOCKS_PER_QUERY = 2000;
 const MAX_TOTAL_BLOCKS = 5000000;
 import { TableSkeleton } from "@/components/ui/Skeletons";
 import { formatUnits } from "viem";
+import { stat } from "fs";
 
 function CountdownTimer({ expirationTime }: { expirationTime: bigint }) {
     const [timeLeft, setTimeLeft] = useState("");

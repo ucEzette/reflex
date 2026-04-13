@@ -26,8 +26,11 @@ export async function GET(request: Request) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-        // Build URL (AviationStack free tier doesn't allow historical queries via param)
-        const url = `http://api.aviationstack.com/v1/flights?access_key=${apiKey}&flight_iata=${flightIata}`;
+        // Build URL with optional date filter
+        let url = `https://api.aviationstack.com/v1/flights?access_key=${apiKey}&flight_iata=${flightIata}`;
+        if (flightDate) {
+            url += `&flight_date=${flightDate}`;
+        }
 
         const response = await fetch(url, {
             signal: controller.signal,

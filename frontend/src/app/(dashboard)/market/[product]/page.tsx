@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ALL_MARKETS } from "@/lib/market-data";
 import {
@@ -24,34 +24,8 @@ import {
   POLICY_PAYOUT,
   POLICY_DURATION_HOURS,
 } from "@/lib/contracts";
-import { parseUnits, formatUnits, encodeFunctionData } from "viem";
+import { parseUnits, formatUnits } from "viem";
 import { toast } from "sonner";
-import { usePrivy } from "@privy-io/react-auth";
-import { useSponsoredTx } from "@/hooks/useSponsoredTx";
-import { 
-  Shield, 
-  Zap, 
-  Activity, 
-  ArrowLeft, 
-  Info, 
-  ChevronRight, 
-  Search, 
-  Calendar, 
-  Plane, 
-  Globe, 
-  Droplets, 
-  Thermometer, 
-  Navigation, 
-  Anchor,
-  Clock,
-  ArrowRight,
-  CheckCircle2,
-  AlertTriangle,
-  CreditCard,
-  History,
-  Terminal,
-  ChevronDown
-} from "lucide-react";
 
 /* --- helpers --- */
 const POOL_MAP: Record<string, `0x${string}`> = {
@@ -109,7 +83,7 @@ type FlightData = {
   isDelayedOver2Hours: boolean;
 };
 
-/* --- Tooltip component (Premium) --- */
+/* --- Tooltip component --- */
 function Tooltip({ text, children }: { text: string; children: React.ReactNode }) {
   const [show, setShow] = useState(false);
   return (
@@ -122,8 +96,7 @@ function Tooltip({ text, children }: { text: string; children: React.ReactNode }
         {children}
       </span>
       {show && (
-        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-72 bg-[#15151A] text-[11px] text-zinc-400 leading-relaxed p-4 rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] pointer-events-none animate-in fade-in zoom-in-95 duration-200">
-           <div className="text-[#D31027] font-black uppercase tracking-widest mb-2 text-[9px]">Market Intelligence</div>
+        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-surface-container-highest text-[10px] text-zinc-300 leading-relaxed p-3 rounded-lg border border-white/10 shadow-2xl z-50 pointer-events-none animate-fade-in">
           {text}
         </span>
       )}
@@ -134,15 +107,11 @@ function Tooltip({ text, children }: { text: string; children: React.ReactNode }
 /* --- Main --- */
 export default function MarketDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const marketId = params?.product as string;
   const market = useMemo(
     () => ALL_MARKETS.find((m) => m.id === marketId),
     [marketId]
   );
-
-  const { buyProtectionPolicy: executeSponsoredBuy, isExecuting: isSponsoring } = useSponsoredTx();
-  const { authenticated, login } = usePrivy();
 
   const { address, isConnected } = useAccount();
   const { data: usdtBalance } = useBalance({
@@ -279,7 +248,7 @@ export default function MarketDetailPage() {
   const premiumBigInt = parseUnits(totalCost.toFixed(6), 6);
   const payoutBigInt = parseUnits(effectivePayout.toFixed(6), 6);
 
-  const { data: allowance, refetch: refetchAllowance } = useReadContract({
+  const { data: allowance } = useReadContract({
     address: CONTRACTS.USDT,
     abi: ERC20_ABI,
     functionName: "allowance",
@@ -299,44 +268,21 @@ export default function MarketDetailPage() {
     isPending: isPurchasing,
   } = useWriteContract();
 
-  const { isLoading: isConfirmingApprove, isSuccess: approveConfirmed } = useWaitForTransactionReceipt({
+  const { isSuccess: approveConfirmed } = useWaitForTransactionReceipt({
     hash: approveTxHash,
   });
-  const { isLoading: isConfirmingPurchase, isSuccess: purchaseConfirmed } = useWaitForTransactionReceipt({
+  const { isSuccess: purchaseConfirmed } = useWaitForTransactionReceipt({
     hash: purchaseTxHash,
   });
 
   useEffect(() => {
-    if (approveConfirmed) {
-      toast.success("USDT approved for spending");
-      refetchAllowance();
-    }
-  }, [approveConfirmed, refetchAllowance]);
+    if (approveConfirmed) toast.success("USDT approved for spending");
+  }, [approveConfirmed]);
 
   useEffect(() => {
-    if (purchaseConfirmed) {
-      toast.success("CONSENSUS_FINALIZED: Policy Registered", {
-        description: `Tx: ${purchaseTxHash?.slice(0, 10)}... (Arbitrum Sepolia)`,
-        action: {
-          label: "PORTFOLIO",
-          onClick: () => router.push("/portfolio"),
-        },
-        cancel: {
-          label: "EXPLORER",
-          onClick: () => window.open(`https://sepolia.arbiscan.io/tx/${purchaseTxHash}`, "_blank"),
-        },
-        duration: 8000,
-      });
-      // Clear forms
-      setApiTarget("");
-      setCustomPayout("");
-      setFlightNumber("");
-      setFlightDate("");
-      setFlightData(null);
-      setStrikeValue("");
-      setExitValue("");
-    }
-  }, [purchaseConfirmed, router, purchaseTxHash]);
+    if (purchaseConfirmed)
+      toast.success("Policy purchased! Check your Portfolio.");
+  }, [purchaseConfirmed]);
 
   const handleApprove = () => {
     approve({
@@ -347,7 +293,7 @@ export default function MarketDetailPage() {
     });
   };
 
-  const handlePurchase = async () => {
+  const handlePurchase = () => {
     if (!apiTarget.trim()) {
       toast.error(isFlightMarket ? "Look up a flight first" : "Please enter a valid identifier");
       return;
@@ -356,20 +302,15 @@ export default function MarketDetailPage() {
       toast.error("Enter a payout amount");
       return;
     }
-
-    // Logic for Gasless / Smart Wallet Sponsorship
-    if (authenticated && executeSponsoredBuy) {
-      try {
-        toast.info("Vectoring Sponsored Transaction...");
-        await executeSponsoredBuy(Number(totalCost.toFixed(2)));
-        return;
-      } catch (err) {
-        // Fallback or error handled in hook
-        return;
-      }
+    if (effectivePayout > availableCapacity && availableCapacity > 0) {
+      toast.error("Requested payout exceeds pool capacity");
+      return;
+    }
+    if (isFlightMarket && !flightData) {
+      toast.error("Look up your flight before purchasing");
+      return;
     }
 
-    // Standard Wallet Fallback
     purchase({
       address: CONTRACTS.ESCROW,
       abi: ESCROW_ABI,
@@ -404,112 +345,97 @@ export default function MarketDetailPage() {
   const rules = market.rules.split(/\d+\.\s+/).filter(Boolean);
 
   /* --- market-specific input config --- */
-  const DEFAULT_CONFIG = { label: "Target Identifier", placeholder: "Enter target", icon: Search };
+  const DEFAULT_CONFIG = { label: "Target Identifier", placeholder: "Enter target", icon: "search" };
   const configMap: any = {
-    travel: { label: "Flight Number", placeholder: "e.g. AA1234", icon: Plane },
-    agri: { label: "Geographic Zone / Station", placeholder: "e.g. USW00094846", icon: Globe },
-    energy: { label: "Weather Station ID", placeholder: "e.g. USW00094846", icon: Thermometer },
-    catastrophe: { label: "Coordinates (Lat, Lon)", placeholder: "e.g. 34.05, -118.24", icon: Navigation },
-    maritime: { label: "Port / IMO Code", placeholder: "e.g. USNYC or IMO:9811000", icon: Anchor },
+    travel: { label: "Flight Number", placeholder: "e.g. AA1234", icon: "flight_takeoff" },
+    agri: { label: "Geographic Zone / Station", placeholder: "e.g. USW00094846", icon: "grass" },
+    energy: { label: "Weather Station ID", placeholder: "e.g. USW00094846", icon: "thermostat" },
+    catastrophe: { label: "Coordinates (Lat, Lon)", placeholder: "e.g. 34.05, -118.24", icon: "my_location" },
+    maritime: { label: "Port / IMO Code", placeholder: "e.g. USNYC or IMO:9811000", icon: "sailing" },
   };
   const inputConfig = market && market.category ? configMap[market.category] || DEFAULT_CONFIG : DEFAULT_CONFIG;
 
   return (
     <>
-      <main className="pt-32 pb-24 px-8 max-w-[1600px] mx-auto">
+      <main className="pt-28 pb-24 px-6 lg:px-8 max-w-[1600px] mx-auto">
         {/* --- Breadcrumb --- */}
-      <div className="flex items-center gap-3 mb-10 text-[10px] uppercase font-black tracking-widest text-zinc-600">
-        <Link href="/market" className="hover:text-white transition-colors">Marketplace</Link>
-        <ChevronRight className="w-3 h-3" />
-        <span className="text-[#D31027]">{market.title}</span>
+      <div className="flex items-center gap-2 mb-8 text-xs text-zinc-500">
+        <Link href="/market" className="hover:text-on-surface transition-colors">Markets</Link>
+        <span className="material-symbols-outlined text-[10px]">chevron_right</span>
+        <span className="text-on-surface font-medium">{market.title}</span>
       </div>
 
 
-          {/* -- Header Section -- */}
-          <div className="flex flex-col md:flex-row items-end gap-10 mb-16">
-            <div className="relative">
-                <div className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center border border-white/10 shadow-2xl relative z-10 group">
-                <span
-                    className="material-symbols-outlined text-5xl transition-transform duration-500 group-hover:scale-110"
-                    style={{ color: `rgb(${market.rgb})` }}
-                >
-                    {market.icon}
-                </span>
-                </div>
-                {/* Glow Background */}
-                <div className="absolute inset-0 blur-3xl rounded-full scale-150 opacity-20" style={{ background: `rgb(${market.rgb})` }} />
+          {/* -- Header -- */}
+          <div className="flex items-start gap-6">
+            <div
+              className="w-20 h-20 rounded-xl flex items-center justify-center specular-border"
+              style={{ background: `rgba(${market.rgb}, 0.12)` }}
+            >
+              <span
+                className="material-symbols-outlined text-4xl"
+                style={{ color: `rgb(${market.rgb})` }}
+              >
+                {market.icon}
+              </span>
             </div>
-
-            <div className="flex-1 max-w-2xl">
-              <div className="flex items-center gap-3 mb-4">
-                  <div className="w-1.5 h-1.5 rounded-full animate-ping" style={{ backgroundColor: `rgb(${market.rgb})` }} />
-                  <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Parametric Protection Node</span>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="text-institutional">Insurance Market</span>
               </div>
-              <h1 className="text-6xl font-black tracking-tighter mb-4 text-white uppercase italic">
-                {market.title.split(' ')[0]} <span style={{ color: `rgb(${market.rgb})` }}>{market.title.split(' ').slice(1).join(' ')}</span>
+              <h1 className="text-4xl md:text-5xl font-headline font-bold tracking-tight text-on-surface">
+                {market.title}
               </h1>
-              <p className="text-[#888888] text-lg leading-relaxed font-medium">
+              <p className="text-zinc-400 font-light leading-relaxed max-w-xl mt-1">
                 {market.description}
               </p>
             </div>
-
-            {isConnected && (
-                <div className="flex flex-col items-end gap-3 translate-y-[-8px]">
-                    <div className="flex items-center gap-4 p-4 bg-[#0A0A0A] rounded-2xl border border-white/5 shadow-2xl">
-                        <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center border border-white/5">
-                            <History className="w-5 h-5 text-zinc-400" />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Active Pool Status</span>
-                            <span className="mono-data text-sm text-emerald-500 font-bold uppercase tracking-widest">Operational</span>
-                        </div>
-                    </div>
-                </div>
-            )}
           </div>
 
-          {/* -- Market Mechanics -- */}
-          <details className="bg-[#0A0A0A] rounded-[2rem] p-10 mb-16 border border-white/5 shadow-2xl group transition-all duration-500">
-            <summary className="cursor-pointer list-none flex items-center justify-between outline-none">
-              <div className="flex items-center gap-4">
-                  <Info className="w-5 h-5 text-[#D31027]" />
-                  <span className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-500 group-hover:text-white transition-colors">Protocol Methodology & Settlement Engine</span>
-              </div>
-              <ChevronDown className="w-5 h-5 text-zinc-600 transition-transform duration-500 group-open:rotate-180" />
+          {/* -- How This Model Works -- */}
+          <details className="bg-surface-container-low rounded-xl p-8 specular-border group">
+            <summary className="cursor-pointer text-institutional mb-0 group-open:mb-6 list-none flex items-center justify-between outline-none">
+              How This Market Works
+              <span className="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
             </summary>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
                 {
-                  step: "01",
-                  title: "Risk Calibration",
+                  step: "1",
+                  title: "Define Risk Parameters",
                   desc: market.category === "travel"
-                    ? "Query specific flight vectors. Real-time historical delay analysis determines loss projection."
-                    : "Specify geographic strike/exit coordinates linked to decentralized climate nodes.",
-                  icon: Zap,
+                    ? "Enter your flight number. We query FlightAware AeroAPI for historical delay rates on this specific route."
+                    : "Enter your target identifier and define Strike/Exit thresholds for your parametric coverage.",
+                  icon: "tune",
                 },
                 {
-                  step: "02",
-                  title: "Underwriting Execution",
-                  desc: "Automated premium derivation via Reflex Risk Engine. 105% coverage margin required in LP vault.",
-                  icon: Shield,
+                  step: "2",
+                  title: "Receive Underwriting Quote",
+                  desc: "Premium is computed from expected loss ratio, protocol margin (5%), and any surge multiplier from the Dynamic Risk Engine.",
+                  icon: "receipt_long",
                 },
                 {
-                  step: "03",
-                  title: "On-Chain Settlement",
-                  desc: "DONs monitor triggers 24/7. Atomic USDT disbursement to policyholder upon verification.",
-                  icon: Activity,
+                  step: "3",
+                  title: "Automatic Settlement",
+                  desc: "Chainlink DON monitors your target 24/7. If the trigger condition is met, USDT settles directly — no claims process.",
+                  icon: "bolt",
                 },
               ].map((s) => (
-                <div key={s.step} className="bg-[#101216] p-8 rounded-3xl border border-white/5 relative group/card">
-                   <div className="text-[40px] font-black text-white/5 absolute -top-2 -left-2 tracking-tighter transition-colors group-hover/card:text-[#D31027]/10">{s.step}</div>
-                   <div className="relative z-10 flex flex-col h-full">
-                        <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mb-6 group-hover/card:bg-[#D31027]/10 transition-colors">
-                            <s.icon className="w-6 h-6 text-zinc-400 group-hover/card:text-[#D31027]" />
-                        </div>
-                        <h4 className="text-sm font-black uppercase tracking-widest mb-4 group-hover/card:text-white transition-colors">{s.title}</h4>
-                        <p className="text-[11px] text-zinc-500 leading-relaxed font-medium">{s.desc}</p>
-                   </div>
+                <div key={s.step} className="flex flex-col gap-3 p-5 bg-surface-container-lowest rounded-lg border border-white/5">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black"
+                      style={{
+                        background: `rgba(${market.rgb}, 0.15)`,
+                        color: `rgb(${market.rgb})`,
+                      }}
+                    >
+                      {s.step}
+                    </div>
+                    <span className="material-symbols-outlined text-zinc-500 text-lg">{s.icon}</span>
+                  </div>
+                  <h4 className="text-sm font-bold">{s.title}</h4>
+                  <p className="text-[11px] text-zinc-500 leading-relaxed">{s.desc}</p>
                 </div>
               ))}
             </div>
@@ -531,43 +457,40 @@ export default function MarketDetailPage() {
             <div className="w-full lg:w-[58%] flex flex-col gap-8">
               
               {/* --- Configure Protection --- */}
-              <div className="bg-[#0A0A0A] rounded-[2rem] p-10 flex flex-col gap-10 border border-white/5 shadow-2xl relative z-50">
-                <div className="flex items-center gap-4">
-                    <div className="w-1.5 h-6 bg-[#D31027] rounded-full" />
-                    <h3 className="text-xl font-bold uppercase tracking-tight text-white">
-                        Risk Parameter Matrix
-                    </h3>
-                </div>
-
-          {/* ═══ FLIGHT MARKET: Flight Number + Date + Lookup ═══ */}
+              <div className="bg-surface-container-high rounded-2xl p-8 flex flex-col gap-6 specular-border relative z-50">
+                <h3 className="text-xl font-headline font-bold text-on-surface">
+                  Configure Protection
+                </h3>
+              {/* ═══ FLIGHT MARKET: Flight Number + Date + Lookup ═══ */}
           {isFlightMarket ? (
-            <div className="space-y-10">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 flex items-center gap-2">
-                  <Plane className="w-3.5 h-3.5 text-[#D31027]" />
-                  Flight Authorization Details
+            <>
+              <div className="flex flex-col gap-3">
+                <label className="text-institutional flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-sm text-blue-400">flight_takeoff</span>
+                  Flight Details
                 </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-2">
-                    <span className="text-[9px] font-black text-zinc-700 uppercase tracking-widest px-1">Identifier (IATA)</span>
-                    <div className="bg-[#101216] p-4 rounded-2xl border border-white/5 focus-within:border-[#D31027]/40 transition-all group/input">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest">Flight Number</span>
+                    <div className="bg-surface-container-lowest p-3.5 rounded-lg border border-transparent focus-within:border-primary/30 transition-all">
                       <input
                         type="text"
                         value={flightNumber}
                         onChange={(e) => setFlightNumber(e.target.value.toUpperCase().replace(/\s/g, ''))}
                         placeholder="e.g. AA1234"
-                        className="bg-transparent border-none p-0 w-full mono-data text-base focus:ring-0 text-white placeholder:text-zinc-800"
+                        className="bg-transparent border-none p-0 w-full mono-data text-base focus:ring-0 text-on-surface placeholder:text-zinc-700"
                       />
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <span className="text-[9px] font-black text-zinc-700 uppercase tracking-widest px-1">Departure Window</span>
-                    <div className="bg-[#101216] p-4 rounded-2xl border border-white/5 focus-within:border-[#D31027]/40 transition-all group/input">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest">Flight Date</span>
+                    <div className="bg-surface-container-lowest p-3.5 rounded-lg border border-transparent focus-within:border-primary/30 transition-all">
                       <input
                         type="date"
                         value={flightDate}
                         onChange={(e) => setFlightDate(e.target.value)}
                         min={new Date().toISOString().split('T')[0]}
-                        className="bg-transparent border-none p-0 w-full mono-data text-base focus:ring-0 text-white placeholder:text-zinc-800 [color-scheme:dark]"
+                        className="bg-transparent border-none p-0 w-full mono-data text-base focus:ring-0 text-on-surface placeholder:text-zinc-700 [color-scheme:dark]"
                       />
                     </div>
                   </div>
@@ -575,230 +498,221 @@ export default function MarketDetailPage() {
                 <button
                   onClick={fetchFlightDetails}
                   disabled={flightLoading || !flightNumber.trim() || !flightDate}
-                  className="w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all bg-white/5 text-zinc-400 hover:bg-[#D31027] hover:text-white disabled:opacity-20 disabled:cursor-not-allowed border border-white/5 shadow-xl"
+                  className="w-full py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all bg-surface-container-lowest text-on-surface hover:bg-surface-container disabled:opacity-40 disabled:cursor-not-allowed border border-white/5"
                 >
                   {flightLoading ? (
                     <>
-                      <Activity className="w-4 h-4 animate-spin" />
-                      Interrogating Oracle Nodes…
+                      <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                      Fetching from FlightAware…
                     </>
                   ) : (
                     <>
-                      <Search className="w-4 h-4" />
-                      Interrogate Flight Vector
+                      <span className="material-symbols-outlined text-sm text-blue-400">search</span>
+                      Look Up Flight
                     </>
                   )}
                 </button>
                 {flightError && (
-                  <div className="flex items-center gap-3 px-5 py-3 bg-[#D31027]/10 rounded-2xl border border-[#D31027]/20">
-                    <AlertTriangle className="w-4 h-4 text-[#FFB3B5]" />
-                    <span className="text-[11px] font-bold text-[#FFB3B5] uppercase tracking-widest">{flightError}</span>
-                  </div>
-                )}
-
-                {/* -- Premium Flight Details Card (Boarding Pass) -- */}
-                {flightData && (
-                  <div className="bg-[#101216] rounded-3xl p-8 border border-white/5 animate-in fade-in zoom-in duration-500 shadow-2xl relative overflow-hidden group">
-                    {/* Decorative Scanline */}
-                    <div className="absolute top-0 left-0 w-full h-[1px] bg-[#D31027]/20 group-hover:h-[2px] transition-all" />
-                    
-                    <div className="flex items-center justify-between mb-10">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
-                          <Plane className="w-6 h-6 text-[#D31027]" />
-                        </div>
-                        <div className="flex flex-col">
-                          <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{flightData.airline}</p>
-                          <p className="text-xl font-black text-white italic tracking-tighter uppercase">{flightData.flightNumber}</p>
-                        </div>
-                      </div>
-                      <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] border shadow-2xl transition-all duration-300 ${
-                        flightData.status === 'scheduled' ? 'bg-white/5 text-zinc-400 border-white/10' :
-                        flightData.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                        flightData.status === 'landed' ? 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20' :
-                        flightData.status === 'cancelled' ? 'bg-[#D31027]/10 text-[#FFB3B5] border-[#D31027]/20' :
-                        'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                      }`}>
-                        {flightData.status}
-                      </div>
-                    </div>
-
-                    {/* High Fidelity Route */}
-                    <div className="flex items-center gap-8 mb-10">
-                      <div className="flex-1">
-                        <p className="text-4xl font-black text-white italic tracking-tighter mb-1 select-none">{flightData.departure.iata}</p>
-                        <p className="text-[10px] font-black text-zinc-500 uppercase truncate tracking-widest">{flightData.departure.airport.split(' ')[0]} INT</p>
-                      </div>
-                      <div className="flex flex-col items-center gap-2 flex-grow">
-                          <div className="w-full flex items-center gap-2">
-                               <div className="flex-1 h-px bg-white/5" />
-                               <Plane className="w-4 h-4 text-zinc-700 mx-2" />
-                               <div className="flex-1 h-px bg-white/5" />
-                          </div>
-                          <span className="text-[8px] font-black text-zinc-700 uppercase tracking-[0.4em]">Non-Stop Vector</span>
-                      </div>
-                      <div className="flex-1 text-right">
-                        <p className="text-4xl font-black text-white italic tracking-tighter mb-1 select-none">{flightData.arrival.iata}</p>
-                        <p className="text-[10px] font-black text-zinc-500 uppercase truncate tracking-widest">{flightData.arrival.airport.split(' ')[0]} INT</p>
-                      </div>
-                    </div>
-
-                    {/* Times Ledger */}
-                    <div className="grid grid-cols-2 gap-4 mb-8">
-                      <div className="bg-black/40 p-5 rounded-2xl border border-white/5">
-                        <div className="flex items-center gap-2 mb-3">
-                           <div className="w-1 h-2.5 bg-zinc-700 rounded-full" />
-                           <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Departure Schedule</p>
-                        </div>
-                        <p className="mono-data text-xl text-white font-bold">
-                          {flightData.departure.scheduled ? new Date(flightData.departure.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '—'}
-                        </p>
-                        {flightData.departure.delay > 0 && (
-                          <p className="text-[9px] font-black text-[#D31027] mt-2 uppercase tracking-widest">+{flightData.departure.delay} MIN LATENCY</p>
-                        )}
-                      </div>
-                      <div className="bg-black/40 p-5 rounded-2xl border border-white/5">
-                        <div className="flex items-center gap-2 mb-3">
-                           <div className="w-1 h-2.5 bg-zinc-700 rounded-full" />
-                           <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Arrival Target</p>
-                        </div>
-                        <p className="mono-data text-xl text-white font-bold">
-                          {flightData.arrival.scheduled ? new Date(flightData.arrival.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '—'}
-                        </p>
-                        {flightData.arrival.delay > 0 && (
-                          <p className={`text-[9px] font-black mt-2 uppercase tracking-widest ${flightData.arrival.delay >= 120 ? 'text-[#D31027]' : 'text-amber-500'}`}>
-                            +{flightData.arrival.delay} MIN LATENCY
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Auto-set Status */}
-                    <div className="flex items-center gap-4 px-5 py-4 bg-[#D31027]/5 rounded-2xl border border-[#D31027]/10">
-                      <Clock className="w-4 h-4 text-[#D31027]" />
-                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-relaxed">
-                        Temporal Locking Active: <strong className="text-white">{durationDays} DAY{Number(durationDays) > 1 ? 'S' : ''}</strong> (TERMINAL FINALITY)
-                      </span>
-                    </div>
-
-                    {flightData.isDelayedOver2Hours && (
-                      <div className="mt-4 flex items-center gap-4 px-5 py-4 bg-emerald-500/5 rounded-2xl border border-emerald-500/10">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest leading-relaxed">
-                          Vector Validated: Instant Settlement Available via Parametric Trigger
-                        </span>
-                      </div>
-                    )}
+                  <div className="flex items-center gap-2 px-3 py-2 bg-red-500/10 rounded-lg border border-red-500/20">
+                    <span className="material-symbols-outlined text-red-400 text-sm">error</span>
+                    <span className="text-[11px] text-red-400">{flightError}</span>
                   </div>
                 )}
               </div>
-            ) : (
-              /* ═══ NON-FLIGHT: Generic Target Input ═══ */
-              <div className="space-y-10">
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 flex items-center gap-2">
-                    <inputConfig.icon className="w-3.5 h-3.5" style={{ color: `rgb(${market.rgb})` }} />
-                    {inputConfig.label}
-                  </label>
-                  <div className="bg-[#101216] p-5 rounded-2xl border border-white/5 focus-within:border-[#D31027]/40 transition-all">
-                    <input
-                      type="text"
-                      value={apiTarget}
-                      onChange={(e) => setApiTarget(e.target.value.toUpperCase())}
-                      placeholder={inputConfig.placeholder}
-                      className="bg-transparent border-none p-0 w-full mono-data text-lg focus:ring-0 text-white placeholder:text-zinc-800"
-                    />
+
+              {/* -- Flight Details Card -- */}
+              {flightData && (
+                <div className="bg-surface-container-lowest rounded-xl p-5 space-y-4 border border-blue-500/10 animate-fade-in">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-blue-400">flight</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-on-surface">{flightData.airline}</p>
+                        <p className="mono-data text-xs text-zinc-500">{flightData.flightNumber} · {flightData.flightDate}</p>
+                      </div>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
+                      flightData.status === 'scheduled' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                      flightData.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                      flightData.status === 'landed' ? 'bg-zinc-500/10 text-zinc-400 border border-zinc-500/20' :
+                      flightData.status === 'cancelled' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                      'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                    }`}>
+                      {flightData.status}
+                    </span>
                   </div>
-                  {apiTarget && (
-                    <div className="flex items-center gap-2 px-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-[10px] text-emerald-400">
-                        Oracle monitoring will activate on purchase
-                      </span>
+
+                  {/* Route */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1 text-center">
+                      <p className="mono-data text-2xl font-black text-on-surface">{flightData.departure.iata}</p>
+                      <p className="text-[10px] text-zinc-500 mt-1 truncate">{flightData.departure.airport}</p>
+                      {flightData.departure.terminal && <p className="text-[9px] text-zinc-600">Terminal {flightData.departure.terminal}{flightData.departure.gate ? ` · Gate ${flightData.departure.gate}` : ''}</p>}
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-24 h-px bg-gradient-to-r from-blue-500/50 via-blue-400 to-blue-500/50 relative">
+                        <span className="material-symbols-outlined text-blue-400 text-sm absolute -top-[9px] left-1/2 -translate-x-1/2">flight</span>
+                      </div>
+                    </div>
+                    <div className="flex-1 text-center">
+                      <p className="mono-data text-2xl font-black text-on-surface">{flightData.arrival.iata}</p>
+                      <p className="text-[10px] text-zinc-500 mt-1 truncate">{flightData.arrival.airport}</p>
+                      {flightData.arrival.terminal && <p className="text-[9px] text-zinc-600">Terminal {flightData.arrival.terminal}{flightData.arrival.gate ? ` · Gate ${flightData.arrival.gate}` : ''}</p>}
+                    </div>
+                  </div>
+
+                  {/* Times */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-surface-container-highest p-3 rounded-lg">
+                      <p className="text-[9px] text-zinc-500 uppercase tracking-widest mb-1">Departure</p>
+                      <p className="mono-data text-sm text-on-surface">
+                        {flightData.departure.scheduled ? new Date(flightData.departure.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                      </p>
+                      {flightData.departure.delay > 0 && (
+                        <p className="text-[9px] text-amber-400 mt-0.5">+{flightData.departure.delay} min delay</p>
+                      )}
+                    </div>
+                    <div className="bg-surface-container-highest p-3 rounded-lg">
+                      <p className="text-[9px] text-zinc-500 uppercase tracking-widest mb-1">Arrival</p>
+                      <p className="mono-data text-sm text-on-surface">
+                        {flightData.arrival.scheduled ? new Date(flightData.arrival.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                      </p>
+                      {flightData.arrival.delay > 0 && (
+                        <p className={`text-[9px] mt-0.5 ${flightData.arrival.delay >= 120 ? 'text-red-400' : 'text-amber-400'}`}>
+                          +{flightData.arrival.delay} min delay
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Coverage auto-set */}
+                  <div className="flex items-center gap-2 px-2 py-2 bg-blue-500/5 rounded-lg border border-blue-500/10">
+                    <span className="material-symbols-outlined text-blue-400 text-sm">schedule</span>
+                    <span className="text-[10px] text-blue-300">
+                      Coverage auto-set to <strong>{durationDays} day{Number(durationDays) > 1 ? 's' : ''}</strong> (through end of arrival day)
+                    </span>
+                  </div>
+
+                  {flightData.isDelayedOver2Hours && (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                      <span className="material-symbols-outlined text-emerald-400 text-sm">verified</span>
+                      <span className="text-[10px] text-emerald-300 font-bold">This flight qualifies for immediate payout — delay exceeds 120 minutes.</span>
                     </div>
                   )}
                 </div>
-
-                {/* Market-specific extra fields */}
-                {(market.category === "agri" || market.category === "catastrophe") && (
-                  <div className="grid grid-cols-2 gap-3">
-                    {market.category === "agri" ? (
-                      <>
-                        <div className="flex flex-col gap-2">
-                          <label className="text-[9px] font-black text-zinc-700 uppercase tracking-widest px-1">Strike Index (mm)</label>
-                          <input type="number" value={strikeValue} onChange={e => setStrikeValue(e.target.value)} placeholder="e.g. 200" className="bg-[#101216] p-4 rounded-2xl border border-white/5 mono-data text-sm focus:ring-1 focus:ring-[#D31027]/40 text-white placeholder:text-zinc-800" />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                          <label className="text-[9px] font-black text-zinc-700 uppercase tracking-widest px-1">Exit Index (mm)</label>
-                          <input type="number" value={exitValue} onChange={e => setExitValue(e.target.value)} placeholder="e.g. 80" className="bg-[#101216] p-4 rounded-2xl border border-white/5 mono-data text-sm focus:ring-1 focus:ring-[#D31027]/40 text-white placeholder:text-zinc-800" />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex flex-col gap-2">
-                          <label className="text-[9px] font-black text-zinc-700 uppercase tracking-widest px-1">Latitude</label>
-                          <input type="text" value={latitude} onChange={e => setLatitude(e.target.value)} placeholder="e.g. 34.0522" className="bg-[#101216] p-4 rounded-2xl border border-white/5 mono-data text-sm focus:ring-1 focus:ring-[#D31027]/40 text-white placeholder:text-zinc-800" />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                          <label className="text-[9px] font-black text-zinc-700 uppercase tracking-widest px-1">Longitude</label>
-                          <input type="text" value={longitude} onChange={e => setLongitude(e.target.value)} placeholder="e.g. -118.2437" className="bg-[#101216] p-4 rounded-2xl border border-white/5 mono-data text-sm focus:ring-1 focus:ring-[#D31027]/40 text-white placeholder:text-zinc-800" />
-                        </div>
-                      </>
-                    )}
+              )}
+            </>
+          ) : (
+            /* ═══ NON-FLIGHT: Generic Target Input ═══ */
+            <>
+              <div className="flex flex-col gap-2">
+                <label className="text-institutional flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-sm" style={{ color: `rgb(${market.rgb})` }}>
+                    {inputConfig.icon}
+                  </span>
+                  {inputConfig.label}
+                </label>
+                <div className="bg-surface-container-lowest p-4 rounded-lg border border-transparent focus-within:border-primary/30 transition-all">
+                  <input
+                    type="text"
+                    value={apiTarget}
+                    onChange={(e) => setApiTarget(e.target.value.toUpperCase())}
+                    placeholder={inputConfig.placeholder}
+                    className="bg-transparent border-none p-0 w-full mono-data text-lg focus:ring-0 text-on-surface placeholder:text-zinc-700"
+                  />
+                </div>
+                {apiTarget && (
+                  <div className="flex items-center gap-2 px-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-[10px] text-emerald-400">
+                      Oracle monitoring will activate on purchase
+                    </span>
                   </div>
                 )}
+              </div>
 
-                {market.category === "energy" && (
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[9px] font-black text-zinc-700 uppercase tracking-widest px-1">Tick Value (USD per Degree Day)</label>
-                    <input type="number" value={tickValue} onChange={e => setTickValue(e.target.value)} placeholder="10" className="bg-[#101216] p-4 rounded-2xl border border-white/5 mono-data text-sm focus:ring-1 focus:ring-[#D31027]/40 text-white placeholder:text-zinc-800" />
-                  </div>
-                )}
+              {/* Market-specific extra fields */}
+              {(market.category === "agri" || market.category === "catastrophe") && (
+                <div className="grid grid-cols-2 gap-3">
+                  {market.category === "agri" ? (
+                    <>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-institutional">Strike Index (mm)</label>
+                        <input type="number" value={strikeValue} onChange={e => setStrikeValue(e.target.value)} placeholder="e.g. 200" className="bg-surface-container-lowest p-3 rounded-lg mono-data text-sm border-none focus:ring-0 text-on-surface placeholder:text-zinc-700" />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-institutional">Exit Index (mm)</label>
+                        <input type="number" value={exitValue} onChange={e => setExitValue(e.target.value)} placeholder="e.g. 80" className="bg-surface-container-lowest p-3 rounded-lg mono-data text-sm border-none focus:ring-0 text-on-surface placeholder:text-zinc-700" />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-institutional">Latitude</label>
+                        <input type="text" value={latitude} onChange={e => setLatitude(e.target.value)} placeholder="e.g. 34.0522" className="bg-surface-container-lowest p-3 rounded-lg mono-data text-sm border-none focus:ring-0 text-on-surface placeholder:text-zinc-700" />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-institutional">Longitude</label>
+                        <input type="text" value={longitude} onChange={e => setLongitude(e.target.value)} placeholder="e.g. -118.2437" className="bg-surface-container-lowest p-3 rounded-lg mono-data text-sm border-none focus:ring-0 text-on-surface placeholder:text-zinc-700" />
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
 
-                {/* Duration Selector (non-flight only) */}
-                <div className="flex flex-col gap-4">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 px-1">Coverage Temporal Window</label>
-                  <div className="flex gap-3">
-                    {["1", "7", "14", "30"].map((d) => (
-                      <button
-                        key={d}
-                        onClick={() => setDurationDays(d)}
-                        className={`flex-1 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 border ${durationDays === d
-                            ? "bg-[#D31027] border-[#D31027] text-white shadow-[0_10px_20px_rgba(211,16,39,0.2)]"
-                            : "bg-white/5 border-white/5 text-zinc-500 hover:text-white"
-                          }`}
-                      >
-                        {d}D
-                      </button>
-                    ))}
-                  </div>
+              {market.category === "energy" && (
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-institutional">Tick Value (USD per Degree Day)</label>
+                  <input type="number" value={tickValue} onChange={e => setTickValue(e.target.value)} placeholder="10" className="bg-surface-container-lowest p-3 rounded-lg mono-data text-sm border-none focus:ring-0 text-on-surface placeholder:text-zinc-700" />
+                </div>
+              )}
+
+              {/* Duration Selector (non-flight only) */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-institutional">Coverage Duration</label>
+                <div className="flex gap-2">
+                  {["1", "7", "14", "30"].map((d) => (
+                    <button
+                      key={d}
+                      onClick={() => setDurationDays(d)}
+                      className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${durationDays === d
+                          ? "bg-primary-container text-white"
+                          : "bg-surface-container-lowest text-zinc-400 hover:text-on-surface"
+                        }`}
+                    >
+                      {d}d
+                    </button>
+                  ))}
                 </div>
               </div>
+            </>
           )}
 
           {/* -- Expected Payout Input -- */}
-          <div className="flex flex-col gap-4">
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 flex items-center gap-2">
-              <CreditCard className="w-3.5 h-3.5 text-emerald-500" />
-              Maximum Exposure / Payout
+          <div className="flex flex-col gap-2">
+            <label className="text-institutional flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-sm text-emerald-400">payments</span>
+              Expected Payout
             </label>
-            <div className="bg-[#101216] p-5 rounded-2xl flex items-center gap-4 border border-white/5 focus-within:border-emerald-500/40 transition-all group">
-              <span className="text-zinc-700 text-sm font-black">$</span>
+            <div className="bg-surface-container-lowest p-4 rounded-lg flex items-center gap-2 border border-transparent focus-within:border-emerald-500/30 transition-all">
+              <span className="text-zinc-500 text-sm">$</span>
               <input
                 type="number"
                 value={customPayout}
                 onChange={(e) => setCustomPayout(e.target.value)}
-                placeholder="0.00"
+                placeholder="Enter payout amount"
                 min="1"
-                className="bg-transparent border-none p-0 w-full mono-data text-2xl font-bold focus:ring-0 text-white placeholder:text-zinc-800"
+                className="bg-transparent border-none p-0 w-full mono-data text-lg focus:ring-0 text-on-surface placeholder:text-zinc-700"
               />
-              <span className="text-zinc-700 text-[10px] font-black uppercase tracking-widest shrink-0">USDT</span>
+              <span className="text-zinc-500 text-xs shrink-0">USDT</span>
             </div>
             {effectivePayout > 0 && effectivePayout > availableCapacity && availableCapacity > 0 && (
-              <div className="flex items-center gap-3 px-5 py-3 bg-[#D31027]/10 rounded-2xl border border-[#D31027]/20">
-                <AlertTriangle className="w-4 h-4 text-[#FFB3B5]" />
-                <span className="text-[10px] font-bold text-[#FFB3B5] uppercase tracking-widest">
-                  Capacity Warning: Pooled Liquidity Cap at ${availableCapacity.toLocaleString()}
+              <div className="flex items-center gap-2 px-2 py-1.5 bg-red-500/10 rounded-lg border border-red-500/20">
+                <span className="material-symbols-outlined text-red-400 text-sm">warning</span>
+                <span className="text-[10px] text-red-400">
+                  Exceeds available pool capacity (${availableCapacity.toLocaleString()})
                 </span>
               </div>
             )}
@@ -812,268 +726,277 @@ export default function MarketDetailPage() {
           <div className="sticky top-28 space-y-6">
 
             {/* -- Purchase Widget -- */}
-            <div className="bg-[#0A0A0A] rounded-[2rem] p-10 flex flex-col gap-8 border border-white/5 shadow-2xl relative overflow-hidden group">
-               {/* Accent Glow */}
-               <div className="absolute top-0 right-0 w-32 h-32 bg-[#D31027]/10 blur-[60px] rounded-full -mr-16 -mt-16 group-hover:bg-[#D31027]/20 transition-colors" />
-
-              <div className="flex justify-between items-start relative z-10">
-                <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Selected Risk Vector</span>
-                    <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">
-                    Coverage Summary
-                    </h3>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <span className="text-[9px] font-black text-zinc-700 uppercase tracking-widest">Authority Balance</span>
-                  <span className="mono-data text-xs text-emerald-500 font-bold">{formattedBalance} USDT</span>
+            <div className="bg-surface-container-high rounded-2xl p-8 flex flex-col gap-6 specular-border">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-headline font-bold text-on-surface">
+                  Coverage Summary
+                </h3>
+                <div className="flex flex-col items-end">
+                  <span className="text-institutional">Wallet Balance</span>
+                  <span className="mono-data text-xs text-on-surface-variant">
+                    {formattedBalance} USDT
+                  </span>
                 </div>
               </div>
 
               {/* --- Underwriting Quote Breakdown --- */}
-              <div className="bg-[#101216] rounded-3xl p-8 space-y-6 border border-white/5 relative z-10">
+              <div className="bg-surface-container-lowest rounded-xl p-5 space-y-4 border border-white/5">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-600 flex items-center gap-3">
-                    <Terminal className="w-3.5 h-3.5 text-[#D31027]" />
-                    Underwriting Ledger
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-sm">analytics</span>
+                    Underwriting Quote
                   </h4>
                   <button
                     onClick={() => setShowAdvanced(!showAdvanced)}
-                    className="text-[9px] font-black text-[#D31027] uppercase tracking-widest hover:underline"
+                    className="text-[10px] text-primary hover:underline"
                   >
-                    {showAdvanced ? "Hide Calc" : "Show Calc"}
+                    {showAdvanced ? "Hide details" : "Show calculation"}
                   </button>
                 </div>
 
                 {/* Main line items */}
-                <div className="flex flex-col gap-5">
-                  <div className="flex justify-between items-center group/item">
-                    <Tooltip text={`Base premium derived from historical volatility and loss projections. Expected Loss = ${historicalRiskRate.toFixed(4)} × $${effectivePayout} = $${expectedLoss.toFixed(2)}`}>
-                      <span className="text-[11px] font-bold text-zinc-400 flex items-center gap-2 group-hover/item:text-zinc-200 transition-colors uppercase tracking-widest cursor-help">
-                        Technical Premium
-                        <Info className="w-3 h-3 text-zinc-700" />
+                <div className="flex flex-col gap-3">
+                  <div className="flex justify-between items-center">
+                    <Tooltip text={`Base premium = Expected Loss × Protocol Margin (${PROTOCOL_MARGIN_BPS} BPS / 5%). Expected Loss = ${historicalRiskRate.toFixed(4)} × $${effectivePayout} = $${expectedLoss.toFixed(2)}`}>
+                      <span className="text-sm opacity-70 flex items-center gap-1">
+                        Calculated Premium
+                        <span className="material-symbols-outlined text-[14px] text-zinc-600">info</span>
                       </span>
                     </Tooltip>
-                    <span className="mono-data text-sm text-white font-bold tracking-tight">${calculatedPremium.toFixed(2)}</span>
+                    <span className="mono-data text-on-surface">${calculatedPremium.toFixed(2)}</span>
                   </div>
 
-                  <div className="flex justify-between items-center group/item">
-                    <Tooltip text={`Origination fee of ${ORIGINATION_FEE_BPS} BPS (3%) on the calculated premium for operational node sustainability.`}>
-                      <span className="text-[11px] font-bold text-zinc-400 flex items-center gap-2 group-hover/item:text-zinc-200 transition-colors uppercase tracking-widest cursor-help">
-                        Node Fee (3%)
-                        <Info className="w-3 h-3 text-zinc-700" />
+                  <div className="flex justify-between items-center">
+                    <Tooltip text={`Origination fee of ${ORIGINATION_FEE_BPS} BPS (3%) on the calculated premium. Sent to Protocol Treasury for operational sustainability.`}>
+                      <span className="text-sm opacity-70 flex items-center gap-1">
+                        Origination Fee (3%)
+                        <span className="material-symbols-outlined text-[14px] text-zinc-600">info</span>
                       </span>
                     </Tooltip>
-                    <span className="mono-data text-sm text-zinc-500 font-bold tracking-tight">${originationFee.toFixed(2)}</span>
+                    <span className="mono-data text-zinc-400">${originationFee.toFixed(2)}</span>
                   </div>
 
                   {surgeMultiplier > 1.0 && (
-                     <div className="flex justify-between items-center px-4 py-3 bg-[#D31027]/10 rounded-2xl border border-[#D31027]/20 group/surge">
-                      <Tooltip text={`Dynamic Risk Engine has applied a ${surgeMultiplier.toFixed(2)}x surge multiplier based on elevated environmental conditions.`}>
-                        <span className="text-[10px] font-black text-[#FFB3B5] flex items-center gap-2 uppercase tracking-widest cursor-help">
-                          <AlertTriangle className="w-3.5 h-3.5" />
-                          Risk Surge
+                    <div className="flex justify-between items-center">
+                      <Tooltip text={`Dynamic Risk Engine has applied a ${surgeMultiplier.toFixed(2)}x surge multiplier based on elevated environmental conditions. ${market.marketData.surgeReason || "Real-time risk data indicates heightened probability."}`}>
+                        <span className="text-sm text-amber-400 flex items-center gap-1">
+                          Surge Multiplier
+                          <span className="material-symbols-outlined text-[14px] text-amber-500">warning</span>
                         </span>
                       </Tooltip>
-                      <span className="mono-data text-sm text-[#FFB3B5] font-black">{surgeMultiplier.toFixed(2)}x</span>
+                      <span className="mono-data text-amber-400">{surgeMultiplier.toFixed(2)}x</span>
                     </div>
                   )}
 
-                  <div className="pt-6 border-t border-white/5 flex justify-between items-end">
-                    <div className="flex flex-col gap-1">
-                        <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Total Authorization</span>
-                        <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Refund if oracle detects error</span>
-                    </div>
-                    <div className="flex flex-col items-end">
-                        <div className="text-3xl font-black text-white italic tracking-tighter">${totalCost.toFixed(2)}</div>
-                        <span className="text-[9px] font-black text-[#D31027] uppercase tracking-[0.2em]">USDT ERC-20</span>
-                    </div>
+                  <div className="border-t border-white/10 pt-3 flex justify-between items-center">
+                    <Tooltip text="Total cost = Calculated Premium + Origination Fee. This is the amount deducted from your wallet.">
+                      <span className="text-sm font-bold flex items-center gap-1">
+                        Total Cost
+                        <span className="material-symbols-outlined text-[14px] text-zinc-600">info</span>
+                      </span>
+                    </Tooltip>
+                    <span className="mono-data text-on-surface font-bold text-lg">
+                      ${totalCost.toFixed(2)} USDT
+                    </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 mt-2">
-                    <div className="bg-black/30 p-4 rounded-2xl border border-white/5">
-                         <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-2 block">Potential Payout</span>
-                         <span className="text-sm font-black text-emerald-500 italic px-1">${effectivePayout.toFixed(2)}</span>
-                    </div>
-                    <div className="bg-black/30 p-4 rounded-2xl border border-white/5">
-                         <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-2 block">Alpha Multiplier</span>
-                         <span className="text-sm font-black text-white italic px-1">{payoutRatio.toFixed(1)}x</span>
-                    </div>
+                  <div className="flex justify-between items-center">
+                    <Tooltip text={`If the oracle confirms the parametric trigger, you receive the full $${effectivePayout} USDT. This represents a ${payoutRatio.toFixed(1)}x return on the premium paid.`}>
+                      <span className="text-sm opacity-70 flex items-center gap-1">
+                        Max Payout
+                        <span className="material-symbols-outlined text-[14px] text-zinc-600">info</span>
+                      </span>
+                    </Tooltip>
+                    <span className="mono-data font-bold" style={{ color: `rgb(${market.rgb})` }}>
+                      ${effectivePayout.toFixed(2)} USDT
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <Tooltip text="Ratio of max payout to total premium cost. Higher ratio = more capital-efficient protection.">
+                      <span className="text-sm opacity-70 flex items-center gap-1">
+                        Payout Ratio
+                        <span className="material-symbols-outlined text-[14px] text-zinc-600">info</span>
+                      </span>
+                    </Tooltip>
+                    <span className="mono-data text-emerald-400 font-bold">{payoutRatio.toFixed(1)}x</span>
                   </div>
                 </div>
 
                 {/* Advanced calculation breakdown */}
                 {showAdvanced && (
-                  <div className="mt-4 pt-6 border-t border-white/5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <h5 className="text-[9px] font-black uppercase tracking-[0.2em] text-[#D31027]">Risk Engine Internal Matrix</h5>
-                    <div className="bg-black/80 p-5 rounded-2xl font-mono text-[9px] space-y-2 text-zinc-500 border border-white/5 shadow-inner">
-                      <p className="text-zinc-600 opacity-50">// STEP_01: RETRIEVE_VECT_DATA</p>
-                      <p>risk_factor = base / 100 = <span className="text-zinc-300">{historicalRiskRate.toFixed(4)}</span></p>
-                      <p className="text-zinc-600 opacity-50 mt-2">// STEP_02: COMPUTE_EXP_LOSS</p>
-                      <p>exp_loss = risk_factor * payout = <span className="text-white">${expectedLoss.toFixed(4)}</span></p>
-                      <p className="text-zinc-600 opacity-50 mt-2">// STEP_03: MARGIN_OVERHEAD</p>
-                      <p>margin = 1 + ({PROTOCOL_MARGIN_BPS/10000}) = <span className="text-zinc-300">{marginMultiplier}</span></p>
-                      <p>premium = exp_loss * margin * surge = <span className="text-[#D31027] font-bold">${calculatedPremium.toFixed(4)}</span></p>
+                  <div className="mt-4 pt-4 border-t border-white/5 space-y-3 animate-fade-in">
+                    <h5 className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Calculation Mechanics</h5>
+                    <div className="bg-surface-container-highest p-4 rounded-lg mono-data text-[10px] space-y-2 text-zinc-400">
+                      <p className="text-zinc-500">// Step 1: Historical Risk Rate</p>
+                      <p>riskRate = basePremium / 100 = {historicalRiskRate.toFixed(4)}</p>
+                      <p className="text-zinc-500 mt-2">// Step 2: Expected Loss</p>
+                      <p>expectedLoss = riskRate × requestedPayout</p>
+                      <p>expectedLoss = {historicalRiskRate.toFixed(4)} × ${effectivePayout} = <span className="text-primary">${expectedLoss.toFixed(4)}</span></p>
+                      <p className="text-zinc-500 mt-2">// Step 3: Apply Protocol Margin ({PROTOCOL_MARGIN_BPS} BPS)</p>
+                      <p>marginMultiplier = 1 + ({PROTOCOL_MARGIN_BPS} / 10000) = {marginMultiplier}</p>
+                      <p>premium = expectedLoss × marginMultiplier × surgeMultiplier</p>
+                      <p>premium = ${expectedLoss.toFixed(4)} × {marginMultiplier} × {surgeMultiplier} = <span className="text-primary">${calculatedPremium.toFixed(4)}</span></p>
+                      <p className="text-zinc-500 mt-2">// Step 4: Origination Fee ({ORIGINATION_FEE_BPS} BPS)</p>
+                      <p>originationFee = premium × ({ORIGINATION_FEE_BPS} / 10000) = <span className="text-amber-400">${originationFee.toFixed(4)}</span></p>
+                      <p className="text-zinc-500 mt-2">// Step 5: Total Cost to Policyholder</p>
+                      <p>totalCost = premium + originationFee = <span className="text-emerald-400 font-bold">${totalCost.toFixed(4)}</span></p>
                     </div>
-                    <div className="flex items-start gap-3 p-4 bg-white/5 rounded-2xl border border-white/5">
-                      <Shield className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <p className="text-[9px] text-zinc-500 leading-relaxed font-medium">
-                        Auth verified via <strong className="text-white">EIP-712</strong>. Quantum-resistant hashing ensures premium integrity across distributed node clusters.
+                    <div className="flex items-start gap-2 p-3 bg-blue-500/5 rounded-lg border border-blue-500/10">
+                      <span className="material-symbols-outlined text-blue-400 text-sm mt-0.5">info</span>
+                      <p className="text-[10px] text-blue-300 leading-relaxed">
+                        On-chain premium verification uses <strong>EIP-712 typed signatures</strong> from the authorized Quoter. The Relayer signs the premium quote off-chain, and the Product contract verifies the signature before accepting the purchase.
                       </p>
                     </div>
                   </div>
                 )}
+              </div>
 
-                <div className="mt-8">
-                  {!isConnected ? (
-                    <div className="p-6 bg-white/5 rounded-3xl text-center border border-white/5 italic text-zinc-500 text-[10px] font-black uppercase tracking-widest">
-                      Vault Access Protocol Required
-                    </div>
-                  ) : needsApproval ? (
-                    <button
-                      onClick={handleApprove}
-                      disabled={isApproving || isConfirmingApprove}
-                      className="w-full py-5 bg-white text-black font-black text-[10px] uppercase tracking-[0.3em] rounded-2xl hover:bg-zinc-200 transition-all shadow-2xl flex items-center justify-center gap-3 disabled:opacity-20 disabled:cursor-not-allowed group/btn"
-                    >
-                      {isApproving || isConfirmingApprove ? (
-                        <>
-                          <Activity className="w-4 h-4 animate-spin" />
-                          Indexing Vault Permissions…
-                        </>
-                      ) : (
-                        <>
-                          <CreditCard className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
-                          Confirm Authorization
-                        </>
-                      )}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handlePurchase}
-                      disabled={isPurchasing || isConfirmingPurchase || effectivePayout <= 0 || (effectivePayout > availableCapacity && availableCapacity > 0)}
-                      className="w-full py-5 bg-[#D31027] text-white font-black text-[10px] uppercase tracking-[0.3em] rounded-2xl hover:bg-[#A9081E] transition-all shadow-[0_15px_40px_rgba(211,16,39,0.3)] flex items-center justify-center gap-3 disabled:opacity-20 disabled:cursor-not-allowed group/btn"
-                    >
-                      {isPurchasing || isConfirmingPurchase ? (
-                        <>
-                          <Activity className="w-4 h-4 animate-spin" />
-                          Securing Vector Finality…
-                        </>
-                      ) : (
-                        <>
-                          <Zap className="w-4 h-4 fill-current transition-transform group-hover/btn:scale-110" />
-                          Initialize Protection
-                        </>
-                      )}
-                    </button>
-                  )}
+              {/* -- Pool Health Indicator -- */}
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-institutional">Pool Utilization</span>
+                  <span className="mono-data text-xs" style={{ color: utilization > 80 ? "#ef4444" : utilization > 50 ? "#f59e0b" : "#22c55e" }}>
+                    {mounted ? `${utilization.toFixed(1)}%` : "—"}
+                  </span>
                 </div>
+                <div className="w-full h-2 bg-surface-container-lowest rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{
+                      width: `${Math.min(utilization, 100)}%`,
+                      background: utilization > 80
+                        ? "linear-gradient(90deg, #ef4444, #dc2626)"
+                        : utilization > 50
+                        ? "linear-gradient(90deg, #f59e0b, #d97706)"
+                        : `linear-gradient(90deg, rgb(${market.rgb}), rgba(${market.rgb}, 0.6))`,
+                    }}
+                  />
+                </div>
+                {utilization > 80 && (
+                  <p className="text-[10px] text-amber-400 italic">⚠ High utilization — premium surge may apply.</p>
+                )}
               </div>
 
-              {/* Security Badge */}
-              <div className="flex items-center justify-center gap-8 py-4 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all cursor-default relative z-10">
-                 <div className="flex items-center gap-2">
-                    <Shield className="w-3 h-3 text-emerald-500" />
-                    <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">Quantum-Secured</span>
-                 </div>
-                 <div className="flex items-center gap-2">
-                    <Globe className="w-3 h-3 text-[#D31027]" />
-                    <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">Arbitrum Nodes</span>
-                 </div>
-              </div>
-            </div>
+              {/* -- Action Button -- */}
+              {!isConnected ? (
+                <p className="text-center text-zinc-500 text-sm py-2">
+                  Connect your wallet to purchase protection.
+                </p>
+              ) : needsApproval ? (
+                <button
+                  onClick={handleApprove}
+                  disabled={isApproving}
+                  className="w-full bg-surface-container-highest text-on-surface py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-surface-bright transition-all disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-sm">lock</span>
+                  {isApproving ? "Approving..." : "Approve USDT"}
+                </button>
+              ) : (
+                <button
+                  onClick={handlePurchase}
+                  disabled={isPurchasing}
+                  className="w-full py-4 rounded-xl font-bold text-lg text-white hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
+                  style={{
+                    background: `linear-gradient(135deg, rgb(${market.rgb}), rgba(${market.rgb}, 0.7))`,
+                    boxShadow: `0 4px 24px rgba(${market.rgb}, 0.3)`,
+                  }}
+                >
+                  {isPurchasing ? "Purchasing..." : `Coverage Summary — $${totalCost.toFixed(2)}`}
+                </button>
+              )}
 
-            {/* -- Market Liquidity HUD -- */}
-            <div className="grid grid-cols-2 gap-4">
-               <div className="bg-[#0A0A0A] p-6 rounded-3xl border border-white/5 shadow-2xl group relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-3 opacity-10">
-                      <Activity className="w-8 h-8 text-[#D31027]" />
-                  </div>
-                  <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-3 group-hover:text-zinc-400 transition-colors">Risk Utilization</p>
-                  <div className="text-2xl font-black text-white italic tracking-tighter mb-3">{utilization.toFixed(1)}%</div>
-                  <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                     <div 
-                        className="h-full bg-gradient-to-r from-[#D31027] to-[#A9081E] transition-all duration-1000 shadow-[2px_0_10px_rgba(211,16,39,0.5)]" 
-                        style={{ width: `${Math.min(utilization, 100)}%` }} 
-                     />
-                  </div>
-               </div>
-               <div className="bg-[#0A0A0A] p-6 rounded-3xl border border-white/5 shadow-2xl group relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-3 opacity-10">
-                      <Droplets className="w-8 h-8 text-emerald-500" />
-                  </div>
-                  <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-3 group-hover:text-zinc-400 transition-colors">Market Depth</p>
-                  <div className="text-2xl font-black text-emerald-500 italic tracking-tighter mb-1">${availableCapacity.toLocaleString()}</div>
-                  <span className="text-[8px] font-black text-zinc-800 uppercase tracking-widest">Operational Capacity</span>
-               </div>
+              <p className="text-[10px] text-center text-zinc-500 leading-relaxed uppercase tracking-wider">
+                Settlement on Arbitrum Sepolia · Chainlink DON · Standard gas fees apply
+              </p>
             </div>
 
             {/* -- Risk Calculator Card -- */}
-            <div className="bg-[#0A0A0A] rounded-[2rem] p-10 border border-white/5 shadow-2xl relative overflow-hidden group">
-               <div className="flex items-center gap-4 mb-10">
-                    <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-                    <h3 className="text-xl font-black uppercase tracking-tight text-white italic">
-                        Scenario Analysis Matrix
-                    </h3>
-               </div>
-              
-              <div className="grid grid-cols-2 gap-6 mb-10">
-                <div className="flex flex-col gap-2">
-                  <span className="text-[9px] font-black text-zinc-700 uppercase tracking-widest block">Exposure Basis</span>
-                  <div className="text-2xl font-black text-white italic tracking-tighter">${totalCost.toFixed(2)}</div>
+            <div className="bg-surface-container-low rounded-2xl p-6 specular-border space-y-4">
+              <h4 className="text-institutional flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-sm text-amber-400">calculate</span>
+                Risk Calculator
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] text-zinc-500">If you pay</span>
+                  <span className="mono-data text-lg font-bold">${totalCost.toFixed(2)}</span>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <span className="text-[9px] font-black text-zinc-700 uppercase tracking-widest block">Target Disbursement</span>
-                  <div className="text-2xl font-black italic tracking-tighter" style={{ color: `rgb(${market.rgb})` }}>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] text-zinc-500">You receive up to</span>
+                  <span className="mono-data text-lg font-bold" style={{ color: `rgb(${market.rgb})` }}>
                     ${effectivePayout.toFixed(2)}
-                  </div>
+                  </span>
                 </div>
               </div>
+              <div className="h-px bg-white/5" />
 
-               {/* Scenario Ledger */}
-               <div className="space-y-3 mb-10">
+              {/* Scenarios */}
+              <div className="space-y-2">
+                <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Scenario Analysis</p>
                 {market.category === "travel" ? (
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center bg-emerald-500/5 p-5 rounded-2xl border border-emerald-500/10">
-                      <div className="flex flex-col gap-1">
-                          <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Delay Vector confirmed</span>
-                          <span className="text-[9px] text-emerald-700 font-medium">Wait Time ≥ 120min or Cancelled</span>
-                      </div>
-                      <span className="mono-data text-emerald-400 font-black tracking-tight">+${effectivePayout.toFixed(2)}</span>
+                  <div className="space-y-2 text-[11px]">
+                    <div className="flex justify-between bg-emerald-500/5 p-2.5 rounded-lg border border-emerald-500/10">
+                      <span className="text-emerald-400">✓ Flight delayed ≥ 120 min</span>
+                      <span className="mono-data text-emerald-400 font-bold">+${effectivePayout.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between items-center bg-white/2 p-5 rounded-2xl border border-white/5">
-                      <div className="flex flex-col gap-1">
-                          <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Nominal Arrival</span>
-                          <span className="text-[9px] text-zinc-800 font-medium">Vector completed within SLA</span>
-                      </div>
-                      <span className="mono-data text-zinc-700">-${totalCost.toFixed(2)}</span>
+                    <div className="flex justify-between bg-zinc-500/5 p-2.5 rounded-lg border border-zinc-500/10">
+                      <span className="text-zinc-400">✗ Flight on time</span>
+                      <span className="mono-data text-zinc-500">-${totalCost.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between bg-emerald-500/5 p-2.5 rounded-lg border border-emerald-500/10">
+                      <span className="text-emerald-400">✓ Flight cancelled</span>
+                      <span className="mono-data text-emerald-400 font-bold">+${effectivePayout.toFixed(2)}</span>
+                    </div>
+                  </div>
+                ) : market.category === "catastrophe" ? (
+                  <div className="space-y-2 text-[11px]">
+                    <div className="flex justify-between bg-red-500/5 p-2.5 rounded-lg border border-red-500/10">
+                      <span className="text-red-400">✓ Quake &lt;25km: 100%</span>
+                      <span className="mono-data text-red-400 font-bold">+${effectivePayout.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between bg-amber-500/5 p-2.5 rounded-lg border border-amber-500/10">
+                      <span className="text-amber-400">✓ Quake 25-50km: 30%</span>
+                      <span className="mono-data text-amber-400 font-bold">+${(effectivePayout * 0.3).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between bg-zinc-500/5 p-2.5 rounded-lg border border-zinc-500/10">
+                      <span className="text-zinc-400">✗ No qualifying event</span>
+                      <span className="mono-data text-zinc-500">-${totalCost.toFixed(2)}</span>
+                    </div>
+                  </div>
+                ) : market.category === "agri" ? (
+                  <div className="space-y-2 text-[11px]">
+                    <div className="flex justify-between bg-emerald-500/5 p-2.5 rounded-lg border border-emerald-500/10">
+                      <span className="text-emerald-400">✓ Rainfall ≤ Exit → 100%</span>
+                      <span className="mono-data text-emerald-400 font-bold">+${effectivePayout.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between bg-amber-500/5 p-2.5 rounded-lg border border-amber-500/10">
+                      <span className="text-amber-400">✓ Partial shortfall → Linear</span>
+                      <span className="mono-data text-amber-400">+$??.??</span>
+                    </div>
+                    <div className="flex justify-between bg-zinc-500/5 p-2.5 rounded-lg border border-zinc-500/10">
+                      <span className="text-zinc-400">✗ Rainfall ≥ Strike</span>
+                      <span className="mono-data text-zinc-500">-${totalCost.toFixed(2)}</span>
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center bg-emerald-500/5 p-5 rounded-2xl border border-emerald-500/10">
-                      <div className="flex flex-col gap-1">
-                          <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Parametric Trigger</span>
-                          <span className="text-[9px] text-emerald-700 font-medium">Node Validation Successful</span>
-                      </div>
-                      <span className="mono-data text-emerald-400 font-black tracking-tight">+${effectivePayout.toFixed(2)}</span>
+                  <div className="space-y-2 text-[11px]">
+                    <div className="flex justify-between bg-emerald-500/5 p-2.5 rounded-lg border border-emerald-500/10">
+                      <span className="text-emerald-400">✓ Trigger confirmed</span>
+                      <span className="mono-data text-emerald-400 font-bold">+${effectivePayout.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between items-center bg-white/2 p-5 rounded-2xl border border-white/5">
-                      <div className="flex flex-col gap-1">
-                          <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Baseline Conditions</span>
-                          <span className="text-[9px] text-zinc-800 font-medium">Trigger window expiration</span>
-                      </div>
-                      <span className="mono-data text-zinc-700">-${totalCost.toFixed(2)}</span>
+                    <div className="flex justify-between bg-zinc-500/5 p-2.5 rounded-lg border border-zinc-500/10">
+                      <span className="text-zinc-400">✗ No trigger event</span>
+                      <span className="mono-data text-zinc-500">-${totalCost.toFixed(2)}</span>
                     </div>
                   </div>
                 )}
               </div>
 
               {/* Net P/L */}
-              <div className="p-6 bg-emerald-500/10 rounded-3xl flex justify-between items-center border border-emerald-500/20">
-                <div className="flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                    <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Net P/L Result</span>
-                </div>
-                <span className="mono-data text-xl text-emerald-400 font-black tracking-tighter">
+              <div className="p-3 bg-surface-container-highest rounded-lg flex justify-between items-center">
+                <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Net Profit if Triggered</span>
+                <span className="mono-data text-emerald-400 font-bold">
                   +${(effectivePayout - totalCost).toFixed(2)} USDT
                 </span>
               </div>
@@ -1081,57 +1004,36 @@ export default function MarketDetailPage() {
           </div>
         </div>
       </div>
+      {/* --- End Layout Wrapper --- */}
 
-          {/* -- Resolution Ledger Rules -- */}
-          <div className="bg-[#0A0A0A] rounded-[3rem] p-12 border border-white/5 shadow-2xl mt-16 group">
-            <div className="flex items-center gap-5 mb-10">
-                <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group-hover:border-[#D31027]/40 transition-colors">
-                    <Shield className="w-6 h-6 text-zinc-400 group-hover:text-[#D31027] transition-colors" />
-                </div>
-                <h2 className="text-3xl font-black uppercase italic tracking-tighter text-white">Resolution Protocol</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-               {rules.map((rule, i) => (
-                    <div key={i} className="flex items-start gap-4 p-6 bg-[#101216] rounded-3xl border border-white/5 hover:border-white/10 transition-colors">
-                        <CheckCircle2 className="w-5 h-5 text-zinc-700 shrink-0 mt-0.5" />
-                        <span className="text-[11px] text-zinc-400 leading-relaxed font-medium">{rule.trim()}</span>
-                    </div>
-                ))}
-            </div>
+          {/* -- Resolution Rules -- */}
+          <div className="bg-surface-container-low rounded-xl p-8 specular-border mt-4 w-full">
+            <h2 className="text-institutional mb-6">Resolution Rules</h2>
+            <ul className="flex flex-col gap-4">
+              {rules.map((rule, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <span className="material-symbols-outlined text-sm mt-0.5" style={{ color: `rgb(${market.rgb})` }}>
+                    check_circle
+                  </span>
+                  <span className="text-sm opacity-90">{rule.trim()}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* -- Smart Contract Registry -- */}
-          <div className="p-12 bg-[#0A0A0A] rounded-[3rem] border border-white/5 shadow-2xl space-y-10 mt-10 relative overflow-hidden">
-             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#D31027]/20 to-transparent" />
-             <div className="flex items-center justify-between">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600">On-Chain Registry</h3>
-                <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Mainnet-Parity Nodes Active</span>
-                </div>
-             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="flex flex-col gap-4 group/addr">
-                <span className="text-[10px] font-black text-zinc-700 uppercase tracking-widest">Protection Product Factory</span>
-                <a 
-                    href={`https://sepolia.arbiscan.io/address/${productAddr}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="mono-data text-xs text-zinc-400 truncate hover:text-white transition-colors flex items-center gap-3"
-                >
-                  <Navigation className="w-3.5 h-3.5 text-[#D31027]" />
+          {/* -- Contract Reference -- */}
+          <div className="p-6 bg-surface-container-lowest rounded-xl specular-border space-y-4 w-full">
+            <h3 className="text-institutional">Smart Contract Addresses</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-[10px]">
+              <div className="flex flex-col gap-1">
+                <span className="text-zinc-500 uppercase tracking-widest font-bold">Product Contract</span>
+                <a href={`https://sepolia.arbiscan.io/address/${productAddr}`} target="_blank" rel="noopener noreferrer" className="mono-data text-primary truncate hover:underline">
                   {productAddr}
                 </a>
               </div>
-              <div className="flex flex-col gap-4 group/addr">
-                <span className="text-[10px] font-black text-zinc-700 uppercase tracking-widest">Collateral Liquidity Vault</span>
-                <a 
-                    href={`https://sepolia.arbiscan.io/address/${poolAddr}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="mono-data text-xs text-zinc-400 truncate hover:text-white transition-colors flex items-center gap-3"
-                >
-                  <Droplets className="w-3.5 h-3.5 text-blue-500" />
+              <div className="flex flex-col gap-1">
+                <span className="text-zinc-500 uppercase tracking-widest font-bold">Liquidity Pool</span>
+                <a href={`https://sepolia.arbiscan.io/address/${poolAddr}`} target="_blank" rel="noopener noreferrer" className="mono-data text-primary truncate hover:underline">
                   {poolAddr}
                 </a>
               </div>
