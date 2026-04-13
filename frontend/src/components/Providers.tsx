@@ -26,6 +26,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
                 },
                 smartWallets: {
                     enabled: true,
+                    createOnLogin: 'all-users',
+                    paymasterConfig: {
+                        policyId: process.env.NEXT_PUBLIC_PIMLICO_PAYMASTER_URL,
+                    },
                 },
                 defaultChain: arbitrumSepolia,
                 supportedChains: [arbitrumSepolia],

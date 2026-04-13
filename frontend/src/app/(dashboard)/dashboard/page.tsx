@@ -3,6 +3,7 @@
 import React from "react";
 import { useAccount, useReadContract, useBalance } from "wagmi";
 import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
+import { usePrivy } from "@privy-io/react-auth";
 import { CONTRACTS, ESCROW_ABI } from "@/lib/contracts";
 import { formatUnits } from "viem";
 import Link from "next/link";
@@ -29,9 +30,16 @@ function HUDCard({ title, value, icon: Icon, color, subText, subColor }: any) {
 }
 
 export default function DashboardPage() {
+  const { authenticated, user } = usePrivy();
   const { address: eoaAddress, isConnected } = useAccount();
   const { client } = useSmartWallets();
-  const address = client?.account?.address || eoaAddress;
+
+  // Robust Identity Search
+  const embeddedWallet = user?.linkedAccounts.find(account => account.type === 'wallet');
+  const privyAddress = (embeddedWallet as any)?.address;
+  const address = client?.account?.address || privyAddress || eoaAddress;
+
+  const isUserConnected = authenticated || isConnected;
 
   const { policies, activePolicies, claimedPolicies, isLoading } = useUserPolicies();
 
@@ -59,7 +67,7 @@ export default function DashboardPage() {
           </p>
         </div>
         
-        {isConnected && (
+        {isUserConnected && (
           <div className="flex flex-col items-end gap-3">
              <div className="flex items-center gap-6 p-6 bg-white/2 rounded-[2rem] border border-white/5 shadow-2xl backdrop-blur-md">
                 <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group">
@@ -89,7 +97,7 @@ export default function DashboardPage() {
         )}
       </header>
 
-      {!isConnected ? (
+      {!isUserConnected ? (
         <div className="text-center py-44 flex flex-col items-center">
           <div className="w-20 h-20 bg-white/5 rounded-[2rem] flex items-center justify-center border border-white/5 mb-10 shadow-2xl">
              <Fingerprint className="w-10 h-10 text-zinc-800" />

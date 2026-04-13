@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useAccount, useBalance, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { useSponsoredTx } from "@/hooks/useSponsoredTx";
 import { CONTRACTS, LP_POOL_ABI, ERC20_ABI, POOLS } from "@/lib/contracts";
@@ -26,11 +27,16 @@ import Link from "next/link";
 type PoolInfo = typeof POOLS[0];
 
 export default function InvestPage() {
+  const { authenticated, user } = usePrivy();
   const { address: eoaAddress, isConnected } = useAccount();
   const { sendSponsoredTransaction, isExecuting: isSponsoring, smartAccount } = useSponsoredTx();
-  const address = smartAccount || eoaAddress;
+  
+  // Robust Identity Search
+  const embeddedWallet = user?.linkedAccounts.find(account => account.type === 'wallet');
+  const privyAddress = (embeddedWallet as any)?.address;
+  const address = smartAccount || privyAddress || eoaAddress;
 
-  const { data: usdtBalance, refetch: refetchBalance } = useBalance({ address, token: CONTRACTS.USDT });
+  const { data: usdtBalance, refetch: refetchBalance } = useBalance({ address: address as `0x${string}`, token: CONTRACTS.USDT });
   const formattedBalance = usdtBalance ? (Number(usdtBalance.value) / 1e6).toFixed(2) : "0.00";
 
   const [selectedPool, setSelectedPool] = useState<PoolInfo>(POOLS[0]);
@@ -110,17 +116,31 @@ export default function InvestPage() {
   }, [mintConfirmed, refetchBalance]);
 
   const handleMint = async () => {
-    if (!address) return;
-    if (smartAccount) {
-        await sendSponsoredTransaction({
-            address: CONTRACTS.USDT,
-            abi: ERC20_ABI,
-            functionName: "mint",
-            args: [address, parseUnits("1000", 6)],
-        });
-        refetchBalance();
+    if (!address) {
+        toast.error("Please connect your wallet/identity first.");
         return;
     }
+    
+    // Always prefer sponsored mint for social/safe accounts
+    if (smartAccount || isConnected === false) {
+        try {
+            toast.info("Vectoring Sponsored Faucet Claim...");
+            await sendSponsoredTransaction({
+                address: CONTRACTS.USDT,
+                abi: ERC20_ABI,
+                functionName: "mint",
+                args: [address, parseUnits("1000", 6)],
+            });
+            refetchBalance();
+            return;
+        } catch (err) {
+            console.error("Sponsored mint failed", err);
+            // Fallback handled by hook/toast
+            return;
+        }
+    }
+
+    // Standard Wallet Fallback
     mint({
       address: CONTRACTS.USDT,
       abi: ERC20_ABI,
@@ -187,6 +207,8 @@ export default function InvestPage() {
 
   const poolTvl = totalAssets ? (Number(formatUnits(totalAssets as bigint, 6))).toFixed(2) : "0.00";
   const userSharesFormatted = userShares ? (Number(formatUnits(userShares as bigint, 6))).toFixed(2) : "0.00";
+
+  const isUserConnected = authenticated || isConnected || (smartAccount !== undefined);
 
   return (
     <div className="pt-40 pb-32 px-12 max-w-[1700px] mx-auto">
@@ -269,9 +291,9 @@ export default function InvestPage() {
             <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em]">Total Vault TVL</span>
           </div>
           <div className="mono-data text-3xl text-secondary font-black italic tracking-tighter mb-1">${poolTvl}</div>
-          <p className="text-[9px] font-black text-zinc-800 uppercase tracking-widest italic">Deployed in {selectedPool.name}</p>
+          <p className="text-[9px) font-black text-zinc-800 uppercase tracking-widest italic">Deployed in {selectedPool.name}</p>
         </div>
-
+ 
         <div className="bg-[#101216] p-8 rounded-[2rem] border border-white/5 relative group overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-5">
               <Wallet className="w-12 h-12 text-emerald-500" />
@@ -281,10 +303,10 @@ export default function InvestPage() {
           </div>
           <div className="flex items-center justify-between gap-4">
             <div className="mono-data text-3xl text-white font-black italic tracking-tighter">${formattedBalance}</div>
-            {isConnected && (
+            {isUserConnected && (
               <button 
                 onClick={handleMint} 
-                disabled={isMinting}
+                disabled={isMinting || isSponsoring}
                 className="text-[9px] bg-emerald-500/10 text-emerald-400 px-4 py-2 rounded-xl border border-emerald-500/20 hover:bg-emerald-500/20 transition-all font-black uppercase tracking-[0.15em] disabled:opacity-50"
               >
                 {isMinting ? "Syncing..." : "Faucet"}
@@ -298,7 +320,7 @@ export default function InvestPage() {
               <ShieldCheck className="w-12 h-12 text-tertiary" />
           </div>
           <div className="flex justify-between items-start mb-6">
-            <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em]">Collateral Health</span>
+            <span className="text-[10px) font-black text-zinc-600 uppercase tracking-[0.2em]">Collateral Health</span>
           </div>
           <div className="mono-data text-3xl text-emerald-500 font-black italic tracking-tighter mb-1">100.0%</div>
           <p className="text-[9px] font-black text-emerald-900 uppercase tracking-widest italic">Maximum Solvency Range</p>
@@ -426,7 +448,7 @@ export default function InvestPage() {
             </div>
 
             <div className="relative z-10">
-                {!isConnected ? (
+                {!isConnected && (smartAccount === undefined) ? (
                 <div className="bg-[#101216] p-6 rounded-2xl text-center border border-dashed border-white/10 italic text-[10px] font-black text-zinc-700 uppercase tracking-[0.3em]">
                     SYSTEM AUTHENTICATION REQUIRED
                 </div>
