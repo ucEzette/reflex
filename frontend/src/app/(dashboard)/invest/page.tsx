@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useAccount, useBalance, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useSponsoredTx } from "@/hooks/useSponsoredTx";
 import { CONTRACTS, LP_POOL_ABI, ERC20_ABI, POOLS } from "@/lib/contracts";
 import { parseUnits, formatUnits } from "viem";
 import { toast } from "sonner";
@@ -25,7 +26,10 @@ import Link from "next/link";
 type PoolInfo = typeof POOLS[0];
 
 export default function InvestPage() {
-  const { address, isConnected } = useAccount();
+  const { address: eoaAddress, isConnected } = useAccount();
+  const { sendSponsoredTransaction, isExecuting: isSponsoring, smartAccount } = useSponsoredTx();
+  const address = smartAccount || eoaAddress;
+
   const { data: usdtBalance, refetch: refetchBalance } = useBalance({ address, token: CONTRACTS.USDT });
   const formattedBalance = usdtBalance ? (Number(usdtBalance.value) / 1e6).toFixed(2) : "0.00";
 
@@ -58,7 +62,7 @@ export default function InvestPage() {
   const parsedAmount = amount ? parseUnits(amount, 6) : BigInt(0);
   const needsApproval = mode === "deposit" && allowance !== undefined && (allowance as bigint) < parsedAmount;
 
-  // Write operations
+  // Write operations (Fallback for EOA, preferred is Sponsored)
   const { writeContract: approve, data: approveTxHash, isPending: isApproving } = useWriteContract();
   const { writeContract: execute, data: executeTxHash, isPending: isExecuting } = useWriteContract();
   const { writeContract: mint, data: mintTxHash, isPending: isMinting } = useWriteContract();
@@ -105,8 +109,18 @@ export default function InvestPage() {
     }
   }, [mintConfirmed, refetchBalance]);
 
-  const handleMint = () => {
+  const handleMint = async () => {
     if (!address) return;
+    if (smartAccount) {
+        await sendSponsoredTransaction({
+            address: CONTRACTS.USDT,
+            abi: ERC20_ABI,
+            functionName: "mint",
+            args: [address, parseUnits("1000", 6)],
+        });
+        refetchBalance();
+        return;
+    }
     mint({
       address: CONTRACTS.USDT,
       abi: ERC20_ABI,
@@ -115,7 +129,17 @@ export default function InvestPage() {
     });
   };
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
+    if (smartAccount) {
+        await sendSponsoredTransaction({
+            address: CONTRACTS.USDT,
+            abi: ERC20_ABI,
+            functionName: "approve",
+            args: [selectedPool.address, parsedAmount * BigInt(2)],
+        });
+        refetchAllowance();
+        return;
+    }
     approve({
       address: CONTRACTS.USDT,
       abi: ERC20_ABI,
@@ -124,10 +148,24 @@ export default function InvestPage() {
     });
   };
 
-  const handleExecute = () => {
+  const handleExecute = async () => {
     if (!amount || Number(amount) <= 0) {
       toast.error("Enter a valid amount");
       return;
+    }
+
+    if (smartAccount) {
+        await sendSponsoredTransaction({
+            address: selectedPool.address,
+            abi: LP_POOL_ABI,
+            functionName: mode === "deposit" ? "depositLiquidity" : "withdrawLiquidity",
+            args: [parsedAmount],
+        });
+        refetchBalance();
+        refetchShares();
+        refetchAssets();
+        setAmount("");
+        return;
     }
 
     if (mode === "deposit") {
@@ -395,10 +433,10 @@ export default function InvestPage() {
                 ) : (
                 <button
                     onClick={mode === "deposit" && needsApproval ? handleApprove : handleExecute}
-                    disabled={isExecuting || isConfirmingExecute || isApproving || isConfirmingApprove}
+                    disabled={isExecuting || isConfirmingExecute || isApproving || isConfirmingApprove || isSponsoring}
                     className="w-full py-7 bg-white text-black hover:bg-zinc-200 rounded-[2rem] font-black text-[11px] tracking-[0.4em] uppercase flex items-center justify-center gap-4 transition-all shadow-[0_20px_60px_rgba(255,255,255,0.05)] active:scale-[0.98] disabled:opacity-20 group/btn"
                 >
-                    {isExecuting || isConfirmingExecute || isApproving || isConfirmingApprove ? (
+                    {isExecuting || isConfirmingExecute || isApproving || isConfirmingApprove || isSponsoring ? (
                         <>
                              <Activity className="w-5 h-5 animate-spin" />
                              Processing Matrix Finality…

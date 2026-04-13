@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useAccount, useReadContract, useBalance } from "wagmi";
+import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import { CONTRACTS, ESCROW_ABI } from "@/lib/contracts";
 import { formatUnits } from "viem";
 import Link from "next/link";
@@ -28,7 +29,10 @@ function HUDCard({ title, value, icon: Icon, color, subText, subColor }: any) {
 }
 
 export default function DashboardPage() {
-  const { address, isConnected } = useAccount();
+  const { address: eoaAddress, isConnected } = useAccount();
+  const { client } = useSmartWallets();
+  const address = client?.account?.address || eoaAddress;
+
   const { policies, activePolicies, claimedPolicies, isLoading } = useUserPolicies();
 
   const { data: usdtBalance } = useBalance({ address, token: CONTRACTS.USDT });
@@ -59,12 +63,27 @@ export default function DashboardPage() {
           <div className="flex flex-col items-end gap-3">
              <div className="flex items-center gap-6 p-6 bg-white/2 rounded-[2rem] border border-white/5 shadow-2xl backdrop-blur-md">
                 <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group">
-                    <Wallet className="w-6 h-6 text-zinc-400 group-hover:text-white transition-colors" />
+                    <Wallet className={`w-6 h-6 ${client ? 'text-emerald-500' : 'text-zinc-400'} group-hover:text-white transition-colors`} />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <span className="text-[9px] font-black text-zinc-700 uppercase tracking-widest leading-none">Access Node</span>
-                    <span className="mono-data text-sm text-white font-black italic tracking-tight uppercase">{address?.slice(0, 10)}<span className="text-[#D31027]">...</span>{address?.slice(-6)}</span>
+                    <span className="text-[9px] font-black text-zinc-700 uppercase tracking-widest leading-none">
+                      {client ? 'Smart Vault Active' : 'Access Node'}
+                    </span>
+                    <span className="mono-data text-sm text-white font-black italic tracking-tight uppercase">
+                      {address?.slice(0, 10)}<span className="text-[#D31027]">...</span>{address?.slice(-6)}
+                    </span>
                 </div>
+                {client && (
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(address!);
+                      toast.success("Wallet address copied!");
+                    }}
+                    className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+                  >
+                    <ArrowUpRight className="w-3.5 h-3.5 text-zinc-600" />
+                  </button>
+                )}
              </div>
           </div>
         )}
