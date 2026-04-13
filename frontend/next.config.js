@@ -35,8 +35,6 @@ const nextConfig = {
         config.resolve.alias = {
             ...config.resolve.alias,
             'pino': path.resolve(__dirname, 'src/lib/pino-mock.js'),
-            '@farcaster/mini-app-solana': false,
-            '@farcaster/auth-kit': false,
         };
         config.externals.push('pino-pretty', 'lokijs', 'encoding');
         return config;

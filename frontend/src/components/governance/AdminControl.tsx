@@ -49,10 +49,8 @@ export function AdminControl() {
         query: { enabled: mounted }
     });
 
-    const { writeContract, data: hash, isPending } = useWriteContract();
+    const { writeContract, data: hash } = useWriteContract();
     const { isLoading: isTxLoading, isSuccess: isTxSuccess } = useWaitForTransactionReceipt({ hash });
-
-    const isBusy = isPending || isTxLoading;
 
     useEffect(() => {
         if (isTxSuccess) {
@@ -132,10 +130,10 @@ export function AdminControl() {
                     <p className="text-xs text-slate-400 font-light mb-6">Instantly halt all product creation and settlements across the entire ecosystem.</p>
                     <button
                         onClick={handleTogglePause}
-                        disabled={isBusy}
+                        disabled={isTxLoading}
                         className={`w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${paused ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'} disabled:opacity-50`}
                     >
-                        {isBusy ? 'Processing...' : (paused ? 'Resume Protocol' : 'Trigger Emergency Pause')}
+                        {isTxLoading ? 'Processing...' : (paused ? 'Resume Protocol' : 'Trigger Emergency Pause')}
                     </button>
                 </div>
 
@@ -152,17 +150,17 @@ export function AdminControl() {
                     <div className="flex gap-2">
                         <button
                             onClick={handleAddRelayer}
-                            disabled={isBusy}
+                            disabled={isTxLoading}
                             className="flex-1 py-2 bg-white/5 border border-white/10 hover:border-primary/50 text-white text-[10px] font-bold rounded-lg uppercase tracking-wider transition-all disabled:opacity-50"
                         >
-                            {isBusy ? '...' : 'Add Relayer'}
+                            Add Relayer
                         </button>
                         <button
                             onClick={handleAdjustQuorum}
-                            disabled={isBusy}
+                            disabled={isTxLoading}
                             className="flex-1 py-2 bg-white/5 border border-white/10 hover:border-red-500/50 text-white text-[10px] font-bold rounded-lg uppercase tracking-wider transition-all disabled:opacity-50"
                         >
-                            {isBusy ? '...' : 'Adjust Quorum'}
+                            Adjust Quorum
                         </button>
                     </div>
                 </div>

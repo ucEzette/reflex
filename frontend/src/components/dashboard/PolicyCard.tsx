@@ -69,15 +69,8 @@ export function PolicyCard({ policyId, policyData, onActionSuccess, txHash }: Po
         }).format(date);
     };
 
-    const { writeContract, data: hash, isPending } = useWriteContract();
-    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
-
-    React.useEffect(() => {
-        if (isSuccess && onActionSuccess) {
-            toast.success("Consensus reached & policy settled.", { description: "Payout securely transferred." });
-            onActionSuccess();
-        }
-    }, [isSuccess, onActionSuccess]);
+    const { writeContract, data: hash } = useWriteContract();
+    const { isLoading: isWaiting } = useWaitForTransactionReceipt({ hash });
 
     const handleClaim = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -156,10 +149,9 @@ export function PolicyCard({ policyId, policyData, onActionSuccess, txHash }: Po
                 {status === 'Claimable' && (
                     <button
                         onClick={handleClaim}
-                        disabled={isPending || isConfirming}
-                        className="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-lg hover:bg-emerald-400/20 transition-colors disabled:opacity-50"
+                        className="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-lg hover:bg-emerald-400/20 transition-colors"
                     >
-                        {isPending || isConfirming ? 'Processing...' : 'Execute Claim'}
+                        {isWaiting ? 'Processing...' : 'Execute Claim'}
                     </button>
                 )}
             </div>
