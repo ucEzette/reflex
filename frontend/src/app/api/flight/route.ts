@@ -5,7 +5,6 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const flightIata = searchParams.get("flight_iata");
-    const flightDate = searchParams.get("flight_date"); // YYYY-MM-DD
 
     if (!flightIata) {
         return NextResponse.json(
@@ -24,98 +23,58 @@ export async function GET(request: Request) {
 
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
 
-        // Build URL with optional date filter
-        let url = `https://api.aviationstack.com/v1/flights?access_key=${apiKey}&flight_iata=${flightIata}`;
-        if (flightDate) {
-            url += `&flight_date=${flightDate}`;
-        }
-
-        const response = await fetch(url, {
-            signal: controller.signal,
-            cache: "no-store",
-        });
+        const response = await fetch(
+            `https://api.aviationstack.com/v1/flights?access_key=${apiKey}&flight_iata=${flightIata}`,
+            {
+                signal: controller.signal,
+                cache: "no-store"
+            }
+        );
 
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-            throw new Error(
-                `Aviationstack API responded with status: ${response.status}`
-            );
+            throw new Error(`Aviationstack API responded with status: ${response.status}`);
         }
 
         const data = await response.json();
 
-        if (data.error) {
-            return NextResponse.json(
-                { error: data.error.message || "API returned an error" },
-                { status: 502 }
-            );
-        }
-
         if (!data.data || data.data.length === 0) {
             return NextResponse.json(
-                {
-                    error: flightDate
-                        ? `Flight ${flightIata.toUpperCase()} not found for ${flightDate}`
-                        : `Flight ${flightIata.toUpperCase()} not found or not active`,
-                },
+                { error: "Flight not found or not active today" },
                 { status: 404 }
             );
         }
 
-        // Find best match — prefer the one matching the requested date
-        let flight = data.data[0];
-        if (flightDate && data.data.length > 1) {
-            const dateMatch = data.data.find(
-                (f: any) => f.flight_date === flightDate
-            );
-            if (dateMatch) flight = dateMatch;
-        }
-
-        const delayMinutes = flight.arrival?.delay || 0;
+        // Return the first matching flight (most relevant for today)
+        const flight = data.data[0];
 
         return NextResponse.json({
             airline: flight.airline?.name || "Unknown Airline",
-            airlineIata: flight.airline?.iata || "",
-            flightNumber: flight.flight?.iata || flightIata.toUpperCase(),
-            flightDate: flight.flight_date || flightDate || "",
-            status: flight.flight_status || "unknown",
-            aircraft: flight.aircraft?.registration || null,
-            aircraftType: flight.aircraft?.iata || null,
-            live: flight.live || null,
+            flightNumber: flight.flight?.iata,
+            flightDate: flight.flight_date,
+            status: flight.flight_status,
+            aircraft: flight.aircraft?.registration,
             departure: {
-                airport: flight.departure?.airport || "Unknown",
-                iata: flight.departure?.iata || "",
-                terminal: flight.departure?.terminal || null,
-                gate: flight.departure?.gate || null,
-                scheduled: flight.departure?.scheduled || null,
-                estimated: flight.departure?.estimated || null,
-                actual: flight.departure?.actual || null,
-                delay: flight.departure?.delay || 0,
-                timezone: flight.departure?.timezone || "",
+                airport: flight.departure?.airport,
+                iata: flight.departure?.iata,
+                terminal: flight.departure?.terminal,
+                gate: flight.departure?.gate,
+                scheduled: flight.departure?.scheduled,
+                timezone: flight.departure?.timezone,
             },
             arrival: {
-                airport: flight.arrival?.airport || "Unknown",
-                iata: flight.arrival?.iata || "",
-                terminal: flight.arrival?.terminal || null,
-                gate: flight.arrival?.gate || null,
-                scheduled: flight.arrival?.scheduled || null,
-                estimated: flight.arrival?.estimated || null,
-                actual: flight.arrival?.actual || null,
-                delay: delayMinutes,
-                timezone: flight.arrival?.timezone || "",
-            },
-            isDelayedOver2Hours: delayMinutes >= 120,
+                airport: flight.arrival?.airport,
+                iata: flight.arrival?.iata,
+                terminal: flight.arrival?.terminal,
+                gate: flight.arrival?.gate,
+                scheduled: flight.arrival?.scheduled,
+                timezone: flight.arrival?.timezone,
+            }
         });
-    } catch (error: any) {
-        if (error.name === "AbortError") {
-            return NextResponse.json(
-                { error: "Flight lookup timed out — please try again" },
-                { status: 504 }
-            );
-        }
+    } catch (error) {
         console.error("Error fetching flight data:", error);
         return NextResponse.json(
             { error: "Failed to validate flight against Aviationstack" },

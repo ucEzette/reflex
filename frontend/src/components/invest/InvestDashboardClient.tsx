@@ -42,7 +42,7 @@ const INVEST_GUIDE_STEPS = [
         number: 2,
         icon: PiggyBank,
         title: 'Deposit USDT',
-        description: 'Approve and deposit USDT into the vault. Your liquidity is used to securely collateralize parametric insurance policies.',
+        description: 'Approve and deposit USDT into the pool. Your liquidity is deployed to Aave V3 and used to collateralize parametric insurance policies.',
         accent: 'text-violet-400',
         bg: 'bg-violet-500/10',
         border: 'border-violet-500/20',
@@ -51,7 +51,7 @@ const INVEST_GUIDE_STEPS = [
         number: 3,
         icon: TrendingUp,
         title: 'Earn Dual Yield',
-        description: 'Receive returns strictly from underwriting risk premiums collected directly from policy purchases.',
+        description: 'Receive blended returns from Aave V3 lending rates plus underwriting risk premiums collected from policy purchases.',
         accent: 'text-emerald-400',
         bg: 'bg-emerald-500/10',
         border: 'border-emerald-500/20',
@@ -74,7 +74,7 @@ export function InvestDashboardClient() {
     const { address, isConnected } = useAccount();
     const chainId = useChainId();
     const { switchChain } = useSwitchChain();
-    const TARGET_CHAIN_ID = 421614; // Arbitrum Sepolia
+    const TARGET_CHAIN_ID = 43113; // Fuji
 
     // Pool Selection & Forms
     const [selectedPool, setSelectedPool] = useState(POOLS[0]);
@@ -162,7 +162,7 @@ export function InvestDashboardClient() {
             enabled: mounted,
             refetchInterval: 10000 // Refetch every 10s
         },
-        chainId: 421614
+        chainId: 43113
     });
 
     const { data: totalMaxPayouts, refetch: refetchPayouts } = useReadContract({
@@ -170,7 +170,7 @@ export function InvestDashboardClient() {
         abi: LIQUIDITY_POOL_ABI,
         functionName: 'totalMaxPayouts',
         query: { enabled: mounted },
-        chainId: 421614
+        chainId: 43113
     });
 
     const { data: totalShares, refetch: refetchTotalShares } = useReadContract({
@@ -178,7 +178,7 @@ export function InvestDashboardClient() {
         abi: LIQUIDITY_POOL_ABI,
         functionName: 'totalShares',
         query: { enabled: mounted },
-        chainId: 421614
+        chainId: 43113
     });
 
     const [protocolData, setProtocolData] = useState<{
@@ -266,7 +266,7 @@ export function InvestDashboardClient() {
             enabled: mounted && !!address,
             refetchInterval: 10000
         },
-        chainId: 421614
+        chainId: 43113
     });
 
     const { data: usdtAllowance, refetch: refetchAllowance } = useReadContract({
@@ -275,7 +275,7 @@ export function InvestDashboardClient() {
         functionName: 'allowance',
         args: address ? [address, selectedPool.address as `0x${string}`] : undefined,
         query: { enabled: mounted && !!address },
-        chainId: 421614
+        chainId: 43113
     });
 
     const { data: intentAmount, refetch: refetchIntentAmount } = useReadContract({
@@ -284,7 +284,7 @@ export function InvestDashboardClient() {
         functionName: 'withdrawalIntentAmount',
         args: address ? [address] : undefined,
         query: { enabled: mounted && !!address },
-        chainId: 421614
+        chainId: 43113
     });
 
     const { data: intentTimestamp, refetch: refetchIntentTimestamp } = useReadContract({
@@ -293,7 +293,7 @@ export function InvestDashboardClient() {
         functionName: 'withdrawalIntentTimestamp',
         args: address ? [address] : undefined,
         query: { enabled: mounted && !!address },
-        chainId: 421614
+        chainId: 43113
     });
 
     // Contract Writes
@@ -404,7 +404,7 @@ export function InvestDashboardClient() {
         try {
             // Pre-flight chain check
             if (chainId !== TARGET_CHAIN_ID) {
-                toast.info("Switching to Arbitrum Sepolia...");
+                toast.info("Switching to Avalanche Fuji...");
                 switchChain?.({ chainId: TARGET_CHAIN_ID });
                 return;
             }
@@ -730,7 +730,7 @@ export function InvestDashboardClient() {
                             </div>
                             <div className="flex items-center justify-between mt-5 pt-4 border-t border-white/5">
                                 <p className="text-[10px] text-zinc-600 uppercase tracking-widest">
-                                    Powered by Reflex Engine · Chainlink Data Feeds · Autonomous Agent via Tether WDK
+                                    Powered by Aave V3 · Chainlink Keepers · Autonomous Agent via Tether WDK
                                 </p>
                                 <button
                                     onClick={() => {
@@ -947,7 +947,7 @@ export function InvestDashboardClient() {
                                                 </td>
                                                 <td className="py-4 text-right">
                                                     <a
-                                                        href={`https://sepolia.arbiscan.io/tx/${item.hash}`}
+                                                        href={`https://testnet.snowscan.xyz/tx/${item.hash}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="inline-flex items-center gap-1.5 text-primary hover:text-primary/80 font-black uppercase tracking-widest text-[10px] group-hover:translate-x-1 transition-all"
@@ -1116,8 +1116,12 @@ export function InvestDashboardClient() {
                                 <Activity className="w-3.5 h-3.5" /> Dynamic Yield Vector
                             </div>
                             <div className="flex justify-between text-xs font-bold">
-                                <span className="text-zinc-500">Projected Market Strategy APY</span>
-                                <span className="text-emerald-400 font-mono">12.4%</span>
+                                <span className="text-zinc-500">Aave V3 Protocol Rate</span>
+                                <span className="text-zinc-300 font-mono">4.20%</span>
+                            </div>
+                            <div className="flex justify-between text-xs font-bold">
+                                <span className="text-zinc-500">Underwriting Risk Premium</span>
+                                <span className="text-emerald-400 font-mono">+12.4%</span>
                             </div>
                         </div>
                     </div>

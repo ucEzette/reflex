@@ -161,7 +161,7 @@ function ClaimHistoryRow({ policyId, filter, search }: { policyId: string; filte
                             </Link>
                         )}
                         <a
-                            href={`https://sepolia.arbiscan.io/tx/${policyId}`}
+                            href={`https://testnet.snowscan.xyz/tx/${policyId}`}
                             target="_blank"
                             className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:text-foreground hover:bg-white/10 transition-all"
                         >

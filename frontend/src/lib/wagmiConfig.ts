@@ -1,5 +1,5 @@
 import { http, createConfig } from "wagmi";
-import { arbitrumSepolia, sepolia, baseSepolia } from "wagmi/chains";
+import { avalancheFuji, avalanche, sepolia, arbitrumSepolia, baseSepolia } from "wagmi/chains";
 import { injected, walletConnect, coinbaseWallet } from "wagmi/connectors";
 
 // 1. Strict Project ID Check
@@ -20,8 +20,8 @@ const metadata = {
 };
 
 export const config = createConfig({
-    // Placing arbitrumSepolia at index 0 makes it the default target network
-    chains: [arbitrumSepolia, sepolia, baseSepolia],
+    // Placing avalancheFuji at index 0 makes it the default target network
+    chains: [avalancheFuji, avalanche, sepolia, arbitrumSepolia, baseSepolia],
     connectors: [
         injected(),
         walletConnect({
@@ -37,8 +37,10 @@ export const config = createConfig({
         }),
     ],
     transports: {
-        [arbitrumSepolia.id]: http(process.env.NEXT_PUBLIC_RPC_URL || "https://sepolia-rollup.arbitrum.io/rpc"),
+        [avalancheFuji.id]: http(process.env.NEXT_PUBLIC_RPC_URL || "https://avalanche-fuji.drpc.org"),
+        [avalanche.id]: http(),
         [sepolia.id]: http(),
+        [arbitrumSepolia.id]: http(),
         [baseSepolia.id]: http(),
     },
     // Changed to true: Highly recommended for Next.js (App/Pages router) to prevent hydration mismatch errors

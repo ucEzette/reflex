@@ -9,6 +9,7 @@ const groq = createOpenAI({
 });
 
 import { createUnderwriteTool } from './tools/UnderwriteTool';
+import { createHarvestTool } from './tools/HarvestTool';
 import { BlockchainService } from '../services/BlockchainService';
 import { WeatherService } from '../services/WeatherService';
 import { AviationStackService } from '../services/AviationStackService';
@@ -57,7 +58,7 @@ export class ReflexAutonomousAgent {
             const WalletManagerEvm = WDK.default;
 
             const wdkWalletConfig = {
-                provider: process.env.RPC_URL || 'https://sepolia-rollup.arbitrum.io/rpc'
+                provider: process.env.RPC_URL || 'https://api.avax-test.network/ext/bc/C/rpc'
             };
 
             // Initialize self-custodial Tether WDK WalletManager
@@ -87,13 +88,15 @@ export class ReflexAutonomousAgent {
             const { text } = await generateText({
                 model: groq('llama-3.3-70b-versatile'),
                 system: `You are the Autonomous Risk and Treasury Agent for Reflex L1, a decentralized parametric micro-insurance protocol.
-                Your primary objective is:
-                1. Monitor real-world meteorological and aviation data. If an anomaly is detected, execute 'underwriteRisk' to adjust margins.
+                Your primary objectives are:
+                1. Monitor Aave V3 yield. If highly profitable (e.g. profit > 100 USDT), execute 'harvestYield'.
+                2. Monitor real-world meteorological and aviation data. If an anomaly is detected, execute 'underwriteRisk' to adjust margins.
                 
                 You have a self-custodial Tether WDK wallet loaded with AVAX and USDT. Always execute the most appropriate tool based on the provided scenario data. Provide a brilliant, succinct summary of your decision.`,
                 prompt: `Analyze the following blockchain state and off-chain market sentiment. Determine the optimal on-chain action:\n${simulatedScenario}`,
                 tools: {
-                    underwriteRisk: createUnderwriteTool(this.account)
+                    underwriteRisk: createUnderwriteTool(this.account),
+                    harvestYield: createHarvestTool(this.account)
                 }
             });
 
@@ -112,8 +115,9 @@ export class ReflexAutonomousAgent {
 
         setInterval(async () => {
             try {
-                // 1. Fetch live pool stats
+                // 1. Fetch live pool stats (Harvest check)
                 const stats = await this.blockchain.getPoolStats();
+                const profitUsdt = Number(stats.profit) / 1e6;
 
                 // 2. Fetch Real-World Oracle Data (Risk Check)
                 // Demo coordinates: Miami, FL (Hurricane zone) and Iowa (Agri zone)
@@ -128,6 +132,7 @@ export class ReflexAutonomousAgent {
                 const scenario = `
                 [BLOCKCHAIN STATE]
                 - Liquidity Pool: ${stats.totalAssets.toString()} assets, ${stats.totalShares.toString()} shares.
+                - Harvestable Yield: ${profitUsdt.toFixed(2)} USDT.
                 
                 [MARKET SENTIMENT (LIVE ORACLES)]
                 - Miami FL Temperature: ${temperature !== null ? temperature : 'N/A'}°C
@@ -136,14 +141,15 @@ export class ReflexAutonomousAgent {
                 `;
 
                 // Only evaluate if there's actually something interesting to save API costs
-                // Thresholds: Temp > 35C (heatwave), Rain > 100mm (flood), Flight delay > 120 mins
+                // Thresholds: Profit > 50 USDT, Temp > 35C (heatwave), Rain > 100mm (flood), Flight delay > 120 mins
+                const isProfitable = profitUsdt > 50;
                 const isWeatherAnomaly = (temperature !== null && temperature > 35) || (rainfall !== null && rainfall > 100);
                 const isAviationAnomaly = flightDelay > 120;
 
-                if (isWeatherAnomaly || isAviationAnomaly) {
+                if (isProfitable || isWeatherAnomaly || isAviationAnomaly) {
                     await this.evaluateEcosystem(scenario);
                 } else {
-                    logger.debug(`Agent checked state: No action required (Temp: ${temperature}°C, Rain: ${rainfall}mm, Delay: ${flightDelay}m).`);
+                    logger.debug(`Agent checked state: No action required (Yield: $${profitUsdt.toFixed(2)}, Temp: ${temperature}°C, Rain: ${rainfall}mm, Delay: ${flightDelay}m).`);
                 }
 
             } catch (error) {

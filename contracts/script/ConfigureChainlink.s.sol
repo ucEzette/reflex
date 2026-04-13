@@ -8,9 +8,9 @@ contract ConfigureChainlink is Script {
     function run(address proxyAddress, uint64 subId) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
-        // Arbitrum Sepolia Testnet DON configuration
+        // Fuji Testnet DON configuration
         address router = 0xA9d587a00A31A52Ed70D6026794a8FC5E2F5dCb0;
-        bytes32 donId = 0x66756e2d6176616c616e6368652d66756a692d31000000000000000000000000; // fun-arbitrum-sepolia-1
+        bytes32 donId = 0x66756e2d6176616c616e6368652d66756a692d31000000000000000000000000; // fun-avalanche-fuji-1
         uint32 gasLimit = 300000;
 
         string memory sourceCode = vm.readFile("script/functions-source.js");

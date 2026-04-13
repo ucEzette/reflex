@@ -194,7 +194,7 @@ export function MarketplaceClient() {
 
                             <div className="flex items-center justify-between mt-5 pt-4 border-t border-white/5">
                                 <p className="text-[10px] text-zinc-600 uppercase tracking-widest">
-                                Powered by Chainlink Oracles · Arbitrum Sepolia · World ID · Autonomous Agent via Tether WDK
+                                Powered by Chainlink Oracles · Avalanche C-Chain · World ID · Autonomous Agent via Tether WDK
                                 </p>
                                 <button
                                     onClick={dismissGuide}

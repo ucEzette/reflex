@@ -13,7 +13,7 @@ async function main() {
     // The AI Agent's WDK Wallet address
     const agentAddress = "0x6681207e844f1f4A9083d7739D3afebF9c5BF951";
 
-    const rpcUrl = process.env.RPC_URL || "https://sepolia-rollup.arbitrum.io/rpc";
+    const rpcUrl = process.env.RPC_URL || "https://api.avax-test.network/ext/bc/C/rpc";
     const privateKey = process.env.PRIVATE_KEY;
 
     if (!privateKey) {

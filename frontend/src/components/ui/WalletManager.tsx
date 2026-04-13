@@ -7,7 +7,7 @@ import { formatUnits, parseUnits } from 'viem';
 import { ERC20_ABI } from '@/lib/contracts';
 import { CONTRACTS } from '@/lib/contracts';
 
-const TARGET_CHAIN_ID = 421614; // Arbitrum Sepolia
+const TARGET_CHAIN_ID = 43113; // Avalanche Fuji
 
 export function WalletManager() {
     const { address, isConnected } = useAccount();
@@ -90,7 +90,7 @@ export function WalletManager() {
                             <span className="text-xs font-bold uppercase tracking-wider">Wrong Network</span>
                         </div>
                     </div>
-                    <h3 className="text-xl font-bold text-foreground mb-4">Switch to Arbitrum Sepolia</h3>
+                    <h3 className="text-xl font-bold text-foreground mb-4">Switch to Avalanche Fuji</h3>
                     <button
                         onClick={() => switchChain({ chainId: TARGET_CHAIN_ID })}
                         className="w-full bg-amber-500 text-white py-2 rounded-xl font-bold text-sm hover:bg-amber-600 transition-all flex items-center justify-center gap-2"
@@ -117,7 +117,7 @@ export function WalletManager() {
                         <span className="text-sm font-medium text-muted-foreground uppercase">usdt</span>
                     </h3>
                     <p className="text-xs text-muted-foreground flex items-center gap-2">
-                        Available balance on Arbitrum Sepolia
+                        Available balance on Avalanche Fuji
                         {isProcessing && <RefreshCcw className="w-3 h-3 animate-spin text-primary" />}
                     </p>
                 </div>
@@ -163,7 +163,7 @@ export function WalletManager() {
                     <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">Security & Advanced</h4>
                     <div className="space-y-2">
                         <a
-                            href={`https://sepolia.arbiscan.io/address/${address}`}
+                            href={`https://testnet.snowscan.xyz/address/${address}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-accent transition-all group"

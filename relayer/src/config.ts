@@ -41,11 +41,11 @@ export function loadConfig(): Config {
         escrowAddress: process.env.ESCROW_CONTRACT_ADDRESS || "",
         aviationStackApiKey: process.env.AVIATIONSTACK_API_KEY || "",
         // Enterprise contract addresses
-        travelContract: process.env.TRAVEL_CONTRACT || "0xCa3CC41A72239af01Fd46aE7A85d2702DfdE6B48",
-        agriContract: process.env.AGRI_CONTRACT || "0x34dEF6aE580a5E164580b5313FdacD9fd32dfD8b",
-        energyContract: process.env.ENERGY_CONTRACT || "0x1A0215f56D29aA7bc6288FD0f7f7A9E4406E2fE9",
-        catContract: process.env.CAT_CONTRACT || "0x3e81AedCCC26d9bD1aC393fCeA5Fe54f563BC25b",
-        maritimeContract: process.env.MARITIME_CONTRACT || "0x8f0056cAA8299c8C349DF7B9B24E05Cd92d76B1B",
+        travelContract: process.env.TRAVEL_CONTRACT || "0x860f5d9e6A6F7C2A6dBe8c396CA5dc37f298f86b",
+        agriContract: process.env.AGRI_CONTRACT || "0xA63CdC07ebC3B2deAF5faD45aabC35C2Dd86fF80",
+        energyContract: process.env.ENERGY_CONTRACT || "0xc8392691CC8e09fBc34a17cbCfb607e6a9a6d663",
+        catContract: process.env.CAT_CONTRACT || "0xaCbbeFe183Bff58FA57c99D0352d4cA1e720240A",
+        maritimeContract: process.env.MARITIME_CONTRACT || "0xfC873105314170de85A043fc39F332e203DA7B1a",
         liquidityPool: process.env.LIQUIDITY_POOL_ADDRESS || "",
         // Market API keys
         flightAwareApiKey: process.env.FLIGHTAWARE_API_KEY || "",
