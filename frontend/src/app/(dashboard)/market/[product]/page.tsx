@@ -1,1045 +1,884 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import { ALL_MARKETS } from "@/lib/market-data";
-import {
-  useAccount,
-  useBalance,
-  useReadContract,
-  useReadContracts,
-  useWriteContract,
-  useWaitForTransactionReceipt,
-} from "wagmi";
-import {
-  CONTRACTS,
-  ESCROW_ABI,
-  ERC20_ABI,
-  LP_POOL_ABI,
-  PRODUCT_ABI,
-  GENERIC_PRODUCT_ABI,
-  TRAVEL_ABI,
-  POLICY_PREMIUM,
-  POLICY_PAYOUT,
-  POLICY_DURATION_HOURS,
-} from "@/lib/contracts";
+export const dynamic = "force-dynamic";
+
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { generateMarketProducts } from '../../../../lib/mockState';
+import { MarketProduct } from '../../../../types/market';
+import { Plane, CloudRain, Zap, Flame, Anchor, ArrowLeft, HelpCircle, Activity, Globe, Calendar, RefreshCcw, CheckCircle2, Clock, Radio, Satellite, Shield, AlertTriangle, X, Lightbulb, PanelLeft, PanelRight, Radar } from 'lucide-react';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
 import { toast } from "sonner";
+import { CONTRACTS, PRODUCT_ABI, GENERIC_PRODUCT_ABI, ERC20_ABI, LP_POOL_ABI } from "@/lib/contracts";
+import { IDKitWidget, VerificationLevel } from '@worldcoin/idkit';
+import type { ISuccessResult } from '@worldcoin/idkit';
 
-/* --- helpers --- */
-const POOL_MAP: Record<string, `0x${string}`> = {
-  flight: CONTRACTS.LP_TRAVEL,
-  agri: CONTRACTS.LP_AGRI,
-  energy: CONTRACTS.LP_ENERGY,
-  cat: CONTRACTS.LP_CAT,
-  maritime: CONTRACTS.LP_MARITIME,
+const IconMap: Record<string, React.ElementType> = {
+    Plane, CloudRain, Zap, Flame, Anchor
 };
 
-const PRODUCT_MAP: Record<string, `0x${string}`> = {
-  flight: CONTRACTS.TRAVEL,
-  agri: CONTRACTS.AGRI,
-  energy: CONTRACTS.ENERGY,
-  cat: CONTRACTS.CATASTROPHE,
-  maritime: CONTRACTS.MARITIME,
+const DURATION_OPTIONS = [
+    { label: '7 Days', value: 7 * 86400, short: '7d' },
+    { label: '14 Days', value: 14 * 86400, short: '14d' },
+    { label: '30 Days', value: 30 * 86400, short: '30d' },
+    { label: '90 Days', value: 90 * 86400, short: '90d' },
+];
+
+const PRODUCT_ORACLE_MAP: Record<string, string> = {
+    'flight': 'flight',
+    'agri': 'agri',
+    'energy': 'energy',
+    'cat': 'cat',
+    'maritime': 'maritime'
 };
 
-const categoryToABI = (cat: string) =>
-  cat === "travel" ? PRODUCT_ABI : GENERIC_PRODUCT_ABI;
-
-const PROTOCOL_MARGIN_BPS = 500;
-const ORIGINATION_FEE_BPS = 300;
-
-type FlightData = {
-  airline: string;
-  airlineIata: string;
-  flightNumber: string;
-  flightDate: string;
-  status: string;
-  aircraft: string | null;
-  aircraftType: string | null;
-  departure: {
-    airport: string;
-    iata: string;
-    terminal: string | null;
-    gate: string | null;
-    scheduled: string | null;
-    estimated: string | null;
-    actual: string | null;
-    delay: number;
-    timezone: string;
-  };
-  arrival: {
-    airport: string;
-    iata: string;
-    terminal: string | null;
-    gate: string | null;
-    scheduled: string | null;
-    estimated: string | null;
-    actual: string | null;
-    delay: number;
-    timezone: string;
-  };
-  isDelayedOver2Hours: boolean;
+const PRODUCT_BG_MAP: Record<string, string> = {
+    'flight': '/travel.jpg',
+    'agri': '/agriculture.jpg',
+    'energy': '/energy.jpg',
+    'cat': '/catastrophe.jpg',
+    'maritime': '/maritime.jpg'
 };
 
-/* --- Tooltip component --- */
-function Tooltip({ text, children }: { text: string; children: React.ReactNode }) {
-  const [show, setShow] = useState(false);
-  return (
-    <span className="relative inline-flex items-center">
-      <span
-        onMouseEnter={() => setShow(true)}
-        onMouseLeave={() => setShow(false)}
-        className="cursor-help"
-      >
-        {children}
-      </span>
-      {show && (
-        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-surface-container-highest text-[10px] text-zinc-300 leading-relaxed p-3 rounded-lg border border-white/10 shadow-2xl z-50 pointer-events-none animate-fade-in">
-          {text}
-        </span>
-      )}
-    </span>
-  );
-}
+// Fallback risk rates used only when oracle data is unavailable
+const DEFAULT_RISK_RATES: Record<string, number> = {
+    'flight': 0.05,
+    'agri': 0.10,
+    'energy': 0.08,
+    'cat': 0.02,
+    'maritime': 0.06
+};
 
-/* --- Main --- */
-export default function MarketDetailPage() {
-  const params = useParams();
-  const marketId = params?.product as string;
-  const market = useMemo(
-    () => ALL_MARKETS.find((m) => m.id === marketId),
-    [marketId]
-  );
+// Insurance loading factor: multiplier on expected loss to ensure underwriter profitability
+// Accounts for capital reserves, adverse selection, admin costs, and profit margin
+const INSURANCE_LOADING_FACTOR = 2.5;
 
-  const { address, isConnected } = useAccount();
-  const { data: usdtBalance } = useBalance({
-    address,
-    token: CONTRACTS.USDT,
-  });
+export default function ProductMarketPage({ params }: { params: { product: string } }) {
+    const router = useRouter();
+    const { address, isConnected } = useAccount();
+    const [mounted, setMounted] = useState(false);
+    const [product, setProduct] = useState<MarketProduct | null>(null);
+    const [showProductTip, setShowProductTip] = useState(false);
 
-  /* --- form state --- */
-  const [apiTarget, setApiTarget] = useState("");
-  const [customPayout, setCustomPayout] = useState("");
-  const [mounted, setMounted] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+    useEffect(() => {
+        const dismissed = localStorage.getItem('reflex_product_tip_dismissed');
+        if (!dismissed) setShowProductTip(true);
+    }, []);
 
-  /* Market-specific extra fields */
-  const [strikeValue, setStrikeValue] = useState("");
-  const [exitValue, setExitValue] = useState("");
-  const [durationDays, setDurationDays] = useState("7");
-  const [tickValue, setTickValue] = useState("10");
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
+    // World ID / Hackathon States
+    const [worldIDProof, setWorldIDProof] = useState<ISuccessResult | null>(null);
+    const [isHumanVerified, setIsHumanVerified] = useState(false);
 
-  /* Flight-specific state */
-  const [flightNumber, setFlightNumber] = useState("");
-  const [flightDate, setFlightDate] = useState("");
-  const [flightData, setFlightData] = useState<FlightData | null>(null);
-  const [flightLoading, setFlightLoading] = useState(false);
-  const [flightError, setFlightError] = useState("");
+    const handleWorldIDSuccess = (result: ISuccessResult) => {
+        setWorldIDProof(result);
+        setIsHumanVerified(true);
+        toast.success("Humanness verified via World ID");
+    };
 
-  const isFlightMarket = market?.category === "travel";
+    // Form states
+    const [payoutInput, setPayoutInput] = useState("");
+    const [dateRange, setDateRange] = useState({ start: '', end: '' });
+    const [coordinates, setCoordinates] = useState({ lat: '', lon: '' });
+    const [zone, setZone] = useState('');
+    const [flightId, setFlightId] = useState('');
+    const [strikeInput, setStrikeInput] = useState("100");
+    const [exitInput, setExitInput] = useState("50");
+    const [radiusInput, setRadiusInput] = useState("50");
+    const [selectedDuration, setSelectedDuration] = useState(DURATION_OPTIONS[2]); // default 30d
 
-  useEffect(() => setMounted(true), []);
+    // Oracle Data & Dynamic Risk
+    const [oracleData, setOracleData] = useState<any>(null);
+    const [isLoadingOracle, setIsLoadingOracle] = useState(false);
 
-  /* -- Fetch flight details -- */
-  const fetchFlightDetails = useCallback(async () => {
-    if (!flightNumber.trim()) {
-      setFlightError("Enter a flight number");
-      return;
-    }
-    if (!flightDate) {
-      setFlightError("Select a flight date");
-      return;
-    }
+    // Derive dynamic risk from oracle data
+    const dynamicRisk = React.useMemo(() => {
+        if (!product || !oracleData) return { nDelayed: 5, nTotal: 100, riskRate: DEFAULT_RISK_RATES[product?.id || 'flight'] || 0.05 };
 
-    setFlightLoading(true);
-    setFlightError("");
-    setFlightData(null);
+        if (product.id === 'flight' && oracleData.riskStats) {
+            // Apply insurance loading factor to nDelayed for actuarial soundness
+            const rawDelayed = oracleData.riskStats.nDelayed || 5;
+            const loadedDelayed = Math.ceil(rawDelayed * INSURANCE_LOADING_FACTOR);
+            const nTotal = oracleData.riskStats.nTotal || 100;
+            return {
+                nDelayed: Math.min(loadedDelayed, nTotal), // cap at nTotal
+                nTotal,
+                riskRate: oracleData.riskStats.probability || 0.05
+            };
+        }
 
-    try {
-      const cleanFlight = flightNumber.replace(/\s+/g, "").toUpperCase();
-      const res = await fetch(
-        `/api/flight?flight_iata=${cleanFlight}&flight_date=${flightDate}`
-      );
-      const data = await res.json();
+        if (oracleData.riskProbability !== undefined) {
+            return {
+                nDelayed: 0,
+                nTotal: 0,
+                riskRate: oracleData.riskProbability
+            };
+        }
 
-      if (!res.ok) {
-        setFlightError(data.error || "Flight not found");
-        return;
-      }
+        return { nDelayed: 5, nTotal: 100, riskRate: DEFAULT_RISK_RATES[product.id] || 0.05 };
+    }, [product, oracleData]);
 
-      setFlightData(data);
-      setApiTarget(cleanFlight);
+    // Flight-specific: validity, insurability check and auto-duration
+    const flightValid = product?.id === 'flight' ? (oracleData?.isValid !== false) : true;
+    const flightInsurable = product?.id === 'flight' ? (oracleData?.isInsurable !== false && flightValid) : true;
+    const flightStatusLabel = oracleData?.flightStatusLabel || 'Scheduled';
+    const flightAutoDuration = oracleData?.autoDurationSeconds || null;
+    const flightScheduledArrival = oracleData?.scheduledArrival || null;
 
-      // Auto-calculate coverage duration from scheduled arrival to end-of-day
-      if (data.arrival?.scheduled) {
-        const arrivalTime = new Date(data.arrival.scheduled);
-        // Set coverage to expire at end of arrival day (23:59 local)
-        const endOfArrivalDay = new Date(arrivalTime);
-        endOfArrivalDay.setHours(23, 59, 59, 0);
-        const now = new Date();
-        const hoursUntilEnd = Math.max(
-          1,
-          Math.ceil((endOfArrivalDay.getTime() - now.getTime()) / (1000 * 60 * 60))
-        );
-        const days = Math.max(1, Math.ceil(hoursUntilEnd / 24));
-        setDurationDays(String(days));
-      }
+    // For flights, use auto-duration; for others, use manual selection
+    const effectiveDuration = (product?.id === 'flight' && flightAutoDuration)
+        ? flightAutoDuration
+        : selectedDuration.value;
 
-      toast.success(`Flight ${data.flightNumber} found — ${data.departure.iata} → ${data.arrival.iata}`);
-    } catch {
-      setFlightError("Failed to fetch flight data. Please try again.");
-    } finally {
-      setFlightLoading(false);
-    }
-  }, [flightNumber, flightDate]);
+    useEffect(() => {
+        setMounted(true);
+        const data = generateMarketProducts().find(p => p.id === params.product);
+        if (data) {
+            setProduct(data as unknown as MarketProduct);
+        }
+    }, [params.product]);
 
-  const poolAddr = POOL_MAP[marketId] || CONTRACTS.LP_TRAVEL;
-  const productAddr = PRODUCT_MAP[marketId] || CONTRACTS.TRAVEL;
-  const productAbi = market ? categoryToABI(market.category) : PRODUCT_ABI;
+    // Fetch oracle data when product loads
+    useEffect(() => {
+        if (!product) return;
+        fetchOracleData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [product, flightId, zone, coordinates.lat, coordinates.lon]);
 
-  /* --- on-chain reads --- */
-  const { data: poolData } = useReadContracts({
-    contracts: [
-      { address: poolAddr, abi: LP_POOL_ABI, functionName: "totalAssets" },
-      { address: poolAddr, abi: LP_POOL_ABI, functionName: "totalMaxPayouts" },
-      { address: poolAddr, abi: LP_POOL_ABI, functionName: "totalShares" },
-    ],
-  });
-  const { data: activePolicies } = useReadContract({
-    address: productAddr,
-    abi: productAbi,
-    functionName: "getActivePolicyCount",
-  });
+    const fetchOracleData = async () => {
+        if (!product) return;
+        const oracleKey = PRODUCT_ORACLE_MAP[product.id];
+        if (!oracleKey) return;
 
-  const totalAssets = poolData?.[0]?.result as bigint | undefined;
-  const totalMaxPayouts = poolData?.[1]?.result as bigint | undefined;
-  const totalShares = poolData?.[2]?.result as bigint | undefined;
+        setIsLoadingOracle(true);
+        try {
+            const queryParams = new URLSearchParams();
+            if (product.id === 'flight' && flightId) queryParams.set('flightId', flightId);
+            if (product.id === 'agri' && zone) queryParams.set('zone', zone);
+            if (product.id === 'energy') {
+                if (coordinates.lat) queryParams.set('lat', coordinates.lat);
+                if (coordinates.lon) queryParams.set('lon', coordinates.lon);
+            }
+            if (product.id === 'cat') {
+                if (coordinates.lat) queryParams.set('lat', coordinates.lat);
+                if (coordinates.lon) queryParams.set('lon', coordinates.lon);
+            }
+            if (product.id === 'maritime') {
+                if (coordinates.lat) queryParams.set('lat', coordinates.lat);
+                if (coordinates.lon) queryParams.set('lon', coordinates.lon);
+            }
 
-  const tvl = totalAssets ? Number(formatUnits(totalAssets, 6)) : 0;
-  const utilization =
-    totalAssets && totalMaxPayouts && totalAssets > BigInt(0)
-      ? (Number(totalMaxPayouts) / Number(totalAssets)) * 100
-      : 0;
-  const availableCapacity = totalAssets && totalMaxPayouts
-    ? Number(formatUnits(totalAssets - totalMaxPayouts, 6))
-    : 0;
+            const res = await fetch(`/api/oracle/${oracleKey}?${queryParams.toString()}`);
+            const data = await res.json();
+            setOracleData(data);
+        } catch (err) {
+            setOracleData({ status: 'error', message: 'Failed to fetch oracle data' });
+        } finally {
+            setIsLoadingOracle(false);
+        }
+    };
 
-  /* --- premium calculation --- */
-  const effectivePayout = customPayout ? Number(customPayout) : 0;
-  const basePremium = market?.marketData.basePremium || 5;
-  const surgeMultiplier = market?.marketData.surgeMultiplier || 1.0;
+    // Contract Interactions
+    const targetContractAddress = product?.id === 'flight' ? CONTRACTS.TRAVEL :
+        product?.id === 'agri' ? CONTRACTS.AGRI :
+            product?.id === 'energy' ? CONTRACTS.ENERGY :
+                product?.id === 'cat' ? CONTRACTS.CATASTROPHE :
+                    CONTRACTS.MARITIME;
 
-  // Premium = (expected loss ratio) × payout × margin × surge
-  // For travel: historicalDelayRate ~18% → EL = 0.18 × payout
-  // We approximate with the actual basePremium from market data scaled to payout
-  const historicalRiskRate = basePremium / 100; // e.g. 5/100 = 0.05 base
-  const expectedLoss = effectivePayout * historicalRiskRate;
-  const marginMultiplier = 1 + (PROTOCOL_MARGIN_BPS / 10000);
-  const calculatedPremium = expectedLoss * marginMultiplier * surgeMultiplier;
-  const originationFee = calculatedPremium * (ORIGINATION_FEE_BPS / 10000);
-  const totalCost = calculatedPremium + originationFee;
-  const payoutRatio = effectivePayout / (totalCost || 1);
-
-  /* --- allowance / approve / purchase --- */
-  const premiumBigInt = parseUnits(totalCost.toFixed(6), 6);
-  const payoutBigInt = parseUnits(effectivePayout.toFixed(6), 6);
-
-  const { data: allowance } = useReadContract({
-    address: CONTRACTS.USDT,
-    abi: ERC20_ABI,
-    functionName: "allowance",
-    args: address ? [address, CONTRACTS.ESCROW] : undefined,
-  });
-  const needsApproval =
-    allowance !== undefined && (allowance as bigint) < premiumBigInt;
-
-  const {
-    writeContract: approve,
-    data: approveTxHash,
-    isPending: isApproving,
-  } = useWriteContract();
-  const {
-    writeContract: purchase,
-    data: purchaseTxHash,
-    isPending: isPurchasing,
-  } = useWriteContract();
-
-  const { isSuccess: approveConfirmed } = useWaitForTransactionReceipt({
-    hash: approveTxHash,
-  });
-  const { isSuccess: purchaseConfirmed } = useWaitForTransactionReceipt({
-    hash: purchaseTxHash,
-  });
-
-  useEffect(() => {
-    if (approveConfirmed) toast.success("USDT approved for spending");
-  }, [approveConfirmed]);
-
-  useEffect(() => {
-    if (purchaseConfirmed)
-      toast.success("Policy purchased! Check your Portfolio.");
-  }, [purchaseConfirmed]);
-
-  const handleApprove = () => {
-    approve({
-      address: CONTRACTS.USDT,
-      abi: ERC20_ABI,
-      functionName: "approve",
-      args: [CONTRACTS.ESCROW, premiumBigInt * BigInt(100)],
-    });
-  };
-
-  const handlePurchase = () => {
-    if (!apiTarget.trim()) {
-      toast.error(isFlightMarket ? "Look up a flight first" : "Please enter a valid identifier");
-      return;
-    }
-    if (effectivePayout <= 0) {
-      toast.error("Enter a payout amount");
-      return;
-    }
-    if (effectivePayout > availableCapacity && availableCapacity > 0) {
-      toast.error("Requested payout exceeds pool capacity");
-      return;
-    }
-    if (isFlightMarket && !flightData) {
-      toast.error("Look up your flight before purchasing");
-      return;
-    }
-
-    purchase({
-      address: CONTRACTS.ESCROW,
-      abi: ESCROW_ABI,
-      functionName: "purchasePolicy",
-      args: [
-        apiTarget,
-        premiumBigInt,
-        payoutBigInt,
-        BigInt(Number(durationDays) * 24),
-      ],
-    });
-  };
-
-  const formattedBalance = usdtBalance
-    ? (Number(usdtBalance.value) / 1e6).toFixed(2)
-    : "0.00";
-
-  if (!market) {
-    return (
-      <div className="pt-32 pb-24 px-8 max-w-7xl mx-auto text-center">
-        <span className="material-symbols-outlined text-6xl text-zinc-700 mb-4">
-          error_outline
-        </span>
-        <h1 className="text-3xl font-bold mb-4">Market Not Found</h1>
-        <Link href="/market" className="text-primary hover:underline">
-          ← Back to Marketplace
-        </Link>
-      </div>
+    // Calculate expected risk base from oracle-derived dynamic risk
+    const expectedRiskBase = parseUnits(
+        (parseFloat(payoutInput || "0") * dynamicRisk.riskRate).toFixed(6),
+        6
     );
-  }
 
-  const rules = market.rules.split(/\d+\.\s+/).filter(Boolean);
+    const { data: premiumQuote, isLoading: isQuoting } = useReadContract({
+        address: targetContractAddress as `0x${string}`,
+        abi: product?.id === 'flight' ? PRODUCT_ABI : GENERIC_PRODUCT_ABI,
+        functionName: "quotePremium",
+        args: product?.id === 'flight'
+            ? [BigInt(dynamicRisk.nDelayed), BigInt(dynamicRisk.nTotal), parseUnits(payoutInput || "0", 6)] as const
+            : [expectedRiskBase] as const,
+        query: { enabled: mounted && !!targetContractAddress && (product?.id === 'flight' ? !!flightId : !!payoutInput) },
+        chainId: 43113
+    });
 
-  /* --- market-specific input config --- */
-  const DEFAULT_CONFIG = { label: "Target Identifier", placeholder: "Enter target", icon: "search" };
-  const configMap: any = {
-    travel: { label: "Flight Number", placeholder: "e.g. AA1234", icon: "flight_takeoff" },
-    agri: { label: "Geographic Zone / Station", placeholder: "e.g. USW00094846", icon: "grass" },
-    energy: { label: "Weather Station ID", placeholder: "e.g. USW00094846", icon: "thermostat" },
-    catastrophe: { label: "Coordinates (Lat, Lon)", placeholder: "e.g. 34.05, -118.24", icon: "my_location" },
-    maritime: { label: "Port / IMO Code", placeholder: "e.g. USNYC or IMO:9811000", icon: "sailing" },
-  };
-  const inputConfig = market && market.category ? configMap[market.category] || DEFAULT_CONFIG : DEFAULT_CONFIG;
+    const { data: activePolicyCount } = useReadContract({
+        address: targetContractAddress as `0x${string}`,
+        abi: product?.id === 'flight' ? PRODUCT_ABI : GENERIC_PRODUCT_ABI,
+        functionName: "getActivePolicyCount",
+        query: { enabled: mounted && !!targetContractAddress },
+        chainId: 43113
+    });
 
-  return (
-    <>
-      <main className="pt-28 pb-24 px-6 lg:px-8 max-w-[1600px] mx-auto">
-        {/* --- Breadcrumb --- */}
-      <div className="flex items-center gap-2 mb-8 text-xs text-zinc-500">
-        <Link href="/market" className="hover:text-on-surface transition-colors">Markets</Link>
-        <span className="material-symbols-outlined text-[10px]">chevron_right</span>
-        <span className="text-on-surface font-medium">{market.title}</span>
-      </div>
+    // Pool Diagnostics
+    const { data: poolAddress } = useReadContract({
+        address: targetContractAddress as `0x${string}`,
+        abi: product?.id === 'flight' ? PRODUCT_ABI : GENERIC_PRODUCT_ABI,
+        functionName: "pool",
+        query: { enabled: mounted && !!targetContractAddress },
+        chainId: 43113
+    });
+
+    const { data: poolAssets } = useReadContract({
+        address: poolAddress as `0x${string}`,
+        abi: LP_POOL_ABI,
+        functionName: "totalAssets",
+        query: { enabled: mounted && !!poolAddress },
+        chainId: 43113
+    });
+
+    const { data: poolMaxPayouts } = useReadContract({
+        address: poolAddress as `0x${string}`,
+        abi: LP_POOL_ABI,
+        functionName: "totalMaxPayouts",
+        query: { enabled: mounted && !!poolAddress },
+        chainId: 43113
+    });
+
+    const { data: isProductAuthorized } = useReadContract({
+        address: poolAddress as `0x${string}`,
+        abi: LP_POOL_ABI,
+        functionName: "authorizedProducts",
+        args: [targetContractAddress as `0x${string}`],
+        query: { enabled: mounted && !!poolAddress && !!targetContractAddress },
+        chainId: 43113
+    });
+
+    const remainingCapacity = poolAssets !== undefined && poolMaxPayouts !== undefined
+        ? BigInt(poolAssets) - BigInt(poolMaxPayouts)
+        : BigInt(0);
+
+    const requestedPayoutBigInt = parseUnits(payoutInput || "0", 6);
+    const insufficientLiquidity = requestedPayoutBigInt > remainingCapacity;
 
 
-          {/* -- Header -- */}
-          <div className="flex items-start gap-6">
-            <div
-              className="w-20 h-20 rounded-xl flex items-center justify-center specular-border"
-              style={{ background: `rgba(${market.rgb}, 0.12)` }}
-            >
-              <span
-                className="material-symbols-outlined text-4xl"
-                style={{ color: `rgb(${market.rgb})` }}
-              >
-                {market.icon}
-              </span>
+    const { writeContract: purchasePolicy, data: hash, isPending: isTxPending, error: purchaseError } = useWriteContract();
+    const { isLoading: isConfirming, isSuccess: isPurchaseSuccess } = useWaitForTransactionReceipt({ hash });
+
+    // USDT Allowance Check
+    const { data: allowance, refetch: refetchAllowance } = useReadContract({
+        address: CONTRACTS.USDT as `0x${string}`,
+        abi: ERC20_ABI,
+        functionName: "allowance",
+        args: [address as `0x${string}`, targetContractAddress as `0x${string}`],
+        query: { enabled: !!address && !!targetContractAddress },
+        chainId: 43113
+    });
+
+    const { writeContract: approveUSDT, isPending: isApprovePending, data: approveHash } = useWriteContract();
+    const { isLoading: isConfirmingApprove, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({ hash: approveHash });
+
+    useEffect(() => {
+        if (isApproveSuccess) {
+            toast.success("USDT Approved!");
+            refetchAllowance();
+        }
+    }, [isApproveSuccess, refetchAllowance]);
+
+    useEffect(() => {
+        if (purchaseError) {
+            console.error("Purchase Error:", purchaseError);
+            toast.error(purchaseError.message || "Purchase failed");
+        }
+    }, [purchaseError]);
+
+    const needsApproval = allowance !== undefined && premiumQuote !== undefined && BigInt(allowance) < BigInt(premiumQuote);
+
+    const handlePurchase = async () => {
+        console.log("Handle Purchase Triggered");
+        if (!isConnected || !address) {
+            console.log("Wallet not connected");
+            return toast.error("Connect wallet to proceed");
+        }
+        if (!isHumanVerified) {
+            console.log("Not human verified");
+            return toast.error("Please verify your humanness with World ID first");
+        }
+
+        if (needsApproval) {
+            console.log("Requesting USDT Approval for:", targetContractAddress);
+            approveUSDT({
+                address: CONTRACTS.USDT as `0x${string}`,
+                abi: ERC20_ABI,
+                functionName: "approve",
+                args: [targetContractAddress as `0x${string}`, premiumQuote as bigint]
+            });
+            return;
+        }
+
+        if (!payoutInput || isNaN(parseFloat(payoutInput))) {
+            return toast.error("Please enter a valid payout amount");
+        }
+
+        try {
+            if (product?.id === 'flight') {
+                purchasePolicy({
+                    address: targetContractAddress as `0x${string}`,
+                    abi: PRODUCT_ABI,
+                    functionName: "purchasePolicy",
+                    args: [
+                        flightId || "REF-001",
+                        parseUnits(payoutInput, 6),
+                        BigInt(dynamicRisk.nDelayed),
+                        BigInt(dynamicRisk.nTotal),
+                        BigInt(effectiveDuration),
+                        "0x" as `0x${string}`
+                    ]
+                });
+            } else {
+                // Determine target identifier (e.g. Zone for Agri, Port for Maritime, Lat:Lon:Radius for Cat)
+                let targetIdentifier = zone || "ZONE-A";
+                if (product?.id === 'cat') {
+                    targetIdentifier = `${coordinates.lat}:${coordinates.lon}:${radiusInput}`;
+                } else if (product?.id === 'energy' || product?.id === 'maritime') {
+                    targetIdentifier = zone;
+                }
+
+                purchasePolicy({
+                    address: targetContractAddress as `0x${string}`,
+                    abi: GENERIC_PRODUCT_ABI,
+                    functionName: "purchasePolicy",
+                    args: [
+                        targetIdentifier,
+                        parseUnits(payoutInput, 6),
+                        BigInt(strikeInput),
+                        BigInt(exitInput),
+                        expectedRiskBase,
+                        BigInt(effectiveDuration)
+                    ]
+                });
+            }
+
+        } catch (err: any) {
+            console.error("Handle Purchase Try/Catch Error:", err);
+            toast.error(err.message || "Execution failed");
+        }
+    };
+
+    useEffect(() => {
+        if (isPurchaseSuccess) {
+            toast.success("Policy secured successfully!");
+        }
+    }, [isPurchaseSuccess]);
+
+    const [showCalcInfo, setShowCalcInfo] = useState(false);
+    const calc = (product as any)?.calculationMethod;
+
+    if (!mounted) return null;
+    if (!product) return <div className="min-h-screen flex items-center justify-center text-foreground z-10 relative">Product not found.</div>;
+
+    const Icon = IconMap[product.iconType] || Plane;
+    const expiryDate = new Date(Date.now() + selectedDuration.value * 1000);
+    const bgImage = PRODUCT_BG_MAP[product.id] || '/travel.jpg';
+
+    return (
+        <div className="relative min-h-screen w-full flex flex-col">
+            {/* 3D Verlet Background Layer */}
+            <div className="fixed inset-0 z-0 flex items-center justify-center bg-background-dark overflow-hidden pointer-events-none">
+                <Image
+                    src={bgImage}
+                    alt={`${product.title} background`}
+                    layout="fill"
+                    objectFit="cover"
+                    quality={100}
+                    priority
+                    className="opacity-40 mix-blend-screen scale-105"
+                />
+                {/* Vignette & Gradient Overlays for smooth blending */}
+                <div className="absolute inset-0 bg-gradient-to-b from-background-dark/20 via-transparent to-background-dark/90" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background-dark/80 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-background-dark/60 via-transparent to-background-dark/60" />
             </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className="text-institutional">Insurance Market</span>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-headline font-bold tracking-tight text-on-surface">
-                {market.title}
-              </h1>
-              <p className="text-zinc-400 font-light leading-relaxed max-w-xl mt-1">
-                {market.description}
-              </p>
-            </div>
-          </div>
 
-          {/* -- How This Model Works -- */}
-          <details className="bg-surface-container-low rounded-xl p-8 specular-border group">
-            <summary className="cursor-pointer text-institutional mb-0 group-open:mb-6 list-none flex items-center justify-between outline-none">
-              How This Market Works
-              <span className="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
-            </summary>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                {
-                  step: "1",
-                  title: "Define Risk Parameters",
-                  desc: market.category === "travel"
-                    ? "Enter your flight number. We query FlightAware AeroAPI for historical delay rates on this specific route."
-                    : "Enter your target identifier and define Strike/Exit thresholds for your parametric coverage.",
-                  icon: "tune",
-                },
-                {
-                  step: "2",
-                  title: "Receive Underwriting Quote",
-                  desc: "Premium is computed from expected loss ratio, protocol margin (5%), and any surge multiplier from the Dynamic Risk Engine.",
-                  icon: "receipt_long",
-                },
-                {
-                  step: "3",
-                  title: "Automatic Settlement",
-                  desc: "Chainlink DON monitors your target 24/7. If the trigger condition is met, USDT settles directly — no claims process.",
-                  icon: "bolt",
-                },
-              ].map((s) => (
-                <div key={s.step} className="flex flex-col gap-3 p-5 bg-surface-container-lowest rounded-lg border border-white/5">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black"
-                      style={{
-                        background: `rgba(${market.rgb}, 0.15)`,
-                        color: `rgb(${market.rgb})`,
-                      }}
-                    >
-                      {s.step}
-                    </div>
-                    <span className="material-symbols-outlined text-zinc-500 text-lg">{s.icon}</span>
-                  </div>
-                  <h4 className="text-sm font-bold">{s.title}</h4>
-                  <p className="text-[11px] text-zinc-500 leading-relaxed">{s.desc}</p>
-                </div>
-              ))}
-            </div>
-          </details>
-
-
-          {/* -- About -- */}
-          <div className="flex flex-col gap-4">
-            <h2 className="text-institutional">About this Product</h2>
-            <p className="text-on-surface leading-relaxed text-[15px] opacity-80 max-w-2xl">
-              {market.about}
-            </p>
-          </div>
-
-          {/* --- Layout Wrapper --- */}
-          <div className="flex flex-col lg:flex-row gap-8 items-start w-full mt-12">
-            
-            {/* ═════════ LEFT COLUMN ═════════ */}
-            <div className="w-full lg:w-[58%] flex flex-col gap-8">
-              
-              {/* --- Configure Protection --- */}
-              <div className="bg-surface-container-high rounded-2xl p-8 flex flex-col gap-6 specular-border relative z-50">
-                <h3 className="text-xl font-headline font-bold text-on-surface">
-                  Configure Protection
-                </h3>
-              {/* ═══ FLIGHT MARKET: Flight Number + Date + Lookup ═══ */}
-          {isFlightMarket ? (
-            <>
-              <div className="flex flex-col gap-3">
-                <label className="text-institutional flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-sm text-blue-400">flight_takeoff</span>
-                  Flight Details
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest">Flight Number</span>
-                    <div className="bg-surface-container-lowest p-3.5 rounded-lg border border-transparent focus-within:border-primary/30 transition-all">
-                      <input
-                        type="text"
-                        value={flightNumber}
-                        onChange={(e) => setFlightNumber(e.target.value.toUpperCase().replace(/\s/g, ''))}
-                        placeholder="e.g. AA1234"
-                        className="bg-transparent border-none p-0 w-full mono-data text-base focus:ring-0 text-on-surface placeholder:text-zinc-700"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest">Flight Date</span>
-                    <div className="bg-surface-container-lowest p-3.5 rounded-lg border border-transparent focus-within:border-primary/30 transition-all">
-                      <input
-                        type="date"
-                        value={flightDate}
-                        onChange={(e) => setFlightDate(e.target.value)}
-                        min={new Date().toISOString().split('T')[0]}
-                        className="bg-transparent border-none p-0 w-full mono-data text-base focus:ring-0 text-on-surface placeholder:text-zinc-700 [color-scheme:dark]"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={fetchFlightDetails}
-                  disabled={flightLoading || !flightNumber.trim() || !flightDate}
-                  className="w-full py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all bg-surface-container-lowest text-on-surface hover:bg-surface-container disabled:opacity-40 disabled:cursor-not-allowed border border-white/5"
-                >
-                  {flightLoading ? (
-                    <>
-                      <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
-                      Fetching from FlightAware…
-                    </>
-                  ) : (
-                    <>
-                      <span className="material-symbols-outlined text-sm text-blue-400">search</span>
-                      Look Up Flight
-                    </>
-                  )}
+            {/* Content Layer (Glassmorphism) */}
+            <div className="relative z-10 w-full max-w-[1200px] mx-auto p-4 md:p-8 space-y-8 pb-32">
+                <button onClick={() => router.push('/market')} className="flex items-center text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white transition-colors backdrop-blur-sm bg-black/20 px-4 py-2 rounded-full border border-white/5 w-fit">
+                    <ArrowLeft className="w-4 h-4 mr-2" /> Back to Market
                 </button>
-                {flightError && (
-                  <div className="flex items-center gap-2 px-3 py-2 bg-red-500/10 rounded-lg border border-red-500/20">
-                    <span className="material-symbols-outlined text-red-400 text-sm">error</span>
-                    <span className="text-[11px] text-red-400">{flightError}</span>
-                  </div>
+
+                <div className="flex items-center gap-4">
+                    <div className="p-4 bg-primary/10 rounded-2xl border border-primary/20 text-primary">
+                        <Icon className="w-8 h-8" />
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-black text-foreground">{product.title}</h1>
+                        <p className="text-sm text-zinc-400 mt-1">{product.description}</p>
+                    </div>
+                </div>
+
+                {/* ── Contextual Tip Banner ── */}
+                {showProductTip && (
+                    <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 animate-guide-fade-in">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-start gap-3">
+                                <div className="p-1.5 bg-amber-500/10 rounded-lg border border-amber-500/20 shrink-0 mt-0.5">
+                                    <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+                                </div>
+                                <div className="space-y-2">
+                                    <p className="text-xs font-bold text-foreground">Quick Guide — How This Page Works</p>
+                                    <div className="flex flex-wrap gap-4">
+                                        <div className="flex items-center gap-2">
+                                            <PanelLeft className="w-3.5 h-3.5 text-sky-400" />
+                                            <span className="text-[11px] text-zinc-400"><strong className="text-sky-400">Left Panel</strong> — Configure your protection parameters</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <PanelRight className="w-3.5 h-3.5 text-emerald-400" />
+                                            <span className="text-[11px] text-zinc-400"><strong className="text-emerald-400">Right Panel</strong> — View your live premium quote & purchase</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Radar className="w-3.5 h-3.5 text-cyan-400" />
+                                            <span className="text-[11px] text-zinc-400"><strong className="text-cyan-400">Oracle Feed</strong> — Real-time data powering your quote</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setShowProductTip(false);
+                                    localStorage.setItem('reflex_product_tip_dismissed', 'true');
+                                }}
+                                className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all shrink-0"
+                                aria-label="Dismiss tip"
+                            >
+                                <X className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+                    </div>
                 )}
-              </div>
 
-              {/* -- Flight Details Card -- */}
-              {flightData && (
-                <div className="bg-surface-container-lowest rounded-xl p-5 space-y-4 border border-blue-500/10 animate-fade-in">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-blue-400">flight</span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-on-surface">{flightData.airline}</p>
-                        <p className="mono-data text-xs text-zinc-500">{flightData.flightNumber} · {flightData.flightDate}</p>
-                      </div>
+                {isPurchaseSuccess ? (
+                    <div className="bg-card border border-border rounded-xl p-12 text-center space-y-8 animate-in zoom-in-95 duration-500 max-w-2xl mx-auto shadow-2xl shadow-emerald-500/10">
+                        <div className="flex justify-center">
+                            <div className="w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
+                                <CheckCircle2 className="w-12 h-12" />
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            <h2 className="text-4xl font-black text-foreground">Policy Secured!</h2>
+                            <p className="text-zinc-400">
+                                Your parametric protection for <span className="text-white font-bold">{flightId || zone || "your asset"}</span> is now active on the Avalanche Fuji network.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-left">
+                                <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Coverage</p>
+                                <p className="text-lg font-black text-emerald-400">${Number(payoutInput).toLocaleString()}</p>
+                            </div>
+                            <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-left">
+                                <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Status</p>
+                                <p className="text-lg font-black text-sky-400">Active ✓</p>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-4">
+                            <a
+                                href={`https://testnet.snowscan.xyz/tx/${hash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full py-4 rounded-xl bg-sky-500 text-black font-black uppercase tracking-widest text-sm hover:bg-sky-400 transition-all flex items-center justify-center gap-2"
+                            >
+                                <Globe className="w-4 h-4" /> View Transaction on Snowscan
+                            </a>
+                            <button
+                                onClick={() => router.push('/dashboard')}
+                                className="w-full py-4 rounded-xl bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-sm hover:bg-white/10 transition-all"
+                            >
+                                Go to Portfolio
+                            </button>
+                        </div>
+
+                        <div className="flex items-center justify-center gap-2 pt-4 border-t border-white/5">
+                            <span className="text-[10px] text-zinc-600 uppercase tracking-widest">Powered by Chainlink DON & Avalanche CCIP</span>
+                        </div>
                     </div>
-                    <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
-                      flightData.status === 'scheduled' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
-                      flightData.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                      flightData.status === 'landed' ? 'bg-zinc-500/10 text-zinc-400 border border-zinc-500/20' :
-                      flightData.status === 'cancelled' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                      'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                    }`}>
-                      {flightData.status}
-                    </span>
-                  </div>
-
-                  {/* Route */}
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1 text-center">
-                      <p className="mono-data text-2xl font-black text-on-surface">{flightData.departure.iata}</p>
-                      <p className="text-[10px] text-zinc-500 mt-1 truncate">{flightData.departure.airport}</p>
-                      {flightData.departure.terminal && <p className="text-[9px] text-zinc-600">Terminal {flightData.departure.terminal}{flightData.departure.gate ? ` · Gate ${flightData.departure.gate}` : ''}</p>}
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="w-24 h-px bg-gradient-to-r from-blue-500/50 via-blue-400 to-blue-500/50 relative">
-                        <span className="material-symbols-outlined text-blue-400 text-sm absolute -top-[9px] left-1/2 -translate-x-1/2">flight</span>
-                      </div>
-                    </div>
-                    <div className="flex-1 text-center">
-                      <p className="mono-data text-2xl font-black text-on-surface">{flightData.arrival.iata}</p>
-                      <p className="text-[10px] text-zinc-500 mt-1 truncate">{flightData.arrival.airport}</p>
-                      {flightData.arrival.terminal && <p className="text-[9px] text-zinc-600">Terminal {flightData.arrival.terminal}{flightData.arrival.gate ? ` · Gate ${flightData.arrival.gate}` : ''}</p>}
-                    </div>
-                  </div>
-
-                  {/* Times */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-surface-container-highest p-3 rounded-lg">
-                      <p className="text-[9px] text-zinc-500 uppercase tracking-widest mb-1">Departure</p>
-                      <p className="mono-data text-sm text-on-surface">
-                        {flightData.departure.scheduled ? new Date(flightData.departure.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
-                      </p>
-                      {flightData.departure.delay > 0 && (
-                        <p className="text-[9px] text-amber-400 mt-0.5">+{flightData.departure.delay} min delay</p>
-                      )}
-                    </div>
-                    <div className="bg-surface-container-highest p-3 rounded-lg">
-                      <p className="text-[9px] text-zinc-500 uppercase tracking-widest mb-1">Arrival</p>
-                      <p className="mono-data text-sm text-on-surface">
-                        {flightData.arrival.scheduled ? new Date(flightData.arrival.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
-                      </p>
-                      {flightData.arrival.delay > 0 && (
-                        <p className={`text-[9px] mt-0.5 ${flightData.arrival.delay >= 120 ? 'text-red-400' : 'text-amber-400'}`}>
-                          +{flightData.arrival.delay} min delay
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Coverage auto-set */}
-                  <div className="flex items-center gap-2 px-2 py-2 bg-blue-500/5 rounded-lg border border-blue-500/10">
-                    <span className="material-symbols-outlined text-blue-400 text-sm">schedule</span>
-                    <span className="text-[10px] text-blue-300">
-                      Coverage auto-set to <strong>{durationDays} day{Number(durationDays) > 1 ? 's' : ''}</strong> (through end of arrival day)
-                    </span>
-                  </div>
-
-                  {flightData.isDelayedOver2Hours && (
-                    <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-                      <span className="material-symbols-outlined text-emerald-400 text-sm">verified</span>
-                      <span className="text-[10px] text-emerald-300 font-bold">This flight qualifies for immediate payout — delay exceeds 120 minutes.</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </>
-          ) : (
-            /* ═══ NON-FLIGHT: Generic Target Input ═══ */
-            <>
-              <div className="flex flex-col gap-2">
-                <label className="text-institutional flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-sm" style={{ color: `rgb(${market.rgb})` }}>
-                    {inputConfig.icon}
-                  </span>
-                  {inputConfig.label}
-                </label>
-                <div className="bg-surface-container-lowest p-4 rounded-lg border border-transparent focus-within:border-primary/30 transition-all">
-                  <input
-                    type="text"
-                    value={apiTarget}
-                    onChange={(e) => setApiTarget(e.target.value.toUpperCase())}
-                    placeholder={inputConfig.placeholder}
-                    className="bg-transparent border-none p-0 w-full mono-data text-lg focus:ring-0 text-on-surface placeholder:text-zinc-700"
-                  />
-                </div>
-                {apiTarget && (
-                  <div className="flex items-center gap-2 px-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-[10px] text-emerald-400">
-                      Oracle monitoring will activate on purchase
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Market-specific extra fields */}
-              {(market.category === "agri" || market.category === "catastrophe") && (
-                <div className="grid grid-cols-2 gap-3">
-                  {market.category === "agri" ? (
-                    <>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-institutional">Strike Index (mm)</label>
-                        <input type="number" value={strikeValue} onChange={e => setStrikeValue(e.target.value)} placeholder="e.g. 200" className="bg-surface-container-lowest p-3 rounded-lg mono-data text-sm border-none focus:ring-0 text-on-surface placeholder:text-zinc-700" />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-institutional">Exit Index (mm)</label>
-                        <input type="number" value={exitValue} onChange={e => setExitValue(e.target.value)} placeholder="e.g. 80" className="bg-surface-container-lowest p-3 rounded-lg mono-data text-sm border-none focus:ring-0 text-on-surface placeholder:text-zinc-700" />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-institutional">Latitude</label>
-                        <input type="text" value={latitude} onChange={e => setLatitude(e.target.value)} placeholder="e.g. 34.0522" className="bg-surface-container-lowest p-3 rounded-lg mono-data text-sm border-none focus:ring-0 text-on-surface placeholder:text-zinc-700" />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-institutional">Longitude</label>
-                        <input type="text" value={longitude} onChange={e => setLongitude(e.target.value)} placeholder="e.g. -118.2437" className="bg-surface-container-lowest p-3 rounded-lg mono-data text-sm border-none focus:ring-0 text-on-surface placeholder:text-zinc-700" />
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-
-              {market.category === "energy" && (
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-institutional">Tick Value (USD per Degree Day)</label>
-                  <input type="number" value={tickValue} onChange={e => setTickValue(e.target.value)} placeholder="10" className="bg-surface-container-lowest p-3 rounded-lg mono-data text-sm border-none focus:ring-0 text-on-surface placeholder:text-zinc-700" />
-                </div>
-              )}
-
-              {/* Duration Selector (non-flight only) */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-institutional">Coverage Duration</label>
-                <div className="flex gap-2">
-                  {["1", "7", "14", "30"].map((d) => (
-                    <button
-                      key={d}
-                      onClick={() => setDurationDays(d)}
-                      className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${durationDays === d
-                          ? "bg-primary-container text-white"
-                          : "bg-surface-container-lowest text-zinc-400 hover:text-on-surface"
-                        }`}
-                    >
-                      {d}d
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* -- Expected Payout Input -- */}
-          <div className="flex flex-col gap-2">
-            <label className="text-institutional flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-sm text-emerald-400">payments</span>
-              Expected Payout
-            </label>
-            <div className="bg-surface-container-lowest p-4 rounded-lg flex items-center gap-2 border border-transparent focus-within:border-emerald-500/30 transition-all">
-              <span className="text-zinc-500 text-sm">$</span>
-              <input
-                type="number"
-                value={customPayout}
-                onChange={(e) => setCustomPayout(e.target.value)}
-                placeholder="Enter payout amount"
-                min="1"
-                className="bg-transparent border-none p-0 w-full mono-data text-lg focus:ring-0 text-on-surface placeholder:text-zinc-700"
-              />
-              <span className="text-zinc-500 text-xs shrink-0">USDT</span>
-            </div>
-            {effectivePayout > 0 && effectivePayout > availableCapacity && availableCapacity > 0 && (
-              <div className="flex items-center gap-2 px-2 py-1.5 bg-red-500/10 rounded-lg border border-red-500/20">
-                <span className="material-symbols-outlined text-red-400 text-sm">warning</span>
-                <span className="text-[10px] text-red-400">
-                  Exceeds available pool capacity (${availableCapacity.toLocaleString()})
-                </span>
-              </div>
-            )}
-          </div>
-
-          </div>
-        </div>
-
-        {/* ═════════ RIGHT COLUMN — Purchase Terminal ═════════ */}
-        <div className="w-full lg:w-[42%]">
-          <div className="sticky top-28 space-y-6">
-
-            {/* -- Purchase Widget -- */}
-            <div className="bg-surface-container-high rounded-2xl p-8 flex flex-col gap-6 specular-border">
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-headline font-bold text-on-surface">
-                  Coverage Summary
-                </h3>
-                <div className="flex flex-col items-end">
-                  <span className="text-institutional">Wallet Balance</span>
-                  <span className="mono-data text-xs text-on-surface-variant">
-                    {formattedBalance} USDT
-                  </span>
-                </div>
-              </div>
-
-              {/* --- Underwriting Quote Breakdown --- */}
-              <div className="bg-surface-container-lowest rounded-xl p-5 space-y-4 border border-white/5">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-sm">analytics</span>
-                    Underwriting Quote
-                  </h4>
-                  <button
-                    onClick={() => setShowAdvanced(!showAdvanced)}
-                    className="text-[10px] text-primary hover:underline"
-                  >
-                    {showAdvanced ? "Hide details" : "Show calculation"}
-                  </button>
-                </div>
-
-                {/* Main line items */}
-                <div className="flex flex-col gap-3">
-                  <div className="flex justify-between items-center">
-                    <Tooltip text={`Base premium = Expected Loss × Protocol Margin (${PROTOCOL_MARGIN_BPS} BPS / 5%). Expected Loss = ${historicalRiskRate.toFixed(4)} × $${effectivePayout} = $${expectedLoss.toFixed(2)}`}>
-                      <span className="text-sm opacity-70 flex items-center gap-1">
-                        Calculated Premium
-                        <span className="material-symbols-outlined text-[14px] text-zinc-600">info</span>
-                      </span>
-                    </Tooltip>
-                    <span className="mono-data text-on-surface">${calculatedPremium.toFixed(2)}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <Tooltip text={`Origination fee of ${ORIGINATION_FEE_BPS} BPS (3%) on the calculated premium. Sent to Protocol Treasury for operational sustainability.`}>
-                      <span className="text-sm opacity-70 flex items-center gap-1">
-                        Origination Fee (3%)
-                        <span className="material-symbols-outlined text-[14px] text-zinc-600">info</span>
-                      </span>
-                    </Tooltip>
-                    <span className="mono-data text-zinc-400">${originationFee.toFixed(2)}</span>
-                  </div>
-
-                  {surgeMultiplier > 1.0 && (
-                    <div className="flex justify-between items-center">
-                      <Tooltip text={`Dynamic Risk Engine has applied a ${surgeMultiplier.toFixed(2)}x surge multiplier based on elevated environmental conditions. ${market.marketData.surgeReason || "Real-time risk data indicates heightened probability."}`}>
-                        <span className="text-sm text-amber-400 flex items-center gap-1">
-                          Surge Multiplier
-                          <span className="material-symbols-outlined text-[14px] text-amber-500">warning</span>
-                        </span>
-                      </Tooltip>
-                      <span className="mono-data text-amber-400">{surgeMultiplier.toFixed(2)}x</span>
-                    </div>
-                  )}
-
-                  <div className="border-t border-white/10 pt-3 flex justify-between items-center">
-                    <Tooltip text="Total cost = Calculated Premium + Origination Fee. This is the amount deducted from your wallet.">
-                      <span className="text-sm font-bold flex items-center gap-1">
-                        Total Cost
-                        <span className="material-symbols-outlined text-[14px] text-zinc-600">info</span>
-                      </span>
-                    </Tooltip>
-                    <span className="mono-data text-on-surface font-bold text-lg">
-                      ${totalCost.toFixed(2)} USDT
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <Tooltip text={`If the oracle confirms the parametric trigger, you receive the full $${effectivePayout} USDT. This represents a ${payoutRatio.toFixed(1)}x return on the premium paid.`}>
-                      <span className="text-sm opacity-70 flex items-center gap-1">
-                        Max Payout
-                        <span className="material-symbols-outlined text-[14px] text-zinc-600">info</span>
-                      </span>
-                    </Tooltip>
-                    <span className="mono-data font-bold" style={{ color: `rgb(${market.rgb})` }}>
-                      ${effectivePayout.toFixed(2)} USDT
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <Tooltip text="Ratio of max payout to total premium cost. Higher ratio = more capital-efficient protection.">
-                      <span className="text-sm opacity-70 flex items-center gap-1">
-                        Payout Ratio
-                        <span className="material-symbols-outlined text-[14px] text-zinc-600">info</span>
-                      </span>
-                    </Tooltip>
-                    <span className="mono-data text-emerald-400 font-bold">{payoutRatio.toFixed(1)}x</span>
-                  </div>
-                </div>
-
-                {/* Advanced calculation breakdown */}
-                {showAdvanced && (
-                  <div className="mt-4 pt-4 border-t border-white/5 space-y-3 animate-fade-in">
-                    <h5 className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Calculation Mechanics</h5>
-                    <div className="bg-surface-container-highest p-4 rounded-lg mono-data text-[10px] space-y-2 text-zinc-400">
-                      <p className="text-zinc-500">// Step 1: Historical Risk Rate</p>
-                      <p>riskRate = basePremium / 100 = {historicalRiskRate.toFixed(4)}</p>
-                      <p className="text-zinc-500 mt-2">// Step 2: Expected Loss</p>
-                      <p>expectedLoss = riskRate × requestedPayout</p>
-                      <p>expectedLoss = {historicalRiskRate.toFixed(4)} × ${effectivePayout} = <span className="text-primary">${expectedLoss.toFixed(4)}</span></p>
-                      <p className="text-zinc-500 mt-2">// Step 3: Apply Protocol Margin ({PROTOCOL_MARGIN_BPS} BPS)</p>
-                      <p>marginMultiplier = 1 + ({PROTOCOL_MARGIN_BPS} / 10000) = {marginMultiplier}</p>
-                      <p>premium = expectedLoss × marginMultiplier × surgeMultiplier</p>
-                      <p>premium = ${expectedLoss.toFixed(4)} × {marginMultiplier} × {surgeMultiplier} = <span className="text-primary">${calculatedPremium.toFixed(4)}</span></p>
-                      <p className="text-zinc-500 mt-2">// Step 4: Origination Fee ({ORIGINATION_FEE_BPS} BPS)</p>
-                      <p>originationFee = premium × ({ORIGINATION_FEE_BPS} / 10000) = <span className="text-amber-400">${originationFee.toFixed(4)}</span></p>
-                      <p className="text-zinc-500 mt-2">// Step 5: Total Cost to Policyholder</p>
-                      <p>totalCost = premium + originationFee = <span className="text-emerald-400 font-bold">${totalCost.toFixed(4)}</span></p>
-                    </div>
-                    <div className="flex items-start gap-2 p-3 bg-blue-500/5 rounded-lg border border-blue-500/10">
-                      <span className="material-symbols-outlined text-blue-400 text-sm mt-0.5">info</span>
-                      <p className="text-[10px] text-blue-300 leading-relaxed">
-                        On-chain premium verification uses <strong>EIP-712 typed signatures</strong> from the authorized Quoter. The Relayer signs the premium quote off-chain, and the Product contract verifies the signature before accepting the purchase.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* -- Pool Health Indicator -- */}
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-institutional">Pool Utilization</span>
-                  <span className="mono-data text-xs" style={{ color: utilization > 80 ? "#ef4444" : utilization > 50 ? "#f59e0b" : "#22c55e" }}>
-                    {mounted ? `${utilization.toFixed(1)}%` : "—"}
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-surface-container-lowest rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{
-                      width: `${Math.min(utilization, 100)}%`,
-                      background: utilization > 80
-                        ? "linear-gradient(90deg, #ef4444, #dc2626)"
-                        : utilization > 50
-                        ? "linear-gradient(90deg, #f59e0b, #d97706)"
-                        : `linear-gradient(90deg, rgb(${market.rgb}), rgba(${market.rgb}, 0.6))`,
-                    }}
-                  />
-                </div>
-                {utilization > 80 && (
-                  <p className="text-[10px] text-amber-400 italic">⚠ High utilization — premium surge may apply.</p>
-                )}
-              </div>
-
-              {/* -- Action Button -- */}
-              {!isConnected ? (
-                <p className="text-center text-zinc-500 text-sm py-2">
-                  Connect your wallet to purchase protection.
-                </p>
-              ) : needsApproval ? (
-                <button
-                  onClick={handleApprove}
-                  disabled={isApproving}
-                  className="w-full bg-surface-container-highest text-on-surface py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-surface-bright transition-all disabled:opacity-50"
-                >
-                  <span className="material-symbols-outlined text-sm">lock</span>
-                  {isApproving ? "Approving..." : "Approve USDT"}
-                </button>
-              ) : (
-                <button
-                  onClick={handlePurchase}
-                  disabled={isPurchasing}
-                  className="w-full py-4 rounded-xl font-bold text-lg text-white hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
-                  style={{
-                    background: `linear-gradient(135deg, rgb(${market.rgb}), rgba(${market.rgb}, 0.7))`,
-                    boxShadow: `0 4px 24px rgba(${market.rgb}, 0.3)`,
-                  }}
-                >
-                  {isPurchasing ? "Purchasing..." : `Coverage Summary — $${totalCost.toFixed(2)}`}
-                </button>
-              )}
-
-              <p className="text-[10px] text-center text-zinc-500 leading-relaxed uppercase tracking-wider">
-                Settlement on Arbitrum Sepolia · Chainlink DON · Standard gas fees apply
-              </p>
-            </div>
-
-            {/* -- Risk Calculator Card -- */}
-            <div className="bg-surface-container-low rounded-2xl p-6 specular-border space-y-4">
-              <h4 className="text-institutional flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-sm text-amber-400">calculate</span>
-                Risk Calculator
-              </h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] text-zinc-500">If you pay</span>
-                  <span className="mono-data text-lg font-bold">${totalCost.toFixed(2)}</span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] text-zinc-500">You receive up to</span>
-                  <span className="mono-data text-lg font-bold" style={{ color: `rgb(${market.rgb})` }}>
-                    ${effectivePayout.toFixed(2)}
-                  </span>
-                </div>
-              </div>
-              <div className="h-px bg-white/5" />
-
-              {/* Scenarios */}
-              <div className="space-y-2">
-                <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Scenario Analysis</p>
-                {market.category === "travel" ? (
-                  <div className="space-y-2 text-[11px]">
-                    <div className="flex justify-between bg-emerald-500/5 p-2.5 rounded-lg border border-emerald-500/10">
-                      <span className="text-emerald-400">✓ Flight delayed ≥ 120 min</span>
-                      <span className="mono-data text-emerald-400 font-bold">+${effectivePayout.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between bg-zinc-500/5 p-2.5 rounded-lg border border-zinc-500/10">
-                      <span className="text-zinc-400">✗ Flight on time</span>
-                      <span className="mono-data text-zinc-500">-${totalCost.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between bg-emerald-500/5 p-2.5 rounded-lg border border-emerald-500/10">
-                      <span className="text-emerald-400">✓ Flight cancelled</span>
-                      <span className="mono-data text-emerald-400 font-bold">+${effectivePayout.toFixed(2)}</span>
-                    </div>
-                  </div>
-                ) : market.category === "catastrophe" ? (
-                  <div className="space-y-2 text-[11px]">
-                    <div className="flex justify-between bg-red-500/5 p-2.5 rounded-lg border border-red-500/10">
-                      <span className="text-red-400">✓ Quake &lt;25km: 100%</span>
-                      <span className="mono-data text-red-400 font-bold">+${effectivePayout.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between bg-amber-500/5 p-2.5 rounded-lg border border-amber-500/10">
-                      <span className="text-amber-400">✓ Quake 25-50km: 30%</span>
-                      <span className="mono-data text-amber-400 font-bold">+${(effectivePayout * 0.3).toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between bg-zinc-500/5 p-2.5 rounded-lg border border-zinc-500/10">
-                      <span className="text-zinc-400">✗ No qualifying event</span>
-                      <span className="mono-data text-zinc-500">-${totalCost.toFixed(2)}</span>
-                    </div>
-                  </div>
-                ) : market.category === "agri" ? (
-                  <div className="space-y-2 text-[11px]">
-                    <div className="flex justify-between bg-emerald-500/5 p-2.5 rounded-lg border border-emerald-500/10">
-                      <span className="text-emerald-400">✓ Rainfall ≤ Exit → 100%</span>
-                      <span className="mono-data text-emerald-400 font-bold">+${effectivePayout.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between bg-amber-500/5 p-2.5 rounded-lg border border-amber-500/10">
-                      <span className="text-amber-400">✓ Partial shortfall → Linear</span>
-                      <span className="mono-data text-amber-400">+$??.??</span>
-                    </div>
-                    <div className="flex justify-between bg-zinc-500/5 p-2.5 rounded-lg border border-zinc-500/10">
-                      <span className="text-zinc-400">✗ Rainfall ≥ Strike</span>
-                      <span className="mono-data text-zinc-500">-${totalCost.toFixed(2)}</span>
-                    </div>
-                  </div>
                 ) : (
-                  <div className="space-y-2 text-[11px]">
-                    <div className="flex justify-between bg-emerald-500/5 p-2.5 rounded-lg border border-emerald-500/10">
-                      <span className="text-emerald-400">✓ Trigger confirmed</span>
-                      <span className="mono-data text-emerald-400 font-bold">+${effectivePayout.toFixed(2)}</span>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Left Column: Configuration */}
+                        <div className="space-y-6">
+                            <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+                                <h3 className="text-lg font-bold text-foreground">Configure Parameters</h3>
+                                {/* ... existing form content ... */}
+
+                                {product.id === 'flight' && (
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2 col-span-2">
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Flight Number</label>
+                                            <input type="text" placeholder="EK202" value={flightId} onChange={e => setFlightId(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Departure Date</label>
+                                            <div className="relative">
+                                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                                                <input type="date" value={dateRange.start} onChange={e => setDateRange({ ...dateRange, start: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Arrival Date</label>
+                                            <div className="relative">
+                                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                                                <input type="date" value={dateRange.end} onChange={e => setDateRange({ ...dateRange, end: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {product.id === 'cat' && (
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Latitude</label>
+                                            <div className="relative">
+                                                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                                                <input type="text" placeholder="34.0522" value={coordinates.lat} onChange={e => setCoordinates({ ...coordinates, lat: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Longitude</label>
+                                            <div className="relative">
+                                                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                                                <input type="text" placeholder="-118.2437" value={coordinates.lon} onChange={e => setCoordinates({ ...coordinates, lon: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2 col-span-2">
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Detection Radius (km)</label>
+                                            <input type="number" placeholder="50" value={radiusInput} onChange={e => setRadiusInput(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {(product.id === 'agri' || product.id === 'energy' || product.id === 'maritime') && (
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                                {product.id === 'agri' ? 'Target Zone' : product.id === 'maritime' ? 'Target Port Code' : 'Grid Section'}
+                                            </label>
+                                            <input type="text" placeholder={product.inputPlaceholder} value={zone} onChange={e => setZone(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                                    {product.id === 'agri' ? 'Strike Index (mm)' : product.id === 'energy' ? 'Strike (DD)' : 'Strike (Wind/Wave)'}
+                                                </label>
+                                                <input type="number" placeholder="100" value={strikeInput} onChange={e => setStrikeInput(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                                    {product.id === 'agri' ? 'Exit Index (mm)' : product.id === 'energy' ? 'Exit (DD)' : 'Exit (Wind/Wave)'}
+                                                </label>
+                                                <input type="number" placeholder="50" value={exitInput} onChange={e => setExitInput(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-foreground text-sm focus:border-primary outline-none" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex justify-between">Requested Max Payout (USDT)</label>
+                                    <input type="number" value={payoutInput} onChange={e => setPayoutInput(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xl font-bold text-foreground focus:border-primary outline-none" />
+                                </div>
+
+                                {/* Duration Selector — hidden for flights (auto-computed from schedule) */}
+                                {product.id === 'flight' ? (
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+                                            <Clock className="w-3 h-3" /> Policy Duration (Auto)
+                                        </label>
+                                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
+                                            {flightScheduledArrival ? (
+                                                <>
+                                                    <p className="text-sm font-bold text-emerald-400">
+                                                        Expires on arrival + 6h buffer
+                                                    </p>
+                                                    <p className="text-[10px] text-zinc-400 mt-1">
+                                                        Scheduled Arrival: {new Date(flightScheduledArrival).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })} · Auto-settled by Chainlink Keepers
+                                                    </p>
+                                                </>
+                                            ) : (
+                                                <p className="text-xs text-zinc-400">Enter a flight number to auto-compute duration</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+                                            <Clock className="w-3 h-3" /> Policy Duration
+                                        </label>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {DURATION_OPTIONS.map(opt => (
+                                                <button
+                                                    key={opt.value}
+                                                    onClick={() => setSelectedDuration(opt)}
+                                                    className={`py-2.5 rounded-lg text-sm font-bold transition-all ${selectedDuration.value === opt.value
+                                                        ? 'bg-primary text-white shadow-[0_0_12px_rgba(128,0,32,0.3)]'
+                                                        : 'bg-white/5 text-zinc-400 border border-white/10 hover:border-primary/50 hover:text-foreground'}`}
+                                                >
+                                                    {opt.short}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <p className="text-[10px] text-zinc-500 mt-1">
+                                            Expires: {expiryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} · Auto-settled by Chainlink Keepers
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Oracle Data Panel */}
+                            <div className="bg-card border border-border rounded-xl p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                                        <Satellite className="w-4 h-4 text-cyan-500" /> Live Oracle Feed
+                                    </h3>
+                                    <button onClick={fetchOracleData} className="text-xs text-zinc-500 hover:text-white transition-colors flex items-center gap-1">
+                                        <RefreshCcw className={`w-3 h-3 ${isLoadingOracle ? 'animate-spin' : ''}`} /> Refresh
+                                    </button>
+                                </div>
+                                {isLoadingOracle ? (
+                                    <div className="flex items-center justify-center py-6">
+                                        <RefreshCcw className="w-5 h-5 text-primary animate-spin" />
+                                    </div>
+                                ) : oracleData?.status === 'ok' ? (
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <Radio className="w-3 h-3 text-emerald-500 animate-pulse" />
+                                            <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider">Connected — {oracleData.source}</span>
+                                        </div>
+                                        {Object.entries(oracleData.data || {}).map(([key, value]: [string, any]) => {
+                                            if (typeof value === 'object') return null; // skip nested objects
+                                            return (
+                                                <div key={key} className="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0">
+                                                    <span className="text-[10px] text-zinc-500 uppercase tracking-wider">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                                    <span className="text-xs font-medium text-foreground">{String(value)}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : oracleData?.status === 'no_key' ? (
+                                    <div className="py-4 text-center">
+                                        <Shield className="w-6 h-6 text-amber-500 mx-auto mb-2 opacity-50" />
+                                        <p className="text-xs text-amber-500">{oracleData.message}</p>
+                                        <p className="text-[10px] text-zinc-600 mt-1">Add API key to .env.local to enable</p>
+                                    </div>
+                                ) : (
+                                    <div className="py-4 text-center">
+                                        <Activity className="w-6 h-6 text-zinc-600 mx-auto mb-2" />
+                                        <p className="text-xs text-zinc-500">Enter parameters to fetch oracle data</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Right Column: Quote & Purchase */}
+                        <div className="bg-card border border-border rounded-xl p-6 flex flex-col justify-between relative">
+                            <div>
+                                <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+                                    <h3 className="text-lg font-bold text-foreground">Underwriting Quote</h3>
+                                    <button onClick={() => setShowCalcInfo(!showCalcInfo)}><HelpCircle className={`w-5 h-5 cursor-pointer transition-colors ${showCalcInfo ? 'text-primary' : 'text-zinc-500 hover:text-white'}`} /></button>
+                                </div>
+
+                                {showCalcInfo && calc && (
+                                    <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-4 mb-6 space-y-3 text-xs">
+                                        <div>
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-primary block mb-1.5">Pricing Formula</span>
+                                            <code className="text-[11px] text-emerald-400 font-mono bg-black/40 px-2.5 py-1.5 rounded block leading-relaxed">{calc.formula}</code>
+                                        </div>
+                                        <div>
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 block mb-1.5">Variables</span>
+                                            <ul className="space-y-1.5">
+                                                {calc.variables.map((v: string, i: number) => (
+                                                    <li key={i} className="text-[10px] text-zinc-400 leading-relaxed flex gap-1.5">
+                                                        <span className="text-primary mt-0.5 shrink-0">•</span> {v}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/5 pt-2.5">
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-amber-500/80 block mb-1">Example</span>
+                                            <span className="text-[10px] text-zinc-300 leading-relaxed">{calc.example}</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Flight Not Found Banner */}
+                                {product.id === 'flight' && oracleData && !flightValid && (
+                                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-5 mb-6 text-center space-y-2">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <AlertTriangle className="w-5 h-5 text-amber-400" />
+                                            <span className="text-lg font-black text-amber-400">Flight Not Found</span>
+                                        </div>
+                                        <p className="text-sm text-zinc-400">
+                                            {oracleData.message || `No flights found for this identifier.`}
+                                        </p>
+                                        <p className="text-xs text-zinc-500 max-w-[280px] mx-auto">
+                                            Please verify the flight number and try again. Example: <strong>UA532</strong>, <strong>EK202</strong>
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Flight Status Gating Banner */}
+                                {product.id === 'flight' && flightValid && !flightInsurable && (
+                                    <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5 mb-6 text-center space-y-2">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <Plane className="w-5 h-5 text-red-400" />
+                                            <span className="text-lg font-black text-red-400">Flight Not Insurable</span>
+                                        </div>
+                                        <p className="text-sm text-zinc-400">
+                                            Status: <span className="font-bold text-red-300">{flightStatusLabel}</span>
+                                        </p>
+                                        <p className="text-xs text-zinc-500 max-w-[280px] mx-auto">
+                                            Insurance can only be purchased for flights with a <strong>Scheduled</strong> status. This flight has already departed, arrived, or been cancelled.
+                                        </p>
+                                    </div>
+                                )}
+
+                                {isQuoting ? (
+                                    <div className="h-48 flex flex-col items-center justify-center space-y-4">
+                                        <RefreshCcw className="w-8 h-8 text-primary animate-spin" />
+                                        <p className="text-xs text-zinc-500 uppercase tracking-widest font-black">Sourcing Premium...</p>
+                                    </div>
+                                ) : (product.id === 'flight' && !flightInsurable) ? null : premiumQuote ? (
+                                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                        <div className="text-center">
+                                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Required Premium (USDT)</p>
+                                            <span className="text-6xl font-black text-foreground">${(Number(premiumQuote) / 1e6).toFixed(2)}</span>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                                                <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Max Coverage</p>
+                                                <p className="text-sm font-bold text-emerald-400">${Number(payoutInput).toLocaleString()}</p>
+                                            </div>
+                                            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                                                <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Duration</p>
+                                                <p className="text-sm font-bold text-foreground">
+                                                    {product.id === 'flight' && flightScheduledArrival
+                                                        ? `Until ${new Date(flightScheduledArrival).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} + 6h`
+                                                        : selectedDuration.label}
+                                                </p>
+                                            </div>
+                                            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                                                <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Oracle Route</p>
+                                                <p className="text-sm font-bold text-foreground">Chainlink DON</p>
+                                            </div>
+                                            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                                                <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Auto-Settlement</p>
+                                                <p className="text-sm font-bold text-cyan-400">Keepers ✓</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="h-48 flex flex-col items-center justify-center text-zinc-500 space-y-4">
+                                        <Activity className="w-12 h-12 opacity-20" />
+                                        <p className="text-sm max-w-[200px] text-center">Configure parameters to generate a live hazard quote</p>
+                                    </div>
+                                )}
+
+                                {/* Premium Diagnostics Panel */}
+                                {premiumQuote && (
+                                    <div className="mt-6 pt-6 border-t border-white/5 space-y-3">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 flex items-center gap-2">
+                                            <Shield className="w-3 h-3" /> Safety & Liquidity Check
+                                        </h4>
+                                        <div className="grid grid-cols-1 gap-2">
+                                            <div className="flex justify-between items-center bg-black/20 rounded-lg px-3 py-2 border border-white/5">
+                                                <span className="text-[10px] text-zinc-500 uppercase">Product Authorization</span>
+                                                {isProductAuthorized === true ? (
+                                                    <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                                                        <CheckCircle2 className="w-3 h-3" /> VERIFIED
+                                                    </span>
+                                                ) : isProductAuthorized === false ? (
+                                                    <span className="text-[10px] font-bold text-rose-500 flex items-center gap-1 text-right">
+                                                        <AlertTriangle className="w-3 h-3" /> UNAUTHORIZED
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[10px] text-zinc-600">Pending...</span>
+                                                )}
+                                            </div>
+                                            <div className="flex justify-between items-center bg-black/20 rounded-lg px-3 py-2 border border-white/5">
+                                                <span className="text-[10px] text-zinc-500 uppercase">Pool Capacity</span>
+                                                {poolAssets !== undefined ? (
+                                                    <span className={`text-[10px] font-bold ${insufficientLiquidity ? 'text-rose-500' : 'text-sky-400'}`}>
+                                                        ${Number(formatUnits(remainingCapacity, 6)).toLocaleString()} available
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[10px] text-zinc-600">Checking...</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {isProductAuthorized === false && (
+                                            <p className="text-[9px] text-rose-400 bg-rose-500/10 p-2 rounded border border-rose-500/20 leading-relaxed">
+                                                <strong>CRITICAL:</strong> This insurance product is not yet authorized in its liquidity pool. Purchases are currently disabled to maintain protocol safety.
+                                            </p>
+                                        )}
+                                        {insufficientLiquidity && (
+                                            <p className="text-[9px] text-rose-400 bg-rose-500/10 p-2 rounded border border-rose-500/20 leading-relaxed">
+                                                <strong>LIQUIDITY ALERT:</strong> The requested payout exceeds the current pool capacity. Please reduce the payout or wait for pool top-up.
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+
+                            <div className="space-y-4">
+                                {/* World ID Verification Widget */}
+                                {!isHumanVerified ? (
+                                    <div className="space-y-3">
+                                        <IDKitWidget
+                                            app_id="app_staging_reflex"
+                                            action="purchase_policy"
+                                            onSuccess={handleWorldIDSuccess}
+                                            verification_level={VerificationLevel.Device}
+                                        >
+                                            {({ open }: { open: () => void }) => (
+                                                <button
+                                                    onClick={open}
+                                                    className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 transition-all font-bold text-sm text-white shadow-xl group"
+                                                >
+                                                    <div className="w-6 h-6 flex items-center justify-center bg-white rounded-full p-1 group-hover:scale-110 transition-transform">
+                                                        <Image src="/world-id.svg" alt="World ID" width={16} height={16} />
+                                                    </div>
+                                                    Verify Humanness with World ID
+                                                </button>
+                                            )}
+                                        </IDKitWidget>
+
+                                        {/* Testnet Bypass */}
+                                        <button
+                                            onClick={() => {
+                                                setIsHumanVerified(true);
+                                                toast.info("Testnet Bypass: Humanness verified manually");
+                                            }}
+                                            className="w-full text-[10px] text-zinc-600 hover:text-primary transition-colors uppercase tracking-[0.2em] font-black py-1"
+                                        >
+                                            [ Dev: Bypass Verification ]
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs uppercase tracking-widest">
+                                        <CheckCircle2 className="w-4 h-4" /> Humanness Verified
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={handlePurchase}
+                                    disabled={!premiumQuote || isConfirming || isTxPending || isApprovePending || isConfirmingApprove || (product.id === 'flight' && !flightInsurable) || isProductAuthorized === false || insufficientLiquidity}
+                                    className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-2
+                                ${(isConfirming || isTxPending || isConfirmingApprove || isApprovePending) ? 'bg-zinc-700 text-zinc-400' : (product.id === 'flight' && !flightInsurable) || isProductAuthorized === false || insufficientLiquidity ? 'bg-red-900/30 text-red-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_20px_rgba(16,185,129,0.3)]'}
+                                disabled:opacity-50 disabled:cursor-not-allowed`}
+                                >
+                                    {(isConfirming || isTxPending || isConfirmingApprove || isApprovePending) ? <><RefreshCcw className="w-4 h-4 animate-spin" /> {isApprovePending || isConfirmingApprove ? "Approving..." : "Confirming..."}</> :
+                                        (product.id === 'flight' && !flightInsurable) ? <>Flight Not Insurable</> :
+                                            needsApproval ? <><CheckCircle2 className="w-4 h-4" /> Approve USDT for Policy</> :
+                                                <><CheckCircle2 className="w-4 h-4" /> Finalize Policy (Wagmi Optimized)</>}
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex justify-between bg-zinc-500/5 p-2.5 rounded-lg border border-zinc-500/10">
-                      <span className="text-zinc-400">✗ No trigger event</span>
-                      <span className="mono-data text-zinc-500">-${totalCost.toFixed(2)}</span>
-                    </div>
-                  </div>
                 )}
-              </div>
-
-              {/* Net P/L */}
-              <div className="p-3 bg-surface-container-highest rounded-lg flex justify-between items-center">
-                <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Net Profit if Triggered</span>
-                <span className="mono-data text-emerald-400 font-bold">
-                  +${(effectivePayout - totalCost).toFixed(2)} USDT
-                </span>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
-      {/* --- End Layout Wrapper --- */}
-
-          {/* -- Resolution Rules -- */}
-          <div className="bg-surface-container-low rounded-xl p-8 specular-border mt-4 w-full">
-            <h2 className="text-institutional mb-6">Resolution Rules</h2>
-            <ul className="flex flex-col gap-4">
-              {rules.map((rule, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-sm mt-0.5" style={{ color: `rgb(${market.rgb})` }}>
-                    check_circle
-                  </span>
-                  <span className="text-sm opacity-90">{rule.trim()}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* -- Contract Reference -- */}
-          <div className="p-6 bg-surface-container-lowest rounded-xl specular-border space-y-4 w-full">
-            <h3 className="text-institutional">Smart Contract Addresses</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-[10px]">
-              <div className="flex flex-col gap-1">
-                <span className="text-zinc-500 uppercase tracking-widest font-bold">Product Contract</span>
-                <a href={`https://sepolia.arbiscan.io/address/${productAddr}`} target="_blank" rel="noopener noreferrer" className="mono-data text-primary truncate hover:underline">
-                  {productAddr}
-                </a>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-zinc-500 uppercase tracking-widest font-bold">Liquidity Pool</span>
-                <a href={`https://sepolia.arbiscan.io/address/${poolAddr}`} target="_blank" rel="noopener noreferrer" className="mono-data text-primary truncate hover:underline">
-                  {poolAddr}
-                </a>
-              </div>
-            </div>
-          </div>
-    </main>
-    </>
-  );
+    );
 }

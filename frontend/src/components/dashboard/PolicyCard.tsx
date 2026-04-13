@@ -136,7 +136,7 @@ export function PolicyCard({ policyId, policyData, onActionSuccess, txHash }: Po
                         <>
                             <div className="w-px h-3 bg-white/10" />
                             <a
-                                href={`https://sepolia.arbiscan.io/tx/${txHash}`}
+                                href={`https://testnet.snowscan.xyz/tx/${txHash}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-primary hover:underline font-bold uppercase tracking-widest text-[9px]"

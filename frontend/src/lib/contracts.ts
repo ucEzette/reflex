@@ -93,27 +93,27 @@ export const CATASTROPHE_ABI = GENERIC_PRODUCT_ABI;
 export const MARITIME_ABI = GENERIC_PRODUCT_ABI;
 
 export const CONTRACTS = {
-    VAULT_FACTORY: "0x29Fc20d0b2bF7db3325da8a7E1Fc422C91773eD8" as `0x${string}`, // ProductFactory on Arbitrum Sepolia
-    ESCROW: "0x69Cb9508033578358046d0E071a299b2faDA7AE0" as `0x${string}`, // Escrow Proxy on Arbitrum Sepolia
-    USDT: "0xeD2a67a8D4d6add0a278841A9E96B92858EBE736" as `0x${string}`, // Mock USDT on Arbitrum Sepolia
+    VAULT_FACTORY: "0xFaAb070d6f017955252e0a19CC532f227eDb2425" as `0x${string}`, // Placeholder for new deployment
+    ESCROW: "0xd8218d83e4fe4927aff7bcd0bed316a3c39be7b4" as `0x${string}`,
+    USDT: "0x4F6d9867564b31bD7Bd1ADA8376640201bf15e0B" as `0x${string}`,
 
-    // Simplified Protocol (No Aave) — Arbitrum Sepolia Deployment
+    // Phase 97: Redeployment with PROTOCOL_MARGIN=3000 (30%)
     // Institutional Sector Isolated Pools
-    LP_TRAVEL: "0x7FafA41d52eFa6Ad03cB51A877602F6CB0CC5431" as `0x${string}`,
-    LP_AGRI: "0xa5C91b1eCB72bCAbc09B4fefd13175eC16ef3e72" as `0x${string}`,
-    LP_ENERGY: "0x8f3f5a247E97F78DdDEae96A358aC5Cd175bd7b3" as `0x${string}`,
-    LP_CAT: "0x60C09F174A9007D9A1E457b95E67738acFdCf1ad" as `0x${string}`,
-    LP_MARITIME: "0x9Cfbc7AA845a5900CFe30F9C8e0cd5f2c36E6d31" as `0x${string}`,
+    LP_TRAVEL: "0xbcfeeaea01b9ddd2f8a1092676681c6b52dbe81c" as `0x${string}`,
+    LP_AGRI: "0xcb4c97087ed4c858281c39df44ae0997561ffe8c" as `0x${string}`,
+    LP_ENERGY: "0xe8b7b01b2b4ec0f400f37f2d894e3654f05852f6" as `0x${string}`,
+    LP_CAT: "0x9d803a3066c858d714c4f5ee286eaa6249d451ab" as `0x${string}`,
+    LP_MARITIME: "0x6586035d5e39e30bf37445451b43eeaeeaa1405a" as `0x${string}`,
 
-    // Product Contracts
-    LP_POOL: "0x7FafA41d52eFa6Ad03cB51A877602F6CB0CC5431" as `0x${string}`, // Legacy fallback → Travel pool
-    PRODUCT_FACTORY: "0x29Fc20d0b2bF7db3325da8a7E1Fc422C91773eD8" as `0x${string}`,
-    TRAVEL: "0x3158a074FE3E79B03d311572ED500A0cf978164f" as `0x${string}`,
-    AGRI: "0xc8906E54e8A43D44d817599EAd14B3De40C1d7af" as `0x${string}`,
-    ENERGY: "0xb4741AD6436023f275fD1725B0Df1042dDFd44Cc" as `0x${string}`,
-    CATASTROPHE: "0xEDA58669214Ab2342bfD42f41FC8E4674931D72F" as `0x${string}`,
-    MARITIME: "0x5C0eC4fe89708bf6D5521f7c9a1f8A72062ebee4" as `0x${string}`,
-    CROSS_CHAIN_RECEIVER: "0x0000000000000000000000000000000000000000" as `0x${string}` // Optional CCIP expansion
+    // Previous global addresses kept for backward compatibility if needed
+    LP_POOL: "0xbcfeeaea01b9ddd2f8a1092676681c6b52dbe81c" as `0x${string}`,
+    PRODUCT_FACTORY: "0x870268aafe40b15f6bf14d42c435e6d2c7b660fe" as `0x${string}`,
+    TRAVEL: "0x98ce0538928303b6e31a9c376a1d4a37374f1d93" as `0x${string}`,
+    AGRI: "0xfaab070d6f017955252e0a19cc532f227edb2425" as `0x${string}`,
+    ENERGY: "0x762285536f8f07fe75706bb429d230a0e7b22966" as `0x${string}`,
+    CATASTROPHE: "0x9b0378eeb2b22367183c09dc79966a32c79074c5" as `0x${string}`,
+    MARITIME: "0x255ff883066744bf2d2914da1ebc26ff4d4b58c8" as `0x${string}`,
+    CROSS_CHAIN_RECEIVER: "0xc7a297de87890728453daa240a8373d7d5cee90b" as `0x${string}`
 };
 
 export const POOLS = [
@@ -171,9 +171,9 @@ export const POOLS = [
 
 // Chainlink CCIP Selectors and Routers
 export const CCIP_CONFIG = {
-    DESTINATION_CHAIN_SELECTOR: "3478487238524512106", // Arbitrum Sepolia
+    DESTINATION_CHAIN_SELECTOR: "14767482510784806043", // Avalanche Fuji
     ROUTERS: {
-        "43113": "0xF694E193200268f9a4868e4Aa017A0118C9a8177", // Arbitrum Sepolia
+        "43113": "0xF694E193200268f9a4868e4Aa017A0118C9a8177", // Avalanche Fuji
         "11155111": "0x0BF3dE8c5D3d8A2B34D2BEeB17ABfCeBaf363A59", // Sepolia
         "421614": "0x2a13872f132646d705c879857d4715494d458568", // Arbitrum Sepolia
         "84532": "0xD3b0651d97492A7E0427678083822afecbbDC67B", // Base Sepolia

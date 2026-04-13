@@ -153,7 +153,7 @@ export const QuickPolicyWidget = ({ marketId = "flight", onToggle, embedded = fa
                                     )}
                                 </button>
                                 <p className="text-[9px] text-zinc-600 text-center font-medium">
-                                    Encrypted settlement vault secured by Arbitrum Sepolia. One-tap zk-payment active.
+                                    Encrypted settlement vault secured by Avalanche. One-tap zk-payment active.
                                 </p>
                             </div>
                         </motion.div>

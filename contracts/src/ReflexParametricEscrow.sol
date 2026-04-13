@@ -16,7 +16,7 @@ import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/l
  * @title ReflexParametricEscrow
  * @notice Parametric micro-insurance escrow contract for flight delay insurance.
  *         Policies are purchased with USDC, and payouts are triggered automatically
- *         when a zkTLS proof of flight delay is submitted via Arbitrum native messaging.
+ *         when a zkTLS proof of flight delay is submitted via Avalanche Teleporter.
  * @dev Implements UUPS upgradeability pattern. Uses OZ v5 storage layouts.
  */
 contract ReflexParametricEscrow is

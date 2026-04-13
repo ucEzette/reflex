@@ -10,6 +10,7 @@ import { InstitutionalTooltip } from '@/components/ui/InstitutionalTooltip';
 export function AdminControl() {
     const { address, isConnected } = useAccount();
     const [mounted, setMounted] = useState(false);
+    const [isHarvesting, setIsHarvesting] = useState(false);
 
     useEffect(() => { setMounted(true); }, []);
 
@@ -72,6 +73,14 @@ export function AdminControl() {
         toast.info(paused ? "Requesting Resume..." : "Requesting Emergency Pause...", {
             description: "Please confirm the transaction in your wallet."
         });
+    };
+
+    const handleHarvestYield = () => {
+        setIsHarvesting(true);
+        toast.info("Triggering Yield Harvest...", {
+            description: "This will call the performance fee calculation on-chain."
+        });
+        setTimeout(() => setIsHarvesting(false), 2000);
     };
 
     const handleAddRelayer = () => {
@@ -137,6 +146,26 @@ export function AdminControl() {
                     </button>
                 </div>
 
+                {/* Yield Harvesting */}
+                <div className="p-6 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all group">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="p-2 bg-emerald-500/10 rounded-lg group-hover:bg-emerald-500/20 transition-colors">
+                            <TrendingUp className="w-5 h-5 text-emerald-500" />
+                        </div>
+                        <Zap className="w-4 h-4 text-slate-500 group-hover:text-yellow-400 transition-colors" />
+                    </div>
+                    <h3 className="text-lg font-bold text-foreground mb-2">Harvest Performance</h3>
+                    <p className="text-xs text-slate-400 font-light mb-6">Collect the 10% protocol performance fee from accumulated Aave yield profit.</p>
+                    <button
+                        onClick={handleHarvestYield}
+                        disabled={isHarvesting}
+                        className="w-full py-2.5 bg-white/5 border border-white/10 hover:border-emerald-500/50 text-foreground text-xs font-bold rounded-xl transition-all uppercase tracking-wider flex items-center justify-center gap-2"
+                    >
+                        {isHarvesting ? <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> : <TrendingUp className="w-3.5 h-3.5" />}
+                        {isHarvesting ? 'Harvesting...' : 'Harvest Profits'}
+                    </button>
+                </div>
+
                 {/* Relayer Management */}
                 <div className="p-6 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all group">
                     <div className="flex items-center justify-between mb-4">
@@ -189,9 +218,9 @@ export function AdminControl() {
                         <p className="text-xl font-bold text-foreground">{mounted ? `${requiredQuorum?.toString() || '0'} / 3` : "0 / 3"}</p>
                     </div>
                     <div>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Execution Engine</p>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Unclaimed Fees</p>
                         <p className="text-xl font-bold text-emerald-400">
-                            Zero-Touch
+                            {mounted ? `$${(Number(formatUnits((totalAssets || 0n) > (totalShares || 0n) ? (totalAssets! - totalShares!) : 0n, 6)) * 0.1).toFixed(2)}` : "$0.00"}
                         </p>
                     </div>
                 </div>

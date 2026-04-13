@@ -29,6 +29,7 @@ export interface PoolMetrics {
     productTitle: string;
     tvl: number;
     apy: number;
+    baseAaveApy: number;
     riskPremiumApy: number;
     utilization: number;
     maxPayouts: number;

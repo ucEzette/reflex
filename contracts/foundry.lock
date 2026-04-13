@@ -11,22 +11,10 @@
       "rev": "5cb41fbc9b525338b6098da5ea7dd0b7e92f89e4"
     }
   },
-  "lib/forge-std": {
-    "rev": "f5495c9b993bfc6e79dd52adfdcb7dac0a1da918"
-  },
-  "lib/openzeppelin-contracts": {
-    "rev": "45f032d1bcf1a88b7bc90154d7eef76c87bf9d45"
-  },
   "lib/openzeppelin-contracts-upgradeable": {
     "tag": {
       "name": "v5.5.0",
       "rev": "aa677e9d28ed78fc427ec47ba2baef2030c58e7c"
-    }
-  },
-  "lib/v4-core": {
-    "tag": {
-      "name": "v4.0.0",
-      "rev": "e50237c43811bd9b526eff40f26772152a42daba"
     }
   }
 }

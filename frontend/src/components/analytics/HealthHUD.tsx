@@ -58,7 +58,7 @@ export const HealthHUD = () => {
             value: `${status.latency}ms`, 
             status: status.latency > 170 ? "warning" : "healthy", 
             icon: Activity,
-            detail: "Arbitrum Sepolia RPC"
+            detail: "Avalanche Fuji RPC"
         }
     ];
 

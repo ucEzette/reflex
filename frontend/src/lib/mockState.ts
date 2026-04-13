@@ -14,7 +14,7 @@ export const generateMarketProducts = (): MarketProduct[] => [
         tooltipSummary: {
             oracle: "FlightAware AeroAPI via Chainlink DON",
             riskModel: "Binary trigger — delay ≥ 120 min = full payout",
-            settlement: "USDT on Arbitrum Sepolia",
+            settlement: "USDT on Avalanche C-Chain",
             premiumRange: "$15 – $120 USDT per flight (2.5× loading)",
             trigger: "Arrival delay exceeds 120 minutes or cancellation"
         },
@@ -41,7 +41,7 @@ export const generateMarketProducts = (): MarketProduct[] => [
         tooltipSummary: {
             oracle: "NOAA / OpenWeather via Chainlink Any-API",
             riskModel: "Cumulative index — linear payout between Strike and Exit",
-            settlement: "USDT on Arbitrum Sepolia",
+            settlement: "USDT on Avalanche C-Chain",
             premiumRange: "$50 – $500 USDT per season",
             trigger: "Accumulated rainfall below Strike (drought) or above Exit (flood)"
         },
@@ -67,7 +67,7 @@ export const generateMarketProducts = (): MarketProduct[] => [
         tooltipSummary: {
             oracle: "ECMWF / NOAA Climate Data via Chainlink DON",
             riskModel: "Degree Days deviation — tick-based linear scaling",
-            settlement: "USDT on Arbitrum Sepolia",
+            settlement: "USDT on Avalanche C-Chain",
             premiumRange: "$100 – $1,000 USDT per month",
             trigger: "Cooling/Heating Degree Days exceed the seasonal baseline by ≥ 15%"
         },
@@ -93,7 +93,7 @@ export const generateMarketProducts = (): MarketProduct[] => [
         tooltipSummary: {
             oracle: "NASA FIRMS / Copernicus Satellite via Chainlink External Adapter",
             riskModel: "Proximity tiered — 100%/50%/0% based on distance from epicenter",
-            settlement: "USDT on Arbitrum Sepolia",
+            settlement: "USDT on Avalanche C-Chain",
             premiumRange: "$200 – $5,000 USDT per policy",
             trigger: "Confirmed wildfire/earthquake epicenter within registered radius"
         },
@@ -120,7 +120,7 @@ export const generateMarketProducts = (): MarketProduct[] => [
         tooltipSummary: {
             oracle: "MarineTraffic AIS / NOAA Buoy Data via Chainlink Any-API",
             riskModel: "Threshold breach — binary trigger on windspeed or wave height",
-            settlement: "USDT on Arbitrum Sepolia",
+            settlement: "USDT on Avalanche C-Chain",
             premiumRange: "$100 – $2,000 USDT per voyage",
             trigger: "Sustained winds > 50kn or wave height > 4m for ≥ 6 consecutive hours"
         },

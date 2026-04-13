@@ -2,8 +2,8 @@ import { Metadata } from "next";
 
 export const siteConfig = {
     name: "Reflex",
-    titleSuffix: " | Parametric Protection Market on Arbitrum Sepolia",
-    description: "Reflex is a decentralized protection market built on Arbitrum Sepolia. Instantly insure against flight delays, crop failures, and climate risks with 24/7 oracle monitoring.",
+    titleSuffix: " | Parametric Protection Market on Avalanche",
+    description: "Reflex is a decentralized protection market built on Avalanche. Instantly insure against flight delays, crop failures, and climate risks with 24/7 oracle monitoring.",
     url: "https://reflex.finance",
     ogImage: "/og-image.png",
     twitterCard: "/twitter-card.png",
@@ -11,7 +11,7 @@ export const siteConfig = {
         "Reflex",
         "Protection Market",
         "Parametric Insurance",
-        "Arbitrum Sepolia",
+        "Avalanche",
         "Blockchain Insurance",
         "Flight Delay Insurance",
         "DeFi",

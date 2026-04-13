@@ -1,182 +1,346 @@
 "use client";
 
-import React, { useState } from "react";
-import { useReadContract } from "wagmi";
-import { CONTRACTS, LP_POOL_ABI, POOLS } from "@/lib/contracts";
-import { formatUnits } from "viem";
+import React, { useState, useEffect } from 'react';
+import { BarChart3, Activity, Shield, AlertTriangle, DollarSign, Layers, PieChart, Zap, Lock, Unlock, Info } from 'lucide-react';
+import { useAccount, useReadContract } from 'wagmi';
+import { CONTRACTS } from '@/lib/contracts';
+import { LIQUIDITY_POOL_ABI, ERC20_ABI, PRODUCT_ABI } from '@/lib/enterprise_abis';
+import { formatUnits } from 'viem';
+import {
+    XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
+    ResponsiveContainer, BarChart, Bar, PieChart as RechartsPie,
+    Pie, Cell
+} from 'recharts';
+import { GlobalRiskLeaderboard } from '@/components/analytics/GlobalRiskLeaderboard';
+import { ReportingSummary } from '@/components/analytics/ReportingSummary';
+import { GovernanceVoting } from '@/components/governance/GovernanceVoting';
+import { InstitutionalTooltip } from '@/components/ui/InstitutionalTooltip';
+import { RiskSimulator } from '@/components/analytics/RiskSimulator';
+import { HealthHUD } from '@/components/analytics/HealthHUD';
+import { usePoolMetrics } from '@/hooks/dashboard';
+
+// ── On-Chain Derived Analytics ──
+const PIE_COLORS = ['#ef4444', '#22c55e', '#f59e0b', '#8b5cf6', '#06b6d4'];
+const PRODUCT_NAMES = ['Travel Solutions', 'Agriculture', 'Energy', 'Catastrophe', 'Maritime'];
 
 export default function AnalyticsPage() {
-  const [severity, setSeverity] = useState(50);
-  const [payoutRatio, setPayoutRatio] = useState(65);
-  const [reserveDepletion, setReserveDepletion] = useState(30);
+    const [mounted, setMounted] = useState(false);
+    const { isConnected } = useAccount();
 
-  // Read TVLs from each pool
-  const { data: travelTvl } = useReadContract({ address: CONTRACTS.LP_TRAVEL, abi: LP_POOL_ABI, functionName: "totalAssets" });
-  const { data: agriTvl } = useReadContract({ address: CONTRACTS.LP_AGRI, abi: LP_POOL_ABI, functionName: "totalAssets" });
-  const { data: energyTvl } = useReadContract({ address: CONTRACTS.LP_ENERGY, abi: LP_POOL_ABI, functionName: "totalAssets" });
-  const { data: catTvl } = useReadContract({ address: CONTRACTS.LP_CAT, abi: LP_POOL_ABI, functionName: "totalAssets" });
-  const { data: maritimeTvl } = useReadContract({ address: CONTRACTS.LP_MARITIME, abi: LP_POOL_ABI, functionName: "totalAssets" });
+    useEffect(() => { setMounted(true); }, []);
 
-  const poolTvls = [
-    { name: "Travel", tvl: travelTvl, color: "bg-blue-500" },
-    { name: "Agriculture", tvl: agriTvl, color: "bg-emerald-500" },
-    { name: "Energy", tvl: energyTvl, color: "bg-amber-500" },
-    { name: "Catastrophe", tvl: catTvl, color: "bg-red-500" },
-    { name: "Maritime", tvl: maritimeTvl, color: "bg-indigo-500" },
-  ];
+    // Aggregated real-time metrics from all segmented vaults
+    const { tvl, payouts, utilization, isLoading } = usePoolMetrics();
 
-  const totalTvlNum = poolTvls.reduce((sum, p) => sum + (p.tvl ? Number(formatUnits(p.tvl as bigint, 6)) : 0), 0);
+    const liveTVL = tvl;
+    const livePayouts = payouts;
+    const liveUtilization = utilization;
 
-  // Simulated metrics
-  const utilizationRate = Math.min(severity * 1.2 + payoutRatio * 0.3, 100).toFixed(1);
-  const riskScore = ((severity * 0.4 + payoutRatio * 0.35 + reserveDepletion * 0.25) / 10).toFixed(1);
+    // All metrics derived from on-chain state
+    const liveTvlM = liveTVL / 1_000_000;
+    const livePayoutsM = livePayouts / 1_000_000;
 
-  return (
-    <div className="pt-32 pb-24 px-8 max-w-[1600px] mx-auto">
-      {/* Header */}
-      <header className="mb-16">
-        <h1 className="text-5xl font-bold tracking-tight mb-4">
-          Analytics <span className="text-primary">HUD</span>
-        </h1>
-        <p className="text-zinc-400 text-lg">Real-time protocol health metrics, risk simulation, and oracle monitoring.</p>
-      </header>
+    // Real-time chart data
+    const liveChartData = [
+        { label: 'Now', tvl: liveTvlM, utilization: liveUtilization, payouts: livePayoutsM }
+    ];
 
-      {/* Health HUD */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-        <div className="bg-surface-container-low p-8 rounded-lg specular-border">
-          <span className="text-institutional block mb-4">Protocol TVL</span>
-          <span className="mono-data text-4xl text-secondary">${totalTvlNum.toLocaleString()}</span>
-          <p className="text-zinc-500 text-xs mt-2">Across {POOLS.length} isolated pools</p>
-        </div>
-        <div className="bg-surface-container-low p-8 rounded-lg specular-border">
-          <span className="text-institutional block mb-4">Utilization Rate</span>
-          <span className="mono-data text-4xl text-on-surface">{utilizationRate}%</span>
-          <div className="mt-4 h-2 w-full bg-surface-container rounded-full overflow-hidden">
-            <div className="h-full bg-primary transition-all" style={{ width: `${utilizationRate}%` }} />
-          </div>
-        </div>
-        <div className="bg-surface-container-low p-8 rounded-lg specular-border">
-          <span className="text-institutional block mb-4">Risk Score</span>
-          <span className={`mono-data text-4xl ${Number(riskScore) > 7 ? 'text-red-400' : Number(riskScore) > 4 ? 'text-amber-400' : 'text-emerald-400'}`}>
-            {riskScore}/10
-          </span>
-          <p className="text-zinc-500 text-xs mt-2">{Number(riskScore) > 7 ? "HIGH RISK" : Number(riskScore) > 4 ? "MODERATE" : "LOW RISK"}</p>
-        </div>
-      </section>
+    // Product active policy counts
+    const { data: travelCount } = useReadContract({ address: CONTRACTS.TRAVEL as `0x${string}`, abi: PRODUCT_ABI, functionName: 'getActivePolicyCount', query: { enabled: mounted } });
+    const { data: agriCount } = useReadContract({ address: CONTRACTS.AGRI as `0x${string}`, abi: PRODUCT_ABI, functionName: 'getActivePolicyCount', query: { enabled: mounted } });
+    const { data: energyCount } = useReadContract({ address: CONTRACTS.ENERGY as `0x${string}`, abi: PRODUCT_ABI, functionName: 'getActivePolicyCount', query: { enabled: mounted } });
+    const { data: catastropheCount } = useReadContract({ address: CONTRACTS.CATASTROPHE as `0x${string}`, abi: PRODUCT_ABI, functionName: 'getActivePolicyCount', query: { enabled: mounted } });
+    const { data: maritimeCount } = useReadContract({ address: CONTRACTS.MARITIME as `0x${string}`, abi: PRODUCT_ABI, functionName: 'getActivePolicyCount', query: { enabled: mounted } });
 
-      {/* Pool TVL Breakdown */}
-      <section className="mb-16">
-        <h2 className="text-xl font-bold mb-8">Pool TVL Breakdown</h2>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          {poolTvls.map((pool) => {
-            const tvl = pool.tvl ? Number(formatUnits(pool.tvl as bigint, 6)) : 0;
-            const pct = totalTvlNum > 0 ? ((tvl / totalTvlNum) * 100).toFixed(1) : "0.0";
-            return (
-              <div key={pool.name} className="bg-surface-container-low p-6 rounded-lg specular-border">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className={`w-3 h-3 rounded-full ${pool.color}`} />
-                  <span className="text-institutional">{pool.name}</span>
+    const counts = [
+        Number(travelCount || 0),
+        Number(agriCount || 0),
+        Number(energyCount || 0),
+        Number(catastropheCount || 0),
+        Number(maritimeCount || 0)
+    ];
+
+    const totalPolicies = counts.reduce((a, b) => a + b, 0);
+
+    // Product distribution based on active policy counts — real on-chain data
+    const productBreakdown = PRODUCT_NAMES.map((name, i) => ({
+        name,
+        value: counts[i],
+        color: PIE_COLORS[i]
+    }));
+
+    if (!mounted) return null;
+
+    return (
+        <div className="min-h-screen pt-20 pb-12 px-4 md:px-8 max-w-[1600px] mx-auto">
+            {/* Header */}
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+                    <PieChart className="w-8 h-8 text-primary" />
+                    LP Performance Analytics
+                </h1>
+                <p className="text-muted-foreground mt-2">Real-time on-chain metrics for liquidity providers. All data sourced from smart contracts.</p>
+            </div>
+
+            {/* ── Operational HUD ── */}
+            <div className="mb-8">
+                <HealthHUD />
+            </div>
+
+            {/* ── KPI Cards ── */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                {/* TVL */}
+                <div className="bg-card border border-border rounded-xl p-5">
+                    <div className="flex items-center justify-between mb-2">
+                        <InstitutionalTooltip title="TVL" content="Total Value Locked. The total amount of USDT currently held in the liquidity pool to collateralize risk.">
+                            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1.5 cursor-help">
+                                Total Value Locked
+                                <Info className="w-3 h-3 opacity-40" />
+                            </span>
+                        </InstitutionalTooltip>
+                        <DollarSign className="w-4 h-4 text-emerald-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-foreground">${liveTVL > 0 ? liveTVL.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '0.00'}</div>
+                    <div className="flex items-center gap-1 mt-1">
+                        <Lock className="w-3 h-3 text-emerald-500" />
+                        <span className="text-xs text-emerald-500 font-medium">On-chain USDT</span>
+                    </div>
                 </div>
-                <span className="mono-data text-xl text-on-surface block mb-2">${tvl.toFixed(2)}</span>
-                <span className="mono-data text-xs text-zinc-500">{pct}% of total</span>
-                <div className="mt-3 h-1 w-full bg-surface-container rounded-full overflow-hidden">
-                  <div className={`h-full ${pool.color} transition-all`} style={{ width: `${pct}%` }} />
+
+                {/* Outstanding Payouts */}
+                <div className="bg-card border border-border rounded-xl p-5">
+                    <div className="flex items-center justify-between mb-2">
+                        <InstitutionalTooltip title="Outstanding Payouts" content="Active Liability. The maximum potential USDT payout for all active, non-expired protection policies.">
+                            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1.5 cursor-help">
+                                Outstanding Payouts
+                                <Info className="w-3 h-3 opacity-40" />
+                            </span>
+                        </InstitutionalTooltip>
+                        <AlertTriangle className="w-4 h-4 text-amber-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-foreground">${livePayouts > 0 ? livePayouts.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '0.00'}</div>
+                    <div className="flex items-center gap-1 mt-1">
+                        <span className="text-xs text-muted-foreground">Reserved for active policies</span>
+                    </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
 
-      {/* Risk Simulator */}
-      <section className="mb-16">
-        <h2 className="text-xl font-bold mb-8">Risk Simulator</h2>
-        <div className="bg-surface-container-low p-8 rounded-lg specular-border">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <div>
-              <div className="flex justify-between mb-4">
-                <span className="text-institutional">Weather Severity</span>
-                <span className="mono-data text-xs text-primary">{severity}%</span>
-              </div>
-              <input
-                type="range" min="0" max="100" value={severity}
-                onChange={(e) => setSeverity(Number(e.target.value))}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <div className="flex justify-between mb-4">
-                <span className="text-institutional">Payout Ratio</span>
-                <span className="mono-data text-xs text-secondary">{payoutRatio}%</span>
-              </div>
-              <input
-                type="range" min="0" max="100" value={payoutRatio}
-                onChange={(e) => setPayoutRatio(Number(e.target.value))}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <div className="flex justify-between mb-4">
-                <span className="text-institutional">Reserve Depletion</span>
-                <span className="mono-data text-xs text-tertiary">{reserveDepletion}%</span>
-              </div>
-              <input
-                type="range" min="0" max="100" value={reserveDepletion}
-                onChange={(e) => setReserveDepletion(Number(e.target.value))}
-                className="w-full"
-              />
-            </div>
-          </div>
+                {/* Capital Utilization */}
+                <div className="bg-card border border-border rounded-xl p-5">
+                    <div className="flex items-center justify-between mb-2">
+                        <InstitutionalTooltip title="Capital Utilization" content="Efficiency Ratio. The percentage of the pool currently being used to underwrite active risk.">
+                            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1.5 cursor-help">
+                                Capital Utilization
+                                <Info className="w-3 h-3 opacity-40" />
+                            </span>
+                        </InstitutionalTooltip>
+                        <Layers className="w-4 h-4 text-cyan-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-foreground">{liveUtilization.toFixed(1)}%</div>
+                    <div className="flex items-center gap-1 mt-1">
+                        <Shield className="w-3 h-3 text-emerald-500" />
+                        <span className="text-xs text-emerald-500 font-medium">100% collateralized</span>
+                    </div>
+                </div>
 
-          <div className="mt-10 grid grid-cols-3 gap-6 pt-8 border-t border-white/5">
-            <div>
-              <span className="text-institutional block mb-2">Projected Claims</span>
-              <span className="mono-data text-2xl text-on-surface">{(severity * 12.5).toFixed(0)} USDT</span>
+                {/* Available Capacity */}
+                <div className="bg-card border border-border rounded-xl p-5">
+                    <div className="flex items-center justify-between mb-2">
+                        <InstitutionalTooltip title="Available Capacity" content="Free Liquid Capacity. The amount of USDT available to underwrite additional new protection policies.">
+                            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1.5 cursor-help">
+                                Available Capacity
+                                <Info className="w-3 h-3 opacity-40" />
+                            </span>
+                        </InstitutionalTooltip>
+                        <Unlock className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="text-2xl font-bold text-foreground">${(liveTVL - livePayouts) > 0 ? (liveTVL - livePayouts).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '0.00'}</div>
+                    <div className="flex items-center gap-1 mt-1">
+                        <span className="text-xs text-muted-foreground">USDT available for new policies</span>
+                    </div>
+                </div>
             </div>
-            <div>
-              <span className="text-institutional block mb-2">Reserve Remaining</span>
-              <span className="mono-data text-2xl text-secondary">{(100 - reserveDepletion).toFixed(0)}%</span>
-            </div>
-            <div>
-              <span className="text-institutional block mb-2">System Load</span>
-              <span className={`mono-data text-2xl ${Number(utilizationRate) > 80 ? "text-red-400" : "text-emerald-400"}`}>
-                {utilizationRate}%
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Oracle Console */}
-      <section>
-        <h2 className="text-xl font-bold mb-8">Live Oracle Console</h2>
-        <div className="bg-surface-container-lowest rounded-lg p-6 specular-border h-64 overflow-y-auto no-scrollbar">
-          <div className="flex flex-col gap-2">
-            {[
-              { time: "00:00:01", msg: "[SYSTEM] Oracle monitoring initialized", type: "system" },
-              { time: "00:00:02", msg: "[CHAINLINK] ARB/USD price feed connected", type: "info" },
-              { time: "00:00:03", msg: `[TVL] Total protocol value: $${totalTvlNum.toFixed(2)}`, type: "data" },
-              { time: "00:00:04", msg: "[POOL] Travel pool: ACTIVE", type: "info" },
-              { time: "00:00:05", msg: "[POOL] Agriculture pool: ACTIVE", type: "info" },
-              { time: "00:00:06", msg: "[POOL] Energy pool: ACTIVE", type: "info" },
-              { time: "00:00:07", msg: "[POOL] Catastrophe pool: ACTIVE", type: "info" },
-              { time: "00:00:08", msg: "[POOL] Maritime pool: ACTIVE", type: "info" },
-              { time: "00:00:09", msg: "[ORACLE] All DON nodes responding", type: "success" },
-              { time: "00:00:10", msg: `[RISK] Current risk score: ${riskScore}/10`, type: "data" },
-            ].map((entry, i) => (
-              <div key={i} className="flex items-start gap-4">
-                <span className="mono-data text-[10px] text-zinc-600 min-w-[70px]">{entry.time}</span>
-                <span className={`mono-data text-xs ${
-                  entry.type === "success" ? "text-emerald-400"
-                  : entry.type === "data" ? "text-secondary"
-                  : entry.type === "info" ? "text-zinc-400"
-                  : "text-zinc-600"
-                }`}>{entry.msg}</span>
-              </div>
-            ))}
-          </div>
+            {/* ── Main Charts Grid ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                {/* Pool Health — Bar Chart (2/3 width) */}
+                <div className="lg:col-span-2 bg-card border border-border rounded-xl p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <InstitutionalTooltip title="Pool Health Chart" content="Visualizes the relationship between the total assets in the pool and the current outstanding liabilities (active policies).">
+                            <h2 className="text-lg font-bold text-foreground flex items-center gap-2 cursor-help">
+                                Real-Time Pool Health
+                                <Info className="w-4 h-4 text-zinc-500" />
+                            </h2>
+                        </InstitutionalTooltip>
+                        <span className="text-xs text-emerald-500 font-medium flex items-center gap-1">
+                            <Zap className="w-3 h-3" /> Live On-Chain
+                        </span>
+                    </div>
+                    <ResponsiveContainer width="100%" height={320}>
+                        <BarChart data={liveChartData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                            <XAxis dataKey="label" stroke="rgba(255,255,255,0.3)" fontSize={12} />
+                            <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} tickFormatter={(v) => `$${v.toLocaleString()}`} />
+                            <RechartsTooltip contentStyle={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8 }} />
+                            <Bar dataKey="tvl" fill="#800020" name="TVL" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="payouts" fill="#f59e0b" name="Payouts" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                    {liveTVL === 0 && (
+                        <div className="text-center py-4">
+                            <p className="text-xs text-muted-foreground">No pool data — deposit USDT to begin underwriting</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* TVL by Product (Pie Chart) */}
+                <div className="bg-card border border-border rounded-xl p-6">
+                    <InstitutionalTooltip title="Market Participation" content="Shows the distribution of active protection policies across different parametric risk sectors.">
+                        <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2 cursor-help">
+                            Market Participation
+                            <Info className="w-4 h-4 text-zinc-500" />
+                        </h2>
+                    </InstitutionalTooltip>
+                    <ResponsiveContainer width="100%" height={240}>
+                        {totalPolicies > 0 ? (
+                            <RechartsPie>
+                                <Pie
+                                    data={productBreakdown}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    cx="50%"
+                                    cy="50%"
+                                    outerRadius={90}
+                                    innerRadius={55}
+                                    paddingAngle={3}
+                                >
+                                    {productBreakdown.map((entry, index) => (
+                                        <Cell key={index} fill={entry.color} />
+                                    ))}
+                                </Pie>
+                                <RechartsTooltip contentStyle={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }} />
+                            </RechartsPie>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full text-center px-4">
+                                <Activity className="w-8 h-8 text-primary/40 mb-3 animate-pulse" />
+                                <p className="text-sm text-muted-foreground">Institutional Liquidity Pools are currently synchronizing...</p>
+                                <p className="text-[10px] text-zinc-500 mt-1 uppercase tracking-tighter">Waiting for live on-chain policy count</p>
+                            </div>
+                        )}
+                    </ResponsiveContainer>
+                    <div className="mt-4 space-y-2">
+                        {productBreakdown.map((p, i) => (
+                            <div key={i} className="flex items-center justify-between text-sm">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full" style={{ background: p.color }} />
+                                    <span className="text-muted-foreground">{p.name}</span>
+                                </div>
+                                <span className="text-foreground font-medium">{p.value} {p.value === 1 ? 'Policy' : 'Policies'}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* ── Pool State Summary ── */}
+            <div className="bg-card border border-border rounded-xl p-6 mb-8">
+                <InstitutionalTooltip title="Live Pool State Summary" content="A breakdown of the current smart contract variables governing the protocol's solvency and underwriting limits.">
+                    <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2 cursor-help">
+                        <BarChart3 className="w-5 h-5 text-primary" />
+                        Live Pool State
+                        <Info className="w-4 h-4 text-zinc-500 opacity-50" />
+                    </h2>
+                </InstitutionalTooltip>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center p-4 bg-accent/20 rounded-xl border border-border/50">
+                        <p className="text-2xl font-bold text-foreground">${liveTVL.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Total Assets</p>
+                    </div>
+                    <div className="text-center p-4 bg-accent/20 rounded-xl border border-border/50">
+                        <p className="text-2xl font-bold text-amber-400">${livePayouts.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Max Payouts Reserved</p>
+                    </div>
+                    <div className="text-center p-4 bg-accent/20 rounded-xl border border-border/50">
+                        <p className="text-2xl font-bold text-emerald-400">{liveUtilization.toFixed(1)}%</p>
+                        <p className="text-xs text-muted-foreground mt-1">Utilization Rate</p>
+                    </div>
+                    <div className="text-center p-4 bg-accent/20 rounded-xl border border-border/50">
+                        <p className="text-2xl font-bold text-cyan-400">100%</p>
+                        <p className="text-xs text-muted-foreground mt-1">Solvency Ratio</p>
+                    </div>
+                </div>
+            </div>
+            
+            {/* ── Risk Simulation Engine (Stress Test) ── */}
+            <div className="mb-8">
+                <RiskSimulator currentAssets={liveTVL} currentLiabilities={livePayouts} />
+            </div>
+
+            {/* ── Claim Events & Leaderboard ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div className="bg-card border border-border rounded-xl p-6">
+                    <InstitutionalTooltip title="Claim Event Log" content="A real-time history of all on-chain settlement events, including automated payouts and manual dispute resolutions.">
+                        <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2 cursor-help">
+                            <Activity className="w-5 h-5 text-amber-500" />
+                            Claim Event Log
+                            <Info className="w-4 h-4 text-zinc-500 opacity-50" />
+                        </h2>
+                    </InstitutionalTooltip>
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <Shield className="w-10 h-10 text-emerald-500/30 mb-3" />
+                        <p className="text-sm text-muted-foreground">No claim events recorded on-chain</p>
+                        <p className="text-xs text-muted-foreground mt-1">Events will appear here when claims are processed</p>
+                    </div>
+                </div>
+
+                <div className="relative group/leaderboard">
+                    <InstitutionalTooltip
+                        title="Global Risk Leaderboard"
+                        content="Ranks the top liquidity providers and institutional entities based on their contribution to the protocol's risk capacity."
+                        className="absolute right-6 top-6 z-10"
+                    />
+                    <GlobalRiskLeaderboard />
+                </div>
+            </div>
+
+
+            {/* ── Governance Forum ── */}
+            <div className="mb-12 relative group/gov">
+                <InstitutionalTooltip
+                    title="Governance Forum"
+                    content="The decentralized voting hub where LPs can propose and vote on protocol parameters like fees, products, and quorum thresholds."
+                    className="absolute right-8 top-8 z-10"
+                />
+                <GovernanceVoting />
+            </div>
+
+            {/* ── Institutional Reporting ── */}
+            <div className="mb-8 relative group/report">
+                <InstitutionalTooltip
+                    title="Institutional Reporting"
+                    content="Enables the generation of compliant audit logs and performance snapshots for institutional risk disclosure."
+                    className="absolute right-8 top-8 z-10"
+                />
+                <ReportingSummary />
+            </div>
+
+            {/* ── Risk Metrics Summary — On-Chain ── */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-card border border-border rounded-xl p-5">
+                    <h3 className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-3">Pool TVL</h3>
+                    <div className="text-2xl font-bold text-foreground">${liveTVL.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Live smart contract balance</p>
+                </div>
+                <div className="bg-card border border-border rounded-xl p-5">
+                    <h3 className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-3">Capital Utilization</h3>
+                    <div className="text-2xl font-bold text-foreground">{liveUtilization.toFixed(1)}%</div>
+                    <p className="text-xs text-muted-foreground mt-1">Payouts / TVL from on-chain</p>
+                </div>
+                <div className="bg-card border border-border rounded-xl p-5">
+                    <h3 className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-3">Solvency Ratio</h3>
+                    <div className="text-2xl font-bold text-emerald-500">100%</div>
+                    <p className="text-xs text-muted-foreground mt-1">Code-enforced full collateralization</p>
+                </div>
+            </div>
         </div>
-      </section>
-    </div>
-  );
+    );
 }

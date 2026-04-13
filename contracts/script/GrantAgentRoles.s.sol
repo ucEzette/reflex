@@ -8,10 +8,10 @@ import "../src/ReflexParametricEscrow.sol";
 /**
  * @title GrantAgentRoles
  * @notice Foundry script to grant the Autonomous Agent its necessary roles
- *         on the Arbitrum Sepolia testnet.
+ *         on the Avalanche Fuji testnet.
  */
 contract GrantAgentRoles is Script {
-    // Current Arbitrum Sepolia Deployment Addresses (March 2026) - Corrected Checksums
+    // Current Fuji Deployment Addresses (March 2026) - Corrected Checksums
     address public constant LIQUIDITY_POOL =
         0xbcFEeaEA01b9DDd2F8A1092676681c6B52DBE81C;
     address public constant ESCROW = 0x6b37b0FC861B0Fa22242eC92C25F2643876E4fbf;

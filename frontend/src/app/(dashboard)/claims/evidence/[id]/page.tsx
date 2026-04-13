@@ -198,7 +198,7 @@ export default function EvidenceSubmissionPage({ params }: { params: { id: strin
                         <div className="bg-amber-500/5 border border-amber-500/10 p-4 rounded-xl flex gap-3">
                             <Info className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                             <p className="text-xs text-amber-500/80 leading-relaxed font-medium">
-                                Submitting false evidence may result in a permanent ban from the Reflex protocol. Your evidence hash will be committed to the Arbitrum Sepolia network and verified by a decentralized relayer quorum.
+                                Submitting false evidence may result in a permanent ban from the Reflex protocol. Your evidence hash will be committed to the Avalanche network and verified by a decentralized relayer quorum.
                             </p>
                         </div>
 

@@ -1,243 +1,361 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useAccount, useConnect, useDisconnect, useBalance, useSwitchChain, useChainId } from "wagmi";
-import { arbitrumSepolia } from "viem/chains";
-import { CONTRACTS } from "@/lib/contracts";
-import { toast } from "sonner";
+import { useState, useEffect, useRef } from "react";
+import { useAccount, useDisconnect } from "wagmi";
+import { formatUnits } from "viem";
+import { CONTRACTS, ERC20_ABI } from "@/lib/contracts";
+import {
+    Search,
+    Menu,
+    X,
+    BarChart3,
+    Briefcase,
+    TrendingUp,
+    Activity as ActivityIcon,
+    FileText,
+    Settings,
+    Moon
+} from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
+import { WalletConnect } from "./WalletConnect";
+import { ALL_MARKETS } from "@/lib/market-data";
 
-const NAV_LINKS = [
-  { href: "/market", label: "Markets" },
-  { href: "/dashboard", label: "Portfolio" },
-  { href: "/invest", label: "Invest" },
-  { href: "/analytics", label: "Analytics" },
-  { href: "/docs", label: "Docs" },
-];
+// Helper for avatars
+const getWarriorAvatar = (address?: string) => {
+    if (!address) return "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback";
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${address}`;
+};
+
+interface MarketDetail {
+    id: string;
+    title: string;
+    description: string;
+    riskBase: string;
+    icon: string;
+    iconBg: string;
+    iconColor: string;
+    marketData: {
+        maxPayout: string;
+    };
+}
 
 export function Navbar() {
-  const pathname = usePathname();
-  const { address, isConnected } = useAccount();
-  const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
-  const { switchChain } = useSwitchChain();
-  const chainId = useChainId();
+    const { address, isConnected } = useAccount();
+    const authenticated = isConnected;
+    const { disconnect } = useDisconnect();
 
-  const { data: usdtBalance } = useBalance({
-    address: address,
-    token: CONTRACTS.USDT,
-  });
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
+    const [searchResults, setSearchResults] = useState<MarketDetail[]>([]);
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
+    const searchRef = useRef<HTMLDivElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isWalletOpen, setIsWalletOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const walletRef = useRef<HTMLDivElement>(null);
-  const profileRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
-  useEffect(() => { setMounted(true); }, []);
-
-  // Auto-switch to Arbitrum Sepolia
-  useEffect(() => {
-    if (isConnected && chainId && chainId !== arbitrumSepolia.id) {
-      const timer = setTimeout(() => {
-        try {
-          toast.warning("Please switch to Arbitrum Sepolia", {
-            description: "Reflex requires this network for parametric settlements.",
-          });
-          if (switchChain) switchChain({ chainId: arbitrumSepolia.id });
-        } catch (err) {
-          console.error("Auto-switch chain failed:", err);
+    // Close dropdowns on outside click
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsProfileOpen(false);
+            }
+            if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+                setIsSearchFocused(false);
+            }
         }
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isConnected, chainId, switchChain]);
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
-  // Click outside handlers
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (walletRef.current && !walletRef.current.contains(e.target as Node)) setIsWalletOpen(false);
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setIsProfileOpen(false);
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+    // Search Logic
+    useEffect(() => {
+        if (!searchQuery.trim()) {
+            // Show popular/featured markets when empty but focused
+            const popular = ALL_MARKETS.filter(m =>
+                ['flight', 'rainfall', 'usdt'].includes(m.id)
+            ).slice(0, 3);
+            setSearchResults(popular);
+            return;
+        }
 
-  const isActive = (href: string) => {
-    if (href === "/market") return pathname?.startsWith("/market");
-    if (href === "/dashboard") return pathname?.startsWith("/dashboard") || pathname?.startsWith("/claims");
-    return pathname?.startsWith(href);
-  };
+        const query = searchQuery.toLowerCase();
+        const filtered = ALL_MARKETS.filter(m =>
+            m.title.toLowerCase().includes(query) ||
+            m.description.toLowerCase().includes(query) ||
+            m.riskBase.toLowerCase().includes(query) ||
+            m.id.toLowerCase().includes(query)
+        ).slice(0, 5);
+        setSearchResults(filtered);
+    }, [searchQuery]);
 
-  const formattedBalance = usdtBalance
-    ? (Number(usdtBalance.value) / 1e6).toFixed(2)
-    : "0.00";
+    // Lock body scroll when mobile menu is open
+    useEffect(() => {
+        if (isMobileMenuOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => { document.body.style.overflow = ''; };
+    }, [isMobileMenuOpen]);
 
-  if (!mounted) return null;
+    const mobileNavLinks = [
+        { href: "/market", label: "Markets", icon: <BarChart3 className="w-5 h-5" /> },
+        { href: "/dashboard", label: "Portfolio", icon: <Briefcase className="w-5 h-5" /> },
+        { href: "/invest", label: "Invest", icon: <TrendingUp className="w-5 h-5" /> },
+        { href: "/analytics", label: "Analytics", icon: <ActivityIcon className="w-5 h-5" /> },
+        { href: "/docs", label: "Docs", icon: <FileText className="w-5 h-5" /> },
+    ];
 
-  return (
-    <nav className="fixed top-0 left-0 w-full flex justify-between items-center px-6 md:px-8 h-16 bg-[#131318]/70 backdrop-blur-xl z-50">
-      {/* Left: Logo + Links */}
-      <div className="flex items-center gap-8">
-        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <img src="/logoW.png" alt="Reflex Logo" className="h-8 w-auto object-contain" />
-        </Link>
-        <div className="hidden md:flex gap-6 items-center">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`text-sm font-medium tracking-tight transition-colors ${
-                isActive(link.href)
-                  ? "text-[#FFB3B5] border-b-2 border-[#800020] pb-1"
-                  : "text-[#E4E1E9] hover:text-[#FFB3B5]"
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
-      </div>
+    return (
+        <>
+            <nav className="fixed top-0 w-full z-50 border-b border-white/5 glass-panel-premium !rounded-none !border-t-0 !border-x-0 transition-all duration-300 h-16">
+                <div className="max-w-[1600px] mx-auto px-4 h-full flex items-center justify-between gap-4">
 
-      {/* Right: Theme + Balance + Wallet */}
-      <div className="flex items-center gap-4">
-        {/* USDT Balance Pill */}
-        {isConnected && (
-          <div className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-container-low border border-outline-variant/20">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Wallet</span>
-            <span className="text-sm font-mono text-[#E4E1E9]">{formattedBalance} USDT</span>
-          </div>
-        )}
+                    {/* Left: Logo + Mobile Hamburger */}
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            className="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg bg-accent/50 border border-border text-muted-foreground hover:text-foreground transition-colors"
+                            aria-label="Toggle menu"
+                        >
+                            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                        </button>
+                        <Link href="/" className="flex items-center group shrink-0" onClick={() => setIsMobileMenuOpen(false)}>
+                            <img
+                                src="/logoD.png"
+                                alt="Reflex Logo"
+                                className="h-8 w-auto"
+                            />
+                        </Link>
+                    </div>
 
-        {/* Connect / Profile Button */}
-        {isConnected && address ? (
-          <div className="relative" ref={profileRef}>
-            <button
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center gap-2 bg-surface-container-high px-4 py-2 rounded-full ghost-border hover:bg-surface-bright transition-colors"
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-              </span>
-              <span className="text-sm font-mono text-[#E4E1E9]">
-                {address.slice(0, 4)}...{address.slice(-4)}
-              </span>
-            </button>
+                    {/* Center: Search Bar (Protection Market Style) */}
+                    <div className="flex-1 max-w-2xl relative hidden md:block" ref={searchRef}>
+                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                            <Search className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search markets..."
+                            value={searchQuery}
+                            onFocus={() => setIsSearchFocused(true)}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-accent/50 border border-border rounded-lg py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                        />
 
-            {isProfileOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-surface-container-high rounded-xl ghost-border shadow-2xl overflow-hidden py-2 z-50 animate-slide-up">
-                <Link href="/profile" className="flex items-center gap-3 px-4 py-3 hover:bg-surface-bright transition-colors text-sm" onClick={() => setIsProfileOpen(false)}>
-                  <span className="material-symbols-outlined text-sm text-zinc-400">person</span>
-                  My Profile
-                </Link>
-                <Link href="/admin" className="flex items-center gap-3 px-4 py-3 hover:bg-surface-bright transition-colors text-sm" onClick={() => setIsProfileOpen(false)}>
-                  <span className="material-symbols-outlined text-sm text-zinc-400">admin_panel_settings</span>
-                  Admin Panel
-                </Link>
-                <Link href="/docs" className="flex items-center gap-3 px-4 py-3 hover:bg-surface-bright transition-colors text-sm" onClick={() => setIsProfileOpen(false)}>
-                  <span className="material-symbols-outlined text-sm text-zinc-400">description</span>
-                  Documentation
-                </Link>
-                <div className="border-t border-white/5 mt-2 pt-2">
-                  <button
-                    onClick={() => { disconnect(); setIsProfileOpen(false); }}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-surface-bright transition-colors text-sm text-red-400 w-full text-left"
-                  >
-                    <span className="material-symbols-outlined text-sm">logout</span>
-                    Disconnect
-                  </button>
+                        {/* Search Results Dropdown */}
+                        {isSearchFocused && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-xl border border-border rounded-xl shadow-2xl overflow-hidden z-50">
+                                {searchResults.length > 0 ? (
+                                    <div className="py-2">
+                                        <div className="px-4 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest border-b border-border/50 mb-1">
+                                            {searchQuery.trim() === "" ? "🔥 Popular Markets" : "Markets"}
+                                        </div>
+                                        {searchResults.map(market => (
+                                            <Link
+                                                key={market.id}
+                                                href={`/market/${market.id}`}
+                                                onClick={() => {
+                                                    setIsSearchFocused(false);
+                                                    setSearchQuery("");
+                                                }}
+                                                className="flex items-center gap-3 px-4 py-3 hover:bg-primary/10 transition-colors group"
+                                            >
+                                                <div className={`w-8 h-8 rounded-lg ${market.iconBg} ${market.iconColor} flex items-center justify-center shrink-0`}>
+                                                    <span className="material-symbols-outlined text-base">{market.icon}</span>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{market.title}</span>
+                                                    <span className="text-[10px] text-muted-foreground font-mono">{market.riskBase} • {market.marketData.maxPayout} limit</span>
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="px-4 py-8 text-center">
+                                        <p className="text-sm text-muted-foreground">No markets found for &quot;{searchQuery}&quot;</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Right: Nav Links + Auth */}
+                    <div className="flex items-center gap-2 md:gap-6">
+                        {/* Main Nav Links */}
+                        <div className="hidden lg:flex items-center gap-6 mr-4 border-r border-border pr-6 h-8">
+                            <Link href="/market" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                                <BarChart3 className="w-4 h-4" />
+                                Markets
+                            </Link>
+                            <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                                <Briefcase className="w-4 h-4" />
+                                Portfolio
+                            </Link>
+                            <Link href="/invest" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                                <TrendingUp className="w-4 h-4" />
+                                Invest
+                            </Link>
+                            <Link href="/analytics" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                                <BarChart3 className="w-4 h-4" />
+                                Analytics
+                            </Link>
+                            <Link href="/docs" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                                <FileText className="w-4 h-4" />
+                                Docs
+                            </Link>
+                            <Link href="/whitepaper" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                                <span className="material-symbols-outlined text-base">description</span>
+                                Whitepaper
+                            </Link>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <ThemeToggle />
+                            {!mounted ? null : !authenticated ? (
+                                <WalletConnect />
+                            ) : (
+                                <div className="flex items-center gap-4">
+                                    {/* WalletConnect Only */}
+                                    <div className="flex items-center gap-4">
+                                        <WalletConnect />
+                                    </div>
+
+                                    {/* User Profile Dropdown */}
+                                    <div className="relative" ref={dropdownRef}>
+                                        <button
+                                            onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                            className="h-9 w-9 flex items-center justify-center rounded-full bg-gradient-to-tr from-green-400 via-blue-500 to-purple-500 p-0.5 hover:ring-2 ring-[#2490ff] ring-offset-2 ring-offset-background transition-all"
+                                        >
+                                            <div className="w-full h-full bg-background rounded-full flex items-center justify-center overflow-hidden">
+                                                <img
+                                                    src={getWarriorAvatar(address)}
+                                                    alt="Warrior Avatar"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                        </button>
+
+                                        {/* Dropdown Menu */}
+                                        {isProfileOpen && (
+                                            <div className="absolute right-0 mt-2 w-72 rounded-xl border border-border bg-card shadow-2xl py-2 z-50 text-sm overflow-hidden flex flex-col">
+                                                {/* Header */}
+                                                <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-10 w-10 rounded-full overflow-hidden border border-border">
+                                                            <img
+                                                                src={getWarriorAvatar(address)}
+                                                                alt="Warrior Avatar"
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    // Fallback to gradient if image fails
+                                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <span className="font-bold text-foreground text-base">reflex_user</span>
+                                                            <span className="text-xs font-mono text-muted-foreground">
+                                                                {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '0x000...000'}
+                                                                <span className="material-symbols-outlined text-[10px] ml-1 opacity-50">content_copy</span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer z-50 p-1" onClick={() => setIsProfileOpen(false)}>
+                                                        <Settings className="w-5 h-5 pointer-events-none" />
+                                                    </Link>
+                                                </div>
+
+                                                {/* Top Switches / Actions */}
+                                                <div className="py-2 border-b border-border flex flex-col gap-1">
+                                                    <div className="w-full px-4 py-1.5 flex items-center justify-between text-muted-foreground">
+                                                        <div className="flex items-center gap-3 text-foreground">
+                                                            <Moon className="w-4 h-4 text-muted-foreground" /> Dark mode
+                                                        </div>
+                                                        <div className="scale-75 origin-right">
+                                                            <ThemeToggle />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Links */}
+                                                <div className="py-2 border-b border-border">
+                                                    <Link href="/profile" className="w-full px-4 py-1.5 flex text-left hover:bg-accent transition-colors text-muted-foreground hover:text-foreground" onClick={() => setIsProfileOpen(false)}>My Profile</Link>
+                                                    <Link href="/admin" className="w-full px-4 py-1.5 flex text-left hover:bg-accent transition-colors text-primary font-bold hover:text-primary transition-colors" onClick={() => setIsProfileOpen(false)}>Admin Panel</Link>
+                                                    <button className="w-full px-4 py-1.5 flex text-left hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">Support</button>
+                                                    <Link href="/docs" className="w-full px-4 py-1.5 flex text-left hover:bg-accent transition-colors text-muted-foreground hover:text-foreground" onClick={() => setIsProfileOpen(false)}>Documentation</Link>
+                                                    <button className="w-full px-4 py-1.5 flex text-left hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">Help Center</button>
+                                                    <button className="w-full px-4 py-1.5 flex text-left hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">Terms of Use</button>
+                                                </div>
+
+                                                {/* Footer Logging out */}
+                                                <div className="py-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            disconnect();
+                                                            setIsProfileOpen(false);
+                                                        }}
+                                                        className="w-full px-4 py-2 flex text-left hover:bg-white/5 transition-colors text-red-500 font-medium"
+                                                    >
+                                                        Logout
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
-              </div>
+            </nav>
+
+            {/* ── Mobile Navigation Drawer ── */}
+            {isMobileMenuOpen && (
+                <div className="fixed inset-0 z-40 lg:hidden">
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    />
+                    <div className="absolute top-16 left-0 right-0 bg-background border-b border-border shadow-2xl animate-fade-in-up overflow-y-auto max-h-[calc(100vh-4rem)]">
+                        <div className="p-4 border-b border-white/5 md:hidden">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <input
+                                    type="text"
+                                    placeholder="Search markets..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-accent/50 border border-border rounded-lg py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
+                                />
+                            </div>
+                        </div>
+                        <div className="py-2">
+                            {mobileNavLinks.map((link) => (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="flex items-center gap-4 px-6 py-3.5 text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all active:bg-white/10"
+                                >
+                                    {link.icon}
+                                    <span className="text-base font-medium">{link.label}</span>
+                                </Link>
+                            ))}
+                        </div>
+                        {authenticated && (
+                            <div className="px-6 py-4 border-t border-border flex items-center justify-between">
+                                {/* Wallet context here if needed */}
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
-          </div>
-        ) : (
-          <div className="relative" ref={walletRef}>
-            <button
-              onClick={() => setIsWalletOpen(!isWalletOpen)}
-              className="bg-[#800020] text-[#E4E1E9] px-6 py-2 rounded-full text-sm font-bold hover:bg-[#800020]/80 transition-all active:scale-95"
-            >
-              Connect Wallet
-            </button>
-
-            {isWalletOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-surface-container-high rounded-xl ghost-border shadow-2xl overflow-hidden py-4 z-50 animate-slide-up">
-                <div className="px-5 py-2 institutional-label border-b border-white/5 mb-2">
-                  Select Provider
-                </div>
-                <div className="space-y-1 px-3">
-                  {connectors.map((connector) => (
-                    <button
-                      key={connector.id}
-                      onClick={() => {
-                        setIsWalletOpen(false);
-                        try {
-                          connect({ connector }, {
-                            onError: (error) => {
-                              if (error.message.includes("rejected")) {
-                                toast.error("Connection rejected by user");
-                              } else {
-                                toast.error(`Connection failed: ${error.message}`);
-                              }
-                            },
-                            onSuccess: () => toast.success(`Connected with ${connector.name}`),
-                          });
-                        } catch (err) {
-                          toast.error("Failed to initiate connection");
-                        }
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-surface-bright transition-colors text-left"
-                    >
-                      <span className="text-xs font-bold text-zinc-300 uppercase tracking-widest">{connector.name}</span>
-                    </button>
-                  ))}
-                </div>
-                <div className="mt-3 px-5 py-3 bg-surface-container-lowest text-[10px] text-zinc-500 font-mono">
-                  Wagmi connection for parametric execution.
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Mobile menu toggle */}
-        <button
-          className="md:hidden p-2 hover:bg-surface-container-high rounded-full transition-all"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
-          <span className="material-symbols-outlined text-[#E4E1E9]">
-            {isMenuOpen ? "close" : "menu"}
-          </span>
-        </button>
-      </div>
-
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="absolute top-16 left-0 w-full bg-[#131318]/95 backdrop-blur-xl border-t border-white/5 py-6 px-8 md:hidden z-50 animate-slide-up">
-          <div className="flex flex-col gap-4">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setIsMenuOpen(false)}
-                className={`text-lg font-medium py-2 transition-colors ${
-                  isActive(link.href) ? "text-[#FFB3B5]" : "text-[#E4E1E9] hover:text-[#FFB3B5]"
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-          {!isConnected && (
-            <div className="mt-6 pt-4 border-t border-white/5">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Balance</p>
-              <p className="font-mono text-sm text-zinc-400">{formattedBalance} USDT</p>
-            </div>
-          )}
-        </div>
-      )}
-    </nav>
-  );
+        </>
+    );
 }

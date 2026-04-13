@@ -1,7 +1,7 @@
 {
     "name": "Reflex: Protection Market",
     "short_name": "Reflex",
-    "description": "Parametric micro-insurance platform on Arbitrum Sepolia.",
+    "description": "Parametric micro-insurance platform on Avalanche.",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#050510",

@@ -140,7 +140,7 @@ export const SolvencyDashboard = () => {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="p-6 rounded-2xl bg-black/40 border border-white/5 hover:border-neon-cyan/50 hover:shadow-[0_0_30px_rgba(0,240,255,0.15)] transition-all duration-300">
-                                <div className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.15em] mb-2">Capital Reserves (Vaults)</div>
+                                <div className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.15em] mb-2">Capital Reserves (Aave)</div>
                                 <div ref={assetsRef} className="text-3xl font-black font-mono text-white drop-shadow-sm">
                                     {isLoading ? "Fetching..." : formatCurrency(metrics.totalAssets)}
                                 </div>
@@ -167,7 +167,7 @@ export const SolvencyDashboard = () => {
                             </div>
                             <h3 className="text-lg font-bold text-white leading-tight">Institutional Trust Guarantee</h3>
                             <p className="text-xs text-zinc-400 leading-relaxed font-light">
-                                Reflex operates as a 100% collateralized protocol. Every active policy is backed by liquid USDT in isolated pool vaults.
+                                Reflex operates as a 100% collateralized protocol. Every active policy is backed by liquid USDT in Avalanche and Aave V3.
                             </p>
                         </div>
                         <div className="mt-6 pt-6 border-t border-white/5 flex items-center gap-3">
@@ -185,7 +185,7 @@ export const SolvencyDashboard = () => {
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="text-[10px] font-black text-zinc-400 uppercase tracking-tighter">Settlement Layer:</span>
-                        <span className="text-[10px] font-bold text-white font-mono">Arbitrum Sepolia</span>
+                        <span className="text-[10px] font-bold text-white font-mono">Avalanche Fuji</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="text-[10px] font-black text-zinc-400 uppercase tracking-tighter">Verification Method:</span>

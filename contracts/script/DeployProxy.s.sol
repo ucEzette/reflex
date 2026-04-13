@@ -10,10 +10,10 @@ contract DeployProxy is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address initialOwner = vm.addr(deployerPrivateKey);
 
-        // Arbitrum Sepolia Testnet Addresses (update after deployment)
-        address teleporter = address(0); // No teleporter on Arbitrum — use CCIP or native messaging
-        address usdc = address(0); // Deploy or use Arbitrum Sepolia USDT/USDC
-        bytes32 L1_CHAIN_ID = bytes32(uint256(421614)); // Arbitrum Sepolia
+        // Fuji Testnet Addresses
+        address teleporter = 0xC7a297DE87890728453daa240A8373D7D5Cee90b;
+        address usdc = 0x5425890298aed601595a70AB815c96711a31Bc65;
+        bytes32 L1_CHAIN_ID = 0x535a96753066606a000000000000000000000000000000000000000000000000;
         address treasury = 0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf; // Placeholder, update as needed
 
         vm.startBroadcast(deployerPrivateKey);
