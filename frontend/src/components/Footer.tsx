@@ -10,7 +10,7 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <div className="mb-6">
-              <img src="/logoW.png" alt="Reflex Logo" className="h-8 w-auto object-contain" />
+              <img src="/logoD.png" alt="Reflex Logo" className="h-12 w-auto object-contain" />
             </div>
             <p className="text-zinc-500 text-sm max-w-xs leading-relaxed">
               Redefining institutional risk management through parametric on-chain execution.

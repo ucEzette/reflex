@@ -1,104 +1,216 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React from "react";
 import { useAccount, useReadContract, useBalance } from "wagmi";
-import { CONTRACTS, ESCROW_ABI, LP_POOL_ABI } from "@/lib/contracts";
+import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
+import { CONTRACTS, ESCROW_ABI } from "@/lib/contracts";
 import { formatUnits } from "viem";
 import Link from "next/link";
+import { ClaimHistory } from "@/components/profile/ClaimHistory";
+import { ActivePolicies } from "@/components/profile/ActivePolicies";
+import { useUserPolicies } from "@/hooks/useUserPolicies";
+import { ShieldCheck, Zap, Activity, Wallet, Info, ArrowUpRight, History, Terminal, Fingerprint } from "lucide-react";
+
+function HUDCard({ title, value, icon: Icon, color, subText, subColor }: any) {
+  return (
+    <div className="bg-[#101216] p-6 rounded-2xl border border-white/5 relative group overflow-hidden">
+      <div className="absolute -top-12 -right-12 w-24 h-24 bg-white/5 blur-3xl rounded-full group-hover:bg-primary/10 transition-colors" />
+      <div className="flex justify-between items-start mb-4 relative z-10">
+        <div className="flex items-center gap-1.5 opacity-60">
+          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">{title}</span>
+          <Info className="w-3 h-3 text-zinc-600" />
+        </div>
+        <Icon className={`w-4 h-4 ${color}`} />
+      </div>
+      <div className="mono-data text-2xl text-white font-bold mb-1 relative z-10">{value}</div>
+      <div className={`text-[10px] font-bold ${subColor} uppercase tracking-wider relative z-10`}>{subText}</div>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
-  const { address, isConnected } = useAccount();
+  const { address: eoaAddress, isConnected } = useAccount();
+  const { client } = useSmartWallets();
+  const address = client?.account?.address || eoaAddress;
 
-  // Read user's policies
-  const { data: policyIds } = useReadContract({
-    address: CONTRACTS.ESCROW,
-    abi: ESCROW_ABI,
-    functionName: "getUserPolicies",
-    args: address ? [address] : undefined,
-  });
+  const { policies, activePolicies, claimedPolicies, isLoading } = useUserPolicies();
 
   const { data: usdtBalance } = useBalance({ address, token: CONTRACTS.USDT });
   const formattedBalance = usdtBalance ? (Number(usdtBalance.value) / 1e6).toFixed(2) : "0.00";
-  const totalPolicies = policyIds ? (policyIds as readonly `0x${string}`[]).length : 0;
+  
+  const totalActive = activePolicies.length;
+  const lockedPremiums = activePolicies.reduce((sum, p) => sum + Number(p.premium), 0) / 1e6;
+  const settledReturns = claimedPolicies.reduce((sum, p) => sum + Number(p.maxPayout), 0) / 1e6;
 
   return (
-    <div className="pt-32 pb-24 px-8 max-w-[1600px] mx-auto">
+    <div className="pt-40 pb-32 px-12 max-w-[1700px] mx-auto">
       {/* Header */}
-      <header className="mb-16 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div>
-          <h1 className="text-5xl font-bold tracking-tight mb-2">
-            Portfolio <span className="text-primary">Dashboard</span>
+      <header className="mb-24 flex flex-col md:flex-row justify-between items-end gap-10">
+        <div className="max-w-2xl">
+          <div className="flex items-center gap-4 mb-4">
+             <div className="w-12 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+             <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">Vault Authorization Active</span>
+          </div>
+          <h1 className="text-7xl font-black tracking-tighter mb-6 text-white uppercase italic">
+            Portfolio <span className="text-[#D31027]">Core</span>
           </h1>
-          <p className="text-zinc-500">Monitor active positions. Track claims and oracle events in real-time.</p>
+          <p className="text-zinc-500 text-lg leading-relaxed font-medium max-w-xl">
+             Manage your active parametric coverages. Monitor real-time oracle event triggers and claim history on the Arbitrum ledger.
+          </p>
         </div>
+        
         {isConnected && (
-          <div className="flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-full specular-border">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="mono-data text-xs text-zinc-400">{address?.slice(0, 6)}...{address?.slice(-4)}</span>
+          <div className="flex flex-col items-end gap-3">
+             <div className="flex items-center gap-6 p-6 bg-white/2 rounded-[2rem] border border-white/5 shadow-2xl backdrop-blur-md">
+                <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group">
+                    <Wallet className={`w-6 h-6 ${client ? 'text-emerald-500' : 'text-zinc-400'} group-hover:text-white transition-colors`} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <span className="text-[9px] font-black text-zinc-700 uppercase tracking-widest leading-none">
+                      {client ? 'Smart Vault Active' : 'Access Node'}
+                    </span>
+                    <span className="mono-data text-sm text-white font-black italic tracking-tight uppercase">
+                      {address?.slice(0, 10)}<span className="text-[#D31027]">...</span>{address?.slice(-6)}
+                    </span>
+                </div>
+                {client && (
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(address!);
+                      toast.success("Wallet address copied!");
+                    }}
+                    className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+                  >
+                    <ArrowUpRight className="w-3.5 h-3.5 text-zinc-600" />
+                  </button>
+                )}
+             </div>
           </div>
         )}
       </header>
 
       {!isConnected ? (
-        <div className="text-center py-40">
-          <span className="material-symbols-outlined text-6xl text-zinc-700 mb-6">account_balance_wallet</span>
-          <h2 className="text-2xl font-bold mb-4">Connect Your Wallet</h2>
-          <p className="text-zinc-500 max-w-md mx-auto">
-            Connect your wallet to view your active policies, claim history, and portfolio analytics.
+        <div className="text-center py-44 flex flex-col items-center">
+          <div className="w-20 h-20 bg-white/5 rounded-[2rem] flex items-center justify-center border border-white/5 mb-10 shadow-2xl">
+             <Fingerprint className="w-10 h-10 text-zinc-800" />
+          </div>
+          <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase mb-4">Identity Unverified</h2>
+          <p className="text-zinc-500 max-w-sm mx-auto leading-relaxed mb-10">
+            Secure connection required. Please authenticate your wallet to access the portfolio ledger and active protection matrix.
           </p>
+          <button className="px-10 py-4 bg-[#D31027] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-[#A9081E] transition-all shadow-[0_20px_40px_rgba(211,16,39,0.2)]">
+             Establish Secure Link
+          </button>
         </div>
       ) : (
         <>
-          {/* Bento Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-            <StatCard label="Active Policies" value={totalPolicies.toString()} icon="policy" color="text-primary" />
-            <StatCard label="Total Premiums Paid" value={`${(totalPolicies * 5).toFixed(2)} USDT`} icon="payments" color="text-secondary" />
-            <StatCard label="Claims Received" value="—" icon="credit_score" color="text-tertiary" />
-            <StatCard label="USDT Balance" value={`${formattedBalance}`} icon="account_balance" color="text-on-surface" />
-          </div>
+          {/* HUD Bento */}
+          {/* HUD Bento */}
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
+            <div className="bg-[#101216] p-8 rounded-[2rem] border border-white/5 relative group transition-all hover:border-white/10 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <ShieldCheck className="w-12 h-12 text-[#D31027]" />
+                </div>
+                <div className="flex justify-between items-start mb-6">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em]">Active Coverage</span>
+                        <Info className="w-3 h-3 text-zinc-800" />
+                    </div>
+                </div>
+                <div className="mono-data text-4xl text-white font-black italic tracking-tighter mb-1 relative z-10">
+                    {isLoading ? "..." : totalActive.toString()}
+                </div>
+                <div className="text-[10px] font-black text-zinc-700 uppercase tracking-widest italic tracking-[0.1em]">Scanning Live Events</div>
+            </div>
+
+            <div className="bg-[#101216] p-8 rounded-[2rem] border border-white/5 relative group transition-all hover:border-white/10 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <Zap className="w-12 h-12 text-amber-500" />
+                </div>
+                <div className="flex justify-between items-start mb-6">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em]">Locked Premiums</span>
+                        <Info className="w-3 h-3 text-zinc-800" />
+                    </div>
+                </div>
+                <div className="mono-data text-4xl text-white font-black italic tracking-tighter mb-1 relative z-10">
+                    ${isLoading ? "..." : lockedPremiums.toFixed(2)}
+                </div>
+                <div className="text-[10px] font-black text-zinc-700 uppercase tracking-widest italic tracking-[0.1em]">Escrowed in Protocol</div>
+            </div>
+
+            <div className="bg-[#101216] p-8 rounded-[2rem] border border-white/5 relative group transition-all hover:border-white/10 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <History className="w-12 h-12 text-white" />
+                </div>
+                <div className="flex justify-between items-start mb-6">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em]">Settled Returns</span>
+                        <Info className="w-3 h-3 text-zinc-800" />
+                    </div>
+                </div>
+                <div className="mono-data text-4xl text-zinc-400 font-black italic tracking-tighter mb-1 relative z-10">
+                    ${isLoading ? "..." : settledReturns.toFixed(2)}
+                </div>
+                <div className="text-[10px] font-black text-zinc-700 uppercase tracking-widest italic tracking-[0.1em]">Verified Finality</div>
+            </div>
+
+            <div className="bg-[#101216] p-8 rounded-[2rem] border border-white/5 relative group transition-all hover:border-white/10 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <Wallet className="w-12 h-12 text-emerald-500" />
+                </div>
+                <div className="flex justify-between items-start mb-6">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em]">USDT Liquid</span>
+                        <Info className="w-3 h-3 text-zinc-800" />
+                    </div>
+                </div>
+                <div className="mono-data text-4xl text-emerald-500 font-black italic tracking-tighter mb-1 relative z-10">${formattedBalance}</div>
+                <div className="text-[10px] font-black text-zinc-700 uppercase tracking-widest italic tracking-[0.1em]">Arbitrum Liquidity</div>
+            </div>
+          </section>
 
           {/* Active Policies */}
-          <section className="mb-16">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-xl font-bold">Active Policies</h2>
-              <Link href="/market" className="text-sm text-primary hover:underline">Purchase New →</Link>
+          <section className="mb-20">
+            <div className="flex justify-between items-end mb-8 px-1">
+              <div className="flex items-center gap-3">
+                 <div className="w-1.5 h-6 bg-[#D31027] rounded-full" />
+                 <h2 className="text-xl font-bold uppercase tracking-tight">Active Coverage Matrix</h2>
+              </div>
+              <Link href="/market" className="text-[10px] font-black text-[#D31027] hover:text-[#A9081E] uppercase tracking-widest flex items-center gap-1 transition-colors">
+                Initiate New Coverage <ArrowUpRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
-            <div className="bg-surface-container-low rounded-lg specular-border overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left p-4 text-institutional">Policy ID</th>
-                    <th className="text-left p-4 text-institutional">Status</th>
-                    <th className="text-left p-4 text-institutional hidden md:table-cell">Premium</th>
-                    <th className="text-left p-4 text-institutional hidden md:table-cell">Max Payout</th>
-                    <th className="text-left p-4 text-institutional hidden lg:table-cell">Expiry</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {totalPolicies > 0 ? (
-                    (policyIds as readonly `0x${string}`[]).map((id: `0x${string}`, i: number) => (
-                      <PolicyRow key={i} policyId={id} />
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={5} className="text-center py-16 text-zinc-600">
-                        <span className="material-symbols-outlined text-4xl text-zinc-700 mb-2 block">inbox</span>
-                        No active policies. <Link href="/market" className="text-primary hover:underline">Purchase one →</Link>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+            <ActivePolicies />
+          </section>
+
+          {/* Claim History */}
+          <section className="mb-20">
+             <div className="flex items-center gap-3 mb-8 px-1">
+                 <div className="w-1.5 h-6 bg-zinc-800 rounded-full" />
+                 <h2 className="text-xl font-bold uppercase tracking-tight text-zinc-400">Archived Settlement Ledger</h2>
+              </div>
+            <div className="bg-[#0A0A0A] rounded-3xl border border-white/5 overflow-hidden">
+                <ClaimHistory />
             </div>
           </section>
 
           {/* Oracle Event Stream */}
-          <section>
-            <h2 className="text-xl font-bold mb-8">Oracle Event Stream</h2>
-            <div className="bg-surface-container-lowest rounded-lg p-6 specular-border h-64 overflow-y-auto no-scrollbar">
-              <div className="flex flex-col gap-3">
-                <OracleEvent time="Just now" msg="Listening for PolicyPurchased, PolicyClaimed, PolicyExpired events..." type="info" />
-                <OracleEvent time="—" msg="Connect wallet and purchase a policy to see live events." type="system" />
+          <section className="mb-16">
+            <div className="flex items-center gap-3 mb-8 px-1">
+                <Terminal className="w-5 h-5 text-secondary" />
+                <h2 className="text-xl font-bold uppercase tracking-tight">Live Oracle Telemetry</h2>
+            </div>
+            <div className="bg-[#050505] rounded-3xl p-10 border border-white/5 h-80 overflow-y-auto no-scrollbar shadow-inner relative group/terminal">
+              <div className="absolute top-4 right-6 flex items-center gap-2">
+                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                 <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">Feed: Arbitrum_Sepolia_Nodes</span>
+              </div>
+              <div className="flex flex-col gap-4">
+                <OracleEvent time="TELEMETRY_INIT" msg="Establishing secure connection to decentralized oracle network..." type="info" />
+                <OracleEvent time="LISTENING" msg="Monitoring contract events: [PolicyPurchased, PolicyClaimed, PolicyExpired]" type="system" />
+                <OracleEvent time="INFO" msg="User authentication confirmed on-chain. Scanning for local state updates." type="info" />
+                <OracleEvent time="WAIT" msg="Awaiting next block finality (estimated 2.4s)..." type="system" />
               </div>
             </div>
           </section>
@@ -120,47 +232,20 @@ function StatCard({ label, value, icon, color }: { label: string; value: string;
   );
 }
 
-function PolicyRow({ policyId }: { policyId: `0x${string}` }) {
-  const { data } = useReadContract({
-    address: CONTRACTS.ESCROW,
-    abi: ESCROW_ABI,
-    functionName: "getPolicy",
-    args: [policyId],
-  });
-
-  if (!data) {
-    return (
-      <tr className="border-b border-white/5 animate-pulse">
-        <td className="p-4" colSpan={5}><div className="h-4 bg-surface-container-high rounded w-full" /></td>
-      </tr>
-    );
-  }
-
-  const [, apiTarget, premiumPaid, payoutAmount, expirationTime, isActive, isClaimed] = data as [string, string, bigint, bigint, bigint, boolean, boolean];
-
-  const status = isClaimed ? "Claimed" : isActive ? "Active" : "Expired";
-  const statusColor = isClaimed ? "text-emerald-400 bg-emerald-400/10" : isActive ? "text-blue-400 bg-blue-400/10" : "text-zinc-500 bg-zinc-500/10";
-
-  return (
-    <tr className="border-b border-white/5 hover:bg-surface-container-high/50 transition-colors">
-      <td className="p-4 mono-data text-xs text-on-surface">{policyId.slice(0, 10)}...{policyId.slice(-6)}</td>
-      <td className="p-4">
-        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest ${statusColor}`}>{status}</span>
-      </td>
-      <td className="p-4 mono-data text-xs text-on-surface hidden md:table-cell">${(Number(premiumPaid) / 1e6).toFixed(2)}</td>
-      <td className="p-4 mono-data text-xs text-primary hidden md:table-cell">${(Number(payoutAmount) / 1e6).toFixed(2)}</td>
-      <td className="p-4 mono-data text-xs text-zinc-400 hidden lg:table-cell">
-        {new Date(Number(expirationTime) * 1000).toLocaleString()}
-      </td>
-    </tr>
-  );
-}
-
 function OracleEvent({ time, msg, type }: { time: string; msg: string; type: string }) {
   return (
-    <div className="flex items-start gap-3">
-      <span className={`mono-data text-[10px] min-w-[60px] ${type === "info" ? "text-secondary" : "text-zinc-600"}`}>{time}</span>
-      <span className="mono-data text-xs text-zinc-400">{msg}</span>
+    <div className="flex items-start gap-8 group/line hover:bg-white/5 py-1 px-2 rounded -mx-2 transition-colors duration-200">
+      <span className="text-[9px] text-zinc-700 min-w-[90px] font-black uppercase tracking-widest font-mono pt-0.5">{time}</span>
+      <div className="flex-1">
+        <span className={`mono-data text-xs leading-relaxed ${
+            type === "info" ? "text-zinc-500" 
+            : type === "system" ? "text-[#D31027] font-bold" 
+            : "text-zinc-300"
+        }`}>
+            <span className="text-zinc-800 mr-2 opacity-50">›</span>
+            {msg}
+        </span>
+      </div>
     </div>
   );
 }

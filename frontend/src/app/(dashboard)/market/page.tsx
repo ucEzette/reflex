@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { ALL_MARKETS, MarketDetail } from "@/lib/market-data";
+import { Search, Filter, ArrowRight, Shield, Globe, Droplets, Zap, Info, ChevronRight } from "lucide-react";
 
 const CATEGORIES = ["All Assets", "Travel", "Agriculture", "Energy", "Infrastructure", "Crypto"];
 
@@ -59,32 +60,32 @@ export default function MarketplacePage() {
 
       {/* Filter Bar */}
       <section className="mb-12">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveFilter(cat)}
-                className={`px-5 py-2 rounded-full text-institutional whitespace-nowrap transition-colors ${
+                className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all duration-300 ${
                   activeFilter === cat
-                    ? "bg-primary-container text-on-primary-fixed"
-                    : "bg-surface-container-low text-zinc-400 hover:text-on-surface"
+                    ? "bg-[#D31027] text-white shadow-[0_0_20px_rgba(211,16,39,0.3)]"
+                    : "bg-[#0A0A0A] text-zinc-500 border border-white/5 hover:border-white/10 hover:text-zinc-300"
                 }`}
               >
                 {cat}
               </button>
             ))}
           </div>
-          <div className="relative min-w-[320px]">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-              <span className="material-symbols-outlined text-zinc-500 text-sm">search</span>
+          <div className="relative min-w-[360px] group">
+            <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none transition-colors group-focus-within:text-[#D31027]">
+              <Search className="w-4 h-4 text-zinc-600" />
             </div>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search markets by ID or keyword..."
-              className="w-full bg-surface-container-lowest border-none rounded-lg pl-12 pr-4 py-3 text-sm font-body focus:ring-1 focus:ring-secondary/50 focus:outline-none"
+              className="w-full bg-[#0A0A0A] border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-sm font-body focus:border-[#D31027]/40 focus:ring-0 focus:outline-none transition-all placeholder:text-zinc-700"
             />
           </div>
         </div>
@@ -110,58 +111,64 @@ function MarketCard({ market }: { market: MarketDetail }) {
   return (
     <Link
       href={`/market/${market.id}`}
-      className="group relative bg-surface-container-low p-6 rounded-lg transition-all duration-300 hover:bg-surface-container-high hover:-translate-y-1 specular-border flex flex-col h-full"
+      className="group relative bg-[#0A0A0A] p-7 rounded-3xl transition-all duration-500 hover:bg-[#101216] hover:-translate-y-2 border border-white/5 hover:border-white/10 flex flex-col h-[480px] overflow-hidden"
     >
-      <div className="flex justify-between items-start mb-8 z-50">
-        <div className="p-3 bg-surface-container-highest rounded-2xl group-hover:bg-primary-container transition-colors">
-          <span className="material-symbols-outlined text-primary text-3xl group-hover:text-on-primary-container">
+        {/* Glow Effect */}
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#D31027]/5 blur-[60px] rounded-full group-hover:bg-[#D31027]/10 transition-colors" />
+
+      <div className="flex justify-between items-start mb-10 relative z-10">
+        <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center group-hover:bg-[#D31027]/10 transition-colors border border-white/5">
+          <span className="material-symbols-outlined text-[#D31027] text-3xl transition-transform duration-500 group-hover:scale-110">
             {market.icon}
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Tooltip Trigger & Overlay */}
-          <div className="group/tt">
-            <div className="p-1 rounded-full hover:bg-surface-container-highest transition-colors flex items-center justify-center cursor-help" onClick={(e) => e.preventDefault()}>
-              <span className="material-symbols-outlined text-zinc-500 group-hover/tt:text-zinc-300 text-[18px]">info</span>
+        <div className="flex items-center gap-3">
+          {/* Tooltip trigger wrapped in a nicer UI */}
+          <div className="group/tt relative">
+            <div className="w-8 h-8 rounded-full border border-white/5 flex items-center justify-center hover:bg-white/5 transition-colors cursor-help" onClick={(e) => e.preventDefault()}>
+                <Info className="w-3.5 h-3.5 text-zinc-600 group-hover/tt:text-zinc-300" />
             </div>
             
-            {/* ── All-in-One Hover Tooltip ── */}
-            <div className="absolute inset-0 bg-zinc-950 rounded-lg opacity-0 invisible group-hover/tt:opacity-100 group-hover/tt:visible transition-all duration-300 z-50 flex flex-col p-6 shadow-2xl border border-white/10 text-left cursor-default" onClick={(e) => e.preventDefault()}>
-              <h4 className="text-red-500 uppercase tracking-[0.2em] text-[10px] font-bold mb-4">Risk Attribution</h4>
-              <p className="text-zinc-200 text-sm leading-relaxed overflow-y-auto no-scrollbar">
+            <div className="absolute top-10 right-0 w-64 p-4 bg-[#15151A] rounded-2xl opacity-0 invisible group-hover/tt:opacity-100 group-hover/tt:visible transition-all duration-300 z-[100] border border-white/10 shadow-2xl backdrop-blur-xl" onClick={(e) => e.preventDefault()}>
+              <h4 className="text-[#D31027] uppercase tracking-[0.2em] text-[9px] font-black mb-3">Risk Attribution</h4>
+              <p className="text-zinc-400 text-[11px] leading-relaxed">
                 {market.about}
               </p>
-              <div className="mt-auto pt-4 flex items-center gap-2 text-white/50 text-[10px] uppercase tracking-widest font-bold">
-                View Details <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-              </div>
             </div>
           </div>
           
-          <span className="font-mono text-[10px] text-zinc-500 bg-surface-container-lowest px-2 py-1 rounded">
+          <span className="font-mono text-[9px] font-black text-zinc-600 bg-white/5 px-2.5 py-1.5 rounded uppercase tracking-widest border border-white/5">
             {market.riskBase}
           </span>
         </div>
       </div>
-      <div className="mb-auto z-10">
-        <h3 className="text-xl font-bold mb-6">{market.title}</h3>
-        <div className="space-y-4">
-          <div className="flex justify-between items-center w-full">
-            <span className="text-institutional">Oracle Source</span>
-            <span className="font-mono text-xs text-on-surface">{market.marketData.oracleNode}</span>
+
+      <div className="mb-auto relative z-10">
+        <div className="flex items-center gap-2 mb-3">
+            <div className="w-1 h-3 bg-[#D31027] rounded-full" />
+            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{market.category}</span>
+        </div>
+        <h3 className="text-2xl font-bold mb-8 text-white group-hover:text-[#FFB3B5] transition-colors leading-tight">{market.title}</h3>
+        
+        <div className="space-y-5">
+          <div className="flex justify-between items-center group/metric">
+            <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest group-hover/metric:text-zinc-400">Oracle Node</span>
+            <span className="font-mono text-[11px] text-zinc-400 font-bold group-hover/metric:text-white transition-colors">{market.marketData.oracleNode}</span>
           </div>
-          <div className="flex justify-between items-center w-full">
-            <span className="text-institutional">Trigger</span>
-            <span className="font-mono text-xs text-on-surface">{market.bullet2}</span>
+          <div className="flex justify-between items-center group/metric">
+            <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest group-hover/metric:text-zinc-400">Trigger</span>
+            <span className="font-mono text-[11px] text-zinc-400 font-bold group-hover/metric:text-white transition-colors">{market.bullet2}</span>
           </div>
-          <div className="flex justify-between items-center w-full">
-            <span className="text-institutional">Settlement</span>
-            <span className="font-mono text-[10px] text-on-surface">{market.marketData.settlement}</span>
+          <div className="flex justify-between items-center group/metric">
+            <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest group-hover/metric:text-zinc-400">Settlement</span>
+            <span className="font-mono text-[10px] text-zinc-500 font-bold group-hover/metric:text-[#D31027] transition-colors">{market.marketData.settlement}</span>
           </div>
         </div>
       </div>
 
-      <button className="mt-8 w-full py-3 bg-surface-container-highest text-on-surface font-bold text-institutional rounded-xl group-hover:bg-primary-container group-hover:text-on-primary-fixed transition-all z-10">
-        Select Risk
+      <button className="mt-10 w-full py-4 bg-white/5 text-zinc-400 font-black text-[10px] tracking-[0.2em] uppercase rounded-2xl group-hover:bg-[#D31027] group-hover:text-white transition-all duration-300 flex items-center justify-center gap-2 relative z-10">
+        SELECT RISK
+        <ChevronRight className="w-3.5 h-3.5" />
       </button>
     </Link>
   );

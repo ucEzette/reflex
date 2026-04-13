@@ -5,12 +5,28 @@ export const dynamic = "force-dynamic";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAccount, useReadContract } from "wagmi";
+import { useAccount, useReadContract, useBalance } from "wagmi";
 import { ESCROW_ABI, CONTRACTS } from "@/lib/contracts";
-import { Shield, Upload, FileText, AlertCircle, CheckCircle, ArrowLeft, Info, Gavel, Activity } from "lucide-react";
+import { 
+  Shield, 
+  Upload, 
+  FileText, 
+  AlertCircle, 
+  CheckCircle, 
+  ArrowLeft, 
+  Info, 
+  Gavel, 
+  Activity,
+  Zap,
+  Globe,
+  Wallet,
+  Scale,
+  Loader2
+} from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { IpfsService } from "@/services/ipfs";
+import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 
 export default function EvidenceSubmissionPage({ params }: { params: { id: string } }) {
     const id = params.id;
@@ -37,17 +53,40 @@ export default function EvidenceSubmissionPage({ params }: { params: { id: strin
         query: { enabled: mounted && isConnected && !!address }
     });
 
+    const { writeContract: submitConsensus, data: txHash } = useWriteContract();
+    const { isLoading: isConfirming, isSuccess: txSuccess } = useWaitForTransactionReceipt({
+        hash: txHash
+    });
+
+    useEffect(() => {
+        if (txSuccess) {
+            setSubSuccess(true);
+            toast.success("DISPUTE_COMMIT_FINALIZED", {
+                description: `Consensus finalized on-chain: ${txHash?.slice(0, 10)}...`,
+                action: {
+                    label: "EXPLORER",
+                    onClick: () => window.open(`https://sepolia.arbiscan.io/tx/${txHash}`, "_blank"),
+                },
+                duration: 8000,
+            });
+        }
+    }, [txSuccess, txHash]);
+
     const policyArray = (policyData as unknown) as any[] || [];
     const apiTarget = policyArray[1] || "Unknown";
     const payoutAmount = policyArray[3] || BigInt(0);
     const expirationTime = policyArray[4] || BigInt(0);
 
     if (!isConnected) return (
-        <div className="min-h-screen flex items-center justify-center p-6">
-            <div className="text-center space-y-4">
-                <Shield className="w-12 h-12 text-primary mx-auto opacity-20" />
-                <h2 className="text-xl font-bold text-foreground">Wallet Not Connected</h2>
-                <p className="text-slate-500">Please connect your wallet to submit evidence.</p>
+        <div className="min-h-screen flex items-center justify-center p-6 pt-32">
+            <div className="text-center space-y-8 max-w-md">
+                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto border border-white/10">
+                    <Shield className="w-8 h-8 text-zinc-700" />
+                </div>
+                <div>
+                    <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-4">Auth Required</h2>
+                    <p className="text-zinc-500 font-medium">Please authenticate your identity to access the dispute terminal.</p>
+                </div>
             </div>
         </div>
     );
@@ -86,119 +125,134 @@ export default function EvidenceSubmissionPage({ params }: { params: { id: strin
                 console.log("Binary evidence pinned to IPFS:", filesCid);
             }
 
-            // 4. Simulate on-chain commitment of CID
-            // In a full implementation, we'd call a contract function here
-            await new Promise(resolve => setTimeout(resolve, 800));
+            // 4. Commit to Ledger
+            submitConsensus({
+                address: CONTRACTS.ESCROW as `0x${string}`,
+                abi: ESCROW_ABI,
+                functionName: "submitRelayerConsensus",
+                args: [id as `0x${string}`]
+            });
 
-            setSubSuccess(true);
-            toast.success("All evidence pinned to IPFS & submitted!");
+            toast.info("Awaiting quorum confirmation...");
         } catch (error: any) {
-            console.error("IPFS Pinning failed:", error);
+            console.error("Transmission breakdown:", error);
             toast.error("Cloud storage sync failed. Please try again.");
-        } finally {
             setIsSubmitting(false);
         }
     };
 
     return (
-        <div className="min-h-screen py-10 px-6 flex flex-col items-center">
-            <div className="max-w-3xl w-full space-y-8">
-                {/* Back Button */}
+        <div className="min-h-screen pt-40 pb-32 px-12 flex flex-col items-center">
+            <div className="max-w-[900px] w-full space-y-16">
+                {/* Back Link */}
                 <Link
-                    href="/profile"
-                    className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-foreground transition-colors group"
+                    href="/dashboard"
+                    className="group flex items-center gap-3 text-[10px] font-black text-zinc-600 hover:text-white transition-colors uppercase tracking-[0.4em]"
                 >
-                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                    Back to Profile
+                    <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
+                    Return to Portfolio
                 </Link>
 
                 {/* Header */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                        <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20">
-                            <Gavel className="w-6 h-6 text-amber-500" />
-                        </div>
-                        <h1 className="text-3xl md:text-5xl font-black text-foreground tracking-tight">Submit Evidence</h1>
+                <header className="flex flex-col gap-6">
+                    <div className="flex items-center gap-4">
+                         <div className="w-12 h-1.5 bg-[#D31027] rounded-full" />
+                         <span className="text-[10px] font-black text-[#D31027] uppercase tracking-[0.5em]">Dispute Terminal</span>
                     </div>
-                    <p className="text-slate-400 text-lg font-light">
-                        Dispute an automated oracle result by providing external proof of the negative event.
+                    <h1 className="text-7xl font-black tracking-tighter text-white italic uppercase leading-none">
+                        Submit <span className="text-[#D31027]">Evidence</span>
+                    </h1>
+                    <p className="text-zinc-500 text-xl font-medium max-w-2xl leading-relaxed">
+                        Challenge automated oracle finality by providing cryptographic proof of external risk events to the decentralized relayer quorum.
                     </p>
-                </div>
+                </header>
 
                 {subSuccess ? (
-                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-3xl p-12 text-center space-y-6 animate-in zoom-in-95 duration-500">
-                        <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(16,185,129,0.4)]">
-                            <CheckCircle className="w-10 h-10 text-foreground" />
+                    <div className="bg-[#101216] border border-emerald-500/20 rounded-[3rem] p-20 text-center space-y-10 animate-in zoom-in-95 duration-700 shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500" />
+                        <div className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-[0_0_50px_rgba(16,185,129,0.3)]">
+                            <CheckCircle className="w-10 h-10 text-black" />
                         </div>
-                        <div className="space-y-2">
-                            <h2 className="text-2xl font-bold text-foreground">Evidence Submitted</h2>
-                            <p className="text-slate-400">Your claim has been moved to &quot;Disputed&quot; status. The multi-relayer quorum will re-verify the event based on your provided evidence.</p>
+                        <div className="space-y-4">
+                            <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter">Transmission Complete</h2>
+                            <p className="text-zinc-500 text-lg font-medium max-w-md mx-auto leading-relaxed">Your evidence hash has been pinned to IPFS and committed to the L2 verification quorum.</p>
                         </div>
-                        <button
-                            onClick={() => router.push("/profile")}
-                            className="px-8 py-3 bg-white text-black font-bold rounded-xl hover:bg-slate-200 transition-all"
+                        <Link
+                            href="/dashboard"
+                            className="inline-flex items-center gap-4 px-12 py-5 bg-white text-black font-black uppercase tracking-[0.4em] text-[10px] rounded-2xl hover:bg-zinc-200 transition-all shadow-2xl"
                         >
-                            Return to Dashboard
-                        </button>
+                            RETURN TO TERMINAL
+                            <Zap className="w-4 h-4" />
+                        </Link>
                     </div>
                 ) : (
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-12">
                         {/* Policy Context Card */}
-                        <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6 backdrop-blur-xl">
-                            <div className="flex justify-between items-start mb-4">
+                        <div className="bg-[#101216] border border-white/5 rounded-[2.5rem] p-10 relative overflow-hidden group/hud shadow-2xl">
+                             <div className="absolute top-0 right-0 p-8 opacity-5">
+                                <Scale className="w-24 h-24 text-zinc-400" />
+                            </div>
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 relative z-10">
                                 <div>
-                                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Target Policy</p>
-                                    <h3 className="text-xl font-bold text-primary">{id?.toString().slice(0, 16)}...</h3>
+                                    <span className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] block mb-2">Subject Policy ID</span>
+                                    <h3 className="text-3xl font-black text-white italic tracking-tighter uppercase">{id?.toString().slice(0, 10)}<span className="text-[#D31027]">...</span>{id?.toString().slice(-6)}</h3>
                                 </div>
-                                <div className="text-right">
-                                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Potential Payout</p>
-                                    <p className="text-xl font-bold text-emerald-400">${(Number(payoutAmount) / 1e6).toFixed(2)} USDT</p>
+                                <div className="text-left md:text-right">
+                                    <span className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] block mb-2">Stake At Risk</span>
+                                    <p className="text-3xl font-black text-emerald-500 italic tracking-tighter">${(Number(payoutAmount) / 1e6).toFixed(2)} USDT</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4 text-sm text-slate-400">
-                                <span className="flex items-center gap-1.5">
-                                    <span className="material-symbols-outlined !text-[16px]">location_on</span>
-                                    {apiTarget}
-                                </span>
-                                <span className="flex items-center gap-1.5">
-                                    <span className="material-symbols-outlined !text-[16px]">event_busy</span>
-                                    Expired: {new Date(Number(expirationTime) * 1000).toLocaleDateString()}
-                                </span>
+                            <div className="mt-8 pt-8 border-t border-white/5 flex flex-wrap items-center gap-10 relative z-10">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-[#D31027]" />
+                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none">{apiTarget}</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <Activity className="w-4 h-4 text-zinc-800" />
+                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none">Expired: {new Date(Number(expirationTime) * 1000).toLocaleDateString()}</span>
+                                </div>
                             </div>
                         </div>
 
                         {/* Description Input */}
-                        <div className="space-y-3">
-                            <label className="text-sm font-bold text-foreground flex items-center gap-2">
-                                <FileText className="w-4 h-4" />
-                                Nature of Dispute
-                            </label>
-                            <textarea
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                placeholder="Explain why the automated oracle result was incorrect. Include specific times, local reports, or flight tracking data..."
-                                className="w-full h-40 bg-zinc-900/50 border border-white/10 rounded-2xl p-4 text-foreground placeholder:text-slate-600 focus:outline-none focus:border-primary/50 transition-all resize-none"
-                            />
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center px-4">
+                                <label className="text-[10px] font-black text-zinc-700 uppercase tracking-[0.2em] flex items-center gap-2">
+                                    <FileText className="w-3.5 h-3.5" />
+                                    Dispute Description
+                                </label>
+                                <span className="text-[8px] font-black text-zinc-900 uppercase tracking-widest italic">Awaiting technical summary</span>
+                            </div>
+                            <div className="bg-[#101216] border border-white/5 rounded-[2rem] p-8 focus-within:border-[#D31027]/40 transition-all shadow-inner">
+                                <textarea
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder="SYNCHRONIZE DISPUTE DATA: Explain oracle inaccuracy with technical evidence (flight tracker logs, local news, sensor data)..."
+                                    className="w-full h-48 bg-transparent border-none p-0 text-white placeholder:text-zinc-900 focus:ring-0 text-base leading-relaxed font-medium resize-none"
+                                />
+                            </div>
                         </div>
 
                         {/* File Upload Simulation */}
-                        <div className="space-y-3">
-                            <label className="text-sm font-bold text-foreground flex items-center gap-2">
-                                <Upload className="w-4 h-4" />
-                                Supporting Documents
+                        <div className="space-y-4">
+                             <label className="text-[10px] font-black text-zinc-700 uppercase tracking-[0.2em] flex items-center gap-2 px-4">
+                                <Upload className="w-3.5 h-3.5" />
+                                Evidence Payload
                             </label>
-                            <div className="border-2 border-dashed border-white/10 rounded-2xl p-8 text-center hover:border-primary/30 transition-all group cursor-pointer">
-                                <Upload className="w-8 h-8 text-slate-500 mx-auto mb-3 group-hover:text-primary transition-colors" />
-                                <p className="text-sm text-slate-400">Drag and drop PDFs, JPEGs, or Screenshots</p>
-                                <p className="text-[10px] text-slate-600 mt-1 uppercase font-bold tracking-widest">Max file size: 10MB</p>
+                            <div className="bg-black/40 border-2 border-dashed border-white/5 rounded-[2rem] p-12 text-center hover:border-[#D31027]/20 transition-all group cursor-pointer shadow-inner">
+                                <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-500">
+                                    <Upload className="w-6 h-6 text-zinc-600 group-hover:text-white" />
+                                </div>
+                                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">DRAG AND DROP ENCRYPTED ASSETS (PDF / JPG)</p>
+                                <p className="text-[8px] text-zinc-800 mt-2 font-black uppercase tracking-[0.3em]">MAX_SIZE: 10_MB_SECURE_PAYLOAD</p>
                             </div>
                         </div>
 
                         {/* Info Warning */}
-                        <div className="bg-amber-500/5 border border-amber-500/10 p-4 rounded-xl flex gap-3">
-                            <Info className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                            <p className="text-xs text-amber-500/80 leading-relaxed font-medium">
-                                Submitting false evidence may result in a permanent ban from the Reflex protocol. Your evidence hash will be committed to the Arbitrum Sepolia network and verified by a decentralized relayer quorum.
+                        <div className="bg-[#D31027]/5 border border-[#D31027]/10 p-8 rounded-[2.5rem] flex gap-6 shadow-2xl">
+                            <AlertCircle className="w-6 h-6 text-[#D31027] shrink-0 mt-1" />
+                            <p className="text-[10px] text-[#D31027]/70 leading-relaxed font-black uppercase tracking-[0.15em]">
+                                PROTOCOL_WARNING: Submitting false evidence may result in a permanent wallet identity purge. Your evidence hash will be committed to the Arbitrum Sepolia ledger and verified by a decentralized relayer quorum.
                             </p>
                         </div>
 
@@ -206,15 +260,20 @@ export default function EvidenceSubmissionPage({ params }: { params: { id: strin
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${isSubmitting ? "bg-zinc-800 text-slate-500 cursor-not-allowed" : "bg-primary text-white hover:brightness-110 shadow-lg shadow-primary/20"
+                            className={`w-full py-7 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.4em] transition-all flex items-center justify-center gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] ${isSubmitting ? "bg-zinc-900 text-zinc-700 cursor-not-allowed border border-white/5" : "bg-white text-black hover:bg-zinc-200 active:scale-[0.98]"
                                 }`}
                         >
                             {isSubmitting ? (
                                 <>
-                                    <Activity className="w-4 h-4 animate-spin" />
-                                    Submitting to Quorum...
+                                    <Activity className="w-5 h-5 animate-spin" />
+                                    Finalizing IPFS Commitment...
                                 </>
-                            ) : "Commit Evidence Hash"}
+                            ) : (
+                                <>
+                                    COMMIT DISPUTE TO LEDGER
+                                    <Zap className="w-4 h-4 fill-current transition-transform group-hover:scale-125" />
+                                </>
+                            )}
                         </button>
                     </form>
                 )}
