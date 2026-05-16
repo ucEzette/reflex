@@ -20,19 +20,19 @@ export function MarketCard({ product }: MarketCardProps) {
                         <div className="circle circle3" />
                         <div className="circle circle4" />
                         <div className="circle circle5">
-                            <span className="material-symbols-outlined text-white text-xl">{product.icon}</span>
+                            <span className="material-symbols-outlined text-[#1A1A1A] text-xl">{product.icon}</span>
                         </div>
                     </div>
 
                     <div className="content ruby">
                         <div className="mb-4">
                             <div className="flex justify-between items-start">
-                                <span className={`text-[10px] font-black uppercase tracking-[0.3em] text-rose-400 opacity-60`}>
+                                <span className={`text-[10px] font-bold uppercase tracking-wider text-rose-400 opacity-60`}>
                                     {product.category}
                                 </span>
                             </div>
                             <div className="flex justify-between items-start mt-1">
-                                <h3 className="text-2xl font-bold text-white leading-tight group-hover:text-rose-200 transition-colors">
+                                <h3 className="text-2xl font-bold text-[#1A1A1A] leading-tight group-hover:text-rose-200 transition-colors">
                                     {product.title}
                                 </h3>
                                 <InstitutionalTooltip
@@ -40,7 +40,7 @@ export function MarketCard({ product }: MarketCardProps) {
                                     content={product.about}
                                     position="bottom"
                                 >
-                                    <div className="p-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-help shrink-0 ml-2 animate-blink-soft">
+                                    <div className="p-1.5 rounded-full bg-black/[0.03] border border-black/[0.06] hover:bg-black/[0.05] transition-colors cursor-help shrink-0 ml-2 animate-blink-soft">
                                         <Info className="w-4 h-4 text-rose-200/50" />
                                     </div>
                                 </InstitutionalTooltip>
@@ -70,10 +70,10 @@ export function MarketCard({ product }: MarketCardProps) {
 
                     <div className="bottom ruby">
                         <div className="flex flex-col">
-                            <span className="text-[12px] font-black uppercase tracking-[0.2em] text-rose-400">Buy Policy</span>
+                            <span className="text-[12px] font-bold uppercase tracking-wider text-rose-400">Buy Policy</span>
                         </div>
-                        <div className="flex items-center gap-2 text-white/30 group-hover:text-white transition-all duration-300">
-                            <span className="text-[10px] font-black uppercase tracking-widest">Details</span>
+                        <div className="flex items-center gap-2 text-[#1A1A1A]/30 group-hover:text-white transition-all duration-300">
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Details</span>
                             <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
                         </div>
                     </div>
