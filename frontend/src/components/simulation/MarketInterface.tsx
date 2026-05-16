@@ -165,7 +165,7 @@ export function MarketInterface() {
 
     return (
         <div className="relative z-10 min-h-screen flex flex-col md:flex-row items-center justify-center md:justify-end xl:mr-48 px-6 lg:px-24 pointer-events-none">
-            <div className="pointer-events-auto w-full max-w-[420px] rounded-2xl p-8 border border-white/10 shadow-2xl backdrop-blur-xl bg-black/40 xl:bg-black/20"
+            <div className="pointer-events-auto w-full max-w-[420px] rounded-2xl p-8 border border-black/[0.06] shadow-2xl backdrop-blur-xl bg-black/40 xl:bg-black/20"
                 style={{ backdropFilter: "blur(12px) brightness(1.2) contrast(1.1)" }}>
 
                 {/* Decorative gradients */}
@@ -173,7 +173,7 @@ export function MarketInterface() {
                 <div className="absolute -top-32 -right-32 w-64 h-64 bg-cyan-500/20 blur-[80px] rounded-full pointer-events-none" />
                 <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-primary/20 blur-[80px] rounded-full pointer-events-none" />
 
-                <h1 className="text-3xl font-black text-foreground mb-2 tracking-tighter mix-blend-plus-lighter">
+                <h1 className="text-3xl font-bold text-foreground mb-2 tracking-tighter mix-blend-plus-lighter">
                     Flight Market
                 </h1>
                 <p className="text-foreground font-light mb-8 text-sm leading-relaxed drop-shadow-md">
@@ -182,12 +182,12 @@ export function MarketInterface() {
 
                 {showCheckout ? (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-                        <button onClick={() => setShowCheckout(false)} className="text-slate-400 hover:text-white text-xs flex items-center gap-1 mb-2 transition-colors">
+                        <button onClick={() => setShowCheckout(false)} className="text-slate-400 hover:text-[#1A1A1A] text-xs flex items-center gap-1 mb-2 transition-colors">
                             <span className="material-symbols-outlined text-sm">arrow_back</span>
                             Back to Flight Search
                         </button>
 
-                        <div className="p-5 bg-gradient-to-br from-[#161d2f] to-[#0B0F19] border border-white/5 rounded-xl text-left">
+                        <div className="p-5 bg-gradient-to-br from-[#161d2f] to-[#0B0F19] border border-black/[0.04] rounded-xl text-left">
                             <div className="flex items-center justify-between mb-4">
                                 <span className="text-sm text-slate-400 font-medium">{flightDetails?.airline} • {flightDetails?.flightNumber}</span>
                                 <span className="text-[10px] font-bold bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded-sm tracking-widest">PREMIUM</span>
@@ -207,7 +207,7 @@ export function MarketInterface() {
                         </div>
 
                         {usdtBalance !== undefined && isConnected && (
-                            <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono tracking-tight bg-white/5 px-4 py-3 rounded-lg border border-white/5">
+                            <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono tracking-tight bg-black/[0.03] px-4 py-3 rounded-lg border border-black/[0.04]">
                                 <span className="flex items-center gap-1.5">
                                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
                                     BAL: {(Number(usdtBalance) / 1e6).toFixed(2)} USDT
@@ -219,7 +219,7 @@ export function MarketInterface() {
                         )}
 
                         {!isConnected ? (
-                            <div className="text-center p-4 bg-white/5 rounded-xl border border-white/10">
+                            <div className="text-center p-4 bg-black/[0.03] rounded-xl border border-black/[0.06]">
                                 <p className="text-sm text-slate-400">Please connect your wallet to purchase this policy.</p>
                             </div>
                         ) : purchaseSuccess ? (
@@ -270,9 +270,9 @@ export function MarketInterface() {
                                     value={flightCode}
                                     onChange={(e) => setFlightCode(e.target.value.toUpperCase())}
                                     placeholder="e.g. AA100"
-                                    className={`w-full bg-white/5 border ${validationError ? 'border-red-500/50' : flightDetails ? 'border-cyan-500/50' : 'border-white/10'} rounded-lg text-foreground font-mono h-14 px-4 text-xl uppercase focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all font-bold placeholder:text-foreground/20 outline-none backdrop-blur-md`}
+                                    className={`w-full bg-black/[0.03] border ${validationError ? 'border-red-500/50' : flightDetails ? 'border-cyan-500/50' : 'border-black/[0.06]'} rounded-lg text-foreground font-mono h-14 px-4 text-xl uppercase focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all font-bold placeholder:text-foreground/20 outline-none backdrop-blur-md`}
                                 />
-                                <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg pointer-events-none mix-blend-overlay"></div>
+                                <div className="absolute inset-0 bg-black/[0.03] opacity-0 group-hover:opacity-100 transition-opacity rounded-lg pointer-events-none mix-blend-overlay"></div>
                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
                                     {isValidating ? (
                                         <svg className="animate-spin h-5 w-5 text-cyan-400" viewBox="0 0 24 24">
@@ -291,7 +291,7 @@ export function MarketInterface() {
                         </div>
 
                         {flightDetails ? (
-                            <div className="p-4 rounded-lg bg-surface-dark border border-white/10 relative overflow-hidden backdrop-blur-sm">
+                            <div className="p-4 rounded-lg bg-surface-dark border border-black/[0.06] relative overflow-hidden backdrop-blur-sm">
                                 <div className="flex items-center justify-between text-sm mb-4">
                                     <span className="text-foreground font-medium filter drop-shadow-md">{flightDetails.airline}</span>
                                     <span className="text-cyan-400 font-mono text-xs font-bold tracking-wider">{flightDetails.status?.toUpperCase() || 'UNKNOWN'}</span>
@@ -312,7 +312,7 @@ export function MarketInterface() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-y-3 gap-x-4 mt-4 pt-4 border-t border-white/10 text-[10px] uppercase font-mono tracking-wider">
+                                <div className="grid grid-cols-2 gap-y-3 gap-x-4 mt-4 pt-4 border-t border-black/[0.06] text-[10px] uppercase font-mono tracking-wider">
                                     <div className="flex flex-col">
                                         <span className="text-slate-500 mb-0.5">Date</span>
                                         <span className="text-foreground">{flightDetails.flightDate || 'N/A'}</span>
@@ -336,13 +336,13 @@ export function MarketInterface() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-3 gap-4 py-5 border-y border-white/10 relative">
+                            <div className="grid grid-cols-3 gap-4 py-5 border-y border-black/[0.06] relative">
                                 <div className="absolute inset-0 bg-gradient-to-r from-black/0 via-white/5 to-black/0 mix-blend-overlay pointer-events-none"></div>
                                 <div className="flex flex-col items-center">
                                     <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">Wind</span>
                                     <span className="text-foreground font-mono font-semibold text-lg drop-shadow-md">{windSpeed.toFixed(0)} <span className="text-slate-500 text-xs">kts</span></span>
                                 </div>
-                                <div className="flex flex-col items-center border-x border-white/5">
+                                <div className="flex flex-col items-center border-x border-black/[0.04]">
                                     <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">Alt</span>
                                     <span className="text-foreground font-mono font-semibold text-lg drop-shadow-md">{altitude.toFixed(0)} <span className="text-slate-500 text-xs">ft</span></span>
                                 </div>
@@ -357,10 +357,10 @@ export function MarketInterface() {
                             onClick={() => setShowCheckout(true)}
                             onMouseEnter={handleBoost}
                             disabled={!flightDetails || isValidating}
-                            className={`w-full h-14 rounded-lg bg-gradient-to-r ${flightDetails ? 'from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 shadow-cyan-900/40' : 'from-slate-700 to-slate-600 opacity-50 cursor-not-allowed'} transition-all duration-500 text-white font-bold tracking-[0.2em] uppercase text-xs shadow-xl relative overflow-hidden group`}
+                            className={`w-full h-14 rounded-lg bg-gradient-to-r ${flightDetails ? 'from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 shadow-cyan-900/40' : 'from-slate-700 to-slate-600 opacity-50 cursor-not-allowed'} transition-all duration-500 text-[#1A1A1A] font-bold tracking-wider uppercase text-xs shadow-xl relative overflow-hidden group`}
                         >
                             <span className="relative z-10 mix-blend-plus-lighter">{flightDetails ? "Proceed to Checkout" : "Awaiting Flight"}</span>
-                            {flightDetails && <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>}
+                            {flightDetails && <div className="absolute inset-0 bg-black/[0.02]0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>}
                         </button>
                     </div>
                 )}
