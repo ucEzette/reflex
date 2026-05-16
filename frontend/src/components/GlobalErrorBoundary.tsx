@@ -50,7 +50,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
                 <AlertTriangle className="w-8 h-8 text-red-500" />
               </div>
 
-              <h2 className="text-2xl font-black text-foreground mb-3 tracking-tight">
+              <h2 className="text-2xl font-bold text-foreground mb-3 tracking-tight">
                 {isWalletError ? "Wallet Connection Issue" : "System Interruption"}
               </h2>
 
