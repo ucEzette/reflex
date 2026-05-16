@@ -133,12 +133,12 @@ export function GovernanceVoting() {
                 {MOCK_PROPOSALS.map((proposal) => (
                     <div
                         key={proposal.id}
-                        className={`bg-black/40 border border-white/5 rounded-2xl p-6 transition-all hover:border-white/10 ${selectedId === proposal.id ? 'ring-1 ring-primary/50' : ''}`}
+                        className={`bg-black/40 border border-black/[0.04] rounded-2xl p-6 transition-all hover:border-black/[0.06] ${selectedId === proposal.id ? 'ring-1 ring-primary/50' : ''}`}
                     >
                         <div className="flex flex-col md:flex-row justify-between gap-6">
                             <div className="flex-1 space-y-3">
                                 <div className="flex items-center gap-3">
-                                    <span className="px-2 py-0.5 bg-white/5 rounded text-[10px] font-mono text-slate-400 border border-white/5">{proposal.id}</span>
+                                    <span className="px-2 py-0.5 bg-black/[0.03] rounded text-[10px] font-mono text-slate-400 border border-black/[0.04]">{proposal.id}</span>
                                     <StatusBadge status={proposal.status} />
                                     {proposal.status === 'Active' && (
                                         <span className="flex items-center gap-1 text-[10px] text-amber-500 font-bold uppercase tracking-wider">
@@ -156,7 +156,7 @@ export function GovernanceVoting() {
                                         <span className="text-slate-500">Progress</span>
                                         <span className="text-foreground">{Math.round((proposal.votesFor + proposal.votesAgainst) / proposal.quorum * 100)}% to Quorum</span>
                                     </div>
-                                    <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                    <div className="h-1.5 bg-black/[0.03] rounded-full overflow-hidden">
                                         <div
                                             className="h-full bg-primary"
                                             style={{ width: `${Math.min(100, (proposal.votesFor + proposal.votesAgainst) / proposal.quorum * 100)}%` }}
@@ -179,13 +179,13 @@ export function GovernanceVoting() {
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => handleVote(proposal.id, true)}
-                                            className="flex-1 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold rounded-lg transition-colors uppercase tracking-wider"
+                                            className="flex-1 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-[#1A1A1A] text-[10px] font-bold rounded-lg transition-colors uppercase tracking-wider"
                                         >
                                             For
                                         </button>
                                         <button
                                             onClick={() => handleVote(proposal.id, false)}
-                                            className="flex-1 py-1.5 bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold rounded-lg transition-colors uppercase tracking-wider"
+                                            className="flex-1 py-1.5 bg-red-500 hover:bg-red-600 text-[#1A1A1A] text-[10px] font-bold rounded-lg transition-colors uppercase tracking-wider"
                                         >
                                             Against
                                         </button>
@@ -217,7 +217,7 @@ export function GovernanceVoting() {
                 </div>
 
                 <div className="space-y-4">
-                    <div className="bg-black/40 border border-white/5 rounded-xl p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="bg-black/40 border border-black/[0.04] rounded-xl p-4 flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
                                 <AlertCircle className="w-5 h-5 text-amber-500" />
@@ -228,7 +228,7 @@ export function GovernanceVoting() {
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] bg-white/5 px-2 py-1 rounded text-slate-500 font-mono">
+                            <span className="text-[10px] bg-black/[0.03] px-2 py-1 rounded text-slate-500 font-mono">
                                 {currentVotes}/{requiredQuorum} Verified
                             </span>
                             <button
@@ -257,14 +257,14 @@ export function GovernanceVoting() {
                     </div>
                     <button
                         onClick={() => toast.info("Proposal Creation Incoming", { description: "The DAO deployment module is currently synchronizing with the L1 Governance contract." })}
-                        className="px-6 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary-dark transition-all uppercase tracking-widest flex items-center gap-2 mx-auto"
+                        className="px-6 py-2 bg-primary text-[#1A1A1A] text-xs font-bold rounded-xl hover:bg-primary-dark transition-all uppercase tracking-widest flex items-center gap-2 mx-auto"
                     >
                         Initialize Proposal Drafting <ExternalLink className="w-3 h-3" />
                     </button>
                 </div>
             </div>
 
-            <div className="flex items-center justify-center p-6 border border-dashed border-white/5 rounded-2xl bg-white/[0.02] mt-6">
+            <div className="flex items-center justify-center p-6 border border-dashed border-black/[0.04] rounded-2xl bg-white/[0.02] mt-6">
                 <div className="text-center space-y-2">
                     <p className="text-slate-400 text-xs font-light tracking-wide">Looking for historical proposals?</p>
                     <button className="text-primary text-xs font-bold uppercase tracking-widest hover:underline flex items-center gap-1 mx-auto">

@@ -18,7 +18,7 @@ const treasuryData = [
 ];
 
 const reserveAllocation = [
-    { name: 'Claims Buffer', value: 4500000, color: '#800020' },
+    { name: 'Claims Buffer', value: 4500000, color: '#FF6B00' },
     { name: 'Aave aUSDT', value: 8200000, color: '#22c55e' },
     { name: 'Protocol Treasury', value: 1200000, color: '#8b5cf6' },
     { name: 'Operational Fund', value: 300000, color: '#f59e0b' },
@@ -57,7 +57,7 @@ export function TreasuryAnalytics() {
         : 0;
 
     const reserveAllocation = [
-        { name: 'Pure Liquidity (USDT)', value: liveTotalAssets, color: '#800020' },
+        { name: 'Pure Liquidity (USDT)', value: liveTotalAssets, color: '#FF6B00' },
         { name: 'Accumulated Fees', value: (liveProfit * 0.1), color: '#8b5cf6' },
     ];
 
@@ -71,7 +71,7 @@ export function TreasuryAnalytics() {
                         <h2 className="text-2xl font-bold text-foreground flex items-center gap-3 cursor-help">
                             <Landmark className="w-6 h-6 text-emerald-400" />
                             DAO Treasury Oversight
-                            <Info className="w-4 h-4 text-zinc-500 opacity-50" />
+                            <Info className="w-4 h-4 text-[#71717A] opacity-50" />
                         </h2>
                     </InstitutionalTooltip>
                     <p className="text-slate-400 text-sm mt-1">Real-time transparency into protocol revenue, reserves, and underwriting performance.</p>
@@ -86,7 +86,7 @@ export function TreasuryAnalytics() {
 
             {/* KPI Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-black/40 border border-white/5 rounded-2xl p-6 backdrop-blur-xl">
+                <div className="bg-black/40 border border-black/[0.04] rounded-2xl p-6 backdrop-blur-xl">
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-xs text-slate-500 uppercase font-bold tracking-widest">Total Value Locked</span>
                         <Shield className="w-4 h-4 text-primary" />
@@ -98,7 +98,7 @@ export function TreasuryAnalytics() {
                     </div>
                 </div>
 
-                <div className="bg-black/40 border border-white/5 rounded-2xl p-6 backdrop-blur-xl">
+                <div className="bg-black/40 border border-black/[0.04] rounded-2xl p-6 backdrop-blur-xl">
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-xs text-slate-500 uppercase font-bold tracking-widest">Protocol Revenue (Fees)</span>
                         <DollarSign className="w-4 h-4 text-emerald-500" />
@@ -115,14 +115,14 @@ export function TreasuryAnalytics() {
             {/* Charts Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* Revenue vs Yield Trend - simplified to current distribution since no indexer */}
-                <div className="lg:col-span-8 bg-black/40 border border-white/5 rounded-3xl p-8 backdrop-blur-xl">
+                <div className="lg:col-span-8 bg-black/40 border border-black/[0.04] rounded-3xl p-8 backdrop-blur-xl">
                     <h3 className="text-lg font-bold text-foreground mb-6">Current Capital Efficiency</h3>
-                    <div className="h-[300px] w-full flex flex-col items-center justify-center text-center p-8 border border-white/5 rounded-2xl bg-white/[0.01]">
+                    <div className="h-[300px] w-full flex flex-col items-center justify-center text-center p-8 border border-black/[0.04] rounded-2xl bg-white/[0.01]">
                         <Activity className="w-12 h-12 text-primary/30 mb-4" />
-                        <p className="text-sm text-zinc-400 max-w-sm">Historical trend analysis is currently being synchronized from the sub-graph. Real-time reserve distribution is available on the right.</p>
+                        <p className="text-sm text-[#71717A] max-w-sm">Historical trend analysis is currently being synchronized from the sub-graph. Real-time reserve distribution is available on the right.</p>
                         <div className="mt-8 flex gap-8">
                             <div>
-                                <p className="text-[10px] text-zinc-500 uppercase font-black">Underwriting Capital</p>
+                                <p className="text-[10px] text-[#71717A] uppercase font-bold">Underwriting Capital</p>
                                 <p className="text-xl font-bold text-foreground">${liveTotalAssets.toLocaleString()}</p>
                             </div>
                         </div>
@@ -130,7 +130,7 @@ export function TreasuryAnalytics() {
                 </div>
 
                 {/* Capital Allocation */}
-                <div className="lg:col-span-4 bg-black/40 border border-white/5 rounded-3xl p-8 backdrop-blur-xl flex flex-col">
+                <div className="lg:col-span-4 bg-black/40 border border-black/[0.04] rounded-3xl p-8 backdrop-blur-xl flex flex-col">
                     <h3 className="text-lg font-bold text-foreground mb-6">Asset Allocation</h3>
                     <div className="flex-1 min-h-[240px]">
                         <ResponsiveContainer width="100%" height="100%">
