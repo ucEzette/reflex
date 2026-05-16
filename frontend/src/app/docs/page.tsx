@@ -96,8 +96,8 @@ function ContractCard({ name, addr, desc, color = "violet" }: { name: string; ad
           Arbiscan <span className="material-symbols-outlined text-[12px]">open_in_new</span>
         </a>
       </div>
-      <p className="text-xs text-zinc-400 leading-relaxed mb-3">{desc}</p>
-      <code className="text-[9px] text-zinc-500 mono-data bg-surface-container-highest px-2 py-1 rounded select-all truncate">{addr}</code>
+      <p className="text-xs text-[#71717A] leading-relaxed mb-3">{desc}</p>
+      <code className="text-[9px] text-[#71717A] mono-data bg-surface-container-highest px-2 py-1 rounded select-all truncate">{addr}</code>
     </div>
   );
 }
@@ -108,17 +108,17 @@ export default function DocsPage() {
   const sectionClass = "animate-fade-in";
   const h1Class = "text-4xl md:text-5xl font-bold tracking-tight mb-8 flex items-center gap-4";
   const panelClass = "bg-surface-container-lowest p-8 rounded-2xl specular-border space-y-6";
-  const codeBlockClass = "p-4 bg-surface-container-highest rounded-xl mono-data text-[11px] border border-white/5 overflow-x-auto";
+  const codeBlockClass = "p-4 bg-surface-container-highest rounded-xl mono-data text-[11px] border border-black/[0.04] overflow-x-auto";
 
   return (
     <div className="pt-24 pb-24 max-w-[1600px] mx-auto flex min-h-screen">
       {/* Left Sidebar */}
-      <aside className="hidden lg:block w-64 flex-shrink-0 border-r border-white/5 pr-6 pl-8 pt-12 sticky top-24 h-[calc(100vh-6rem)] overflow-y-auto no-scrollbar">
+      <aside className="hidden lg:block w-64 flex-shrink-0 border-r border-black/[0.04] pr-6 pl-8 pt-12 sticky top-24 h-[calc(100vh-6rem)] overflow-y-auto no-scrollbar">
         <Link href="/" className="text-xl font-bold text-on-surface tracking-tighter mb-10 block">
           Reflex Docs
         </Link>
         <div className="flex items-center gap-2 mb-10">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">v2.1 — MAR 2026</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#71717A] bg-black/[0.03] px-3 py-1.5 rounded-full border border-black/[0.04]">v2.1 — MAR 2026</span>
         </div>
         <nav className="flex flex-col gap-8">
           {SIDEBAR_SECTIONS.map((section) => (
@@ -127,7 +127,7 @@ export default function DocsPage() {
               <ul className="flex flex-col gap-0.5">
                 {section.items.map((item) => (
                   <li key={item.id}>
-                    <button onClick={() => { setActiveSection(item.id); window.scrollTo({ top: 0, behavior: "smooth" }); }} className={`w-full text-left px-3 py-2 rounded text-sm transition-colors border-l-2 ${activeSection === item.id ? "bg-primary-container/20 text-primary font-medium border-primary" : "text-zinc-400 hover:text-on-surface hover:bg-surface-container-high border-transparent"}`}>
+                    <button onClick={() => { setActiveSection(item.id); window.scrollTo({ top: 0, behavior: "smooth" }); }} className={`w-full text-left px-3 py-2 rounded text-sm transition-colors border-l-2 ${activeSection === item.id ? "bg-primary-container/20 text-primary font-medium border-primary" : "text-[#71717A] hover:text-on-surface hover:bg-surface-container-high border-transparent"}`}>
                       {item.label}
                     </button>
                   </li>
@@ -148,16 +148,16 @@ export default function DocsPage() {
             <div className={panelClass}>
               <p className="text-zinc-300 leading-relaxed text-lg font-light">Reflex is a decentralized <strong>Protection Market</strong> for Parametric Micro-Insurance. By utilizing immutable smart contracts and high-fidelity oracle data, Reflex eliminates the friction, costs, and subjectivity of traditional insurance claims processing.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                <div className="p-5 bg-white/5 rounded-xl border border-white/10">
+                <div className="p-5 bg-black/[0.03] rounded-xl border border-black/[0.06]">
                   <h4 className="text-primary font-bold text-sm mb-2">The Problem</h4>
-                  <p className="text-[11px] text-zinc-400 leading-relaxed italic">Traditional insurance ignores small daily losses under $50 because their administrative overhead costs more than the payout itself—leaving consumers unprotected against high-frequency, low-severity risks.</p>
+                  <p className="text-[11px] text-[#71717A] leading-relaxed">Traditional insurance ignores small daily losses under $50 because their administrative overhead costs more than the payout itself—leaving consumers unprotected against high-frequency, low-severity risks.</p>
                 </div>
                 <div className="p-5 bg-primary/10 rounded-xl border border-primary/20">
                   <h4 className="text-primary font-bold text-sm mb-2">The Reflex Solution</h4>
                   <p className="text-[11px] text-zinc-200 leading-relaxed">We replace human adjusters with <strong>Chainlink Oracle Networks</strong>. If the data says a flight is delayed 120 minutes, the contract pays out instantly. No claims forms, no waiting, no arguments.</p>
                 </div>
               </div>
-              <blockquote className="border-l-2 border-primary/30 pl-6 py-2 italic text-zinc-400 font-light text-sm">&quot;In a Protection Market, the code is the contract, and the data is the adjuster.&quot;</blockquote>
+              <blockquote className="border-l-2 border-primary/30 pl-6 py-2 text-[#71717A] font-light text-sm">&quot;In a Protection Market, the code is the contract, and the data is the adjuster.&quot;</blockquote>
             </div>
             <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
@@ -168,7 +168,7 @@ export default function DocsPage() {
                 <div key={c.title} className="bg-surface-container-lowest p-6 rounded-xl specular-border text-center">
                   <span className={`material-symbols-outlined text-4xl ${c.color} mb-3`}>{c.icon}</span>
                   <h3 className="font-bold mb-2">{c.title}</h3>
-                  <p className="text-zinc-500 text-sm">{c.desc}</p>
+                  <p className="text-[#71717A] text-sm">{c.desc}</p>
                 </div>
               ))}
             </div>
@@ -179,7 +179,7 @@ export default function DocsPage() {
         {activeSection === "policyholders" && (
           <div className={sectionClass}>
             <h1 className={h1Class}><span className="material-symbols-outlined text-4xl text-secondary">verified_user</span> The Policyholder Lifecycle</h1>
-            <p className="text-zinc-400 font-light leading-relaxed mb-10">Reflex provides a transparent way to hedge against specific, quantifiable risks without deductible negotiations or manual claim filings.</p>
+            <p className="text-[#71717A] font-light leading-relaxed mb-10">Reflex provides a transparent way to hedge against specific, quantifiable risks without deductible negotiations or manual claim filings.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {[
                 { step: "1", title: "Precision Purchase", icon: "shopping_cart_checkout", color: "text-secondary", desc: "Select a target (Flight BA205, Port of Rotterdam) and define risk parameters. Premiums are calculated from historical volatility and pool utilization." },
@@ -188,11 +188,11 @@ export default function DocsPage() {
                 { step: "4", title: "Atomic Settlement", icon: "payments", color: "text-emerald-400", desc: "No manual claim button. The contract triggers USDT release to the policyholder's wallet the moment consensus is confirmed." },
               ].map(s => (
                 <div key={s.step} className="bg-surface-container-lowest p-6 rounded-xl specular-border space-y-3 hover:bg-surface-container-low transition-all">
-                  <div className={`w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center ${s.color}`}>
+                  <div className={`w-10 h-10 rounded-lg bg-black/[0.03] flex items-center justify-center ${s.color}`}>
                     <span className="material-symbols-outlined text-xl">{s.icon}</span>
                   </div>
                   <h4 className="font-bold text-sm">{s.step}. {s.title}</h4>
-                  <p className="text-[11px] text-zinc-400 leading-relaxed">{s.desc}</p>
+                  <p className="text-[11px] text-[#71717A] leading-relaxed">{s.desc}</p>
                 </div>
               ))}
             </div>
@@ -205,7 +205,7 @@ export default function DocsPage() {
             <h1 className={h1Class}><span className="material-symbols-outlined text-4xl text-emerald-400">trending_up</span> The Investor Yield Engine</h1>
             <div className={panelClass}>
               <p className="text-zinc-300 font-light leading-relaxed">Liquidity Providers (LPs) act as the protocol&apos;s underwriters. By depositing USDT, they provide collateral to back Max Payouts and earn multifaceted yield.</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10 border-t border-white/5 pt-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10 border-t border-black/[0.04] pt-10">
                 <div className="space-y-5">
                   <h4 className="font-bold flex items-center gap-2"><span className="material-symbols-outlined text-emerald-400">account_balance_wallet</span> Yield Waterfall</h4>
                   {[
@@ -215,14 +215,14 @@ export default function DocsPage() {
                   ].map(y => (
                     <div key={y.n} className="flex gap-3 items-start">
                       <div className="w-6 h-6 rounded bg-emerald-500/20 flex items-center justify-center shrink-0"><span className="text-[10px] text-emerald-400 font-bold">{y.n}</span></div>
-                      <div><p className="text-xs font-bold">{y.title}</p><p className="text-[10px] text-zinc-500 leading-tight">{y.desc}</p></div>
+                      <div><p className="text-xs font-bold">{y.title}</p><p className="text-[10px] text-[#71717A] leading-tight">{y.desc}</p></div>
                     </div>
                   ))}
                 </div>
                 <div className="space-y-4 p-5 bg-red-500/5 border border-red-500/10 rounded-xl">
                   <h4 className="text-red-400 font-bold flex items-center gap-2 text-sm"><span className="material-symbols-outlined">warning</span> Risk Profile</h4>
-                  <p className="text-[11px] text-zinc-500 leading-relaxed font-light">LPs shoulder the risk of payouts. If an insured event fires, the payout is deducted from the shared pool. Mitigations:</p>
-                  <ul className="text-[10px] text-zinc-500 space-y-1.5 font-light">
+                  <p className="text-[11px] text-[#71717A] leading-relaxed font-light">LPs shoulder the risk of payouts. If an insured event fires, the payout is deducted from the shared pool. Mitigations:</p>
+                  <ul className="text-[10px] text-[#71717A] space-y-1.5 font-light">
                     <li>• <strong>$10M Hard Cap</strong> — Max exposure per single policy.</li>
                     <li>• <strong>Non-Correlation</strong> — Risk spread across independent indices.</li>
                     <li>• <strong>Utilization Guard</strong> — Sales halt if coverage exceeds 90% of assets.</li>
@@ -243,15 +243,15 @@ export default function DocsPage() {
                 { icon: "hub", color: "blue-400", title: "Chainlink DON & Functions", desc: "The protocol utilizes Chainlink Functions and Decentralized Oracle Networks (DONs) to source high-fidelity off-chain data. The PolicyVerifier logic performs cryptographic verification of external events before authorizing payouts." },
                 { icon: "account_balance", color: "indigo-400", title: "Aave V3 Yield Optimization", desc: "Reflex Liquidity Pools are integrated with Aave V3. Idle USDT is automatically routed to Aave's lending markets, ensuring LPs earn base yield in addition to parametric insurance premiums." },
               ].map((int, i) => (
-                <div key={int.title} className={`space-y-4 ${i > 0 ? "pt-10 border-t border-white/5" : ""}`}>
+                <div key={int.title} className={`space-y-4 ${i > 0 ? "pt-10 border-t border-black/[0.04]" : ""}`}>
                   <div className="flex items-center gap-3">
                     <div className={`p-2 bg-${int.color}/10 rounded-lg border border-${int.color}/20`}><span className={`material-symbols-outlined text-${int.color} text-xl`}>{int.icon}</span></div>
                     <h3 className="text-xl font-bold">{int.title}</h3>
                   </div>
-                  <p className="text-zinc-400 font-light leading-relaxed text-sm">{int.desc}</p>
+                  <p className="text-[#71717A] font-light leading-relaxed text-sm">{int.desc}</p>
                 </div>
               ))}
-              <div className="space-y-4 pt-10 border-t border-white/5">
+              <div className="space-y-4 pt-10 border-t border-black/[0.04]">
                 <h3 className="text-xl font-bold">Chainlink Functions Code</h3>
                 <div className={codeBlockClass}>
                   <pre className="text-primary">{`// cre/PolicyVerifier.ts execution
@@ -273,15 +273,15 @@ async run(input: VerificationInput) {
             <div className={panelClass}>
               <p className="text-zinc-300 leading-relaxed font-light text-lg">The Dynamic Risk Engine (DRE) is a high-frequency actuarial layer that prevents protocol insolvency during extreme volatility. Premiums adjust based on live environmental and market telemetry.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-5 bg-white/5 rounded-xl border border-white/10 space-y-3">
+                <div className="p-5 bg-black/[0.03] rounded-xl border border-black/[0.06] space-y-3">
                   <h4 className="text-sm font-bold text-red-400 uppercase tracking-widest">Surge Triggers</h4>
-                  <ul className="text-[11px] text-zinc-400 space-y-2">
+                  <ul className="text-[11px] text-[#71717A] space-y-2">
                     <li>• <strong>Aviation</strong>: Wind Speeds &gt; 25 knots / Hail probability &gt; 40%.</li>
                     <li>• <strong>Stablecoins</strong>: Oracle price deviation &gt; 1.5% from peg.</li>
                     <li>• <strong>Agriculture</strong>: Rain probability &lt; 10% during peak season.</li>
                   </ul>
                 </div>
-                <div className="p-5 bg-white/5 rounded-xl border border-white/10 space-y-3">
+                <div className="p-5 bg-black/[0.03] rounded-xl border border-black/[0.06] space-y-3">
                   <h4 className="text-sm font-bold uppercase tracking-widest">Pricing Formula</h4>
                   <div className={codeBlockClass}><pre className="text-primary">{`Premium = BaseP × riskMultiplier(DON_DATA)
 // riskMultiplier ranges from 1.0x to 5.0x`}</pre></div>
@@ -296,15 +296,15 @@ async run(input: VerificationInput) {
           <div className={sectionClass}>
             <h1 className={h1Class}><span className="material-symbols-outlined text-4xl text-primary">sdk</span> Enterprise SDK</h1>
             <div className={panelClass}>
-              <p className="text-zinc-400 font-light leading-relaxed">The Reflex Enterprise SDK is a modular micro-frontend designed for seamless checkout integration. It abstracts all blockchain complexity while providing high-fidelity branding controls.</p>
+              <p className="text-[#71717A] font-light leading-relaxed">The Reflex Enterprise SDK is a modular micro-frontend designed for seamless checkout integration. It abstracts all blockchain complexity while providing high-fidelity branding controls.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-5 bg-white/5 rounded-xl border border-white/10">
+                <div className="p-5 bg-black/[0.03] rounded-xl border border-black/[0.06]">
                   <h4 className="text-primary font-bold text-sm mb-2">useReflexWidget Hook</h4>
-                  <p className="text-[10px] text-zinc-500 leading-relaxed italic">Headless business logic for premium estimation, risk polling, and purchase state management.</p>
+                  <p className="text-[10px] text-[#71717A] leading-relaxed">Headless business logic for premium estimation, risk polling, and purchase state management.</p>
                 </div>
-                <div className="p-5 bg-white/5 rounded-xl border border-white/10">
+                <div className="p-5 bg-black/[0.03] rounded-xl border border-black/[0.06]">
                   <h4 className="text-primary font-bold text-sm mb-2">Themeable UI</h4>
-                  <p className="text-[10px] text-zinc-500 leading-relaxed italic">Pre-built Light, Dark, and Glassmorphism themes. Customizable accent colors and iconography.</p>
+                  <p className="text-[10px] text-[#71717A] leading-relaxed">Pre-built Light, Dark, and Glassmorphism themes. Customizable accent colors and iconography.</p>
                 </div>
               </div>
               <div className={codeBlockClass}><pre className="text-primary">{`// Partner Integration Example
@@ -328,17 +328,17 @@ import { ReflexWidget } from "@reflex/widget-sdk";
           <div className={sectionClass}>
             <h1 className={h1Class}><span className="material-symbols-outlined text-4xl text-green-500">grass</span> Agriculture Index</h1>
             <span className="px-3 py-1 rounded bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-widest mb-8 inline-block">Post-Season</span>
-            <p className="text-xs text-zinc-500 italic mb-6">Dual-Threshold Linear Interpolation (DTLI)</p>
+            <p className="text-xs text-[#71717A] mb-6">Dual-Threshold Linear Interpolation (DTLI)</p>
             <div className={panelClass}>
               <p className="text-sm font-light leading-relaxed">Hedge against cumulative rainfall variance. Payout scales linearly as precipitation drops from Strike to Exit threshold.</p>
               <div className={codeBlockClass}><pre className="text-green-400">{`// Fractional loss between Strike and Exit
 Ratio = Clamp((Strike - Actual) / (Strike - Exit), 0, 1);
 Payout = maxPayout × Ratio;`}</pre></div>
               <div className="space-y-3">
-                <h5 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest border-b border-white/5 pb-2">Risk Factors</h5>
-                <p className="text-[10px] text-zinc-500">• <strong className="text-on-surface">Strike</strong> — mm level where partial payout begins (e.g. 80% of historical mean)</p>
-                <p className="text-[10px] text-zinc-500">• <strong className="text-on-surface">Exit</strong> — Catastrophic level triggering 100% payout</p>
-                <p className="text-[10px] text-zinc-500">• <strong className="text-on-surface">Oracle</strong> — NOAA / GHCND cumulative rainfall</p>
+                <h5 className="text-[10px] font-bold text-[#71717A] uppercase tracking-widest border-b border-black/[0.04] pb-2">Risk Factors</h5>
+                <p className="text-[10px] text-[#71717A]">• <strong className="text-on-surface">Strike</strong> — mm level where partial payout begins (e.g. 80% of historical mean)</p>
+                <p className="text-[10px] text-[#71717A]">• <strong className="text-on-surface">Exit</strong> — Catastrophic level triggering 100% payout</p>
+                <p className="text-[10px] text-[#71717A]">• <strong className="text-on-surface">Oracle</strong> — NOAA / GHCND cumulative rainfall</p>
               </div>
             </div>
           </div>
@@ -349,15 +349,15 @@ Payout = maxPayout × Ratio;`}</pre></div>
           <div className={sectionClass}>
             <h1 className={h1Class}><span className="material-symbols-outlined text-4xl text-amber-500">bolt</span> Energy Hedge</h1>
             <span className="px-3 py-1 rounded bg-amber-500/10 text-amber-400 text-[10px] font-bold uppercase tracking-widest mb-8 inline-block">Daily Settlement</span>
-            <p className="text-xs text-zinc-500 italic mb-6">Incremental Degree Day Accumulator (IDDA)</p>
+            <p className="text-xs text-[#71717A] mb-6">Incremental Degree Day Accumulator (IDDA)</p>
             <div className={panelClass}>
               <p className="text-sm font-light leading-relaxed">Protects against utility price spikes from extreme climate. Tracks HDD/CDD against 18.3°C base.</p>
               <div className={codeBlockClass}><pre className="text-amber-400">{`HDD = Max(0, 18.3 - MeanTemp);
 Payout = Min(MaxPayout, HDD × TickValue);`}</pre></div>
               <div className="space-y-3">
-                <p className="text-[10px] text-zinc-500">• <strong className="text-on-surface">Tick Value</strong> — USD per Degree Day unit</p>
-                <p className="text-[10px] text-zinc-500">• <strong className="text-on-surface">Resolution</strong> — 24h oracle cycle</p>
-                <p className="text-[10px] text-zinc-500">• <strong className="text-on-surface">Oracle</strong> — OpenWeatherMap</p>
+                <p className="text-[10px] text-[#71717A]">• <strong className="text-on-surface">Tick Value</strong> — USD per Degree Day unit</p>
+                <p className="text-[10px] text-[#71717A]">• <strong className="text-on-surface">Resolution</strong> — 24h oracle cycle</p>
+                <p className="text-[10px] text-[#71717A]">• <strong className="text-on-surface">Oracle</strong> — OpenWeatherMap</p>
               </div>
             </div>
           </div>
@@ -368,16 +368,16 @@ Payout = Min(MaxPayout, HDD × TickValue);`}</pre></div>
           <div className={sectionClass}>
             <h1 className={h1Class}><span className="material-symbols-outlined text-4xl text-red-500">earthquake</span> Catastrophe Proximity</h1>
             <span className="px-3 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-widest mb-8 inline-block">Incident Trigger</span>
-            <p className="text-xs text-zinc-500 italic mb-6">Haversine Magnitude-Weighted Tiers</p>
+            <p className="text-xs text-[#71717A] mb-6">Haversine Magnitude-Weighted Tiers</p>
             <div className={panelClass}>
               <p className="text-sm font-light leading-relaxed">Payout determined by Haversine distance from user coordinates to USGS-verified epicenter (&gt;5.0 Mw).</p>
               <div className={codeBlockClass}><pre className="text-red-400">{`Dist = Haversine(User, Epicenter);
 If (Dist < 25km) → 100% Payout;
 If (Dist < 50km) → 30% Payout;
 Else → 0;`}</pre></div>
-              <div className="p-5 bg-white/5 rounded-xl border border-white/10 space-y-3">
-                <h6 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Stabilization</h6>
-                <p className="text-[10px] text-zinc-500 leading-relaxed">60-minute lag allows USGS to refine epicenter coordinates and magnitude data before triggering on-chain payout.</p>
+              <div className="p-5 bg-black/[0.03] rounded-xl border border-black/[0.06] space-y-3">
+                <h6 className="text-[10px] font-bold text-[#71717A] uppercase tracking-widest">Stabilization</h6>
+                <p className="text-[10px] text-[#71717A] leading-relaxed">60-minute lag allows USGS to refine epicenter coordinates and magnitude data before triggering on-chain payout.</p>
               </div>
             </div>
           </div>
@@ -390,12 +390,12 @@ Else → 0;`}</pre></div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-surface-container-lowest p-6 rounded-2xl specular-border border-t-4 border-indigo-500 space-y-4">
                 <h3 className="text-lg font-bold flex items-center gap-2"><span className="material-symbols-outlined text-indigo-400">sailing</span> Maritime Wind</h3>
-                <p className="text-[11px] text-zinc-400 font-light leading-relaxed">Binary 100% payout if sustained wind ≥ 35 knots at target IMO location. Oracle: OpenWeatherMap.</p>
+                <p className="text-[11px] text-[#71717A] font-light leading-relaxed">Binary 100% payout if sustained wind ≥ 35 knots at target IMO location. Oracle: OpenWeatherMap.</p>
                 <div className="p-2.5 bg-surface-container-highest rounded text-[10px] mono-data text-indigo-300 uppercase">Strike: WIND_GUST ≥ 35 KNT</div>
               </div>
               <div className="bg-surface-container-lowest p-6 rounded-2xl specular-border border-t-4 border-blue-500 space-y-4">
                 <h3 className="text-lg font-bold flex items-center gap-2"><span className="material-symbols-outlined text-blue-400">flight_takeoff</span> Travel Solutions</h3>
-                <p className="text-[11px] text-zinc-400 font-light leading-relaxed">Binary payout if verified arrival lag ≥ 120 minutes. Oracle: FlightAware AeroAPI.</p>
+                <p className="text-[11px] text-[#71717A] font-light leading-relaxed">Binary payout if verified arrival lag ≥ 120 minutes. Oracle: FlightAware AeroAPI.</p>
                 <div className="p-2.5 bg-surface-container-highest rounded text-[10px] mono-data text-blue-300 uppercase">Strike: ARR_LAG ≥ 120 MIN</div>
               </div>
             </div>
@@ -413,9 +413,9 @@ BaseExpectedLoss = (RequestedPayout × nDelayed) / nTotal;
 Premium = BaseExpectedLoss × (10000 + 500) / 10000;
 // PROTOCOL_MARGIN = 500 BPS (5% markup on expected loss)`}</pre></div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-white/5 rounded-xl border border-white/10 text-center"><p className="text-lg font-black">nDelayed / nTotal</p><p className="text-[10px] text-zinc-500">Historical frequency ratio</p></div>
-                <div className="p-4 bg-white/5 rounded-xl border border-white/10 text-center"><p className="text-lg font-black">5%</p><p className="text-[10px] text-zinc-500">Protocol Margin (500 BPS)</p></div>
-                <div className="p-4 bg-white/5 rounded-xl border border-white/10 text-center"><p className="text-lg font-black">EIP-712</p><p className="text-[10px] text-zinc-500">Signed quote verification</p></div>
+                <div className="p-4 bg-black/[0.03] rounded-xl border border-black/[0.06] text-center"><p className="text-lg font-bold">nDelayed / nTotal</p><p className="text-[10px] text-[#71717A]">Historical frequency ratio</p></div>
+                <div className="p-4 bg-black/[0.03] rounded-xl border border-black/[0.06] text-center"><p className="text-lg font-bold">5%</p><p className="text-[10px] text-[#71717A]">Protocol Margin (500 BPS)</p></div>
+                <div className="p-4 bg-black/[0.03] rounded-xl border border-black/[0.06] text-center"><p className="text-lg font-bold">EIP-712</p><p className="text-[10px] text-[#71717A]">Signed quote verification</p></div>
               </div>
             </div>
           </div>
@@ -454,11 +454,11 @@ Else
             <div className={panelClass}>
               <h3 className="text-xl font-bold">Tech Stack</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2"><h4 className="text-cyan-400 font-bold text-xs uppercase tracking-widest">Frontend</h4><p className="text-[10px] text-zinc-500 leading-relaxed"><strong>Next.js 14</strong> + <strong>Tailwind CSS</strong>. Reactive HUD for risk management.</p></div>
-                <div className="space-y-2"><h4 className="text-purple-400 font-bold text-xs uppercase tracking-widest">On-Chain</h4><p className="text-[10px] text-zinc-500 leading-relaxed"><strong>Solidity 0.8.24</strong> via <strong>Foundry</strong>. <strong>OpenZeppelin UUPS</strong> for upgradability.</p></div>
-                <div className="space-y-2"><h4 className="text-amber-400 font-bold text-xs uppercase tracking-widest">Relayer</h4><p className="text-[10px] text-zinc-500 leading-relaxed"><strong>Node.js</strong> service for EIP-712 quote signing and API proxying.</p></div>
+                <div className="space-y-2"><h4 className="text-cyan-400 font-bold text-xs uppercase tracking-widest">Frontend</h4><p className="text-[10px] text-[#71717A] leading-relaxed"><strong>Next.js 14</strong> + <strong>Tailwind CSS</strong>. Reactive HUD for risk management.</p></div>
+                <div className="space-y-2"><h4 className="text-purple-400 font-bold text-xs uppercase tracking-widest">On-Chain</h4><p className="text-[10px] text-[#71717A] leading-relaxed"><strong>Solidity 0.8.24</strong> via <strong>Foundry</strong>. <strong>OpenZeppelin UUPS</strong> for upgradability.</p></div>
+                <div className="space-y-2"><h4 className="text-amber-400 font-bold text-xs uppercase tracking-widest">Relayer</h4><p className="text-[10px] text-[#71717A] leading-relaxed"><strong>Node.js</strong> service for EIP-712 quote signing and API proxying.</p></div>
               </div>
-              <h3 className="text-xl font-bold italic pt-10 border-t border-white/5">Settlement Pipeline</h3>
+              <h3 className="text-xl font-bold pt-10 border-t border-black/[0.04]">Settlement Pipeline</h3>
               <div className="flex flex-col gap-3">
                 {[
                   { n: "1", c: "blue", title: "External Data Capture", desc: "Relayer polls FlightAware (AeroAPI), NOAA GHCND, and OpenWeatherMap." },
@@ -468,8 +468,8 @@ Else
                   { n: "5", c: "emerald", title: "Atomic Disbursement", desc: "LP Pool releases the reserved Max Payout directly to the policyholder." },
                 ].map(s => (
                   <div key={s.n} className={`flex items-center gap-4 p-4 bg-${s.c}-500/5 rounded-xl border border-${s.c}-500/10`}>
-                    <div className={`w-8 h-8 rounded-full bg-${s.c}-500/20 flex items-center justify-center text-${s.c}-400 font-black text-xs shrink-0`}>{s.n}</div>
-                    <div><p className="text-xs font-bold">{s.title}</p><p className="text-[10px] text-zinc-500">{s.desc}</p></div>
+                    <div className={`w-8 h-8 rounded-full bg-${s.c}-500/20 flex items-center justify-center text-${s.c}-400 font-bold text-xs shrink-0`}>{s.n}</div>
+                    <div><p className="text-xs font-bold">{s.title}</p><p className="text-[10px] text-[#71717A]">{s.desc}</p></div>
                   </div>
                 ))}
               </div>
@@ -489,13 +489,13 @@ Else
                   { n: "2", label: "Expired", color: "zinc", desc: "Policy expired without a trigger. Max payout reservation released to LP pool." },
                 ].map(s => (
                   <div key={s.n} className={`p-5 bg-${s.color}-500/5 border border-${s.color}-500/10 rounded-xl text-center space-y-2`}>
-                    <div className={`text-3xl font-black text-${s.color}-400`}>{s.n}</div>
+                    <div className={`text-3xl font-bold text-${s.color}-400`}>{s.n}</div>
                     <p className="text-xs font-bold">{s.label}</p>
-                    <p className="text-[10px] text-zinc-500">{s.desc}</p>
+                    <p className="text-[10px] text-[#71717A]">{s.desc}</p>
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-zinc-500 italic">Transitions: Active → Claimed (via executeClaim with positive trigger) or Active → Expired (via expirePolicy / Chainlink Keepers after expiresAt timestamp).</p>
+              <p className="text-[10px] text-[#71717A]">Transitions: Active → Claimed (via executeClaim with positive trigger) or Active → Expired (via expirePolicy / Chainlink Keepers after expiresAt timestamp).</p>
             </div>
           </div>
         )}
@@ -507,11 +507,11 @@ Else
             <div className={panelClass}>
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead><tr className="border-b border-white/10"><th className="py-3 text-institutional">Fee</th><th className="py-3 text-institutional">Rate</th><th className="py-3 text-institutional">Paid By</th><th className="py-3 text-institutional">Destination</th></tr></thead>
+                  <thead><tr className="border-b border-black/[0.06]"><th className="py-3 text-institutional">Fee</th><th className="py-3 text-institutional">Rate</th><th className="py-3 text-institutional">Paid By</th><th className="py-3 text-institutional">Destination</th></tr></thead>
                   <tbody className="text-xs">
-                    <tr className="border-b border-white/5"><td className="py-3 font-bold">Origination Fee</td><td>3% (300 BPS)</td><td>Policyholder</td><td>Protocol Treasury</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-3 font-bold">Protocol Margin</td><td>5% (500 BPS)</td><td>Policyholder</td><td>Baked into premium pricing</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-3 font-bold">Performance Fee</td><td>10% (1000 BPS)</td><td>LP Yield</td><td>Protocol Treasury</td></tr>
+                    <tr className="border-b border-black/[0.04]"><td className="py-3 font-bold">Origination Fee</td><td>3% (300 BPS)</td><td>Policyholder</td><td>Protocol Treasury</td></tr>
+                    <tr className="border-b border-black/[0.04]"><td className="py-3 font-bold">Protocol Margin</td><td>5% (500 BPS)</td><td>Policyholder</td><td>Baked into premium pricing</td></tr>
+                    <tr className="border-b border-black/[0.04]"><td className="py-3 font-bold">Performance Fee</td><td>10% (1000 BPS)</td><td>LP Yield</td><td>Protocol Treasury</td></tr>
                     <tr><td className="py-3 font-bold">Withdrawal Fee</td><td>0%</td><td>LP</td><td>N/A — no withdrawal fee</td></tr>
                   </tbody>
                 </table>
@@ -524,11 +524,11 @@ Else
         {activeSection === "contracts" && (
           <div className={sectionClass}>
             <h1 className={h1Class}><span className="material-symbols-outlined text-4xl text-violet-400">code</span> Contract Addresses</h1>
-            <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-8">Arbitrum Sepolia Testnet (Chain ID: 421614)</p>
+            <p className="text-[10px] text-[#71717A] uppercase tracking-widest font-bold mb-8">Arbitrum Sepolia Testnet (Chain ID: 421614)</p>
             <h3 className="text-xl font-bold flex items-center gap-2 mb-4"><span className="material-symbols-outlined text-amber-400">account_balance</span> Core Architecture</h3>
             <div className="grid grid-cols-1 gap-4 mb-12">{CONTRACT_LIST.map(c => <ContractCard key={c.name} {...c} />)}</div>
             <h3 className="text-xl font-bold flex items-center gap-2 mb-2"><span className="material-symbols-outlined text-emerald-400">payments</span> Sector Liquidity Pools</h3>
-            <p className="text-xs text-zinc-500 italic mb-4">All pools utilize the ReflexLiquidityPool engine.</p>
+            <p className="text-xs text-[#71717A] mb-4">All pools utilize the ReflexLiquidityPool engine.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">{POOL_LIST.map(c => <ContractCard key={c.name} {...c} color="emerald" />)}</div>
             <h3 className="text-xl font-bold flex items-center gap-2 mb-4"><span className="material-symbols-outlined text-blue-400">developer_board</span> Parametric Modules</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{PRODUCT_LIST.map(c => <ContractCard key={c.name} {...c} color="blue" />)}</div>
@@ -542,24 +542,24 @@ Else
             <div className={panelClass}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                  <h4 className="font-bold text-sm border-b border-white/5 pb-2">Solvency Invariant</h4>
+                  <h4 className="font-bold text-sm border-b border-black/[0.04] pb-2">Solvency Invariant</h4>
                   <div className={codeBlockClass}><pre className="text-emerald-400">{`totalAssets() >= totalMaxPayouts
 // Checked in routePremiumAndReserve()
 // Enforced: new policies revert if violated`}</pre></div>
                 </div>
                 <div className="space-y-4">
-                  <h4 className="font-bold text-sm border-b border-white/5 pb-2">Oracle Trust</h4>
-                  <p className="text-[11px] text-zinc-400 leading-relaxed">Multi-node Chainlink DON consensus. EIP-712 signed quotes prevent unauthorized premium manipulation. Only the authorizedQuoter can sign valid quotes.</p>
+                  <h4 className="font-bold text-sm border-b border-black/[0.04] pb-2">Oracle Trust</h4>
+                  <p className="text-[11px] text-[#71717A] leading-relaxed">Multi-node Chainlink DON consensus. EIP-712 signed quotes prevent unauthorized premium manipulation. Only the authorizedQuoter can sign valid quotes.</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-6 border-t border-white/5">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-6 border-t border-black/[0.04]">
                 {[
                   { val: "640k+", label: "Fuzz Sequences" },
                   { val: "100%", label: "Escrow Backed" },
                   { val: "$10M", label: "Tx Cap" },
                   { val: "0s", label: "Claim Delay" },
                 ].map(s => (
-                  <div key={s.label} className="text-center"><p className="text-2xl font-black">{s.val}</p><p className="text-[10px] text-zinc-500 font-bold uppercase">{s.label}</p></div>
+                  <div key={s.label} className="text-center"><p className="text-2xl font-bold">{s.val}</p><p className="text-[10px] text-[#71717A] font-bold uppercase">{s.label}</p></div>
                 ))}
               </div>
             </div>
@@ -573,9 +573,9 @@ Else
             <div className={panelClass}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
                 {GLOSSARY.map(g => (
-                  <div key={g.term} className="py-2 border-b border-white/5">
+                  <div key={g.term} className="py-2 border-b border-black/[0.04]">
                     <span className="text-xs font-bold">{g.term}</span>
-                    <span className="text-[10px] text-zinc-500 ml-2">— {g.def}</span>
+                    <span className="text-[10px] text-[#71717A] ml-2">— {g.def}</span>
                   </div>
                 ))}
               </div>
@@ -591,7 +591,7 @@ Else
               {FAQS.map(f => (
                 <div key={f.q} className="bg-surface-container-lowest p-6 rounded-xl specular-border">
                   <h4 className="text-sm font-bold mb-2">{f.q}</h4>
-                  <p className="text-[11px] text-zinc-400 leading-relaxed font-light">{f.a}</p>
+                  <p className="text-[11px] text-[#71717A] leading-relaxed font-light">{f.a}</p>
                 </div>
               ))}
             </div>
@@ -600,15 +600,15 @@ Else
       </main>
 
       {/* Right TOC */}
-      <aside className="hidden xl:block w-56 flex-shrink-0 border-l border-white/5 pl-8 pt-12 sticky top-24 h-[calc(100vh-6rem)]">
+      <aside className="hidden xl:block w-56 flex-shrink-0 border-l border-black/[0.04] pl-8 pt-12 sticky top-24 h-[calc(100vh-6rem)]">
         <span className="text-institutional block mb-6">Quick Navigation</span>
         <ul className="flex flex-col gap-2">
           {SIDEBAR_SECTIONS.flatMap(s => s.items).slice(0, 8).map(item => (
-            <li key={item.id}><button onClick={() => setActiveSection(item.id)} className={`text-sm transition-colors ${activeSection === item.id ? "text-primary" : "text-zinc-500 hover:text-on-surface"}`}>{item.label}</button></li>
+            <li key={item.id}><button onClick={() => setActiveSection(item.id)} className={`text-sm transition-colors ${activeSection === item.id ? "text-primary" : "text-[#71717A] hover:text-on-surface"}`}>{item.label}</button></li>
           ))}
         </ul>
         <div className="mt-12 bg-surface-container-low p-4 rounded-lg specular-border">
-          <p className="text-zinc-500 text-xs mb-3">Read Whitepaper</p>
+          <p className="text-[#71717A] text-xs mb-3">Read Whitepaper</p>
           <Link href="/whitepaper" className="text-sm text-secondary hover:underline flex items-center gap-1">Full Whitepaper →</Link>
         </div>
       </aside>
