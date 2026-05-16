@@ -54,7 +54,7 @@ export function GlobalRiskLeaderboard() {
                         {/* Live Protocol Row */}
                         <tr className="bg-primary/5 hover:bg-primary/10 transition-colors group">
                             <td className="py-4 px-4 text-left">
-                                <div className="w-6 h-6 rounded-md bg-primary text-white flex items-center justify-center font-bold font-mono text-xs shadow-lg shadow-primary/30">
+                                <div className="w-6 h-6 rounded-md bg-primary text-[#1A1A1A] flex items-center justify-center font-bold font-mono text-xs shadow-lg shadow-primary/30">
                                     <Activity className="w-3 h-3" />
                                 </div>
                             </td>
@@ -105,7 +105,7 @@ export function GlobalRiskLeaderboard() {
                         {leaderData.length > 0 && leaderData.map((item, idx) => (
                             <tr key={idx} className="hover:bg-accent/20 transition-colors group">
                                 <td className="py-4 px-4 text-left">
-                                    <div className={`w-6 h-6 rounded-md flex items-center justify-center font-bold font-mono text-xs ${idx === 0 ? "bg-primary text-white" :
+                                    <div className={`w-6 h-6 rounded-md flex items-center justify-center font-bold font-mono text-xs ${idx === 0 ? "bg-primary text-[#1A1A1A]" :
                                         idx === 1 ? "bg-amber-500/20 text-amber-500" :
                                             idx === 2 ? "bg-slate-500/20 text-slate-400" :
                                                 "bg-accent/50 text-muted-foreground"

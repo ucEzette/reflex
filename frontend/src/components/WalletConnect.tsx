@@ -109,8 +109,8 @@ export function WalletConnect() {
             </div>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-surface-dark border border-white/10 rounded-xl shadow-2xl overflow-hidden py-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="px-5 py-2 text-[10px] font-mono text-zinc-500 uppercase tracking-[0.2em] border-b border-white/5 mb-4">
+                <div className="absolute right-0 mt-2 w-64 bg-surface-dark border border-black/[0.06] rounded-xl shadow-2xl overflow-hidden py-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="px-5 py-2 text-[10px] font-mono text-[#71717A] uppercase tracking-wider border-b border-black/[0.04] mb-4">
                         Select Provider
                     </div>
                     <div className="space-y-2 px-3">
@@ -139,13 +139,13 @@ export function WalletConnect() {
                                         toast.error("Failed to initiate connection process");
                                     }
                                 }}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 group"
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-black/[0.03] transition-colors border border-transparent hover:border-black/[0.06] group"
                             >
                                 <span className="text-xs font-bold text-zinc-300 group-hover:text-white transition-colors uppercase tracking-widest">{connector.name}</span>
                             </button>
                         ))}
                     </div>
-                    <div className="mt-4 px-5 py-3 bg-black/20 text-[10px] text-zinc-500 leading-relaxed font-mono">
+                    <div className="mt-4 px-5 py-3 bg-black/20 text-[10px] text-[#71717A] leading-relaxed font-mono">
                         Direct Wagmi connection for high-throughput parametric execution.
                     </div>
                 </div>
