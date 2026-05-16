@@ -17,7 +17,7 @@ export function FiatOnRamp() {
             networks: 'arbitrum',
             defaultNetwork: 'arbitrum',
             walletAddress: address || '',
-            themeColor: '#800020',
+            themeColor: '#FF6B00',
             widgetHeight: '650px',
             widgetWidth: '450px',
             // @ts-ignore
