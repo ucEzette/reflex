@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useReadContract } from "wagmi";
 import { CONTRACTS, LP_POOL_ABI } from "@/lib/contracts";
 import { formatUnits } from "viem";
+import AnimatedCityscape from "@/components/animations/AnimatedCityscape";
 
 const CATEGORY_CARDS = [
   { name: "Travel", icon: "flight_takeoff", color: "#3B82F6", apr: "8.4%", desc: "Flight delay & cancellation triggers.", id: "flight" },
@@ -35,9 +36,14 @@ export default function LandingPage() {
   return (
     <div className="pt-[72px]">
       {/* ═══ HERO ═══ */}
-      <section className="relative min-h-[92vh] flex items-center overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 md:px-8 w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="z-10">
+      <section className="relative min-h-[95vh] flex items-center overflow-hidden">
+        {/* Animated Background Remix */}
+        <div className="absolute inset-0 z-0">
+          <AnimatedCityscape />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 md:px-8 w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+          <div className="z-10 bg-white/40 backdrop-blur-md p-8 rounded-3xl border border-black/5">
             <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#FF6B00] mb-6 block">
               Parametric Protection Protocol
             </span>
@@ -53,26 +59,21 @@ export default function LandingPage() {
                 Launch App
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="rotate-45"><path d="M1 8h14M9 2l6 6-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </Link>
-              <Link href="/whitepaper" className="inline-flex items-center gap-2 border border-[#1A1A1A]/15 text-[#1A1A1A] px-8 py-4 rounded-full text-[15px] font-medium hover:bg-white/60 hover:border-[#1A1A1A]/25 transition-all">
+              <Link href="/whitepaper" className="inline-flex items-center gap-2 border border-black/10 text-[#1A1A1A] px-8 py-4 rounded-full text-[15px] font-medium hover:bg-black/5 transition-all">
                 Our Intro Deck
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="rotate-45"><path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </Link>
             </div>
-            <p className="text-[12px] text-[#71717A] mt-8 flex items-center gap-2">
-              <span className="w-[6px] h-[6px] rounded-full bg-[#FF6B00] inline-block" />
-              Protection with purpose.
-            </p>
           </div>
           <div className="relative flex justify-center lg:justify-end">
-            <img src="/hero-glass.png" alt="Reflex Protection" className="w-full max-w-[520px] h-auto object-contain animate-float drop-shadow-2xl" />
             {/* Floating glass stat cards */}
-            <div className="absolute bottom-8 left-0 glass-card rounded-2xl p-4 shadow-glass-lg animate-slide-up" style={{animationDelay:'0.3s',animationFillMode:'backwards'}}>
+            <div className="absolute bottom-8 left-0 glass-card rounded-2xl p-6 shadow-glass-lg animate-slide-up border border-black/5 bg-white/60 backdrop-blur-md" style={{animationDelay:'0.3s',animationFillMode:'backwards'}}>
               <span className="text-[10px] font-semibold text-[#71717A] uppercase tracking-wider">TVL</span>
-              <p className="text-xl font-bold text-[#1A1A1A] mono-data mt-1">{formattedTvl}</p>
+              <p className="text-2xl font-bold text-[#1A1A1A] mono-data mt-1">{formattedTvl}</p>
             </div>
-            <div className="absolute top-12 right-0 glass-card rounded-2xl p-4 shadow-glass-lg animate-slide-up" style={{animationDelay:'0.5s',animationFillMode:'backwards'}}>
+            <div className="absolute top-12 right-0 glass-card rounded-2xl p-6 shadow-glass-lg animate-slide-up border border-black/5 bg-white/60 backdrop-blur-md" style={{animationDelay:'0.5s',animationFillMode:'backwards'}}>
               <span className="text-[10px] font-semibold text-[#71717A] uppercase tracking-wider">Markets</span>
-              <p className="text-xl font-bold text-[#FF6B00] mono-data mt-1">10</p>
+              <p className="text-2xl font-bold text-[#FF6B00] mono-data mt-1">10</p>
             </div>
           </div>
         </div>
