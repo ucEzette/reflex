@@ -16,8 +16,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
             appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
             config={{
                 appearance: {
-                    theme: 'dark',
-                    accentColor: '#D31027',
+                    theme: 'light',
+                    accentColor: '#FF6B00',
                     logo: 'https://reflex.network/logo.png',
                 },
                 embeddedWallets: {
@@ -37,7 +37,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         >
             <QueryClientProvider client={queryClient}>
                 <WagmiProvider config={config}>
-                    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+                    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
                         <SafeHydration>
                             {children}
                         </SafeHydration>

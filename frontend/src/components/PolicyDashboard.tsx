@@ -212,7 +212,7 @@ export function PolicyDashboard() {
     if (!isConnected) {
         return (
             <div className="glass-panel rounded-2xl p-1 shadow-2xl shadow-black/50">
-                <div className="bg-background-dark/80 rounded-xl p-8 border border-white/5 text-center">
+                <div className="bg-background-dark/80 rounded-xl p-8 border border-black/[0.04] text-center">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center">
                         <span className="material-symbols-outlined text-primary text-3xl">account_balance_wallet</span>
                     </div>
@@ -227,7 +227,7 @@ export function PolicyDashboard() {
     if (purchaseSuccess && purchaseTxHash) {
         return (
             <div className="glass-panel rounded-2xl p-1 shadow-2xl shadow-black/50 overflow-hidden relative">
-                <div className="bg-background-dark/80 rounded-xl p-8 border border-white/5 text-center relative z-10">
+                <div className="bg-background-dark/80 rounded-xl p-8 border border-black/[0.04] text-center relative z-10">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
                         <span className="material-symbols-outlined text-green-400 text-3xl">verified</span>
                     </div>
@@ -244,7 +244,7 @@ export function PolicyDashboard() {
                     </a>
                     <button
                         onClick={() => setPurchaseSuccess(false)}
-                        className="mt-8 w-full py-4 bg-white/5 hover:bg-white/10 text-foreground rounded-xl font-bold border border-white/10 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                        className="mt-8 w-full py-4 bg-black/[0.03] hover:bg-black/[0.05] text-foreground rounded-xl font-bold border border-black/[0.06] transition-all hover:scale-[1.01] active:scale-[0.99]"
                     >
                         Purchase Another Policy
                     </button>
@@ -258,7 +258,7 @@ export function PolicyDashboard() {
     /* ── Main Dashboard ── */
     return (
         <div className="glass-panel rounded-2xl p-1 shadow-2xl shadow-black/50">
-            <div className="bg-background-dark/80 rounded-xl p-6 md:p-8 border border-white/5">
+            <div className="bg-background-dark/80 rounded-xl p-6 md:p-8 border border-black/[0.04]">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div>
@@ -307,7 +307,7 @@ export function PolicyDashboard() {
                             <p className="mt-2 text-xs text-primary font-mono tracking-wide">{validationError}</p>
                         )}
                         {flightDetails && (
-                            <div className="mt-3 p-3 rounded-lg bg-surface-dark/50 border border-white/5 space-y-2">
+                            <div className="mt-3 p-3 rounded-lg bg-surface-dark/50 border border-black/[0.04] space-y-2">
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-foreground font-medium">{flightDetails.airline}</span>
                                     <span className="text-slate-400 font-mono text-xs">{flightDetails.status.toUpperCase()}</span>
@@ -361,7 +361,7 @@ export function PolicyDashboard() {
                     </div>
 
                     {/* Coverage Details Card */}
-                    <div className="mt-6 p-5 bg-gradient-to-br from-[#161d2f] to-[#0B0F19] border border-white/5 rounded-xl">
+                    <div className="mt-6 p-5 bg-gradient-to-br from-[#161d2f] to-[#0B0F19] border border-black/[0.04] rounded-xl">
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-sm text-slate-400 font-medium">Auto-Settlement Tier</span>
                             <span className="text-[10px] font-bold bg-primary/20 text-primary px-2 py-0.5 rounded-sm tracking-widest">PREMIUM</span>
@@ -382,7 +382,7 @@ export function PolicyDashboard() {
 
                     {/* Balance Info */}
                     {usdtBalance !== undefined && (
-                        <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono tracking-tight bg-white/5 px-4 py-2 rounded-lg border border-white/5">
+                        <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono tracking-tight bg-black/[0.03] px-4 py-2 rounded-lg border border-black/[0.04]">
                             <span className="flex items-center gap-1.5">
                                 <div className="w-1 h-1 rounded-full bg-primary" />
                                 BALANCE: {(Number(usdtBalance) / 1e6).toFixed(2)} USDT
@@ -429,7 +429,7 @@ export function PolicyDashboard() {
                             <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
                             <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
                             <svg className="dexter-btn-corner !w-[40px]" viewBox="0 0 100 100"><path d="M 0 0 L 100 0 L 100 100 L 98 100 L 98 2 L 0 2 Z"></path></svg>
-                            <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[10px] uppercase font-mono tracking-[0.2em]">{hasEnoughAllowance ? 'confirm tx' : 'sign approval'}</span>
+                            <span className="dexter-btn-drawer dexter-transition-bottom whitespace-nowrap !text-[10px] uppercase font-mono tracking-wider">{hasEnoughAllowance ? 'confirm tx' : 'sign approval'}</span>
                         </button>
                     </div>
                 </div>
