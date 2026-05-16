@@ -20,13 +20,13 @@ export function ClaimHistory() {
 
     return (
         <div className="space-y-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-[#0A0A0A] p-6 rounded-3xl border border-white/5 shadow-2xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-3xl border border-black/[0.04] shadow-2xl">
                 <div className="relative flex-1 max-w-md group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 transition-colors group-focus-within:text-[#D31027]" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#B0AAA4] transition-colors group-focus-within:text-[#FF6B00]" />
                     <input
                         type="text"
                         placeholder="Search by Policy ID or target..."
-                        className="w-full bg-[#101216] border border-white/5 rounded-2xl py-3.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-[#D31027]/40 transition-all placeholder:text-zinc-700"
+                        className="w-full bg-white border border-black/[0.04] rounded-2xl py-3.5 pl-12 pr-4 text-sm text-[#1A1A1A] focus:outline-none focus:border-[#FF6B00]/40 transition-all placeholder:text-[#B0AAA4]"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -37,9 +37,9 @@ export function ClaimHistory() {
                         <button
                             key={s}
                             onClick={() => setFilter(s)}
-                            className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap border ${filter === s
-                                ? "bg-[#D31027] border-[#D31027] text-white shadow-[0_0_20px_rgba(211,16,39,0.3)]"
-                                : "bg-white/5 border-white/5 text-zinc-500 hover:text-zinc-300 hover:bg-white/10"
+                            className={`px-5 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap border ${filter === s
+                                ? "bg-[#FF6B00] border-[#FF6B00] text-[#1A1A1A] shadow-[0_0_20px_rgba(255,107,0,0.3)]"
+                                : "bg-black/[0.03] border-black/[0.04] text-[#71717A] hover:text-zinc-300 hover:bg-black/[0.05]"
                                 }`}
                         >
                             {s}
@@ -48,28 +48,28 @@ export function ClaimHistory() {
                 </div>
             </div>
 
-            <div className="bg-[#0A0A0A] rounded-[2rem] border border-white/5 overflow-hidden shadow-2xl">
+            <div className="bg-white rounded-[2rem] border border-black/[0.04] overflow-hidden shadow-2xl">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-[#101216] text-[9px] text-zinc-500 font-black uppercase tracking-[0.25em]">
-                            <th className="py-6 px-8 font-black">Risk Vector / Target</th>
-                            <th className="py-6 px-8 font-black font-mono">Premium</th>
-                            <th className="py-6 px-8 font-black">Settlement</th>
-                            <th className="py-6 px-8 font-black">Status</th>
-                            <th className="py-6 px-8 font-black">Authorization Date</th>
-                            <th className="py-6 px-8 font-black">Protocol ID</th>
+                        <tr className="bg-white text-[9px] text-[#71717A] font-bold uppercase tracking-[0.25em]">
+                            <th className="py-6 px-8 font-bold">Risk Vector / Target</th>
+                            <th className="py-6 px-8 font-bold font-mono">Premium</th>
+                            <th className="py-6 px-8 font-bold">Settlement</th>
+                            <th className="py-6 px-8 font-bold">Status</th>
+                            <th className="py-6 px-8 font-bold">Authorization Date</th>
+                            <th className="py-6 px-8 font-bold">Protocol ID</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
                         {isLoading ? (
                             <tr>
-                                <td colSpan={6} className="p-16 text-center text-zinc-500 animate-pulse font-black uppercase tracking-[0.2em] text-[10px]">Syncing protocol history...</td>
+                                <td colSpan={6} className="p-16 text-center text-[#71717A] animate-pulse font-bold uppercase tracking-wider text-[10px]">Syncing protocol history...</td>
                             </tr>
                         ) : !policies || policies.length === 0 ? (
                             <tr>
-                                <td colSpan={6} className="p-20 text-center bg-zinc-900/10 m-4 rounded-[2rem] border border-dashed border-white/5">
-                                    <Shield className="w-12 h-12 text-zinc-800 mx-auto mb-6 opacity-20" />
-                                    <p className="text-zinc-600 font-black uppercase tracking-widest text-[10px]">No historical data found in sector</p>
+                                <td colSpan={6} className="p-20 text-center bg-zinc-900/10 m-4 rounded-[2rem] border border-dashed border-black/[0.04]">
+                                    <Shield className="w-12 h-12 text-[#D1CBC5] mx-auto mb-6 opacity-20" />
+                                    <p className="text-[#B0AAA4] font-bold uppercase tracking-widest text-[10px]">No historical data found in sector</p>
                                 </td>
                             </tr>
                         ) : (
@@ -115,24 +115,24 @@ function ClaimHistoryRow({ policy, filter, search }: { policy: any; filter: Poli
         <tr className="hover:bg-white/[0.02] transition-colors group">
             <td className="py-6 px-8">
                 <div className="flex items-center gap-4">
-                    <div className="w-1.5 h-6 bg-[#D31027]/40 rounded-full group-hover:bg-[#D31027] transition-colors" />
+                    <div className="w-1.5 h-6 bg-[#FF6B00]/40 rounded-full group-hover:bg-[#FF6B00] transition-colors" />
                     <div className="flex flex-col">
-                        <span className="text-[10px] font-black tracking-[0.15em] text-[#FFB3B5] uppercase mb-0.5">
+                        <span className="text-[10px] font-bold tracking-[0.15em] text-[#FF8A33] uppercase mb-0.5">
                             {sectorTag}
                         </span>
-                        <span className="text-sm font-bold text-white uppercase italic tracking-tight">{targetName}</span>
+                        <span className="text-sm font-bold text-[#1A1A1A] uppercase tracking-tight">{targetName}</span>
                     </div>
                 </div>
             </td>
             
             <td className="py-6 px-8">
-                <span className="text-sm text-zinc-500 font-mono font-bold group-hover:text-zinc-300 transition-colors">
+                <span className="text-sm text-[#71717A] font-mono font-bold group-hover:text-zinc-300 transition-colors">
                     ${premiumDollars}
                 </span>
             </td>
             
             <td className="py-6 px-8">
-                <span className={`text-sm font-black font-mono ${Number(payoutDollars) > 0 ? 'text-emerald-400' : 'text-zinc-600'}`}>
+                <span className={`text-sm font-bold font-mono ${Number(payoutDollars) > 0 ? 'text-emerald-400' : 'text-[#B0AAA4]'}`}>
                     ${payoutDollars}
                 </span>
             </td>
@@ -141,22 +141,22 @@ function ClaimHistoryRow({ policy, filter, search }: { policy: any; filter: Poli
                 <div className="flex items-center gap-2">
                     <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full border transition-all duration-300 ${
                         isClaimed ? "bg-emerald-500/10 border-emerald-500/20 text-[#2CFFB5]" : 
-                        isExpired ? "bg-white/5 border-white/5 text-zinc-600" : 
-                        isDisputed ? "bg-[#D31027]/10 border-[#D31027]/20 text-[#FFB3B5]" :
+                        isExpired ? "bg-black/[0.03] border-black/[0.04] text-[#B0AAA4]" : 
+                        isDisputed ? "bg-[#FF6B00]/10 border-[#FF6B00]/20 text-[#FF8A33]" :
                         "bg-primary/10 border-primary/20 text-primary"
                     }`}>
-                        <div className={`w-1.5 h-1.5 rounded-full ${isClaimed ? "bg-emerald-400" : isExpired ? "bg-zinc-700" : isDisputed ? "bg-[#D31027]" : "bg-primary"} animate-pulse`} />
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em]">{displayStatus}</span>
+                        <div className={`w-1.5 h-1.5 rounded-full ${isClaimed ? "bg-emerald-400" : isExpired ? "bg-zinc-700" : isDisputed ? "bg-[#FF6B00]" : "bg-primary"} animate-pulse`} />
+                        <span className="text-[9px] font-bold uppercase tracking-wider">{displayStatus}</span>
                     </div>
                 </div>
             </td>
             
             <td className="py-6 px-8">
                 <div className="flex flex-col gap-1">
-                    <span className="text-[10px] text-zinc-400 font-mono font-bold whitespace-nowrap">
+                    <span className="text-[10px] text-[#71717A] font-mono font-bold whitespace-nowrap">
                         {dateFormatted}, {timeFormatted}
                     </span>
-                    <span className={`text-[9px] uppercase font-black tracking-widest ${isExpired ? "text-zinc-700" : "text-emerald-500"}`}>
+                    <span className={`text-[9px] uppercase font-bold tracking-widest ${isExpired ? "text-[#B0AAA4]" : "text-emerald-500"}`}>
                         Finalized Settlement
                     </span>
                 </div>
@@ -164,14 +164,14 @@ function ClaimHistoryRow({ policy, filter, search }: { policy: any; filter: Poli
             
             <td className="py-6 px-8">
                 <div className="flex flex-col gap-3">
-                    <span className="text-[10px] text-zinc-700 font-mono font-black tracking-widest lowercase group-hover:text-zinc-500 transition-colors">
+                    <span className="text-[10px] text-[#B0AAA4] font-mono font-bold tracking-widest lowercase group-hover:text-[#71717A] transition-colors">
                         {policyId.slice(0, 16).toUpperCase()}...
                     </span>
                     <div className="flex items-center gap-2">
                         <a
                             href={txHash ? `https://sepolia.arbiscan.io/tx/${txHash}` : `#`}
                             target={txHash ? "_blank" : "_self"}
-                            className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest text-zinc-500 transition-all duration-300 ${txHash ? "hover:text-white hover:bg-[#D31027] hover:border-[#D31027]" : "opacity-30 cursor-not-allowed"}`}
+                            className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-black/[0.03] border border-black/[0.06] text-[9px] font-bold uppercase tracking-widest text-[#71717A] transition-all duration-300 ${txHash ? "hover:text-[#1A1A1A] hover:bg-[#FF6B00] hover:border-[#FF6B00]" : "opacity-30 cursor-not-allowed"}`}
                         >
                             <span>Verify Node</span>
                             <ExternalLink className="w-3 h-3" />
@@ -180,7 +180,7 @@ function ClaimHistoryRow({ policy, filter, search }: { policy: any; filter: Poli
                         {(isExpired || isDisputed) && (
                             <Link
                                 href={`/claims/evidence/${policyId}`}
-                                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#D31027]/10 border border-[#D31027]/20 text-[9px] font-black uppercase tracking-widest text-[#D31027] hover:bg-[#D31027] hover:text-white transition-all duration-300 shadow-[0_10px_20px_rgba(211,16,39,0.1)] hover:shadow-[0_10px_30px_rgba(211,16,39,0.2)]"
+                                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#FF6B00]/10 border border-[#FF6B00]/20 text-[9px] font-bold uppercase tracking-widest text-[#FF6B00] hover:bg-[#FF6B00] hover:text-white transition-all duration-300 shadow-[0_10px_20px_rgba(255,107,0,0.1)] hover:shadow-[0_10px_30px_rgba(255,107,0,0.2)]"
                             >
                                 <span>Relay Dispute</span>
                                 <AlertCircle className="w-3 h-3" />
