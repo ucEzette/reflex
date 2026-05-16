@@ -80,12 +80,12 @@ export default function EvidenceSubmissionPage({ params }: { params: { id: strin
     if (!isConnected) return (
         <div className="min-h-screen flex items-center justify-center p-6 pt-32">
             <div className="text-center space-y-8 max-w-md">
-                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto border border-white/10">
-                    <Shield className="w-8 h-8 text-zinc-700" />
+                <div className="w-20 h-20 bg-black/[0.03] rounded-full flex items-center justify-center mx-auto border border-black/[0.06]">
+                    <Shield className="w-8 h-8 text-[#B0AAA4]" />
                 </div>
                 <div>
-                    <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-4">Auth Required</h2>
-                    <p className="text-zinc-500 font-medium">Please authenticate your identity to access the dispute terminal.</p>
+                    <h2 className="text-3xl font-bold text-[#1A1A1A] uppercase tracking-tighter mb-4">Auth Required</h2>
+                    <p className="text-[#71717A] font-medium">Please authenticate your identity to access the dispute terminal.</p>
                 </div>
             </div>
         </div>
@@ -147,7 +147,7 @@ export default function EvidenceSubmissionPage({ params }: { params: { id: strin
                 {/* Back Link */}
                 <Link
                     href="/dashboard"
-                    className="group flex items-center gap-3 text-[10px] font-black text-zinc-600 hover:text-white transition-colors uppercase tracking-[0.4em]"
+                    className="group flex items-center gap-3 text-[10px] font-bold text-[#B0AAA4] hover:text-[#1A1A1A] transition-colors uppercase tracking-wider"
                 >
                     <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
                     Return to Portfolio
@@ -156,30 +156,30 @@ export default function EvidenceSubmissionPage({ params }: { params: { id: strin
                 {/* Header */}
                 <header className="flex flex-col gap-6">
                     <div className="flex items-center gap-4">
-                         <div className="w-12 h-1.5 bg-[#D31027] rounded-full" />
-                         <span className="text-[10px] font-black text-[#D31027] uppercase tracking-[0.5em]">Dispute Terminal</span>
+                         <div className="w-12 h-1.5 bg-[#FF6B00] rounded-full" />
+                         <span className="text-[10px] font-bold text-[#FF6B00] uppercase tracking-[0.5em]">Dispute Terminal</span>
                     </div>
-                    <h1 className="text-7xl font-black tracking-tighter text-white italic uppercase leading-none">
-                        Submit <span className="text-[#D31027]">Evidence</span>
+                    <h1 className="text-7xl font-bold tracking-tighter text-[#1A1A1A] uppercase leading-none">
+                        Submit Evidence
                     </h1>
-                    <p className="text-zinc-500 text-xl font-medium max-w-2xl leading-relaxed">
+                    <p className="text-[#71717A] text-xl font-medium max-w-2xl leading-relaxed">
                         Challenge automated oracle finality by providing cryptographic proof of external risk events to the decentralized relayer quorum.
                     </p>
                 </header>
 
                 {subSuccess ? (
-                    <div className="bg-[#101216] border border-emerald-500/20 rounded-[3rem] p-20 text-center space-y-10 animate-in zoom-in-95 duration-700 shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative overflow-hidden">
+                    <div className="bg-white border border-emerald-500/20 rounded-[3rem] p-20 text-center space-y-10 animate-in zoom-in-95 duration-700 shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500" />
                         <div className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-[0_0_50px_rgba(16,185,129,0.3)]">
                             <CheckCircle className="w-10 h-10 text-black" />
                         </div>
                         <div className="space-y-4">
-                            <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter">Transmission Complete</h2>
-                            <p className="text-zinc-500 text-lg font-medium max-w-md mx-auto leading-relaxed">Your evidence hash has been pinned to IPFS and committed to the L2 verification quorum.</p>
+                            <h2 className="text-4xl font-bold text-[#1A1A1A] uppercase tracking-tighter">Transmission Complete</h2>
+                            <p className="text-[#71717A] text-lg font-medium max-w-md mx-auto leading-relaxed">Your evidence hash has been pinned to IPFS and committed to the L2 verification quorum.</p>
                         </div>
                         <Link
                             href="/dashboard"
-                            className="inline-flex items-center gap-4 px-12 py-5 bg-white text-black font-black uppercase tracking-[0.4em] text-[10px] rounded-2xl hover:bg-zinc-200 transition-all shadow-2xl"
+                            className="inline-flex items-center gap-4 px-12 py-5 bg-white text-black font-bold uppercase tracking-wider text-[10px] rounded-2xl hover:bg-zinc-200 transition-all shadow-2xl"
                         >
                             RETURN TO TERMINAL
                             <Zap className="w-4 h-4" />
@@ -188,28 +188,28 @@ export default function EvidenceSubmissionPage({ params }: { params: { id: strin
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-12">
                         {/* Policy Context Card */}
-                        <div className="bg-[#101216] border border-white/5 rounded-[2.5rem] p-10 relative overflow-hidden group/hud shadow-2xl">
+                        <div className="bg-white border border-black/[0.04] rounded-[2.5rem] p-10 relative overflow-hidden group/hud shadow-2xl">
                              <div className="absolute top-0 right-0 p-8 opacity-5">
-                                <Scale className="w-24 h-24 text-zinc-400" />
+                                <Scale className="w-24 h-24 text-[#71717A]" />
                             </div>
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 relative z-10">
                                 <div>
-                                    <span className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] block mb-2">Subject Policy ID</span>
-                                    <h3 className="text-3xl font-black text-white italic tracking-tighter uppercase">{id?.toString().slice(0, 10)}<span className="text-[#D31027]">...</span>{id?.toString().slice(-6)}</h3>
+                                    <span className="text-[10px] text-[#B0AAA4] font-bold uppercase tracking-wider block mb-2">Subject Policy ID</span>
+                                    <h3 className="text-3xl font-bold text-[#1A1A1A] tracking-tighter uppercase">{id?.toString().slice(0, 10)}...{id?.toString().slice(-6)}</h3>
                                 </div>
                                 <div className="text-left md:text-right">
-                                    <span className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] block mb-2">Stake At Risk</span>
-                                    <p className="text-3xl font-black text-emerald-500 italic tracking-tighter">${(Number(payoutAmount) / 1e6).toFixed(2)} USDT</p>
+                                    <span className="text-[10px] text-[#B0AAA4] font-bold uppercase tracking-wider block mb-2">Stake At Risk</span>
+                                    <p className="text-3xl font-bold text-emerald-500 tracking-tighter">${(Number(payoutAmount) / 1e6).toFixed(2)} USDT</p>
                                 </div>
                             </div>
-                            <div className="mt-8 pt-8 border-t border-white/5 flex flex-wrap items-center gap-10 relative z-10">
+                            <div className="mt-8 pt-8 border-t border-black/[0.04] flex flex-wrap items-center gap-10 relative z-10">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-[#D31027]" />
-                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none">{apiTarget}</span>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-[#FF6B00]" />
+                                    <span className="text-[10px] font-bold text-[#71717A] uppercase tracking-widest leading-none">{apiTarget}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <Activity className="w-4 h-4 text-zinc-800" />
-                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none">Expired: {new Date(Number(expirationTime) * 1000).toLocaleDateString()}</span>
+                                    <Activity className="w-4 h-4 text-[#D1CBC5]" />
+                                    <span className="text-[10px] font-bold text-[#71717A] uppercase tracking-widest leading-none">Expired: {new Date(Number(expirationTime) * 1000).toLocaleDateString()}</span>
                                 </div>
                             </div>
                         </div>
@@ -217,41 +217,41 @@ export default function EvidenceSubmissionPage({ params }: { params: { id: strin
                         {/* Description Input */}
                         <div className="space-y-4">
                             <div className="flex justify-between items-center px-4">
-                                <label className="text-[10px] font-black text-zinc-700 uppercase tracking-[0.2em] flex items-center gap-2">
+                                <label className="text-[10px] font-bold text-[#B0AAA4] uppercase tracking-wider flex items-center gap-2">
                                     <FileText className="w-3.5 h-3.5" />
                                     Dispute Description
                                 </label>
-                                <span className="text-[8px] font-black text-zinc-900 uppercase tracking-widest italic">Awaiting technical summary</span>
+                                <span className="text-[8px] font-bold text-zinc-900 uppercase tracking-widest">Awaiting technical summary</span>
                             </div>
-                            <div className="bg-[#101216] border border-white/5 rounded-[2rem] p-8 focus-within:border-[#D31027]/40 transition-all shadow-inner">
+                            <div className="bg-white border border-black/[0.04] rounded-[2rem] p-8 focus-within:border-[#FF6B00]/40 transition-all shadow-inner">
                                 <textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     placeholder="SYNCHRONIZE DISPUTE DATA: Explain oracle inaccuracy with technical evidence (flight tracker logs, local news, sensor data)..."
-                                    className="w-full h-48 bg-transparent border-none p-0 text-white placeholder:text-zinc-900 focus:ring-0 text-base leading-relaxed font-medium resize-none"
+                                    className="w-full h-48 bg-transparent border-none p-0 text-[#1A1A1A] placeholder:text-zinc-900 focus:ring-0 text-base leading-relaxed font-medium resize-none"
                                 />
                             </div>
                         </div>
 
                         {/* File Upload Simulation */}
                         <div className="space-y-4">
-                             <label className="text-[10px] font-black text-zinc-700 uppercase tracking-[0.2em] flex items-center gap-2 px-4">
+                             <label className="text-[10px] font-bold text-[#B0AAA4] uppercase tracking-wider flex items-center gap-2 px-4">
                                 <Upload className="w-3.5 h-3.5" />
                                 Evidence Payload
                             </label>
-                            <div className="bg-black/40 border-2 border-dashed border-white/5 rounded-[2rem] p-12 text-center hover:border-[#D31027]/20 transition-all group cursor-pointer shadow-inner">
-                                <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-500">
-                                    <Upload className="w-6 h-6 text-zinc-600 group-hover:text-white" />
+                            <div className="bg-black/40 border-2 border-dashed border-black/[0.04] rounded-[2rem] p-12 text-center hover:border-[#FF6B00]/20 transition-all group cursor-pointer shadow-inner">
+                                <div className="w-16 h-16 bg-black/[0.03] rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-500">
+                                    <Upload className="w-6 h-6 text-[#B0AAA4] group-hover:text-white" />
                                 </div>
-                                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">DRAG AND DROP ENCRYPTED ASSETS (PDF / JPG)</p>
-                                <p className="text-[8px] text-zinc-800 mt-2 font-black uppercase tracking-[0.3em]">MAX_SIZE: 10_MB_SECURE_PAYLOAD</p>
+                                <p className="text-[10px] font-bold text-[#71717A] uppercase tracking-widest">DRAG AND DROP ENCRYPTED ASSETS (PDF / JPG)</p>
+                                <p className="text-[8px] text-[#D1CBC5] mt-2 font-bold uppercase tracking-wider">MAX_SIZE: 10_MB_SECURE_PAYLOAD</p>
                             </div>
                         </div>
 
                         {/* Info Warning */}
-                        <div className="bg-[#D31027]/5 border border-[#D31027]/10 p-8 rounded-[2.5rem] flex gap-6 shadow-2xl">
-                            <AlertCircle className="w-6 h-6 text-[#D31027] shrink-0 mt-1" />
-                            <p className="text-[10px] text-[#D31027]/70 leading-relaxed font-black uppercase tracking-[0.15em]">
+                        <div className="bg-[#FF6B00]/5 border border-[#FF6B00]/10 p-8 rounded-[2.5rem] flex gap-6 shadow-2xl">
+                            <AlertCircle className="w-6 h-6 text-[#FF6B00] shrink-0 mt-1" />
+                            <p className="text-[10px] text-[#FF6B00]/70 leading-relaxed font-bold uppercase tracking-[0.15em]">
                                 PROTOCOL_WARNING: Submitting false evidence may result in a permanent wallet identity purge. Your evidence hash will be committed to the Arbitrum Sepolia ledger and verified by a decentralized relayer quorum.
                             </p>
                         </div>
@@ -260,7 +260,7 @@ export default function EvidenceSubmissionPage({ params }: { params: { id: strin
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className={`w-full py-7 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.4em] transition-all flex items-center justify-center gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] ${isSubmitting ? "bg-zinc-900 text-zinc-700 cursor-not-allowed border border-white/5" : "bg-white text-black hover:bg-zinc-200 active:scale-[0.98]"
+                            className={`w-full py-7 rounded-[2rem] font-bold text-[11px] uppercase tracking-wider transition-all flex items-center justify-center gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] ${isSubmitting ? "bg-zinc-900 text-[#B0AAA4] cursor-not-allowed border border-black/[0.04]" : "bg-white text-black hover:bg-zinc-200 active:scale-[0.98]"
                                 }`}
                         >
                             {isSubmitting ? (
