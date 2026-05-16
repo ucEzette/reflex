@@ -63,12 +63,12 @@ export const HealthHUD = () => {
     ];
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-3xl bg-zinc-950/50 border border-white/5 backdrop-blur-md">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-3xl bg-zinc-950/50 border border-black/[0.04] backdrop-blur-md">
             {items.map((item, i) => (
                 <div key={i} className="p-4 space-y-3 relative group overflow-hidden">
                     <div className="flex items-center justify-between">
                         <div className={cn(
-                            "p-2 rounded-lg bg-white/5",
+                            "p-2 rounded-lg bg-black/[0.03]",
                             item.status === 'healthy' ? "text-emerald-500" : item.status === 'active' ? "text-primary" : "text-amber-500"
                         )}>
                             <item.icon className="w-4 h-4" />
@@ -78,16 +78,16 @@ export const HealthHUD = () => {
                                 "w-1.5 h-1.5 rounded-full animate-pulse",
                                 item.status === 'healthy' ? "bg-emerald-500" : item.status === 'active' ? "bg-primary" : "bg-amber-500"
                             )} />
-                            <span className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">{item.status}</span>
+                            <span className="text-[10px] font-bold uppercase text-[#71717A] tracking-widest">{item.status}</span>
                         </div>
                     </div>
                     
                     <div className="space-y-0.5">
-                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{item.label}</p>
-                        <h4 className="text-sm font-black text-white italic tracking-tight uppercase">{item.value}</h4>
+                        <p className="text-[10px] font-bold text-[#71717A] uppercase tracking-widest">{item.label}</p>
+                        <h4 className="text-sm font-bold text-[#1A1A1A] tracking-tight uppercase">{item.value}</h4>
                     </div>
 
-                    <p className="text-[9px] text-zinc-600 font-bold">{item.detail}</p>
+                    <p className="text-[9px] text-[#B0AAA4] font-bold">{item.detail}</p>
                     
                     <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>

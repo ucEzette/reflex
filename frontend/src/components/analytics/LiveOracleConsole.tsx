@@ -39,13 +39,13 @@ export function LiveOracleConsole() {
     return (
         <article className="bg-[#0a0a0a] border border-border rounded-xl h-full overflow-hidden flex flex-col shadow-sm">
             {/* Terminal Header */}
-            <div className="bg-zinc-900/50 px-4 py-3 text-[10px] font-bold text-zinc-500 flex items-center justify-between border-b border-border">
+            <div className="bg-zinc-900/50 px-4 py-3 text-[10px] font-bold text-[#71717A] flex items-center justify-between border-b border-border">
                 <span className="flex items-center gap-3 tracking-widest uppercase">
                     <Database className="w-3.5 h-3.5 text-emerald-500" />
                     Chainlink // DON-Verification-Feed
                 </span>
                 <div className="flex gap-1.5 items-center">
-                    <span className="text-[9px] text-zinc-600 mr-2">VERIFIED-TS-01</span>
+                    <span className="text-[9px] text-[#B0AAA4] mr-2">VERIFIED-TS-01</span>
                     <div className="flex gap-1.5">
                         <div className="w-2 h-2 rounded-full bg-zinc-700" />
                         <div className="w-2 h-2 rounded-full bg-zinc-700" />
@@ -55,12 +55,12 @@ export function LiveOracleConsole() {
             </div>
 
             {/* Feed Body */}
-            <div className="flex-1 p-6 overflow-y-auto space-y-4 font-mono text-[11px] leading-relaxed custom-scrollbar bg-transparent text-zinc-400 max-h-[400px]">
+            <div className="flex-1 p-6 overflow-y-auto space-y-4 font-mono text-[11px] leading-relaxed custom-scrollbar bg-transparent text-[#71717A] max-h-[400px]">
                 {displayLogs.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full py-12 text-center">
-                        <Database className="w-8 h-8 text-zinc-700 mb-3" />
-                        <p className="text-zinc-500 text-xs">Listening for on-chain events...</p>
-                        <p className="text-zinc-600 text-[10px] mt-1">Events will appear in real-time as policies are created/claimed</p>
+                        <Database className="w-8 h-8 text-[#B0AAA4] mb-3" />
+                        <p className="text-[#71717A] text-xs">Listening for on-chain events...</p>
+                        <p className="text-[#B0AAA4] text-[10px] mt-1">Events will appear in real-time as policies are created/claimed</p>
                     </div>
                 ) : (
                     <AnimatePresence initial={false}>
@@ -72,11 +72,11 @@ export function LiveOracleConsole() {
                                 className="relative pl-4 border-l border-zinc-800"
                             >
                                 <div className="flex items-center gap-3 mb-1">
-                                    <span className="text-zinc-500 tabular-nums">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                                    <span className="text-[#71717A] tabular-nums">{new Date(log.timestamp).toLocaleTimeString()}</span>
                                     <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-tighter ${log.status === 'Success' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
                                         {log.target}
                                     </span>
-                                    <span className="text-[9px] text-zinc-600 font-bold ml-auto">0x{log.id.slice(0, 6)}</span>
+                                    <span className="text-[9px] text-[#B0AAA4] font-bold ml-auto">0x{log.id.slice(0, 6)}</span>
                                 </div>
                                 <p className="text-zinc-300 leading-snug">{log.message}</p>
                             </motion.div>
@@ -88,10 +88,10 @@ export function LiveOracleConsole() {
             {/* Terminal Footer */}
             <div className="bg-zinc-900/30 p-4 border-t border-border flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Globe className="w-3.5 h-3.5 text-zinc-500" />
-                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Global Consensus Active</span>
+                    <Globe className="w-3.5 h-3.5 text-[#71717A]" />
+                    <span className="text-[9px] font-bold text-[#71717A] uppercase tracking-widest">Global Consensus Active</span>
                 </div>
-                <span className="text-[9px] font-mono text-zinc-600">SIG_VER: ECDSA_SEC_PV2</span>
+                <span className="text-[9px] font-mono text-[#B0AAA4]">SIG_VER: ECDSA_SEC_PV2</span>
             </div>
         </article>
     );
