@@ -96,7 +96,7 @@ export function PolicyCard({ policyId, policyData, onActionSuccess, txHash }: Po
         <article
             className={cn(
                 "group relative overflow-hidden rounded-2xl border bg-black/40 backdrop-blur-xl p-5 transition-all hover:bg-black/60",
-                status === 'Claimable' ? "border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.15)]" : "border-white/5 shadow-lg",
+                status === 'Claimable' ? "border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.15)]" : "border-black/[0.04] shadow-lg",
                 status === 'Active' ? "hover:border-primary/30" : ""
             )}
         >
@@ -133,7 +133,7 @@ export function PolicyCard({ policyId, policyData, onActionSuccess, txHash }: Po
                 </div>
             </div>
 
-            <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between">
+            <div className="mt-5 pt-4 border-t border-black/[0.04] flex items-center justify-between">
                 <div className="flex items-center gap-3 text-xs text-slate-500">
                     <div className="flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5" />
