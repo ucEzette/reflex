@@ -122,8 +122,8 @@ function Tooltip({ text, children }: { text: string; children: React.ReactNode }
         {children}
       </span>
       {show && (
-        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-72 bg-[#15151A] text-[11px] text-zinc-400 leading-relaxed p-4 rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] pointer-events-none animate-in fade-in zoom-in-95 duration-200">
-           <div className="text-[#D31027] font-black uppercase tracking-widest mb-2 text-[9px]">Market Intelligence</div>
+        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-72 bg-[#15151A] text-[11px] text-[#71717A] leading-relaxed p-4 rounded-2xl border border-black/[0.06] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] pointer-events-none animate-in fade-in zoom-in-95 duration-200">
+           <div className="text-[#FF6B00] font-bold uppercase tracking-widest mb-2 text-[9px]">Market Intelligence</div>
           {text}
         </span>
       )}
@@ -390,7 +390,7 @@ export default function MarketDetailPage() {
   if (!market) {
     return (
       <div className="pt-32 pb-24 px-8 max-w-7xl mx-auto text-center">
-        <span className="material-symbols-outlined text-6xl text-zinc-700 mb-4">
+        <span className="material-symbols-outlined text-6xl text-[#B0AAA4] mb-4">
           error_outline
         </span>
         <h1 className="text-3xl font-bold mb-4">Market Not Found</h1>
@@ -418,17 +418,17 @@ export default function MarketDetailPage() {
     <>
       <main className="pt-32 pb-24 px-8 max-w-[1600px] mx-auto">
         {/* --- Breadcrumb --- */}
-      <div className="flex items-center gap-3 mb-10 text-[10px] uppercase font-black tracking-widest text-zinc-600">
-        <Link href="/market" className="hover:text-white transition-colors">Marketplace</Link>
+      <div className="flex items-center gap-3 mb-10 text-[10px] uppercase font-bold tracking-widest text-[#B0AAA4]">
+        <Link href="/market" className="hover:text-[#1A1A1A] transition-colors">Marketplace</Link>
         <ChevronRight className="w-3 h-3" />
-        <span className="text-[#D31027]">{market.title}</span>
+        {market.title}
       </div>
 
 
           {/* -- Header Section -- */}
           <div className="flex flex-col md:flex-row items-end gap-10 mb-16">
             <div className="relative">
-                <div className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center border border-white/10 shadow-2xl relative z-10 group">
+                <div className="w-24 h-24 bg-black/[0.03] rounded-3xl flex items-center justify-center border border-black/[0.06] shadow-2xl relative z-10 group">
                 <span
                     className="material-symbols-outlined text-5xl transition-transform duration-500 group-hover:scale-110"
                     style={{ color: `rgb(${market.rgb})` }}
@@ -443,9 +443,9 @@ export default function MarketDetailPage() {
             <div className="flex-1 max-w-2xl">
               <div className="flex items-center gap-3 mb-4">
                   <div className="w-1.5 h-1.5 rounded-full animate-ping" style={{ backgroundColor: `rgb(${market.rgb})` }} />
-                  <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Parametric Protection Node</span>
+                  <span className="text-[10px] font-bold text-[#71717A] uppercase tracking-wider">Parametric Protection Node</span>
               </div>
-              <h1 className="text-6xl font-black tracking-tighter mb-4 text-white uppercase italic">
+              <h1 className="text-6xl font-bold tracking-tighter mb-4 text-[#1A1A1A] uppercase">
                 {market.title.split(' ')[0]} <span style={{ color: `rgb(${market.rgb})` }}>{market.title.split(' ').slice(1).join(' ')}</span>
               </h1>
               <p className="text-[#888888] text-lg leading-relaxed font-medium">
@@ -455,12 +455,12 @@ export default function MarketDetailPage() {
 
             {isConnected && (
                 <div className="flex flex-col items-end gap-3 translate-y-[-8px]">
-                    <div className="flex items-center gap-4 p-4 bg-[#0A0A0A] rounded-2xl border border-white/5 shadow-2xl">
-                        <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center border border-white/5">
-                            <History className="w-5 h-5 text-zinc-400" />
+                    <div className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-black/[0.04] shadow-2xl">
+                        <div className="w-10 h-10 bg-black/[0.03] rounded-xl flex items-center justify-center border border-black/[0.04]">
+                            <History className="w-5 h-5 text-[#71717A]" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Active Pool Status</span>
+                            <span className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest">Active Pool Status</span>
                             <span className="mono-data text-sm text-emerald-500 font-bold uppercase tracking-widest">Operational</span>
                         </div>
                     </div>
@@ -469,13 +469,13 @@ export default function MarketDetailPage() {
           </div>
 
           {/* -- Market Mechanics -- */}
-          <details className="bg-[#0A0A0A] rounded-[2rem] p-10 mb-16 border border-white/5 shadow-2xl group transition-all duration-500">
+          <details className="bg-white rounded-[2rem] p-10 mb-16 border border-black/[0.04] shadow-2xl group transition-all duration-500">
             <summary className="cursor-pointer list-none flex items-center justify-between outline-none">
               <div className="flex items-center gap-4">
-                  <Info className="w-5 h-5 text-[#D31027]" />
-                  <span className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-500 group-hover:text-white transition-colors">Protocol Methodology & Settlement Engine</span>
+                  <Info className="w-5 h-5 text-[#FF6B00]" />
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#71717A] group-hover:text-white transition-colors">Protocol Methodology & Settlement Engine</span>
               </div>
-              <ChevronDown className="w-5 h-5 text-zinc-600 transition-transform duration-500 group-open:rotate-180" />
+              <ChevronDown className="w-5 h-5 text-[#B0AAA4] transition-transform duration-500 group-open:rotate-180" />
             </summary>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 animate-in fade-in slide-in-from-top-4 duration-500">
@@ -501,14 +501,14 @@ export default function MarketDetailPage() {
                   icon: Activity,
                 },
               ].map((s) => (
-                <div key={s.step} className="bg-[#101216] p-8 rounded-3xl border border-white/5 relative group/card">
-                   <div className="text-[40px] font-black text-white/5 absolute -top-2 -left-2 tracking-tighter transition-colors group-hover/card:text-[#D31027]/10">{s.step}</div>
+                <div key={s.step} className="bg-white p-8 rounded-3xl border border-black/[0.04] relative group/card">
+                   <div className="text-[40px] font-bold text-[#1A1A1A]/5 absolute -top-2 -left-2 tracking-tighter transition-colors group-hover/card:text-[#FF6B00]/10">{s.step}</div>
                    <div className="relative z-10 flex flex-col h-full">
-                        <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mb-6 group-hover/card:bg-[#D31027]/10 transition-colors">
-                            <s.icon className="w-6 h-6 text-zinc-400 group-hover/card:text-[#D31027]" />
+                        <div className="w-12 h-12 bg-black/[0.03] rounded-2xl flex items-center justify-center mb-6 group-hover/card:bg-[#FF6B00]/10 transition-colors">
+                            <s.icon className="w-6 h-6 text-[#71717A] group-hover/card:text-[#FF6B00]" />
                         </div>
-                        <h4 className="text-sm font-black uppercase tracking-widest mb-4 group-hover/card:text-white transition-colors">{s.title}</h4>
-                        <p className="text-[11px] text-zinc-500 leading-relaxed font-medium">{s.desc}</p>
+                        <h4 className="text-sm font-bold uppercase tracking-widest mb-4 group-hover/card:text-[#1A1A1A] transition-colors">{s.title}</h4>
+                        <p className="text-[11px] text-[#71717A] leading-relaxed font-medium">{s.desc}</p>
                    </div>
                 </div>
               ))}
@@ -531,10 +531,10 @@ export default function MarketDetailPage() {
             <div className="w-full lg:w-[58%] flex flex-col gap-8">
               
               {/* --- Configure Protection --- */}
-              <div className="bg-[#0A0A0A] rounded-[2rem] p-10 flex flex-col gap-10 border border-white/5 shadow-2xl relative z-50">
+              <div className="bg-white rounded-[2rem] p-10 flex flex-col gap-10 border border-black/[0.04] shadow-2xl relative z-50">
                 <div className="flex items-center gap-4">
-                    <div className="w-1.5 h-6 bg-[#D31027] rounded-full" />
-                    <h3 className="text-xl font-bold uppercase tracking-tight text-white">
+                    <div className="w-1.5 h-6 bg-[#FF6B00] rounded-full" />
+                    <h3 className="text-xl font-bold uppercase tracking-tight text-[#1A1A1A]">
                         Risk Parameter Matrix
                     </h3>
                 </div>
@@ -542,32 +542,32 @@ export default function MarketDetailPage() {
           {/* ═══ FLIGHT MARKET: Flight Number + Date + Lookup ═══ */}
           {isFlightMarket ? (
             <div className="space-y-10">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 flex items-center gap-2">
-                  <Plane className="w-3.5 h-3.5 text-[#D31027]" />
+                <label className="text-[10px] font-bold uppercase tracking-wider text-[#B0AAA4] flex items-center gap-2">
+                  <Plane className="w-3.5 h-3.5 text-[#FF6B00]" />
                   Flight Authorization Details
                 </label>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
-                    <span className="text-[9px] font-black text-zinc-700 uppercase tracking-widest px-1">Identifier (IATA)</span>
-                    <div className="bg-[#101216] p-4 rounded-2xl border border-white/5 focus-within:border-[#D31027]/40 transition-all group/input">
+                    <span className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest px-1">Identifier (IATA)</span>
+                    <div className="bg-white p-4 rounded-2xl border border-black/[0.04] focus-within:border-[#FF6B00]/40 transition-all group/input">
                       <input
                         type="text"
                         value={flightNumber}
                         onChange={(e) => setFlightNumber(e.target.value.toUpperCase().replace(/\s/g, ''))}
                         placeholder="e.g. AA1234"
-                        className="bg-transparent border-none p-0 w-full mono-data text-base focus:ring-0 text-white placeholder:text-zinc-800"
+                        className="bg-transparent border-none p-0 w-full mono-data text-base focus:ring-0 text-[#1A1A1A] placeholder:text-[#D1CBC5]"
                       />
                     </div>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <span className="text-[9px] font-black text-zinc-700 uppercase tracking-widest px-1">Departure Window</span>
-                    <div className="bg-[#101216] p-4 rounded-2xl border border-white/5 focus-within:border-[#D31027]/40 transition-all group/input">
+                    <span className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest px-1">Departure Window</span>
+                    <div className="bg-white p-4 rounded-2xl border border-black/[0.04] focus-within:border-[#FF6B00]/40 transition-all group/input">
                       <input
                         type="date"
                         value={flightDate}
                         onChange={(e) => setFlightDate(e.target.value)}
                         min={new Date().toISOString().split('T')[0]}
-                        className="bg-transparent border-none p-0 w-full mono-data text-base focus:ring-0 text-white placeholder:text-zinc-800 [color-scheme:dark]"
+                        className="bg-transparent border-none p-0 w-full mono-data text-base focus:ring-0 text-[#1A1A1A] placeholder:text-[#D1CBC5] [color-scheme:dark]"
                       />
                     </div>
                   </div>
@@ -575,7 +575,7 @@ export default function MarketDetailPage() {
                 <button
                   onClick={fetchFlightDetails}
                   disabled={flightLoading || !flightNumber.trim() || !flightDate}
-                  className="w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all bg-white/5 text-zinc-400 hover:bg-[#D31027] hover:text-white disabled:opacity-20 disabled:cursor-not-allowed border border-white/5 shadow-xl"
+                  className="w-full py-4 rounded-2xl text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-3 transition-all bg-black/[0.03] text-[#71717A] hover:bg-[#FF6B00] hover:text-white disabled:opacity-20 disabled:cursor-not-allowed border border-black/[0.04] shadow-xl"
                 >
                   {flightLoading ? (
                     <>
@@ -590,33 +590,33 @@ export default function MarketDetailPage() {
                   )}
                 </button>
                 {flightError && (
-                  <div className="flex items-center gap-3 px-5 py-3 bg-[#D31027]/10 rounded-2xl border border-[#D31027]/20">
-                    <AlertTriangle className="w-4 h-4 text-[#FFB3B5]" />
-                    <span className="text-[11px] font-bold text-[#FFB3B5] uppercase tracking-widest">{flightError}</span>
+                  <div className="flex items-center gap-3 px-5 py-3 bg-[#FF6B00]/10 rounded-2xl border border-[#FF6B00]/20">
+                    <AlertTriangle className="w-4 h-4 text-[#FF8A33]" />
+                    <span className="text-[11px] font-bold text-[#FF8A33] uppercase tracking-widest">{flightError}</span>
                   </div>
                 )}
 
                 {/* -- Premium Flight Details Card (Boarding Pass) -- */}
                 {flightData && (
-                  <div className="bg-[#101216] rounded-3xl p-8 border border-white/5 animate-in fade-in zoom-in duration-500 shadow-2xl relative overflow-hidden group">
+                  <div className="bg-white rounded-3xl p-8 border border-black/[0.04] animate-in fade-in zoom-in duration-500 shadow-2xl relative overflow-hidden group">
                     {/* Decorative Scanline */}
-                    <div className="absolute top-0 left-0 w-full h-[1px] bg-[#D31027]/20 group-hover:h-[2px] transition-all" />
+                    <div className="absolute top-0 left-0 w-full h-[1px] bg-[#FF6B00]/20 group-hover:h-[2px] transition-all" />
                     
                     <div className="flex items-center justify-between mb-10">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
-                          <Plane className="w-6 h-6 text-[#D31027]" />
+                        <div className="w-12 h-12 rounded-2xl bg-black/[0.03] flex items-center justify-center border border-black/[0.06]">
+                          <Plane className="w-6 h-6 text-[#FF6B00]" />
                         </div>
                         <div className="flex flex-col">
-                          <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{flightData.airline}</p>
-                          <p className="text-xl font-black text-white italic tracking-tighter uppercase">{flightData.flightNumber}</p>
+                          <p className="text-[9px] font-bold text-[#71717A] uppercase tracking-widest mb-1">{flightData.airline}</p>
+                          <p className="text-xl font-bold text-[#1A1A1A] tracking-tighter uppercase">{flightData.flightNumber}</p>
                         </div>
                       </div>
-                      <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] border shadow-2xl transition-all duration-300 ${
-                        flightData.status === 'scheduled' ? 'bg-white/5 text-zinc-400 border-white/10' :
+                      <div className={`px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-wider border shadow-2xl transition-all duration-300 ${
+                        flightData.status === 'scheduled' ? 'bg-black/[0.03] text-[#71717A] border-black/[0.06]' :
                         flightData.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                        flightData.status === 'landed' ? 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20' :
-                        flightData.status === 'cancelled' ? 'bg-[#D31027]/10 text-[#FFB3B5] border-[#D31027]/20' :
+                        flightData.status === 'landed' ? 'bg-zinc-500/10 text-[#71717A] border-zinc-500/20' :
+                        flightData.status === 'cancelled' ? 'bg-[#FF6B00]/10 text-[#FF8A33] border-[#FF6B00]/20' :
                         'bg-amber-500/10 text-amber-400 border-amber-500/20'
                       }`}>
                         {flightData.status}
@@ -626,47 +626,47 @@ export default function MarketDetailPage() {
                     {/* High Fidelity Route */}
                     <div className="flex items-center gap-8 mb-10">
                       <div className="flex-1">
-                        <p className="text-4xl font-black text-white italic tracking-tighter mb-1 select-none">{flightData.departure.iata}</p>
-                        <p className="text-[10px] font-black text-zinc-500 uppercase truncate tracking-widest">{flightData.departure.airport.split(' ')[0]} INT</p>
+                        <p className="text-4xl font-bold text-[#1A1A1A] tracking-tighter mb-1 select-none">{flightData.departure.iata}</p>
+                        <p className="text-[10px] font-bold text-[#71717A] uppercase truncate tracking-widest">{flightData.departure.airport.split(' ')[0]} INT</p>
                       </div>
                       <div className="flex flex-col items-center gap-2 flex-grow">
                           <div className="w-full flex items-center gap-2">
-                               <div className="flex-1 h-px bg-white/5" />
-                               <Plane className="w-4 h-4 text-zinc-700 mx-2" />
-                               <div className="flex-1 h-px bg-white/5" />
+                               <div className="flex-1 h-px bg-black/[0.03]" />
+                               <Plane className="w-4 h-4 text-[#B0AAA4] mx-2" />
+                               <div className="flex-1 h-px bg-black/[0.03]" />
                           </div>
-                          <span className="text-[8px] font-black text-zinc-700 uppercase tracking-[0.4em]">Non-Stop Vector</span>
+                          <span className="text-[8px] font-bold text-[#B0AAA4] uppercase tracking-wider">Non-Stop Vector</span>
                       </div>
                       <div className="flex-1 text-right">
-                        <p className="text-4xl font-black text-white italic tracking-tighter mb-1 select-none">{flightData.arrival.iata}</p>
-                        <p className="text-[10px] font-black text-zinc-500 uppercase truncate tracking-widest">{flightData.arrival.airport.split(' ')[0]} INT</p>
+                        <p className="text-4xl font-bold text-[#1A1A1A] tracking-tighter mb-1 select-none">{flightData.arrival.iata}</p>
+                        <p className="text-[10px] font-bold text-[#71717A] uppercase truncate tracking-widest">{flightData.arrival.airport.split(' ')[0]} INT</p>
                       </div>
                     </div>
 
                     {/* Times Ledger */}
                     <div className="grid grid-cols-2 gap-4 mb-8">
-                      <div className="bg-black/40 p-5 rounded-2xl border border-white/5">
+                      <div className="bg-black/40 p-5 rounded-2xl border border-black/[0.04]">
                         <div className="flex items-center gap-2 mb-3">
                            <div className="w-1 h-2.5 bg-zinc-700 rounded-full" />
-                           <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Departure Schedule</p>
+                           <p className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest">Departure Schedule</p>
                         </div>
-                        <p className="mono-data text-xl text-white font-bold">
+                        <p className="mono-data text-xl text-[#1A1A1A] font-bold">
                           {flightData.departure.scheduled ? new Date(flightData.departure.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '—'}
                         </p>
                         {flightData.departure.delay > 0 && (
-                          <p className="text-[9px] font-black text-[#D31027] mt-2 uppercase tracking-widest">+{flightData.departure.delay} MIN LATENCY</p>
+                          <p className="text-[9px] font-bold text-[#FF6B00] mt-2 uppercase tracking-widest">+{flightData.departure.delay} MIN LATENCY</p>
                         )}
                       </div>
-                      <div className="bg-black/40 p-5 rounded-2xl border border-white/5">
+                      <div className="bg-black/40 p-5 rounded-2xl border border-black/[0.04]">
                         <div className="flex items-center gap-2 mb-3">
                            <div className="w-1 h-2.5 bg-zinc-700 rounded-full" />
-                           <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Arrival Target</p>
+                           <p className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest">Arrival Target</p>
                         </div>
-                        <p className="mono-data text-xl text-white font-bold">
+                        <p className="mono-data text-xl text-[#1A1A1A] font-bold">
                           {flightData.arrival.scheduled ? new Date(flightData.arrival.scheduled).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '—'}
                         </p>
                         {flightData.arrival.delay > 0 && (
-                          <p className={`text-[9px] font-black mt-2 uppercase tracking-widest ${flightData.arrival.delay >= 120 ? 'text-[#D31027]' : 'text-amber-500'}`}>
+                          <p className={`text-[9px] font-bold mt-2 uppercase tracking-widest ${flightData.arrival.delay >= 120 ? 'text-[#FF6B00]' : 'text-amber-500'}`}>
                             +{flightData.arrival.delay} MIN LATENCY
                           </p>
                         )}
@@ -674,17 +674,17 @@ export default function MarketDetailPage() {
                     </div>
 
                     {/* Auto-set Status */}
-                    <div className="flex items-center gap-4 px-5 py-4 bg-[#D31027]/5 rounded-2xl border border-[#D31027]/10">
-                      <Clock className="w-4 h-4 text-[#D31027]" />
-                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-relaxed">
-                        Temporal Locking Active: <strong className="text-white">{durationDays} DAY{Number(durationDays) > 1 ? 'S' : ''}</strong> (TERMINAL FINALITY)
+                    <div className="flex items-center gap-4 px-5 py-4 bg-[#FF6B00]/5 rounded-2xl border border-[#FF6B00]/10">
+                      <Clock className="w-4 h-4 text-[#FF6B00]" />
+                      <span className="text-[10px] font-bold text-[#71717A] uppercase tracking-widest leading-relaxed">
+                        Temporal Locking Active: <strong className="text-[#1A1A1A]">{durationDays} DAY{Number(durationDays) > 1 ? 'S' : ''}</strong> (TERMINAL FINALITY)
                       </span>
                     </div>
 
                     {flightData.isDelayedOver2Hours && (
                       <div className="mt-4 flex items-center gap-4 px-5 py-4 bg-emerald-500/5 rounded-2xl border border-emerald-500/10">
                         <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest leading-relaxed">
+                        <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest leading-relaxed">
                           Vector Validated: Instant Settlement Available via Parametric Trigger
                         </span>
                       </div>
@@ -696,17 +696,17 @@ export default function MarketDetailPage() {
               /* ═══ NON-FLIGHT: Generic Target Input ═══ */
               <div className="space-y-10">
                 <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 flex items-center gap-2">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-[#B0AAA4] flex items-center gap-2">
                     <inputConfig.icon className="w-3.5 h-3.5" style={{ color: `rgb(${market.rgb})` }} />
                     {inputConfig.label}
                   </label>
-                  <div className="bg-[#101216] p-5 rounded-2xl border border-white/5 focus-within:border-[#D31027]/40 transition-all">
+                  <div className="bg-white p-5 rounded-2xl border border-black/[0.04] focus-within:border-[#FF6B00]/40 transition-all">
                     <input
                       type="text"
                       value={apiTarget}
                       onChange={(e) => setApiTarget(e.target.value.toUpperCase())}
                       placeholder={inputConfig.placeholder}
-                      className="bg-transparent border-none p-0 w-full mono-data text-lg focus:ring-0 text-white placeholder:text-zinc-800"
+                      className="bg-transparent border-none p-0 w-full mono-data text-lg focus:ring-0 text-[#1A1A1A] placeholder:text-[#D1CBC5]"
                     />
                   </div>
                   {apiTarget && (
@@ -725,23 +725,23 @@ export default function MarketDetailPage() {
                     {market.category === "agri" ? (
                       <>
                         <div className="flex flex-col gap-2">
-                          <label className="text-[9px] font-black text-zinc-700 uppercase tracking-widest px-1">Strike Index (mm)</label>
-                          <input type="number" value={strikeValue} onChange={e => setStrikeValue(e.target.value)} placeholder="e.g. 200" className="bg-[#101216] p-4 rounded-2xl border border-white/5 mono-data text-sm focus:ring-1 focus:ring-[#D31027]/40 text-white placeholder:text-zinc-800" />
+                          <label className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest px-1">Strike Index (mm)</label>
+                          <input type="number" value={strikeValue} onChange={e => setStrikeValue(e.target.value)} placeholder="e.g. 200" className="bg-white p-4 rounded-2xl border border-black/[0.04] mono-data text-sm focus:ring-1 focus:ring-[#FF6B00]/40 text-[#1A1A1A] placeholder:text-[#D1CBC5]" />
                         </div>
                         <div className="flex flex-col gap-2">
-                          <label className="text-[9px] font-black text-zinc-700 uppercase tracking-widest px-1">Exit Index (mm)</label>
-                          <input type="number" value={exitValue} onChange={e => setExitValue(e.target.value)} placeholder="e.g. 80" className="bg-[#101216] p-4 rounded-2xl border border-white/5 mono-data text-sm focus:ring-1 focus:ring-[#D31027]/40 text-white placeholder:text-zinc-800" />
+                          <label className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest px-1">Exit Index (mm)</label>
+                          <input type="number" value={exitValue} onChange={e => setExitValue(e.target.value)} placeholder="e.g. 80" className="bg-white p-4 rounded-2xl border border-black/[0.04] mono-data text-sm focus:ring-1 focus:ring-[#FF6B00]/40 text-[#1A1A1A] placeholder:text-[#D1CBC5]" />
                         </div>
                       </>
                     ) : (
                       <>
                         <div className="flex flex-col gap-2">
-                          <label className="text-[9px] font-black text-zinc-700 uppercase tracking-widest px-1">Latitude</label>
-                          <input type="text" value={latitude} onChange={e => setLatitude(e.target.value)} placeholder="e.g. 34.0522" className="bg-[#101216] p-4 rounded-2xl border border-white/5 mono-data text-sm focus:ring-1 focus:ring-[#D31027]/40 text-white placeholder:text-zinc-800" />
+                          <label className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest px-1">Latitude</label>
+                          <input type="text" value={latitude} onChange={e => setLatitude(e.target.value)} placeholder="e.g. 34.0522" className="bg-white p-4 rounded-2xl border border-black/[0.04] mono-data text-sm focus:ring-1 focus:ring-[#FF6B00]/40 text-[#1A1A1A] placeholder:text-[#D1CBC5]" />
                         </div>
                         <div className="flex flex-col gap-2">
-                          <label className="text-[9px] font-black text-zinc-700 uppercase tracking-widest px-1">Longitude</label>
-                          <input type="text" value={longitude} onChange={e => setLongitude(e.target.value)} placeholder="e.g. -118.2437" className="bg-[#101216] p-4 rounded-2xl border border-white/5 mono-data text-sm focus:ring-1 focus:ring-[#D31027]/40 text-white placeholder:text-zinc-800" />
+                          <label className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest px-1">Longitude</label>
+                          <input type="text" value={longitude} onChange={e => setLongitude(e.target.value)} placeholder="e.g. -118.2437" className="bg-white p-4 rounded-2xl border border-black/[0.04] mono-data text-sm focus:ring-1 focus:ring-[#FF6B00]/40 text-[#1A1A1A] placeholder:text-[#D1CBC5]" />
                         </div>
                       </>
                     )}
@@ -750,22 +750,22 @@ export default function MarketDetailPage() {
 
                 {market.category === "energy" && (
                   <div className="flex flex-col gap-2">
-                    <label className="text-[9px] font-black text-zinc-700 uppercase tracking-widest px-1">Tick Value (USD per Degree Day)</label>
-                    <input type="number" value={tickValue} onChange={e => setTickValue(e.target.value)} placeholder="10" className="bg-[#101216] p-4 rounded-2xl border border-white/5 mono-data text-sm focus:ring-1 focus:ring-[#D31027]/40 text-white placeholder:text-zinc-800" />
+                    <label className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest px-1">Tick Value (USD per Degree Day)</label>
+                    <input type="number" value={tickValue} onChange={e => setTickValue(e.target.value)} placeholder="10" className="bg-white p-4 rounded-2xl border border-black/[0.04] mono-data text-sm focus:ring-1 focus:ring-[#FF6B00]/40 text-[#1A1A1A] placeholder:text-[#D1CBC5]" />
                   </div>
                 )}
 
                 {/* Duration Selector (non-flight only) */}
                 <div className="flex flex-col gap-4">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 px-1">Coverage Temporal Window</label>
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-[#B0AAA4] px-1">Coverage Temporal Window</label>
                   <div className="flex gap-3">
                     {["1", "7", "14", "30"].map((d) => (
                       <button
                         key={d}
                         onClick={() => setDurationDays(d)}
-                        className={`flex-1 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 border ${durationDays === d
-                            ? "bg-[#D31027] border-[#D31027] text-white shadow-[0_10px_20px_rgba(211,16,39,0.2)]"
-                            : "bg-white/5 border-white/5 text-zinc-500 hover:text-white"
+                        className={`flex-1 py-3.5 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 border ${durationDays === d
+                            ? "bg-[#FF6B00] border-[#FF6B00] text-[#1A1A1A] shadow-[0_10px_20px_rgba(255,107,0,0.2)]"
+                            : "bg-black/[0.03] border-black/[0.04] text-[#71717A] hover:text-[#1A1A1A]"
                           }`}
                       >
                         {d}D
@@ -778,26 +778,26 @@ export default function MarketDetailPage() {
 
           {/* -- Expected Payout Input -- */}
           <div className="flex flex-col gap-4">
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 flex items-center gap-2">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-[#B0AAA4] flex items-center gap-2">
               <CreditCard className="w-3.5 h-3.5 text-emerald-500" />
               Maximum Exposure / Payout
             </label>
-            <div className="bg-[#101216] p-5 rounded-2xl flex items-center gap-4 border border-white/5 focus-within:border-emerald-500/40 transition-all group">
-              <span className="text-zinc-700 text-sm font-black">$</span>
+            <div className="bg-white p-5 rounded-2xl flex items-center gap-4 border border-black/[0.04] focus-within:border-emerald-500/40 transition-all group">
+              <span className="text-[#B0AAA4] text-sm font-bold">$</span>
               <input
                 type="number"
                 value={customPayout}
                 onChange={(e) => setCustomPayout(e.target.value)}
                 placeholder="0.00"
                 min="1"
-                className="bg-transparent border-none p-0 w-full mono-data text-2xl font-bold focus:ring-0 text-white placeholder:text-zinc-800"
+                className="bg-transparent border-none p-0 w-full mono-data text-2xl font-bold focus:ring-0 text-[#1A1A1A] placeholder:text-[#D1CBC5]"
               />
-              <span className="text-zinc-700 text-[10px] font-black uppercase tracking-widest shrink-0">USDT</span>
+              <span className="text-[#B0AAA4] text-[10px] font-bold uppercase tracking-widest shrink-0">USDT</span>
             </div>
             {effectivePayout > 0 && effectivePayout > availableCapacity && availableCapacity > 0 && (
-              <div className="flex items-center gap-3 px-5 py-3 bg-[#D31027]/10 rounded-2xl border border-[#D31027]/20">
-                <AlertTriangle className="w-4 h-4 text-[#FFB3B5]" />
-                <span className="text-[10px] font-bold text-[#FFB3B5] uppercase tracking-widest">
+              <div className="flex items-center gap-3 px-5 py-3 bg-[#FF6B00]/10 rounded-2xl border border-[#FF6B00]/20">
+                <AlertTriangle className="w-4 h-4 text-[#FF8A33]" />
+                <span className="text-[10px] font-bold text-[#FF8A33] uppercase tracking-widest">
                   Capacity Warning: Pooled Liquidity Cap at ${availableCapacity.toLocaleString()}
                 </span>
               </div>
@@ -812,33 +812,33 @@ export default function MarketDetailPage() {
           <div className="sticky top-28 space-y-6">
 
             {/* -- Purchase Widget -- */}
-            <div className="bg-[#0A0A0A] rounded-[2rem] p-10 flex flex-col gap-8 border border-white/5 shadow-2xl relative overflow-hidden group">
+            <div className="bg-white rounded-[2rem] p-10 flex flex-col gap-8 border border-black/[0.04] shadow-2xl relative overflow-hidden group">
                {/* Accent Glow */}
-               <div className="absolute top-0 right-0 w-32 h-32 bg-[#D31027]/10 blur-[60px] rounded-full -mr-16 -mt-16 group-hover:bg-[#D31027]/20 transition-colors" />
+               <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF6B00]/10 blur-[60px] rounded-full -mr-16 -mt-16 group-hover:bg-[#FF6B00]/20 transition-colors" />
 
               <div className="flex justify-between items-start relative z-10">
                 <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Selected Risk Vector</span>
-                    <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">
+                    <span className="text-[10px] font-bold text-[#B0AAA4] uppercase tracking-widest">Selected Risk Vector</span>
+                    <h3 className="text-xl font-bold text-[#1A1A1A] uppercase tracking-tighter">
                     Coverage Summary
                     </h3>
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                  <span className="text-[9px] font-black text-zinc-700 uppercase tracking-widest">Authority Balance</span>
+                  <span className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest">Authority Balance</span>
                   <span className="mono-data text-xs text-emerald-500 font-bold">{formattedBalance} USDT</span>
                 </div>
               </div>
 
               {/* --- Underwriting Quote Breakdown --- */}
-              <div className="bg-[#101216] rounded-3xl p-8 space-y-6 border border-white/5 relative z-10">
+              <div className="bg-white rounded-3xl p-8 space-y-6 border border-black/[0.04] relative z-10">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-600 flex items-center gap-3">
-                    <Terminal className="w-3.5 h-3.5 text-[#D31027]" />
+                  <h4 className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#B0AAA4] flex items-center gap-3">
+                    <Terminal className="w-3.5 h-3.5 text-[#FF6B00]" />
                     Underwriting Ledger
                   </h4>
                   <button
                     onClick={() => setShowAdvanced(!showAdvanced)}
-                    className="text-[9px] font-black text-[#D31027] uppercase tracking-widest hover:underline"
+                    className="text-[9px] font-bold text-[#FF6B00] uppercase tracking-widest hover:underline"
                   >
                     {showAdvanced ? "Hide Calc" : "Show Calc"}
                   </button>
@@ -848,76 +848,76 @@ export default function MarketDetailPage() {
                 <div className="flex flex-col gap-5">
                   <div className="flex justify-between items-center group/item">
                     <Tooltip text={`Base premium derived from historical volatility and loss projections. Expected Loss = ${historicalRiskRate.toFixed(4)} × $${effectivePayout} = $${expectedLoss.toFixed(2)}`}>
-                      <span className="text-[11px] font-bold text-zinc-400 flex items-center gap-2 group-hover/item:text-zinc-200 transition-colors uppercase tracking-widest cursor-help">
+                      <span className="text-[11px] font-bold text-[#71717A] flex items-center gap-2 group-hover/item:text-zinc-200 transition-colors uppercase tracking-widest cursor-help">
                         Technical Premium
-                        <Info className="w-3 h-3 text-zinc-700" />
+                        <Info className="w-3 h-3 text-[#B0AAA4]" />
                       </span>
                     </Tooltip>
-                    <span className="mono-data text-sm text-white font-bold tracking-tight">${calculatedPremium.toFixed(2)}</span>
+                    <span className="mono-data text-sm text-[#1A1A1A] font-bold tracking-tight">${calculatedPremium.toFixed(2)}</span>
                   </div>
 
                   <div className="flex justify-between items-center group/item">
                     <Tooltip text={`Origination fee of ${ORIGINATION_FEE_BPS} BPS (3%) on the calculated premium for operational node sustainability.`}>
-                      <span className="text-[11px] font-bold text-zinc-400 flex items-center gap-2 group-hover/item:text-zinc-200 transition-colors uppercase tracking-widest cursor-help">
+                      <span className="text-[11px] font-bold text-[#71717A] flex items-center gap-2 group-hover/item:text-zinc-200 transition-colors uppercase tracking-widest cursor-help">
                         Node Fee (3%)
-                        <Info className="w-3 h-3 text-zinc-700" />
+                        <Info className="w-3 h-3 text-[#B0AAA4]" />
                       </span>
                     </Tooltip>
-                    <span className="mono-data text-sm text-zinc-500 font-bold tracking-tight">${originationFee.toFixed(2)}</span>
+                    <span className="mono-data text-sm text-[#71717A] font-bold tracking-tight">${originationFee.toFixed(2)}</span>
                   </div>
 
                   {surgeMultiplier > 1.0 && (
-                     <div className="flex justify-between items-center px-4 py-3 bg-[#D31027]/10 rounded-2xl border border-[#D31027]/20 group/surge">
+                     <div className="flex justify-between items-center px-4 py-3 bg-[#FF6B00]/10 rounded-2xl border border-[#FF6B00]/20 group/surge">
                       <Tooltip text={`Dynamic Risk Engine has applied a ${surgeMultiplier.toFixed(2)}x surge multiplier based on elevated environmental conditions.`}>
-                        <span className="text-[10px] font-black text-[#FFB3B5] flex items-center gap-2 uppercase tracking-widest cursor-help">
+                        <span className="text-[10px] font-bold text-[#FF8A33] flex items-center gap-2 uppercase tracking-widest cursor-help">
                           <AlertTriangle className="w-3.5 h-3.5" />
                           Risk Surge
                         </span>
                       </Tooltip>
-                      <span className="mono-data text-sm text-[#FFB3B5] font-black">{surgeMultiplier.toFixed(2)}x</span>
+                      <span className="mono-data text-sm text-[#FF8A33] font-bold">{surgeMultiplier.toFixed(2)}x</span>
                     </div>
                   )}
 
-                  <div className="pt-6 border-t border-white/5 flex justify-between items-end">
+                  <div className="pt-6 border-t border-black/[0.04] flex justify-between items-end">
                     <div className="flex flex-col gap-1">
-                        <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Total Authorization</span>
-                        <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Refund if oracle detects error</span>
+                        <span className="text-[10px] font-bold text-[#1A1A1A] uppercase tracking-wider">Total Authorization</span>
+                        <span className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest">Refund if oracle detects error</span>
                     </div>
                     <div className="flex flex-col items-end">
-                        <div className="text-3xl font-black text-white italic tracking-tighter">${totalCost.toFixed(2)}</div>
-                        <span className="text-[9px] font-black text-[#D31027] uppercase tracking-[0.2em]">USDT ERC-20</span>
+                        <div className="text-3xl font-bold text-[#1A1A1A] tracking-tighter">${totalCost.toFixed(2)}</div>
+                        <span className="text-[9px] font-bold text-[#FF6B00] uppercase tracking-wider">USDT ERC-20</span>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 mt-2">
-                    <div className="bg-black/30 p-4 rounded-2xl border border-white/5">
-                         <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-2 block">Potential Payout</span>
-                         <span className="text-sm font-black text-emerald-500 italic px-1">${effectivePayout.toFixed(2)}</span>
+                    <div className="bg-black/30 p-4 rounded-2xl border border-black/[0.04]">
+                         <span className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest mb-2 block">Potential Payout</span>
+                         <span className="text-sm font-bold text-emerald-500 px-1">${effectivePayout.toFixed(2)}</span>
                     </div>
-                    <div className="bg-black/30 p-4 rounded-2xl border border-white/5">
-                         <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-2 block">Alpha Multiplier</span>
-                         <span className="text-sm font-black text-white italic px-1">{payoutRatio.toFixed(1)}x</span>
+                    <div className="bg-black/30 p-4 rounded-2xl border border-black/[0.04]">
+                         <span className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest mb-2 block">Alpha Multiplier</span>
+                         <span className="text-sm font-bold text-[#1A1A1A] px-1">{payoutRatio.toFixed(1)}x</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Advanced calculation breakdown */}
                 {showAdvanced && (
-                  <div className="mt-4 pt-6 border-t border-white/5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <h5 className="text-[9px] font-black uppercase tracking-[0.2em] text-[#D31027]">Risk Engine Internal Matrix</h5>
-                    <div className="bg-black/80 p-5 rounded-2xl font-mono text-[9px] space-y-2 text-zinc-500 border border-white/5 shadow-inner">
-                      <p className="text-zinc-600 opacity-50">// STEP_01: RETRIEVE_VECT_DATA</p>
+                  <div className="mt-4 pt-6 border-t border-black/[0.04] space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <h5 className="text-[9px] font-bold uppercase tracking-wider text-[#FF6B00]">Risk Engine Internal Matrix</h5>
+                    <div className="bg-black/80 p-5 rounded-2xl font-mono text-[9px] space-y-2 text-[#71717A] border border-black/[0.04] shadow-inner">
+                      <p className="text-[#B0AAA4] opacity-50">// STEP_01: RETRIEVE_VECT_DATA</p>
                       <p>risk_factor = base / 100 = <span className="text-zinc-300">{historicalRiskRate.toFixed(4)}</span></p>
-                      <p className="text-zinc-600 opacity-50 mt-2">// STEP_02: COMPUTE_EXP_LOSS</p>
-                      <p>exp_loss = risk_factor * payout = <span className="text-white">${expectedLoss.toFixed(4)}</span></p>
-                      <p className="text-zinc-600 opacity-50 mt-2">// STEP_03: MARGIN_OVERHEAD</p>
+                      <p className="text-[#B0AAA4] opacity-50 mt-2">// STEP_02: COMPUTE_EXP_LOSS</p>
+                      <p>exp_loss = risk_factor * payout = <span className="text-[#1A1A1A]">${expectedLoss.toFixed(4)}</span></p>
+                      <p className="text-[#B0AAA4] opacity-50 mt-2">// STEP_03: MARGIN_OVERHEAD</p>
                       <p>margin = 1 + ({PROTOCOL_MARGIN_BPS/10000}) = <span className="text-zinc-300">{marginMultiplier}</span></p>
-                      <p>premium = exp_loss * margin * surge = <span className="text-[#D31027] font-bold">${calculatedPremium.toFixed(4)}</span></p>
+                      <p>premium = exp_loss * margin * surge = <span className="text-[#FF6B00] font-bold">${calculatedPremium.toFixed(4)}</span></p>
                     </div>
-                    <div className="flex items-start gap-3 p-4 bg-white/5 rounded-2xl border border-white/5">
+                    <div className="flex items-start gap-3 p-4 bg-black/[0.03] rounded-2xl border border-black/[0.04]">
                       <Shield className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <p className="text-[9px] text-zinc-500 leading-relaxed font-medium">
-                        Auth verified via <strong className="text-white">EIP-712</strong>. Quantum-resistant hashing ensures premium integrity across distributed node clusters.
+                      <p className="text-[9px] text-[#71717A] leading-relaxed font-medium">
+                        Auth verified via <strong className="text-[#1A1A1A]">EIP-712</strong>. Quantum-resistant hashing ensures premium integrity across distributed node clusters.
                       </p>
                     </div>
                   </div>
@@ -925,14 +925,14 @@ export default function MarketDetailPage() {
 
                 <div className="mt-8">
                   {!isConnected ? (
-                    <div className="p-6 bg-white/5 rounded-3xl text-center border border-white/5 italic text-zinc-500 text-[10px] font-black uppercase tracking-widest">
+                    <div className="p-6 bg-black/[0.03] rounded-3xl text-center border border-black/[0.04] text-[#71717A] text-[10px] font-bold uppercase tracking-widest">
                       Vault Access Protocol Required
                     </div>
                   ) : needsApproval ? (
                     <button
                       onClick={handleApprove}
                       disabled={isApproving || isConfirmingApprove}
-                      className="w-full py-5 bg-white text-black font-black text-[10px] uppercase tracking-[0.3em] rounded-2xl hover:bg-zinc-200 transition-all shadow-2xl flex items-center justify-center gap-3 disabled:opacity-20 disabled:cursor-not-allowed group/btn"
+                      className="w-full py-5 bg-white text-black font-bold text-[10px] uppercase tracking-wider rounded-2xl hover:bg-zinc-200 transition-all shadow-2xl flex items-center justify-center gap-3 disabled:opacity-20 disabled:cursor-not-allowed group/btn"
                     >
                       {isApproving || isConfirmingApprove ? (
                         <>
@@ -950,7 +950,7 @@ export default function MarketDetailPage() {
                     <button
                       onClick={handlePurchase}
                       disabled={isPurchasing || isConfirmingPurchase || effectivePayout <= 0 || (effectivePayout > availableCapacity && availableCapacity > 0)}
-                      className="w-full py-5 bg-[#D31027] text-white font-black text-[10px] uppercase tracking-[0.3em] rounded-2xl hover:bg-[#A9081E] transition-all shadow-[0_15px_40px_rgba(211,16,39,0.3)] flex items-center justify-center gap-3 disabled:opacity-20 disabled:cursor-not-allowed group/btn"
+                      className="w-full py-5 bg-[#FF6B00] text-white font-bold text-[10px] uppercase tracking-wider rounded-2xl hover:bg-[#E55E00] transition-all shadow-[0_15px_40px_rgba(255,107,0,0.3)] flex items-center justify-center gap-3 disabled:opacity-20 disabled:cursor-not-allowed group/btn"
                     >
                       {isPurchasing || isConfirmingPurchase ? (
                         <>
@@ -972,57 +972,57 @@ export default function MarketDetailPage() {
               <div className="flex items-center justify-center gap-8 py-4 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all cursor-default relative z-10">
                  <div className="flex items-center gap-2">
                     <Shield className="w-3 h-3 text-emerald-500" />
-                    <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">Quantum-Secured</span>
+                    <span className="text-[8px] font-bold text-[#71717A] uppercase tracking-widest">Quantum-Secured</span>
                  </div>
                  <div className="flex items-center gap-2">
-                    <Globe className="w-3 h-3 text-[#D31027]" />
-                    <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">Arbitrum Nodes</span>
+                    <Globe className="w-3 h-3 text-[#FF6B00]" />
+                    <span className="text-[8px] font-bold text-[#71717A] uppercase tracking-widest">Arbitrum Nodes</span>
                  </div>
               </div>
             </div>
 
             {/* -- Market Liquidity HUD -- */}
             <div className="grid grid-cols-2 gap-4">
-               <div className="bg-[#0A0A0A] p-6 rounded-3xl border border-white/5 shadow-2xl group relative overflow-hidden">
+               <div className="bg-white p-6 rounded-3xl border border-black/[0.04] shadow-2xl group relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-3 opacity-10">
-                      <Activity className="w-8 h-8 text-[#D31027]" />
+                      <Activity className="w-8 h-8 text-[#FF6B00]" />
                   </div>
-                  <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-3 group-hover:text-zinc-400 transition-colors">Risk Utilization</p>
-                  <div className="text-2xl font-black text-white italic tracking-tighter mb-3">{utilization.toFixed(1)}%</div>
-                  <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                  <p className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest mb-3 group-hover:text-[#71717A] transition-colors">Risk Utilization</p>
+                  <div className="text-2xl font-bold text-[#1A1A1A] tracking-tighter mb-3">{utilization.toFixed(1)}%</div>
+                  <div className="h-1 bg-black/[0.03] rounded-full overflow-hidden">
                      <div 
-                        className="h-full bg-gradient-to-r from-[#D31027] to-[#A9081E] transition-all duration-1000 shadow-[2px_0_10px_rgba(211,16,39,0.5)]" 
+                        className="h-full bg-gradient-to-r from-[#FF6B00] to-[#E55E00] transition-all duration-1000 shadow-[2px_0_10px_rgba(255,107,0,0.5)]" 
                         style={{ width: `${Math.min(utilization, 100)}%` }} 
                      />
                   </div>
                </div>
-               <div className="bg-[#0A0A0A] p-6 rounded-3xl border border-white/5 shadow-2xl group relative overflow-hidden">
+               <div className="bg-white p-6 rounded-3xl border border-black/[0.04] shadow-2xl group relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-3 opacity-10">
                       <Droplets className="w-8 h-8 text-emerald-500" />
                   </div>
-                  <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-3 group-hover:text-zinc-400 transition-colors">Market Depth</p>
-                  <div className="text-2xl font-black text-emerald-500 italic tracking-tighter mb-1">${availableCapacity.toLocaleString()}</div>
-                  <span className="text-[8px] font-black text-zinc-800 uppercase tracking-widest">Operational Capacity</span>
+                  <p className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest mb-3 group-hover:text-[#71717A] transition-colors">Market Depth</p>
+                  <div className="text-2xl font-bold text-emerald-500 tracking-tighter mb-1">${availableCapacity.toLocaleString()}</div>
+                  <span className="text-[8px] font-bold text-[#D1CBC5] uppercase tracking-widest">Operational Capacity</span>
                </div>
             </div>
 
             {/* -- Risk Calculator Card -- */}
-            <div className="bg-[#0A0A0A] rounded-[2rem] p-10 border border-white/5 shadow-2xl relative overflow-hidden group">
+            <div className="bg-white rounded-[2rem] p-10 border border-black/[0.04] shadow-2xl relative overflow-hidden group">
                <div className="flex items-center gap-4 mb-10">
                     <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-                    <h3 className="text-xl font-black uppercase tracking-tight text-white italic">
+                    <h3 className="text-xl font-bold uppercase tracking-tight text-[#1A1A1A]">
                         Scenario Analysis Matrix
                     </h3>
                </div>
               
               <div className="grid grid-cols-2 gap-6 mb-10">
                 <div className="flex flex-col gap-2">
-                  <span className="text-[9px] font-black text-zinc-700 uppercase tracking-widest block">Exposure Basis</span>
-                  <div className="text-2xl font-black text-white italic tracking-tighter">${totalCost.toFixed(2)}</div>
+                  <span className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest block">Exposure Basis</span>
+                  <div className="text-2xl font-bold text-[#1A1A1A] tracking-tighter">${totalCost.toFixed(2)}</div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <span className="text-[9px] font-black text-zinc-700 uppercase tracking-widest block">Target Disbursement</span>
-                  <div className="text-2xl font-black italic tracking-tighter" style={{ color: `rgb(${market.rgb})` }}>
+                  <span className="text-[9px] font-bold text-[#B0AAA4] uppercase tracking-widest block">Target Disbursement</span>
+                  <div className="text-2xl font-bold tracking-tighter" style={{ color: `rgb(${market.rgb})` }}>
                     ${effectivePayout.toFixed(2)}
                   </div>
                 </div>
@@ -1034,34 +1034,34 @@ export default function MarketDetailPage() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center bg-emerald-500/5 p-5 rounded-2xl border border-emerald-500/10">
                       <div className="flex flex-col gap-1">
-                          <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Delay Vector confirmed</span>
+                          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Delay Vector confirmed</span>
                           <span className="text-[9px] text-emerald-700 font-medium">Wait Time ≥ 120min or Cancelled</span>
                       </div>
-                      <span className="mono-data text-emerald-400 font-black tracking-tight">+${effectivePayout.toFixed(2)}</span>
+                      <span className="mono-data text-emerald-400 font-bold tracking-tight">+${effectivePayout.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between items-center bg-white/2 p-5 rounded-2xl border border-white/5">
+                    <div className="flex justify-between items-center bg-black/[0.02] p-5 rounded-2xl border border-black/[0.04]">
                       <div className="flex flex-col gap-1">
-                          <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Nominal Arrival</span>
-                          <span className="text-[9px] text-zinc-800 font-medium">Vector completed within SLA</span>
+                          <span className="text-[10px] font-bold text-[#B0AAA4] uppercase tracking-widest">Nominal Arrival</span>
+                          <span className="text-[9px] text-[#D1CBC5] font-medium">Vector completed within SLA</span>
                       </div>
-                      <span className="mono-data text-zinc-700">-${totalCost.toFixed(2)}</span>
+                      <span className="mono-data text-[#B0AAA4]">-${totalCost.toFixed(2)}</span>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <div className="flex justify-between items-center bg-emerald-500/5 p-5 rounded-2xl border border-emerald-500/10">
                       <div className="flex flex-col gap-1">
-                          <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Parametric Trigger</span>
+                          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Parametric Trigger</span>
                           <span className="text-[9px] text-emerald-700 font-medium">Node Validation Successful</span>
                       </div>
-                      <span className="mono-data text-emerald-400 font-black tracking-tight">+${effectivePayout.toFixed(2)}</span>
+                      <span className="mono-data text-emerald-400 font-bold tracking-tight">+${effectivePayout.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between items-center bg-white/2 p-5 rounded-2xl border border-white/5">
+                    <div className="flex justify-between items-center bg-black/[0.02] p-5 rounded-2xl border border-black/[0.04]">
                       <div className="flex flex-col gap-1">
-                          <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Baseline Conditions</span>
-                          <span className="text-[9px] text-zinc-800 font-medium">Trigger window expiration</span>
+                          <span className="text-[10px] font-bold text-[#B0AAA4] uppercase tracking-widest">Baseline Conditions</span>
+                          <span className="text-[9px] text-[#D1CBC5] font-medium">Trigger window expiration</span>
                       </div>
-                      <span className="mono-data text-zinc-700">-${totalCost.toFixed(2)}</span>
+                      <span className="mono-data text-[#B0AAA4]">-${totalCost.toFixed(2)}</span>
                     </div>
                   </div>
                 )}
@@ -1071,9 +1071,9 @@ export default function MarketDetailPage() {
               <div className="p-6 bg-emerald-500/10 rounded-3xl flex justify-between items-center border border-emerald-500/20">
                 <div className="flex items-center gap-3">
                     <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                    <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Net P/L Result</span>
+                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Net P/L Result</span>
                 </div>
-                <span className="mono-data text-xl text-emerald-400 font-black tracking-tighter">
+                <span className="mono-data text-xl text-emerald-400 font-bold tracking-tighter">
                   +${(effectivePayout - totalCost).toFixed(2)} USDT
                 </span>
               </div>
@@ -1083,53 +1083,53 @@ export default function MarketDetailPage() {
       </div>
 
           {/* -- Resolution Ledger Rules -- */}
-          <div className="bg-[#0A0A0A] rounded-[3rem] p-12 border border-white/5 shadow-2xl mt-16 group">
+          <div className="bg-white rounded-[3rem] p-12 border border-black/[0.04] shadow-2xl mt-16 group">
             <div className="flex items-center gap-5 mb-10">
-                <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group-hover:border-[#D31027]/40 transition-colors">
-                    <Shield className="w-6 h-6 text-zinc-400 group-hover:text-[#D31027] transition-colors" />
+                <div className="w-12 h-12 bg-black/[0.03] rounded-2xl flex items-center justify-center border border-black/[0.06] group-hover:border-[#FF6B00]/40 transition-colors">
+                    <Shield className="w-6 h-6 text-[#71717A] group-hover:text-[#FF6B00] transition-colors" />
                 </div>
-                <h2 className="text-3xl font-black uppercase italic tracking-tighter text-white">Resolution Protocol</h2>
+                <h2 className="text-3xl font-bold uppercase tracking-tighter text-[#1A1A1A]">Resolution Protocol</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                {rules.map((rule, i) => (
-                    <div key={i} className="flex items-start gap-4 p-6 bg-[#101216] rounded-3xl border border-white/5 hover:border-white/10 transition-colors">
-                        <CheckCircle2 className="w-5 h-5 text-zinc-700 shrink-0 mt-0.5" />
-                        <span className="text-[11px] text-zinc-400 leading-relaxed font-medium">{rule.trim()}</span>
+                    <div key={i} className="flex items-start gap-4 p-6 bg-white rounded-3xl border border-black/[0.04] hover:border-black/[0.06] transition-colors">
+                        <CheckCircle2 className="w-5 h-5 text-[#B0AAA4] shrink-0 mt-0.5" />
+                        <span className="text-[11px] text-[#71717A] leading-relaxed font-medium">{rule.trim()}</span>
                     </div>
                 ))}
             </div>
           </div>
 
           {/* -- Smart Contract Registry -- */}
-          <div className="p-12 bg-[#0A0A0A] rounded-[3rem] border border-white/5 shadow-2xl space-y-10 mt-10 relative overflow-hidden">
-             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#D31027]/20 to-transparent" />
+          <div className="p-12 bg-white rounded-[3rem] border border-black/[0.04] shadow-2xl space-y-10 mt-10 relative overflow-hidden">
+             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#FF6B00]/20 to-transparent" />
              <div className="flex items-center justify-between">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600">On-Chain Registry</h3>
+                <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#B0AAA4]">On-Chain Registry</h3>
                 <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Mainnet-Parity Nodes Active</span>
+                    <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Mainnet-Parity Nodes Active</span>
                 </div>
              </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="flex flex-col gap-4 group/addr">
-                <span className="text-[10px] font-black text-zinc-700 uppercase tracking-widest">Protection Product Factory</span>
+                <span className="text-[10px] font-bold text-[#B0AAA4] uppercase tracking-widest">Protection Product Factory</span>
                 <a 
                     href={`https://sepolia.arbiscan.io/address/${productAddr}`} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="mono-data text-xs text-zinc-400 truncate hover:text-white transition-colors flex items-center gap-3"
+                    className="mono-data text-xs text-[#71717A] truncate hover:text-[#1A1A1A] transition-colors flex items-center gap-3"
                 >
-                  <Navigation className="w-3.5 h-3.5 text-[#D31027]" />
+                  <Navigation className="w-3.5 h-3.5 text-[#FF6B00]" />
                   {productAddr}
                 </a>
               </div>
               <div className="flex flex-col gap-4 group/addr">
-                <span className="text-[10px] font-black text-zinc-700 uppercase tracking-widest">Collateral Liquidity Vault</span>
+                <span className="text-[10px] font-bold text-[#B0AAA4] uppercase tracking-widest">Collateral Liquidity Vault</span>
                 <a 
                     href={`https://sepolia.arbiscan.io/address/${poolAddr}`} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="mono-data text-xs text-zinc-400 truncate hover:text-white transition-colors flex items-center gap-3"
+                    className="mono-data text-xs text-[#71717A] truncate hover:text-[#1A1A1A] transition-colors flex items-center gap-3"
                 >
                   <Droplets className="w-3.5 h-3.5 text-blue-500" />
                   {poolAddr}

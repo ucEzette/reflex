@@ -53,7 +53,7 @@ export default function MarketplacePage() {
         <h1 className="text-6xl font-bold tracking-tight mb-4 leading-tight">
           Protection <span className="text-primary">Marketplace</span>
         </h1>
-        <p className="text-zinc-400 text-lg">
+        <p className="text-[#71717A] text-lg">
           Browse and purchase parametric micro-insurance. Trustless settlement powered by real-world oracles.
         </p>
       </header>
@@ -66,10 +66,10 @@ export default function MarketplacePage() {
               <button
                 key={cat}
                 onClick={() => setActiveFilter(cat)}
-                className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all duration-300 ${
+                className={`px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-300 ${
                   activeFilter === cat
-                    ? "bg-[#D31027] text-white shadow-[0_0_20px_rgba(211,16,39,0.3)]"
-                    : "bg-[#0A0A0A] text-zinc-500 border border-white/5 hover:border-white/10 hover:text-zinc-300"
+                    ? "bg-[#FF6B00] text-white shadow-[0_0_20px_rgba(255,107,0,0.3)]"
+                    : "bg-white text-[#71717A] border border-black/[0.04] hover:border-black/[0.06] hover:text-zinc-300"
                 }`}
               >
                 {cat}
@@ -77,15 +77,15 @@ export default function MarketplacePage() {
             ))}
           </div>
           <div className="relative min-w-[360px] group">
-            <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none transition-colors group-focus-within:text-[#D31027]">
-              <Search className="w-4 h-4 text-zinc-600" />
+            <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none transition-colors group-focus-within:text-[#FF6B00]">
+              <Search className="w-4 h-4 text-[#B0AAA4]" />
             </div>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search markets by ID or keyword..."
-              className="w-full bg-[#0A0A0A] border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-sm font-body focus:border-[#D31027]/40 focus:ring-0 focus:outline-none transition-all placeholder:text-zinc-700"
+              className="w-full bg-white border border-black/[0.04] rounded-2xl pl-12 pr-4 py-4 text-sm font-body focus:border-[#FF6B00]/40 focus:ring-0 focus:outline-none transition-all placeholder:text-[#B0AAA4]"
             />
           </div>
         </div>
@@ -98,8 +98,8 @@ export default function MarketplacePage() {
         ))}
         {filteredMarkets.length === 0 && (
           <div className="col-span-full text-center py-20">
-            <span className="material-symbols-outlined text-6xl text-zinc-700 mb-4">search_off</span>
-            <p className="text-zinc-500 text-lg">No markets found matching your criteria.</p>
+            <span className="material-symbols-outlined text-6xl text-[#B0AAA4] mb-4">search_off</span>
+            <p className="text-[#71717A] text-lg">No markets found matching your criteria.</p>
           </div>
         )}
       </div>
@@ -111,33 +111,33 @@ function MarketCard({ market }: { market: MarketDetail }) {
   return (
     <Link
       href={`/market/${market.id}`}
-      className="group relative bg-[#0A0A0A] p-7 rounded-3xl transition-all duration-500 hover:bg-[#101216] hover:-translate-y-2 border border-white/5 hover:border-white/10 flex flex-col h-[480px] overflow-hidden"
+      className="group relative bg-white p-7 rounded-3xl transition-all duration-500 hover:bg-white hover:-translate-y-2 border border-black/[0.04] hover:border-black/[0.06] flex flex-col h-[480px] overflow-hidden"
     >
         {/* Glow Effect */}
-        <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#D31027]/5 blur-[60px] rounded-full group-hover:bg-[#D31027]/10 transition-colors" />
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#FF6B00]/5 blur-[60px] rounded-full group-hover:bg-[#FF6B00]/10 transition-colors" />
 
       <div className="flex justify-between items-start mb-10 relative z-10">
-        <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center group-hover:bg-[#D31027]/10 transition-colors border border-white/5">
-          <span className="material-symbols-outlined text-[#D31027] text-3xl transition-transform duration-500 group-hover:scale-110">
+        <div className="w-14 h-14 bg-black/[0.03] rounded-2xl flex items-center justify-center group-hover:bg-[#FF6B00]/10 transition-colors border border-black/[0.04]">
+          <span className="material-symbols-outlined text-[#FF6B00] text-3xl transition-transform duration-500 group-hover:scale-110">
             {market.icon}
           </span>
         </div>
         <div className="flex items-center gap-3">
           {/* Tooltip trigger wrapped in a nicer UI */}
           <div className="group/tt relative">
-            <div className="w-8 h-8 rounded-full border border-white/5 flex items-center justify-center hover:bg-white/5 transition-colors cursor-help" onClick={(e) => e.preventDefault()}>
-                <Info className="w-3.5 h-3.5 text-zinc-600 group-hover/tt:text-zinc-300" />
+            <div className="w-8 h-8 rounded-full border border-black/[0.04] flex items-center justify-center hover:bg-black/[0.03] transition-colors cursor-help" onClick={(e) => e.preventDefault()}>
+                <Info className="w-3.5 h-3.5 text-[#B0AAA4] group-hover/tt:text-zinc-300" />
             </div>
             
-            <div className="absolute top-10 right-0 w-64 p-4 bg-[#15151A] rounded-2xl opacity-0 invisible group-hover/tt:opacity-100 group-hover/tt:visible transition-all duration-300 z-[100] border border-white/10 shadow-2xl backdrop-blur-xl" onClick={(e) => e.preventDefault()}>
-              <h4 className="text-[#D31027] uppercase tracking-[0.2em] text-[9px] font-black mb-3">Risk Attribution</h4>
-              <p className="text-zinc-400 text-[11px] leading-relaxed">
+            <div className="absolute top-10 right-0 w-64 p-4 bg-[#15151A] rounded-2xl opacity-0 invisible group-hover/tt:opacity-100 group-hover/tt:visible transition-all duration-300 z-[100] border border-black/[0.06] shadow-2xl backdrop-blur-xl" onClick={(e) => e.preventDefault()}>
+              <h4 className="text-[#FF6B00] uppercase tracking-wider text-[9px] font-bold mb-3">Risk Attribution</h4>
+              <p className="text-[#71717A] text-[11px] leading-relaxed">
                 {market.about}
               </p>
             </div>
           </div>
           
-          <span className="font-mono text-[9px] font-black text-zinc-600 bg-white/5 px-2.5 py-1.5 rounded uppercase tracking-widest border border-white/5">
+          <span className="font-mono text-[9px] font-bold text-[#B0AAA4] bg-black/[0.03] px-2.5 py-1.5 rounded uppercase tracking-widest border border-black/[0.04]">
             {market.riskBase}
           </span>
         </div>
@@ -145,28 +145,28 @@ function MarketCard({ market }: { market: MarketDetail }) {
 
       <div className="mb-auto relative z-10">
         <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-3 bg-[#D31027] rounded-full" />
-            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{market.category}</span>
+            <div className="w-1 h-3 bg-[#FF6B00] rounded-full" />
+            <span className="text-[10px] font-bold text-[#71717A] uppercase tracking-widest">{market.category}</span>
         </div>
-        <h3 className="text-2xl font-bold mb-8 text-white group-hover:text-[#FFB3B5] transition-colors leading-tight">{market.title}</h3>
+        <h3 className="text-2xl font-bold mb-8 text-[#1A1A1A] group-hover:text-[#FF8A33] transition-colors leading-tight">{market.title}</h3>
         
         <div className="space-y-5">
           <div className="flex justify-between items-center group/metric">
-            <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest group-hover/metric:text-zinc-400">Oracle Node</span>
-            <span className="font-mono text-[11px] text-zinc-400 font-bold group-hover/metric:text-white transition-colors">{market.marketData.oracleNode}</span>
+            <span className="text-[10px] font-bold text-[#B0AAA4] uppercase tracking-widest group-hover/metric:text-[#71717A]">Oracle Node</span>
+            <span className="font-mono text-[11px] text-[#71717A] font-bold group-hover/metric:text-[#1A1A1A] transition-colors">{market.marketData.oracleNode}</span>
           </div>
           <div className="flex justify-between items-center group/metric">
-            <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest group-hover/metric:text-zinc-400">Trigger</span>
-            <span className="font-mono text-[11px] text-zinc-400 font-bold group-hover/metric:text-white transition-colors">{market.bullet2}</span>
+            <span className="text-[10px] font-bold text-[#B0AAA4] uppercase tracking-widest group-hover/metric:text-[#71717A]">Trigger</span>
+            <span className="font-mono text-[11px] text-[#71717A] font-bold group-hover/metric:text-[#1A1A1A] transition-colors">{market.bullet2}</span>
           </div>
           <div className="flex justify-between items-center group/metric">
-            <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest group-hover/metric:text-zinc-400">Settlement</span>
-            <span className="font-mono text-[10px] text-zinc-500 font-bold group-hover/metric:text-[#D31027] transition-colors">{market.marketData.settlement}</span>
+            <span className="text-[10px] font-bold text-[#B0AAA4] uppercase tracking-widest group-hover/metric:text-[#71717A]">Settlement</span>
+            <span className="font-mono text-[10px] text-[#71717A] font-bold group-hover/metric:text-[#FF6B00] transition-colors">{market.marketData.settlement}</span>
           </div>
         </div>
       </div>
 
-      <button className="mt-10 w-full py-4 bg-white/5 text-zinc-400 font-black text-[10px] tracking-[0.2em] uppercase rounded-2xl group-hover:bg-[#D31027] group-hover:text-white transition-all duration-300 flex items-center justify-center gap-2 relative z-10">
+      <button className="mt-10 w-full py-4 bg-black/[0.03] text-[#71717A] font-bold text-[10px] tracking-wider uppercase rounded-2xl group-hover:bg-[#FF6B00] group-hover:text-white transition-all duration-300 flex items-center justify-center gap-2 relative z-10">
         SELECT RISK
         <ChevronRight className="w-3.5 h-3.5" />
       </button>
