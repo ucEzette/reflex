@@ -23,7 +23,7 @@ const SCENARIOS: Scenario[] = [
         impact: 1.0,
         affectedSectors: [],
         icon: ShieldAlert,
-        color: "text-zinc-400"
+        color: "text-[#71717A]"
     },
     {
         id: "hurricane",
@@ -74,18 +74,18 @@ export const RiskSimulator = ({ currentAssets, currentLiabilities }: { currentAs
     };
 
     return (
-        <div className="p-8 rounded-3xl bg-zinc-900/60 border border-white/5 backdrop-blur-3xl space-y-8 overflow-hidden relative group">
+        <div className="p-8 rounded-3xl bg-zinc-900/60 border border-black/[0.04] backdrop-blur-3xl space-y-8 overflow-hidden relative group">
              <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent opacity-50" />
             
             <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black tracking-widest uppercase mb-4">
+                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold tracking-widest uppercase mb-4">
                         Real-Time Risk Stress Test
                     </div>
-                    <h2 className="text-3xl font-black italic tracking-tighter text-white uppercase leading-none">
+                    <h2 className="text-3xl font-bold tracking-tighter text-[#1A1A1A] uppercase leading-none">
                         Solvency <span className="text-primary text-glow-primary">Simulation</span>
                     </h2>
-                    <p className="text-sm text-zinc-500 font-mono mt-2">
+                    <p className="text-sm text-[#71717A] font-mono mt-2">
                         Predictive modeling for extreme tail-risk events.
                     </p>
                 </div>
@@ -94,14 +94,14 @@ export const RiskSimulator = ({ currentAssets, currentLiabilities }: { currentAs
                     {isSimulating ? (
                         <button 
                             onClick={resetSimulation}
-                            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-white text-xs font-bold hover:bg-white/10 transition-all"
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-black/[0.03] border border-black/[0.06] text-[#1A1A1A] text-xs font-bold hover:bg-black/[0.05] transition-all"
                         >
                             <RotateCcw className="w-4 h-4" /> Reset Engine
                         </button>
                     ) : (
                         <button 
                             onClick={runSimulation}
-                            className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary text-black text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
+                            className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary text-black text-xs font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
                         >
                             <Play className="w-4 h-4 fill-current" /> Run Stress Test
                         </button>
@@ -122,16 +122,16 @@ export const RiskSimulator = ({ currentAssets, currentLiabilities }: { currentAs
                                     "p-5 rounded-2xl border cursor-pointer transition-all duration-300 relative overflow-hidden",
                                     selectedId === s.id 
                                         ? "bg-zinc-900 border-primary shadow-lg shadow-primary/5" 
-                                        : "bg-zinc-950/40 border-white/5 grayscale opacity-60 hover:opacity-100 hover:grayscale-0 hover:border-white/20"
+                                        : "bg-zinc-950/40 border-black/[0.04] grayscale opacity-60 hover:opacity-100 hover:grayscale-0 hover:border-white/20"
                                 )}
                             >
                                 <div className="flex items-start gap-4">
-                                    <div className={cn("p-2 rounded-xl bg-white/5", s.color)}>
+                                    <div className={cn("p-2 rounded-xl bg-black/[0.03]", s.color)}>
                                         <s.icon className="w-5 h-5" />
                                     </div>
                                     <div className="space-y-1">
-                                        <h4 className="text-sm font-bold text-white">{s.title}</h4>
-                                        <p className="text-[10px] text-zinc-500 font-medium leading-relaxed">{s.description}</p>
+                                        <h4 className="text-sm font-bold text-[#1A1A1A]">{s.title}</h4>
+                                        <p className="text-[10px] text-[#71717A] font-medium leading-relaxed">{s.description}</p>
                                     </div>
                                 </div>
                                 {selectedId === s.id && (
@@ -147,15 +147,15 @@ export const RiskSimulator = ({ currentAssets, currentLiabilities }: { currentAs
 
                 {/* Simulation Output */}
                 <div className="lg:col-span-5 h-full">
-                    <div className="p-6 rounded-3xl bg-zinc-950 border border-white/5 h-full flex flex-col justify-between relative overflow-hidden">
+                    <div className="p-6 rounded-3xl bg-zinc-950 border border-black/[0.04] h-full flex flex-col justify-between relative overflow-hidden">
                         <div className="space-y-6">
                             <div className="flex justify-between items-center">
-                                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Projection Results</span>
+                                <span className="text-[10px] font-bold text-[#71717A] uppercase tracking-widest">Projection Results</span>
                                 {isSimulating && (
                                     <motion.span 
                                         initial={{ opacity: 0 }} 
                                         animate={{ opacity: 1 }}
-                                        className="text-[10px] font-black text-primary uppercase animate-pulse"
+                                        className="text-[10px] font-bold text-primary uppercase animate-pulse"
                                     >
                                         Simulation Running
                                     </motion.span>
@@ -164,16 +164,16 @@ export const RiskSimulator = ({ currentAssets, currentLiabilities }: { currentAs
 
                             <div className="space-y-4">
                                 <div className="flex justify-between items-end">
-                                    <span className="text-xs text-zinc-400 font-bold">Projected Solvency</span>
+                                    <span className="text-xs text-[#71717A] font-bold">Projected Solvency</span>
                                     <div className={cn(
-                                        "text-4xl font-black tabular-nums tracking-tighter",
+                                        "text-4xl font-bold tabular-nums tracking-tighter",
                                         isSolvent ? "text-green-500" : "text-red-500"
                                     )}>
                                         {simulatedRatio.toFixed(1)}%
                                     </div>
                                 </div>
                                 
-                                <div className="h-3 w-full bg-zinc-900 rounded-full overflow-hidden border border-white/5">
+                                <div className="h-3 w-full bg-zinc-900 rounded-full overflow-hidden border border-black/[0.04]">
                                     <motion.div 
                                         className={cn(
                                             "h-full shadow-[0_0_15px_rgba(0,0,0,0.5)]",
@@ -186,13 +186,13 @@ export const RiskSimulator = ({ currentAssets, currentLiabilities }: { currentAs
                                 </div>
                             </div>
 
-                            <div className="space-y-3 pt-4 border-t border-white/5">
+                            <div className="space-y-3 pt-4 border-t border-black/[0.04]">
                                 <div className="flex justify-between items-center text-xs">
-                                    <span className="text-zinc-500 font-medium">Assets Under Review</span>
-                                    <span className="text-white font-mono font-bold">${currentAssets.toLocaleString()}</span>
+                                    <span className="text-[#71717A] font-medium">Assets Under Review</span>
+                                    <span className="text-[#1A1A1A] font-mono font-bold">${currentAssets.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-xs">
-                                    <span className="text-zinc-500 font-medium font-mono italic">Stress Liabilities</span>
+                                    <span className="text-[#71717A] font-medium font-mono">Stress Liabilities</span>
                                     <motion.span 
                                         key={simulatedLiabilities}
                                         initial={{ color: "#fff" }}
@@ -214,14 +214,14 @@ export const RiskSimulator = ({ currentAssets, currentLiabilities }: { currentAs
                         )}>
                             <div className={cn(
                                 "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
-                                isSolvent ? "bg-green-500 text-black" : "bg-red-500 text-white"
+                                isSolvent ? "bg-green-500 text-black" : "bg-red-500 text-[#1A1A1A]"
                             )}>
-                                <span className="material-symbols-outlined text-sm font-black">
+                                <span className="material-symbols-outlined text-sm font-bold">
                                     {isSolvent ? "verified_user" : "warning"}
                                 </span>
                             </div>
                             <div className="space-y-0.5">
-                                <h5 className="text-[10px] font-black uppercase tracking-widest">{isSolvent ? "Protocol Resilient" : "Solvency Alert"}</h5>
+                                <h5 className="text-[10px] font-bold uppercase tracking-widest">{isSolvent ? "Protocol Resilient" : "Solvency Alert"}</h5>
                                 <p className="text-[9px] font-medium leading-tight">
                                     {isSolvent 
                                         ? "Capital reserves remain sufficient to cover all simulated sector-wide disruptions."

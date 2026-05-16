@@ -20,7 +20,7 @@ export function ReportingSummary() {
     };
 
     return (
-        <div className="bg-black/40 border border-white/5 rounded-3xl p-8 backdrop-blur-xl">
+        <div className="bg-black/40 border border-black/[0.04] rounded-3xl p-8 backdrop-blur-xl">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                 <div className="flex-1 space-y-4">
                     <div className="flex items-center gap-3">
@@ -35,7 +35,7 @@ export function ReportingSummary() {
                     </p>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-                        <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                        <div className="bg-black/[0.03] rounded-2xl p-4 border border-black/[0.04]">
                             <div className="flex items-center gap-2 mb-2">
                                 <PieChart className="w-4 h-4 text-cyan-400" />
                                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Asset Allocation</span>
@@ -45,7 +45,7 @@ export function ReportingSummary() {
                                 <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full">Diversified</span>
                             </div>
                         </div>
-                        <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                        <div className="bg-black/[0.03] rounded-2xl p-4 border border-black/[0.04]">
                             <div className="flex items-center gap-2 mb-2">
                                 <BarChart3 className="w-4 h-4 text-purple-400" />
                                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Compliance Score</span>
@@ -62,7 +62,7 @@ export function ReportingSummary() {
                     <button
                         onClick={() => handleExport('PDF')}
                         disabled={isExporting}
-                        className="flex items-center justify-between gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 hover:border-white/10 transition-all group"
+                        className="flex items-center justify-between gap-4 p-4 bg-black/[0.03] border border-black/[0.04] rounded-2xl hover:bg-black/[0.05] hover:border-black/[0.06] transition-all group"
                     >
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-red-500/10 rounded-lg group-hover:bg-red-500/20 transition-colors">
@@ -79,7 +79,7 @@ export function ReportingSummary() {
                     <button
                         onClick={() => handleExport('CSV')}
                         disabled={isExporting}
-                        className="flex items-center justify-between gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 hover:border-white/10 transition-all group"
+                        className="flex items-center justify-between gap-4 p-4 bg-black/[0.03] border border-black/[0.04] rounded-2xl hover:bg-black/[0.05] hover:border-black/[0.06] transition-all group"
                     >
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-emerald-500/10 rounded-lg group-hover:bg-emerald-500/20 transition-colors">
@@ -93,12 +93,12 @@ export function ReportingSummary() {
                         <Download className="w-4 h-4 text-slate-500 group-hover:text-foreground transition-colors" />
                     </button>
 
-                    <div className="mt-4 p-4 bg-zinc-900/50 border border-white/5 rounded-2xl space-y-3">
+                    <div className="mt-4 p-4 bg-zinc-900/50 border border-black/[0.04] rounded-2xl space-y-3">
                         <div className="flex items-center justify-between">
                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Verification Status</span>
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                         </div>
-                        <p className="text-[10px] text-slate-400 leading-relaxed italic">
+                        <p className="text-[10px] text-slate-400 leading-relaxed">
                             &quot;This portfolio meets the standard for high-net-worth parametric risk disclosure.&quot;
                         </p>
                     </div>
