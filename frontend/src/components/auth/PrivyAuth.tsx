@@ -67,10 +67,10 @@ export function PrivyAuth() {
         return (
             <button
                 onClick={login}
-                className="flex items-center gap-2 px-6 py-2.5 bg-[#D31027] hover:bg-[#A9081E] text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-xl shadow-2xl transition-all group"
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#1A1A1A] hover:bg-[#333] text-white text-[11px] font-semibold tracking-wide rounded-full shadow-lg transition-all group"
             >
                 <Wallet className="w-4 h-4 transition-transform group-hover:scale-110" />
-                Initialize Vault Access
+                Connect Wallet
             </button>
         );
     }
@@ -80,17 +80,17 @@ export function PrivyAuth() {
             {/* Safe HUD - Click to Profile */}
             <Link 
                 href="/dashboard"
-                className="flex flex-col items-end gap-1.5 p-3 px-4 bg-[#0A0A0A]/80 border border-white/5 rounded-2xl backdrop-blur-xl hover:bg-white/5 transition-all text-right group/hud"
+                className="flex flex-col items-end gap-1.5 p-3 px-4 bg-white/80 border border-black/[0.06] rounded-2xl backdrop-blur-xl hover:bg-white transition-all text-right group/hud shadow-card"
             >
                 <div className="flex items-center gap-3">
                     <div className="flex flex-col items-end">
-                        <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest leading-none group-hover/hud:text-[#D31027] transition-colors">
+                        <span className="text-[8px] font-bold text-[#71717A] uppercase tracking-widest leading-none group-hover/hud:text-[#FF6B00] transition-colors">
                             {smartAccountAddress ? "Smart Account (Safe)" : "Identity Vault"}
                         </span>
                         <div className="flex items-center gap-2 mt-1">
                             {authenticated && !smartAccountAddress ? (
                                 <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-black text-emerald-500 animate-pulse uppercase tracking-widest">
+                                    <span className="text-[10px] font-bold text-emerald-500 animate-pulse uppercase tracking-widest">
                                         {eoaAddress ? "Assigning_Safe..." : "Creating_Owner_Secure..."}
                                     </span>
                                     {!eoaAddress && (
@@ -104,25 +104,25 @@ export function PrivyAuth() {
                                 </div>
                             ) : (
                                 <>
-                                    <span className="text-[11px] font-mono font-bold text-zinc-400 group-hover/hud:text-white transition-colors">
+                                    <span className="text-[11px] font-mono font-bold text-[#1A1A1A] group-hover/hud:text-[#FF6B00] transition-colors">
                                         {(smartAccountAddress || eoaAddress)?.slice(0, 6)}...{(smartAccountAddress || eoaAddress)?.slice(-4)}
                                     </span>
-                                    <button onClick={copyAddress} className="text-zinc-600 hover:text-white transition-colors p-1">
+                                    <button onClick={copyAddress} className="text-[#71717A] hover:text-[#FF6B00] transition-colors p-1">
                                         <Copy className="w-3 h-3" />
                                     </button>
                                 </>
                             )}
                         </div>
                     </div>
-                    <div className="w-[1px] h-8 bg-white/5 mx-1" />
+                    <div className="w-[1px] h-8 bg-black/[0.06] mx-1" />
                     <div className="flex flex-col items-start min-w-[80px]">
-                        <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest leading-none flex items-center gap-1">
+                        <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest leading-none flex items-center gap-1">
                             <ShieldCheck className="w-2.5 h-2.5" />
                             {smartAccountAddress ? "Gasless Enabled" : "Identity Verified"}
                         </span>
-                        <div className="text-[14px] font-black text-white italic tracking-tighter mt-1 group-hover/hud:scale-105 transition-transform origin-left">
+                        <div className="text-[14px] font-bold text-[#1A1A1A] tracking-tighter mt-1 group-hover/hud:scale-105 transition-transform origin-left mono-data">
                              {balanceLoading ? "..." : balance ? `${Number(formatUnits(balance.value, 6)).toFixed(2)}` : "0.00"} 
-                             <span className="text-[8px] text-zinc-500 ml-1 not-italic font-black">USDC</span>
+                             <span className="text-[8px] text-[#71717A] ml-1 font-bold">USDC</span>
                         </div>
                     </div>
                 </div>
@@ -131,7 +131,7 @@ export function PrivyAuth() {
             {/* Fund Wallet Trigger */}
             <button
                 onClick={() => (smartAccountAddress || eoaAddress) && fundWallet(smartAccountAddress || eoaAddress)}
-                className="p-3.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group relative"
+                className="p-3.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-2xl transition-all group relative"
                 title="Purchase USDC with Card (MoonPay/Transak)"
             >
                 <CreditCard className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" />
@@ -141,10 +141,10 @@ export function PrivyAuth() {
             {/* Logout Trigger */}
             <button
                 onClick={logout}
-                className="p-3.5 bg-[#D31027]/10 hover:bg-[#D31027]/20 border border-[#D31027]/20 rounded-2xl transition-all group"
-                title="Disconnect Vault"
+                className="p-3.5 bg-red-50 hover:bg-red-100 border border-red-100 rounded-2xl transition-all group"
+                title="Disconnect Wallet"
             >
-                <LogOut className="w-4 h-4 text-[#D31027] group-hover:scale-110 transition-transform" />
+                <LogOut className="w-4 h-4 text-red-500 group-hover:scale-110 transition-transform" />
             </button>
         </div>
     );

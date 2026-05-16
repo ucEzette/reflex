@@ -402,7 +402,7 @@ export function CommandCenterClient() {
                     <p className="text-slate-400 mt-2">Manage your parametric risk portfolio</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="px-4 py-2 bg-zinc-900 border border-white/5 rounded-xl">
+                    <div className="px-4 py-2 bg-zinc-900 border border-black/[0.04] rounded-xl">
                         <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest block">Personal Coverage</span>
                         <span className="text-lg font-bold text-foreground">${totalPersonalCoverage.toLocaleString()}</span>
                     </div>
@@ -422,7 +422,7 @@ export function CommandCenterClient() {
                 {/* Insights Area */}
                 <section className="lg:col-span-8 space-y-8">
                     {/* Performance Chart */}
-                    <div className="bg-black/40 border border-white/5 rounded-3xl p-8 backdrop-blur-xl">
+                    <div className="bg-black/40 border border-black/[0.04] rounded-3xl p-8 backdrop-blur-xl">
                         <div className="flex items-center justify-between mb-8">
                             <div>
                                 <h2 className="text-xl font-bold text-foreground">Portfolio Performance</h2>
@@ -430,7 +430,7 @@ export function CommandCenterClient() {
                             </div>
                             <div className="flex gap-2">
                                 {['1W', '1M', '3M', '1Y', 'ALL'].map((range) => (
-                                    <button key={range} className={`px-3 py-1 rounded-lg text-[10px] font-bold border transition-all ${range === '1Y' ? 'bg-primary border-primary text-white' : 'bg-white/5 border-white/5 text-slate-500 hover:text-white'}`}>
+                                    <button key={range} className={`px-3 py-1 rounded-lg text-[10px] font-bold border transition-all ${range === '1Y' ? 'bg-primary border-primary text-[#1A1A1A]' : 'bg-black/[0.03] border-black/[0.04] text-slate-500 hover:text-[#1A1A1A]'}`}>
                                         {range}
                                     </button>
                                 ))}
@@ -457,7 +457,7 @@ export function CommandCenterClient() {
                             {loading ? (
                                 Array.from({ length: 4 }).map((_, i) => <PolicySkeleton key={i} />)
                             ) : policies.length === 0 ? (
-                                <div className="col-span-2 p-12 text-center border border-dashed border-white/10 rounded-2xl">
+                                <div className="col-span-2 p-12 text-center border border-dashed border-black/[0.06] rounded-2xl">
                                     <p className="text-slate-500">No active policies found.</p>
                                 </div>
                             ) : (
@@ -475,7 +475,7 @@ export function CommandCenterClient() {
                 </section>
 
                 {/* Recent Activity Feed */}
-                <section className="lg:col-span-4 bg-black/40 border border-white/5 rounded-2xl p-6 backdrop-blur-xl h-fit">
+                <section className="lg:col-span-4 bg-black/40 border border-black/[0.04] rounded-2xl p-6 backdrop-blur-xl h-fit">
                     <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
                         <Activity className="w-4 h-4 text-emerald-500" /> Network Activity
                     </h2>
@@ -500,10 +500,10 @@ export function CommandCenterClient() {
                                     <div className={`w-2 h-2 mt-1.5 rounded-full ${log.type === 'claim' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-primary shadow-[0_0_8px_rgba(128,0,32,0.5)]'}`} />
                                     <div className="flex-1 space-y-1">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-[10px] font-black uppercase text-zinc-300 tracking-widest">{log.title}</span>
-                                            <span className="text-[10px] text-zinc-500">{log.time}</span>
+                                            <span className="text-[10px] font-bold uppercase text-zinc-300 tracking-widest">{log.title}</span>
+                                            <span className="text-[10px] text-[#71717A]">{log.time}</span>
                                         </div>
-                                        <p className="text-xs text-zinc-400 leading-snug">{log.desc}</p>
+                                        <p className="text-xs text-[#71717A] leading-snug">{log.desc}</p>
                                         <a
                                             href={`https://sepolia.arbiscan.io/tx/${log.hash}`}
                                             target="_blank"
@@ -521,7 +521,7 @@ export function CommandCenterClient() {
             </div>
 
             {/* Detailed History Section */}
-            <div className="mt-12 pt-12 border-t border-white/5">
+            <div className="mt-12 pt-12 border-t border-black/[0.04]">
                 <div className="flex items-center gap-3 mb-8">
                     <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
                         <Activity className="w-5 h-5 text-primary" />
@@ -539,10 +539,10 @@ export function CommandCenterClient() {
 
 function StatCard({ title, value, icon, trend }: { title: string, value: string, icon: React.ReactNode, trend: string }) {
     return (
-        <div className="bg-black/40 border border-white/5 p-6 rounded-2xl backdrop-blur-xl flex flex-col justify-between h-32">
+        <div className="bg-black/40 border border-black/[0.04] p-6 rounded-2xl backdrop-blur-xl flex flex-col justify-between h-32">
             <div className="flex justify-between items-start">
                 <span className="text-sm text-slate-400 font-medium">{title}</span>
-                <div className="p-2 bg-white/5 rounded-xl">{icon}</div>
+                <div className="p-2 bg-black/[0.03] rounded-xl">{icon}</div>
             </div>
             <div className="flex items-baseline gap-3">
                 <span className="text-2xl font-bold text-foreground tracking-tight">{value}</span>
@@ -554,7 +554,7 @@ function StatCard({ title, value, icon, trend }: { title: string, value: string,
 
 function PolicySkeleton() {
     return (
-        <div className="h-[200px] rounded-2xl border border-white/5 bg-black/40 p-5 animate-pulse flex flex-col justify-between">
+        <div className="h-[200px] rounded-2xl border border-black/[0.04] bg-black/40 p-5 animate-pulse flex flex-col justify-between">
             <div className="flex justify-between">
                 <div className="flex gap-3">
                     <div className="w-10 h-10 rounded-xl bg-slate-800" />
@@ -569,7 +569,7 @@ function PolicySkeleton() {
                 <div className="w-full h-4 bg-slate-800 rounded" />
                 <div className="w-3/4 h-4 bg-slate-800 rounded" />
             </div>
-            <div className="mt-4 pt-4 border-t border-white/5">
+            <div className="mt-4 pt-4 border-t border-black/[0.04]">
                 <div className="w-32 h-3 bg-slate-800 rounded" />
             </div>
         </div>
