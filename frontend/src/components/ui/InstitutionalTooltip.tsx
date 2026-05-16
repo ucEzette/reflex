@@ -36,8 +36,8 @@ export function InstitutionalTooltip({
             onMouseLeave={() => setIsVisible(false)}
         >
             {children || (
-                <div className="p-1 rounded-md hover:bg-white/5 transition-colors cursor-help">
-                    <Info className="w-4 h-4 text-zinc-500 animate-blink-soft" />
+                <div className="p-1 rounded-md hover:bg-black/[0.03] transition-colors cursor-help">
+                    <Info className="w-4 h-4 text-[#71717A] animate-blink-soft" />
                 </div>
             )}
 
@@ -50,12 +50,12 @@ export function InstitutionalTooltip({
                         transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
                         className={cn(
                             "absolute z-[100] w-72 p-5 rounded-2xl",
-                            "bg-zinc-950/80 backdrop-blur-xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]",
+                            "bg-zinc-950/80 backdrop-blur-xl border border-black/[0.06] shadow-[0_20px_50px_rgba(0,0,0,0.5)]",
                             positionClasses[position]
                         )}
                     >
                         <div className="space-y-2 pointer-events-none">
-                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                            <h4 className="text-[10px] font-bold uppercase tracking-wider text-primary">
                                 {title}
                             </h4>
                             <p className="text-xs leading-relaxed text-zinc-300 font-medium">
@@ -65,7 +65,7 @@ export function InstitutionalTooltip({
 
                         {/* Little arrow/notch can be added here if desired */}
                         <div className={cn(
-                            "absolute w-2 h-2 bg-zinc-950/80 border-white/10 rotate-45 border-b border-r",
+                            "absolute w-2 h-2 bg-zinc-950/80 border-black/[0.06] rotate-45 border-b border-r",
                             position === 'top' && "left-1/2 -translate-x-1/2 -bottom-1 border-t-0 border-l-0",
                             position === 'bottom' && "left-1/2 -translate-x-1/2 -top-1 border-b-0 border-r-0 rotate-[225deg]",
                         )} />
