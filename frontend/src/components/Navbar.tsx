@@ -18,9 +18,13 @@ export function Navbar() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const isActive = (href: string) => {
@@ -32,60 +36,80 @@ export function Navbar() {
   if (!mounted) return null;
 
   return (
-    <nav className="fixed top-0 left-0 w-full flex justify-between items-center px-10 h-20 bg-[#0A0A0A]/80 backdrop-blur-2xl z-50 border-b border-white/5">
+    <nav className={`fixed top-0 left-0 w-full flex justify-between items-center px-6 md:px-10 h-[72px] z-50 transition-all duration-300 ${
+      scrolled 
+        ? "bg-white/80 backdrop-blur-2xl shadow-[0_1px_3px_rgba(0,0,0,0.05)]" 
+        : "bg-transparent"
+    }`}>
       {/* Left: Logo + Links */}
-      <div className="flex items-center gap-16">
-        <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <img src="/logoD.png" alt="Reflex Logo" className="h-16 w-auto object-contain" />
+      <div className="flex items-center gap-12">
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <img src="/logoD.png" alt="Reflex" className="h-10 w-auto object-contain" />
         </Link>
-        <div className="hidden lg:flex gap-10 items-center">
+        <div className="hidden lg:flex gap-8 items-center">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`text-[11px] font-black uppercase tracking-[0.3em] transition-all duration-300 relative group py-2 ${
+              className={`text-[13px] font-medium transition-all duration-300 relative py-2 ${
                 isActive(link.href)
-                  ? "text-white"
-                  : "text-zinc-500 hover:text-white"
+                  ? "text-[#FF6B00]"
+                  : "text-[#71717A] hover:text-[#1A1A1A]"
               }`}
             >
               {link.label}
               {isActive(link.href) && (
-                <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-[#D31027] shadow-[0_0_10px_#D31027]" />
+                <div className="absolute -bottom-0 left-0 w-full h-[2px] bg-[#FF6B00] rounded-full" />
               )}
             </Link>
           ))}
         </div>
       </div>
 
-      {/* Right: Privy Authentication HUD */}
-      <div className="flex items-center gap-4">
+      {/* Right: CTA + Auth */}
+      <div className="flex items-center gap-3">
+        <Link
+          href="/market"
+          className="hidden sm:flex items-center gap-2 bg-[#FF6B00] text-white px-5 py-2.5 rounded-full text-[13px] font-semibold hover:bg-[#E55E00] transition-all shadow-orange-sm hover:shadow-orange-md"
+        >
+          Launch App
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="rotate-45">
+            <path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </Link>
         <PrivyAuth />
 
         <button
-          className="lg:hidden w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-xl transition-all"
+          className="lg:hidden w-10 h-10 flex items-center justify-center hover:bg-black/5 rounded-xl transition-all"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
-          {isMenuOpen ? <X className="w-6 h-6 text-white" /> : <Menu className="w-6 h-6 text-white" />}
+          {isMenuOpen ? <X className="w-5 h-5 text-[#1A1A1A]" /> : <Menu className="w-5 h-5 text-[#1A1A1A]" />}
         </button>
       </div>
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="absolute top-20 left-0 w-full bg-[#0A0A0A]/95 backdrop-blur-xl border-b border-white/5 py-8 px-10 lg:hidden z-50 animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className="flex flex-col gap-6">
+        <div className="absolute top-[72px] left-0 w-full bg-white/95 backdrop-blur-xl border-b border-black/5 py-6 px-6 lg:hidden z-50 animate-slide-up">
+          <div className="flex flex-col gap-4">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setIsMenuOpen(false)}
-                className={`text-[10px] font-black uppercase tracking-[0.3em] py-2 transition-all ${
-                  isActive(link.href) ? "text-white" : "text-zinc-500 hover:text-white"
+                className={`text-[14px] font-medium py-2 px-3 rounded-xl transition-all ${
+                  isActive(link.href) ? "text-[#FF6B00] bg-orange-50" : "text-[#71717A] hover:text-[#1A1A1A] hover:bg-cream-100"
                 }`}
               >
                 {link.label}
               </Link>
             ))}
+            <Link
+              href="/market"
+              onClick={() => setIsMenuOpen(false)}
+              className="flex items-center justify-center gap-2 bg-[#FF6B00] text-white px-5 py-3 rounded-xl text-[14px] font-semibold mt-2"
+            >
+              Launch App
+            </Link>
           </div>
         </div>
       )}

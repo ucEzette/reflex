@@ -251,7 +251,7 @@ export const PayoutSimulator = () => {
     }, [profile, minPayout, maxPayout]);
 
     return (
-        <div className="relative w-full p-4 md:p-8 rounded-3xl bg-zinc-900/40 border border-white/5 backdrop-blur-2xl overflow-hidden group">
+        <div className="relative w-full p-4 md:p-8 rounded-3xl bg-zinc-900/40 border border-black/[0.04] backdrop-blur-2xl overflow-hidden group">
             <div className={`absolute inset-0 bg-gradient-to-br transition-opacity duration-1000 ${surgeData ? 'from-red-500/10 via-transparent to-transparent opacity-80' : 'from-primary/5 via-transparent to-transparent opacity-50'}`} />
             
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -259,16 +259,16 @@ export const PayoutSimulator = () => {
                 {/* Visual Graph Side */}
                 <div className="flex flex-col gap-6">
                     {/* Product Tabs - Scrollable for 10 products */}
-                    <div className="flex bg-black/40 rounded-xl border border-white/5 self-start w-full overflow-hidden">
+                    <div className="flex bg-black/40 rounded-xl border border-black/[0.04] self-start w-full overflow-hidden">
                         <div className="flex items-center gap-1 p-1 overflow-x-auto scrollbar-hide no-scrollbar max-w-full">
                             {Object.values(SIMULATION_PROFILES).map((p) => (
                                 <button
                                     key={p.id}
                                     onClick={() => setActiveId(p.id as any)}
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
                                         activeId === p.id 
                                         ? "bg-white text-black shadow-lg shadow-white/10" 
-                                        : "text-zinc-500 hover:text-white"
+                                        : "text-[#71717A] hover:text-[#1A1A1A]"
                                     }`}
                                 >
                                     <span className="material-symbols-outlined text-[14px]">{p.icon}</span>
@@ -280,28 +280,28 @@ export const PayoutSimulator = () => {
 
                     <div className="flex items-center justify-between">
                         <div className="space-y-1">
-                            <h3 className="text-2xl font-black italic tracking-tighter text-white uppercase">{profile.title} Curve</h3>
+                            <h3 className="text-2xl font-bold tracking-tighter text-[#1A1A1A] uppercase">{profile.title} Curve</h3>
                             <div className="flex items-center gap-3">
-                                <p className="text-xs text-zinc-500 font-mono tracking-widest uppercase">
+                                <p className="text-xs text-[#71717A] font-mono tracking-widest uppercase">
                                     {leverage}x Leverage • {market.marketData.riskPremium} Risk Premium
                                 </p>
                                 {surgeData && (
                                     <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 animate-pulse">
                                         <span className="material-symbols-outlined text-[10px] text-red-500">bolt</span>
-                                        <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">Surge {surgeData.multiplier}x</span>
+                                        <span className="text-[9px] font-bold text-red-500 uppercase tracking-widest">Surge {surgeData.multiplier}x</span>
                                     </div>
                                 )}
                             </div>
                         </div>
                         <div className="flex flex-col items-end mt-4 sm:mt-0">
-                            <span className="text-2xl sm:text-3xl font-black drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]" style={{ color: profile.color }}>
+                            <span className="text-2xl sm:text-3xl font-bold drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]" style={{ color: profile.color }}>
                                 {payout.toLocaleString()} <span className="text-sm font-light">USDT</span>
                             </span>
-                            <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-tighter">ESTIMATED PAYOUT</span>
+                            <span className="text-[10px] text-[#B0AAA4] font-bold uppercase tracking-tighter">ESTIMATED PAYOUT</span>
                         </div>
                     </div>
 
-                    <div className="relative h-48 sm:h-64 w-full bg-zinc-950/50 rounded-2xl border border-white/5 p-4 flex items-end">
+                    <div className="relative h-48 sm:h-64 w-full bg-zinc-950/50 rounded-2xl border border-black/[0.04] p-4 flex items-end">
                         {/* Grid Lines */}
                         <div className="absolute inset-4 flex flex-col justify-between opacity-10 pointer-events-none">
                             {[1, 2, 3, 4].map(i => <div key={i} className="w-full h-[1px] bg-white border-t border-dashed" />)}
@@ -358,9 +358,9 @@ export const PayoutSimulator = () => {
                         </svg>
 
                         {/* Labels */}
-                        <div className="absolute bottom-1 left-4 text-[9px] text-zinc-600 font-mono">0 {profile.unit}</div>
-                        <div className="absolute bottom-1 right-4 text-[9px] text-zinc-600 font-mono">{profile.maxInput} {profile.unit}</div>
-                        <div className="absolute top-1 left-4 text-[9px] text-zinc-600 font-mono">$ {maxPayout.toLocaleString()} USDT CAP</div>
+                        <div className="absolute bottom-1 left-4 text-[9px] text-[#B0AAA4] font-mono">0 {profile.unit}</div>
+                        <div className="absolute bottom-1 right-4 text-[9px] text-[#B0AAA4] font-mono">{profile.maxInput} {profile.unit}</div>
+                        <div className="absolute top-1 left-4 text-[9px] text-[#B0AAA4] font-mono">$ {maxPayout.toLocaleString()} USDT CAP</div>
                         <div 
                             className="absolute top-[52%] text-[10px] text-red-500/80 font-bold tracking-tighter uppercase whitespace-nowrap -rotate-90 origin-center"
                             style={{ left: `${(profile.threshold / profile.maxInput) * 100}%`, transform: 'translateX(-50%) rotate(-90deg)' }}
@@ -380,14 +380,14 @@ export const PayoutSimulator = () => {
                                 Coverage Amount
                             </label>
                             <div className="flex flex-col items-end">
-                                <div className="flex items-center gap-2 bg-zinc-800 p-2 rounded-lg border border-white/5">
+                                <div className="flex items-center gap-2 bg-zinc-800 p-2 rounded-lg border border-black/[0.04]">
                                     <input 
                                         type="number"
                                         value={premium}
                                         onChange={(e) => setPremium(Math.max(1, parseFloat(e.target.value) || 0))}
-                                        className="bg-transparent text-white font-black font-mono w-16 text-right focus:outline-none"
+                                        className="bg-transparent text-[#1A1A1A] font-bold font-mono w-16 text-right focus:outline-none"
                                     />
-                                    <span className="text-xs text-zinc-500 font-bold uppercase">USDT</span>
+                                    <span className="text-xs text-[#71717A] font-bold uppercase">USDT</span>
                                 </div>
                                 {surgeData && (
                                     <span className="text-[10px] text-red-400 font-bold mt-1">
@@ -404,7 +404,7 @@ export const PayoutSimulator = () => {
                                 <span className="material-symbols-outlined text-sm" style={{ color: profile.color }}>{profile.icon}</span>
                                 {profile.inputLabel}
                             </label>
-                            <span className="text-xl font-black font-mono text-white italic">
+                            <span className="text-xl font-bold font-mono text-[#1A1A1A]">
                                 {inputValue} {profile.unit}
                             </span>
                         </div>
@@ -416,22 +416,22 @@ export const PayoutSimulator = () => {
                                 max={profile.maxInput}
                                 value={inputValue}
                                 onChange={(e) => setInputValue(parseInt(e.target.value))}
-                                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer border border-white/5 transition-all"
+                                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer border border-black/[0.04] transition-all"
                                 style={{ accentColor: profile.color }}
                             />
                             <div className="flex justify-between mt-3">
-                                <span className="text-[10px] text-zinc-500 font-bold">MIN RISK</span>
-                                <span className="text-[10px] text-red-500 font-black italic">MAX EXPOSURE</span>
+                                <span className="text-[10px] text-[#71717A] font-bold">MIN RISK</span>
+                                <span className="text-[10px] text-red-500 font-bold">MAX EXPOSURE</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className={`p-5 rounded-2xl border transition-all duration-500 ${surgeData ? 'bg-red-500/5 border-red-500/20' : 'bg-white/5 border-white/5'} space-y-4 overflow-hidden relative`}>
+                    <div className={`p-5 rounded-2xl border transition-all duration-500 ${surgeData ? 'bg-red-500/5 border-red-500/20' : 'bg-black/[0.03] border-black/[0.04]'} space-y-4 overflow-hidden relative`}>
                         <div className="flex items-center justify-between">
-                            <span className="text-xs text-zinc-400">Risk Assessment</span>
+                            <span className="text-xs text-[#71717A]">Risk Assessment</span>
                             <div className="flex items-center gap-2">
                                 {surgeData && (
-                                    <span className="text-[10px] font-black text-red-500 animate-pulse uppercase">Live Alert</span>
+                                    <span className="text-[10px] font-bold text-red-500 animate-pulse uppercase">Live Alert</span>
                                 )}
                                 <span className={`text-xs font-bold px-2 py-0.5 rounded transition-colors ${surgeData ? 'bg-red-500/20 text-red-400' : payout > 0 ? 'bg-amber-500/20 text-amber-500' : 'bg-green-500/20 text-green-400'}`}>
                                     {surgeData ? 'HIGH RISK' : payout > 0 ? profile.triggerLabel : 'MONITORING'}
@@ -439,7 +439,7 @@ export const PayoutSimulator = () => {
                             </div>
                         </div>
                         
-                        <div className="h-[1px] bg-white/5 w-full" />
+                        <div className="h-[1px] bg-black/[0.03] w-full" />
 
                         <div className="flex flex-col gap-2 min-h-[48px]">
                             <AnimatePresence mode="wait">
@@ -452,11 +452,11 @@ export const PayoutSimulator = () => {
                                 >
                                     {surgeData ? (
                                         <>
-                                            <p className="text-sm font-bold text-red-400 italic flex items-center gap-2 uppercase tracking-tighter">
+                                            <p className="text-sm font-bold text-red-400 flex items-center gap-2 uppercase tracking-tighter">
                                                 <span className="material-symbols-outlined text-base">warning</span>
                                                 {surgeData.reason}
                                             </p>
-                                            <p className="text-xs text-zinc-400 leading-relaxed font-light">
+                                            <p className="text-xs text-[#71717A] leading-relaxed font-light">
                                                 The Dynamic Risk Engine has adjusted current premiums by **{surgeData.multiplier}x** based on live atmospheric telemetry verified by Chainlink DONs.
                                             </p>
                                         </>
@@ -471,7 +471,7 @@ export const PayoutSimulator = () => {
                     </div>
 
                     <button 
-                        className={`w-full py-4 rounded-xl text-black font-black uppercase tracking-widest text-xs transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 group/btn`}
+                        className={`w-full py-4 rounded-xl text-black font-bold uppercase tracking-widest text-xs transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 group/btn`}
                         style={{ 
                             backgroundColor: surgeData ? '#ef4444' : profile.color, 
                             boxShadow: `0 0 20px ${surgeData ? '#ef4444' : profile.color}44` 
@@ -491,7 +491,7 @@ export const PayoutSimulator = () => {
             </div>
 
             {/* Background Text Decor */}
-            <div className="absolute -bottom-10 -right-10 text-[120px] font-black italic text-white/[0.02] pointer-events-none select-none uppercase">
+            <div className="absolute -bottom-10 -right-10 text-[120px] font-bold text-[#1A1A1A]/[0.02] pointer-events-none select-none uppercase">
                 {profile.title}
             </div>
         </div>
