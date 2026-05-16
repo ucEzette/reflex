@@ -164,7 +164,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="text"
                                 placeholder="e.g. California Central Valley"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("zone", e.target.value)}
                             />
                         </div>
@@ -173,7 +173,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="100"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("strike", e.target.value)}
                             />
                         </div>
@@ -182,7 +182,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="20"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("exit", e.target.value)}
                             />
                         </div>
@@ -196,7 +196,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="text"
                                 placeholder="e.g. ERCOT North"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("grid", e.target.value)}
                             />
                         </div>
@@ -205,7 +205,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="150"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("strike", e.target.value)}
                             />
                         </div>
@@ -214,7 +214,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="10"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("tick", e.target.value)}
                             />
                         </div>
@@ -228,7 +228,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="text"
                                 placeholder="34.0522 N, -118.2437 W"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("coords", e.target.value)}
                             />
                         </div>
@@ -237,7 +237,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="50"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("t1", e.target.value)}
                             />
                         </div>
@@ -246,7 +246,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="150"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("t2", e.target.value)}
                             />
                         </div>
@@ -260,7 +260,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="text"
                                 placeholder="e.g. Port of Long Beach"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("port", e.target.value)}
                             />
                         </div>
@@ -269,7 +269,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="34"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("strike", e.target.value)}
                             />
                         </div>
@@ -278,7 +278,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="10"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("radius", e.target.value)}
                             />
                         </div>
@@ -292,7 +292,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="text"
                                 placeholder="e.g. 90210"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("location", e.target.value)}
                             />
                         </div>
@@ -301,7 +301,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="100"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("strike", e.target.value)}
                             />
                         </div>
@@ -310,7 +310,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="3"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("days", e.target.value)}
                             />
                         </div>
@@ -324,7 +324,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="text"
                                 placeholder="e.g. Arizona Desert Plot 4"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("location", e.target.value)}
                             />
                         </div>
@@ -333,7 +333,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="85"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("strike", e.target.value)}
                             />
                         </div>
@@ -342,7 +342,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="500"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("target", e.target.value)}
                             />
                         </div>
@@ -356,7 +356,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="text"
                                 placeholder="e.g. IMO 9857183"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("imo", e.target.value)}
                             />
                         </div>
@@ -365,7 +365,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="text"
                                 placeholder="Rotterdam"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("port", e.target.value)}
                             />
                         </div>
@@ -374,7 +374,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="48"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("threshold", e.target.value)}
                             />
                         </div>
@@ -388,7 +388,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="text"
                                 placeholder="34.0522 N, -118.2437 W"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("coords", e.target.value)}
                             />
                         </div>
@@ -397,7 +397,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="5"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("threshold", e.target.value)}
                             />
                         </div>
@@ -405,7 +405,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <label className="text-[10px] font-bold text-slate-500 uppercase">Event Date</label>
                             <input
                                 type="date"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("date", e.target.value)}
                             />
                         </div>
@@ -419,7 +419,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="text"
                                 placeholder="e.g. Aspen Snowmass"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("resort", e.target.value)}
                             />
                         </div>
@@ -428,7 +428,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <input
                                 type="number"
                                 placeholder="12"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("depth", e.target.value)}
                             />
                         </div>
@@ -436,7 +436,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                             <label className="text-[10px] font-bold text-slate-500 uppercase">Arrival Date</label>
                             <input
                                 type="date"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("date", e.target.value)}
                             />
                         </div>
@@ -448,7 +448,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                         <div className="col-span-2 space-y-2">
                             <label className="text-[10px] font-bold text-slate-500 uppercase">Stablecoin Pair</label>
                             <select
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("pair", e.target.value)}
                             >
                                 <option value="USDT/USD">USDT/USD</option>
@@ -462,7 +462,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                                 type="number"
                                 placeholder="0.98"
                                 step="0.01"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("strike", e.target.value)}
                             />
                         </div>
@@ -472,7 +472,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                                 type="number"
                                 placeholder="0.95"
                                 step="0.01"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/40 border border-black/[0.06] rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-mono"
                                 onChange={(e) => updateSpec("target", e.target.value)}
                             />
                         </div>
@@ -487,7 +487,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                                 type="text"
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value.toUpperCase())}
-                                className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-4 text-foreground placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-mono"
+                                className="w-full bg-black/50 border border-black/[0.06] rounded-xl px-4 py-4 text-foreground placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-mono"
                                 placeholder={getPlaceholder()}
                                 disabled={isProcessing || purchaseSuccess}
                             />
@@ -504,7 +504,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
 
 
     return (
-        <div className="w-full rounded-2xl p-6 lg:p-8 border border-white/10 shadow-2xl backdrop-blur-xl bg-black/40 xl:bg-black/20"
+        <div className="w-full rounded-2xl p-6 lg:p-8 border border-black/[0.06] shadow-2xl backdrop-blur-xl bg-black/40 xl:bg-black/20"
             style={{ backdropFilter: "blur(12px) brightness(1.2) contrast(1.1)" }}>
 
             {/* Decorative gradients based on market color */}
@@ -514,7 +514,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
 
             <div className="space-y-6 animate-in fade-in duration-500">
 
-                <div className="p-5 bg-gradient-to-br from-[#161d2f] to-[#0B0F19] border border-white/5 rounded-xl text-left relative overflow-hidden">
+                <div className="p-5 bg-gradient-to-br from-[#161d2f] to-[#0B0F19] border border-black/[0.04] rounded-xl text-left relative overflow-hidden">
                     <div className="absolute unset-0 bg-white opacity-5 mix-blend-overlay" />
                     <div className="flex items-center justify-between mb-4 relative z-10">
                         <span className="text-sm text-slate-400 font-medium">Policy Premium</span>
@@ -532,7 +532,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                 {renderSpecializedInputs()}
 
                 {usdtBalance !== undefined && isConnected && (
-                    <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono tracking-tight bg-white/5 px-4 py-3 rounded-lg border border-white/5">
+                    <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono tracking-tight bg-black/[0.03] px-4 py-3 rounded-lg border border-black/[0.04]">
                         <span className="flex items-center gap-1.5">
                             <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                             BAL: {(Number(usdtBalance) / 1e6).toFixed(2)} USDT
@@ -544,7 +544,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                 )}
 
                 {!isConnected ? (
-                    <div className="text-center p-4 bg-white/5 rounded-xl border border-white/10">
+                    <div className="text-center p-4 bg-black/[0.03] rounded-xl border border-black/[0.06]">
                         <p className="text-sm text-slate-400">Please connect your wallet to purchase this policy.</p>
                     </div>
                 ) : purchaseSuccess ? (
@@ -568,7 +568,7 @@ export function MarketActionCard({ market }: { market: MarketDetail }) {
                 )}
 
                 {isConnected && !purchaseSuccess && (
-                    <div className="pt-2 border-t border-white/5 mt-4">
+                    <div className="pt-2 border-t border-black/[0.04] mt-4">
                         <button
                             onClick={() => setShowCrossChain(!showCrossChain)}
                             className="w-full flex items-center justify-between text-[10px] font-bold text-slate-500 hover:text-foreground transition-colors uppercase tracking-widest group"

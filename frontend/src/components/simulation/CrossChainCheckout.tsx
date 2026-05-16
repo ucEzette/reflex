@@ -121,7 +121,7 @@ export function CrossChainCheckout({ marketId, premiumUsdt, targetIdentifier, on
     };
 
     return (
-        <div className="space-y-4 p-4 bg-white/5 rounded-xl border border-white/10 mt-4 animate-in slide-in-from-top duration-300">
+        <div className="space-y-4 p-4 bg-black/[0.03] rounded-xl border border-black/[0.06] mt-4 animate-in slide-in-from-top duration-300">
             <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Cross-Chain Payment</h4>
                 <div className="flex items-center gap-1.5 px-2 py-1 bg-primary/20 rounded text-[10px] text-primary font-bold">
@@ -141,8 +141,8 @@ export function CrossChainCheckout({ marketId, premiumUsdt, targetIdentifier, on
                             key={c.id}
                             onClick={() => switchChain(defineChain(c.id))}
                             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${chainId === c.id
-                                ? "bg-primary border-primary text-white"
-                                : "bg-black/40 border-white/10 text-slate-400 hover:border-white/30"
+                                ? "bg-primary border-primary text-[#1A1A1A]"
+                                : "bg-black/40 border-black/[0.06] text-slate-400 hover:border-white/30"
                                 }`}
                         >
                             {c.name}
@@ -160,7 +160,7 @@ export function CrossChainCheckout({ marketId, premiumUsdt, targetIdentifier, on
                     <span className="text-slate-500">Estimated CCIP Fee</span>
                     <span className="text-foreground font-mono">{estimatedFee ? `${(Number(estimatedFee) / 1e18).toFixed(4)} ETH` : "Calculating..."}</span>
                 </div>
-                <div className="h-[1px] bg-white/5 w-full my-2" />
+                <div className="h-[1px] bg-black/[0.03] w-full my-2" />
                 <div className="flex justify-between text-xs font-bold">
                     <span className="text-slate-400">Total Est. Cost</span>
                     <span className="text-primary tracking-tight">{(premiumUsdt / 1e6).toFixed(2)} USDT + Fee</span>
@@ -176,8 +176,8 @@ export function CrossChainCheckout({ marketId, premiumUsdt, targetIdentifier, on
                     onClick={hasEnoughAllowance ? handleCcipPayment : handleApprove}
                     disabled={isProcessing || !hasEnoughBalance}
                     className={`w-full py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${hasEnoughBalance
-                        ? "bg-primary text-white hover:brightness-110"
-                        : "bg-white/5 text-slate-500 cursor-not-allowed border border-white/5"
+                        ? "bg-primary text-[#1A1A1A] hover:brightness-110"
+                        : "bg-black/[0.03] text-slate-500 cursor-not-allowed border border-black/[0.04]"
                         }`}
                 >
                     {isProcessing
