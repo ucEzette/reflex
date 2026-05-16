@@ -59,10 +59,15 @@ export default function LandingPage() {
                 Launch App
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="rotate-45"><path d="M1 8h14M9 2l6 6-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </Link>
-              <Link href="/whitepaper" className="inline-flex items-center gap-2 border border-black/10 text-[#1A1A1A] px-8 py-4 rounded-full text-[15px] font-medium hover:bg-black/5 transition-all">
+              <a 
+                href="https://docs.google.com/presentation/d/1RAQHRFVr9NHClst8C7FdOXr4fHUsxcsug20wHwEC8Ak/present" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 border border-black/10 text-[#1A1A1A] px-8 py-4 rounded-full text-[15px] font-medium hover:bg-black/5 transition-all"
+              >
                 Our Intro Deck
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="rotate-45"><path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </Link>
+              </a>
             </div>
           </div>
           <div className="relative flex justify-center lg:justify-end">
