@@ -40,7 +40,7 @@ function CountdownTimer({ expirationTime }: { expirationTime: bigint }) {
     const isExpired = timeLeft === "Expired";
     return (
         <span
-            className={`font-mono text-sm ${isExpired ? "text-zinc-600" : "text-amber-400"}`}
+            className={`font-mono text-sm ${isExpired ? "text-[#B0AAA4]" : "text-amber-400"}`}
         >
             {timeLeft}
         </span>
@@ -85,7 +85,7 @@ function StatusBadge({ status, isActive: _isActive, isClaimed: _isClaimed, expir
     }
 
     return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full bg-zinc-500/10 text-zinc-500 border border-zinc-500/20">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full bg-zinc-500/10 text-[#71717A] border border-zinc-500/20">
             <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor">
                 <circle cx="4" cy="4" r="4" />
             </svg>
@@ -159,14 +159,14 @@ function PolicyRow({ policy, txHash }: { policy: any, txHash?: string }) {
         <tr className="border-b border-zinc-800/30 hover:bg-zinc-800/20 transition-colors">
             <td className="px-4 py-4">
                 <div className="flex items-center gap-2">
-                    <div className={`text-[10px] font-bold px-1.5 py-0.5 rounded border border-current ${policy.type === 'Escrow' ? 'text-zinc-400' : (policy.type === 'Agri' ? 'text-emerald-400' : (policy.type === 'Energy' ? 'text-amber-400' : (policy.type === 'Catastrophe' ? 'text-rose-500' : (policy.type === 'Maritime' ? 'text-blue-400' : 'text-primary'))))}`}>
+                    <div className={`text-[10px] font-bold px-1.5 py-0.5 rounded border border-current ${policy.type === 'Escrow' ? 'text-[#71717A]' : (policy.type === 'Agri' ? 'text-emerald-400' : (policy.type === 'Energy' ? 'text-amber-400' : (policy.type === 'Catastrophe' ? 'text-rose-500' : (policy.type === 'Maritime' ? 'text-blue-400' : 'text-primary'))))}`}>
                         {policy.type.toUpperCase()}
                     </div>
                     <span className="text-sm font-medium text-foreground">{displayTarget || "Global Policy"}</span>
                 </div>
             </td>
             <td className="px-4 py-4">
-                <span className="text-sm text-zinc-400">${Number(formatUnits(premium, 6)).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span className="text-sm text-[#71717A]">${Number(formatUnits(premium, 6)).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </td>
             <td className="px-4 py-4">
                 <span className="text-sm font-medium text-emerald-400">
@@ -181,9 +181,9 @@ function PolicyRow({ policy, txHash }: { policy: any, txHash?: string }) {
                     {!isClaimed && !isExpired ? (
                         <CountdownTimer expirationTime={expiry} />
                     ) : (
-                        <span className="text-xs text-zinc-600 font-mono">{isClaimed ? "SETTLED" : "EXPIRED"}</span>
+                        <span className="text-xs text-[#B0AAA4] font-mono">{isClaimed ? "SETTLED" : "EXPIRED"}</span>
                     )}
-                    <span className="text-[10px] text-zinc-500 mt-1 font-mono">{formatExpiryTable(expiry)}</span>
+                    <span className="text-[10px] text-[#71717A] mt-1 font-mono">{formatExpiryTable(expiry)}</span>
                 </div>
             </td>
             <td className="px-4 py-4">
@@ -192,7 +192,7 @@ function PolicyRow({ policy, txHash }: { policy: any, txHash?: string }) {
                         href={txHash ? `https://sepolia.arbiscan.io/tx/${txHash}` : `https://sepolia.arbiscan.io/address/${policy.contract}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs font-mono text-zinc-400 hover:text-sky-400 transition-colors"
+                        className="text-xs font-mono text-[#71717A] hover:text-sky-400 transition-colors"
                         title={txHash ? "View Transaction" : "View Contract"}
                     >
                         {policy.id.slice(0, 10)}...
@@ -202,7 +202,7 @@ function PolicyRow({ policy, txHash }: { policy: any, txHash?: string }) {
                             href={txHash ? `https://sepolia.arbiscan.io/tx/${txHash}` : `https://sepolia.arbiscan.io/address/${policy.contract}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-800/50 text-[10px] ${txHash ? 'text-sky-400' : 'text-zinc-500'} hover:text-sky-300 hover:bg-zinc-800 transition-colors border border-zinc-800`}
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-800/50 text-[10px] ${txHash ? 'text-sky-400' : 'text-[#71717A]'} hover:text-sky-300 hover:bg-zinc-800 transition-colors border border-zinc-800`}
                         >
                             <span>{txHash ? 'Explorer' : 'Contract'}</span>
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -526,23 +526,23 @@ export const ActivePolicies: React.FC<ActivePoliciesProps> = ({
                 ) : policyDetails.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-zinc-800/50 flex items-center justify-center">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-zinc-600">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-[#B0AAA4]">
                                 <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" fill="currentColor" />
                             </svg>
                         </div>
-                        <p className="text-sm text-zinc-500">No policies yet</p>
-                        <p className="text-xs text-zinc-600 mt-1">Purchase parametric protection in the Market</p>
+                        <p className="text-sm text-[#71717A]">No policies yet</p>
+                        <p className="text-xs text-[#B0AAA4] mt-1">Purchase parametric protection in the Market</p>
                     </div>
                 ) : (
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-zinc-800/50">
-                                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">Sector/Target</th>
-                                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">Premium</th>
-                                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">Payout</th>
-                                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">Status</th>
-                                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">Expires In</th>
-                                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">Policy ID</th>
+                                <th className="text-left px-4 py-3 text-xs font-medium text-[#71717A] uppercase tracking-wider">Sector/Target</th>
+                                <th className="text-left px-4 py-3 text-xs font-medium text-[#71717A] uppercase tracking-wider">Premium</th>
+                                <th className="text-left px-4 py-3 text-xs font-medium text-[#71717A] uppercase tracking-wider">Payout</th>
+                                <th className="text-left px-4 py-3 text-xs font-medium text-[#71717A] uppercase tracking-wider">Status</th>
+                                <th className="text-left px-4 py-3 text-xs font-medium text-[#71717A] uppercase tracking-wider">Expires In</th>
+                                <th className="text-left px-4 py-3 text-xs font-medium text-[#71717A] uppercase tracking-wider">Policy ID</th>
                             </tr>
                         </thead>
                         <tbody>
