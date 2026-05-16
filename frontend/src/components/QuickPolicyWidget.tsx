@@ -65,19 +65,19 @@ export const QuickPolicyWidget = ({ marketId = "flight", onToggle, embedded = fa
         <div className={`w-full max-w-md overflow-hidden rounded-2xl border transition-all duration-500 ${
             isEnabled 
             ? "bg-zinc-900 border-white/20 shadow-2xl shadow-primary/10" 
-            : "bg-zinc-950/50 border-white/5 shadow-none"
+            : "bg-zinc-950/50 border-black/[0.04] shadow-none"
         }`}>
             {/* Header / Brand */}
-            <div className="flex items-center justify-between p-4 border-b border-white/5 bg-white/[0.02]">
+            <div className="flex items-center justify-between p-4 border-b border-black/[0.04] bg-white/[0.02]">
                 <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded bg-primary/20 flex items-center justify-center">
                         <span className="material-symbols-outlined text-sm text-primary">shield_with_heart</span>
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Reflex Protection</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#71717A]">Reflex Protection</span>
                 </div>
                 <div className="flex items-center gap-1">
                     <div className={`w-1.5 h-1.5 rounded-full ${isProtected ? 'bg-green-500 animate-pulse' : 'bg-zinc-700'}`} />
-                    <span className="text-[9px] font-bold text-zinc-500 uppercase">{isProtected ? 'Active' : 'Standby'}</span>
+                    <span className="text-[9px] font-bold text-[#71717A] uppercase">{isProtected ? 'Active' : 'Standby'}</span>
                 </div>
             </div>
 
@@ -85,13 +85,13 @@ export const QuickPolicyWidget = ({ marketId = "flight", onToggle, embedded = fa
                 {/* Main Content */}
                 <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">
-                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <h3 className="text-sm font-bold text-[#1A1A1A] flex items-center gap-2">
                             {market.title} Delay Coverage
                             {surgeData && (
-                                <span className="bg-red-500/20 text-red-500 text-[8px] px-1.5 py-0.5 rounded font-black italic animate-pulse">SURGE</span>
+                                <span className="bg-red-500/20 text-red-500 text-[8px] px-1.5 py-0.5 rounded font-bold animate-pulse">SURGE</span>
                             )}
                         </h3>
-                        <p className="text-[11px] text-zinc-500 leading-relaxed font-medium">
+                        <p className="text-[11px] text-[#71717A] leading-relaxed font-medium">
                             Instant {market.price} settlement if your arrival is delayed by {marketId === 'flight' ? '120m+' : 'threshold'}. No claims required.
                         </p>
                     </div>
@@ -123,15 +123,15 @@ export const QuickPolicyWidget = ({ marketId = "flight", onToggle, embedded = fa
                             className="overflow-hidden"
                         >
                             <div className="space-y-3 pt-2">
-                                <div className={`p-3 rounded-xl border transition-colors ${surgeData ? 'bg-red-500/5 border-red-500/20' : 'bg-white/5 border-white/5'}`}>
+                                <div className={`p-3 rounded-xl border transition-colors ${surgeData ? 'bg-red-500/5 border-red-500/20' : 'bg-black/[0.03] border-black/[0.04]'}`}>
                                     <div className="flex items-center justify-between mb-1">
-                                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Protection Premium</span>
-                                        <span className={`text-sm font-black font-mono italic ${surgeData ? 'text-red-500' : 'text-white'}`}>
+                                        <span className="text-[10px] font-bold text-[#71717A] uppercase tracking-widest">Protection Premium</span>
+                                        <span className={`text-sm font-bold font-mono ${surgeData ? 'text-red-500' : 'text-[#1A1A1A]'}`}>
                                             {totalPremium.toFixed(2)} USDT
                                         </span>
                                     </div>
                                     {surgeData && (
-                                        <div className="flex items-center gap-2 text-[9px] text-red-400 font-bold italic">
+                                        <div className="flex items-center gap-2 text-[9px] text-red-400 font-bold">
                                             <span className="material-symbols-outlined text-[12px]">warning</span>
                                             {surgeData.reason} (Risk Multiplier: {surgeData.multiplier}x)
                                         </div>
@@ -141,7 +141,7 @@ export const QuickPolicyWidget = ({ marketId = "flight", onToggle, embedded = fa
                                 <button 
                                     onClick={handlePurchase}
                                     disabled={isPurchasing}
-                                    className="w-full py-3 bg-white text-black text-[11px] font-black uppercase tracking-widest rounded-xl hover:bg-white/90 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                    className="w-full py-3 bg-white text-black text-[11px] font-bold uppercase tracking-widest rounded-xl hover:bg-white/90 active:scale-95 transition-all flex items-center justify-center gap-2"
                                 >
                                     {isPurchasing ? (
                                         <>
@@ -152,7 +152,7 @@ export const QuickPolicyWidget = ({ marketId = "flight", onToggle, embedded = fa
                                         "Confirm & Add to Booking"
                                     )}
                                 </button>
-                                <p className="text-[9px] text-zinc-600 text-center font-medium">
+                                <p className="text-[9px] text-[#B0AAA4] text-center font-medium">
                                     Encrypted settlement vault secured by Arbitrum Sepolia. One-tap zk-payment active.
                                 </p>
                             </div>
@@ -169,7 +169,7 @@ export const QuickPolicyWidget = ({ marketId = "flight", onToggle, embedded = fa
                                 <span className="material-symbols-outlined text-lg">check</span>
                             </div>
                             <div>
-                                <h4 className="text-[11px] font-black text-green-500 uppercase tracking-widest">Flight Protected</h4>
+                                <h4 className="text-[11px] font-bold text-green-500 uppercase tracking-widest">Flight Protected</h4>
                                 <p className="text-[10px] text-green-500/70 font-medium">Your parametric claim vault has been initialized.</p>
                             </div>
                         </motion.div>

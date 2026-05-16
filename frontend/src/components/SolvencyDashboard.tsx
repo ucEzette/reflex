@@ -99,26 +99,26 @@ export const SolvencyDashboard = () => {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neon-cyan/10 border border-neon-cyan/20 text-neon-cyan text-[10px] font-black tracking-widest uppercase mb-4">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neon-cyan/10 border border-neon-cyan/20 text-neon-cyan text-[10px] font-bold tracking-widest uppercase mb-4">
                             <span className="relative flex h-2 w-2">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-cyan opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-neon-cyan"></span>
                             </span>
                             Live Solvency Monitor
                         </div>
-                        <h2 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">
+                        <h2 className="text-4xl font-bold tracking-tighter text-[#1A1A1A] uppercase leading-none">
                             Proof of <span className="text-neon-cyan">Reserves</span>
                         </h2>
-                        <p className="text-sm text-zinc-500 font-mono mt-2 flex items-center gap-2">
-                             Decentralized audit powered by <span className="text-white font-bold">Chainlink DONs</span>
+                        <p className="text-sm text-[#71717A] font-mono mt-2 flex items-center gap-2">
+                             Decentralized audit powered by <span className="text-[#1A1A1A] font-bold">Chainlink DONs</span>
                         </p>
                     </div>
 
                     <div className="flex flex-col items-end">
-                        <div ref={ratioRef} className="text-4xl md:text-5xl font-black font-mono tracking-tighter drop-shadow-md" style={{ color: healthColor }}>
+                        <div ref={ratioRef} className="text-4xl md:text-5xl font-bold font-mono tracking-tighter drop-shadow-md" style={{ color: healthColor }}>
                             {metrics.ratio.toFixed(1)}%
                         </div>
-                        <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] mt-1">SOLVENCY RATIO</div>
+                        <div className="text-[10px] text-[#71717A] font-bold uppercase tracking-wider mt-1">SOLVENCY RATIO</div>
                     </div>
                 </div>
 
@@ -126,7 +126,7 @@ export const SolvencyDashboard = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Assets vs Liabilities */}
                     <div className="lg:col-span-2 space-y-8">
-                        <div className="relative h-4 bg-zinc-800 rounded-full overflow-hidden border border-white/5">
+                        <div className="relative h-4 bg-zinc-800 rounded-full overflow-hidden border border-black/[0.04]">
                             <motion.div 
                                 className="absolute inset-y-0 left-0 bg-neon-cyan shadow-[0_0_20px_rgba(0,240,255,0.5)]"
                                 initial={{ width: 0 }}
@@ -134,14 +134,14 @@ export const SolvencyDashboard = () => {
                                 transition={{ duration: 1.5, ease: "circOut" }}
                             />
                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <span className="text-[8px] font-black text-white mix-blend-difference uppercase tracking-widest">Liability Coverage Buffer</span>
+                                <span className="text-[8px] font-bold text-[#1A1A1A] mix-blend-difference uppercase tracking-widest">Liability Coverage Buffer</span>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="p-6 rounded-2xl bg-black/40 border border-white/5 hover:border-neon-cyan/50 hover:shadow-[0_0_30px_rgba(0,240,255,0.15)] transition-all duration-300">
-                                <div className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.15em] mb-2">Capital Reserves (Vaults)</div>
-                                <div ref={assetsRef} className="text-3xl font-black font-mono text-white drop-shadow-sm">
+                            <div className="p-6 rounded-2xl bg-black/40 border border-black/[0.04] hover:border-neon-cyan/50 hover:shadow-[0_0_30px_rgba(0,240,255,0.15)] transition-all duration-300">
+                                <div className="text-[10px] text-[#71717A] font-bold uppercase tracking-[0.15em] mb-2">Capital Reserves (Vaults)</div>
+                                <div ref={assetsRef} className="text-3xl font-bold font-mono text-[#1A1A1A] drop-shadow-sm">
                                     {isLoading ? "Fetching..." : formatCurrency(metrics.totalAssets)}
                                 </div>
                                 <div className="text-[10px] text-green-500 font-bold mt-2 flex items-center gap-1">
@@ -149,12 +149,12 @@ export const SolvencyDashboard = () => {
                                     On-Chain Verified
                                 </div>
                             </div>
-                            <div className="p-6 rounded-2xl bg-black/40 border border-white/5 hover:border-red-500/50 hover:shadow-[0_0_30px_rgba(239,68,68,0.15)] transition-all duration-300">
-                                <div className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.15em] mb-2">Max Potential Liabilities</div>
-                                <div ref={liabRef} className="text-3xl font-black font-mono text-white drop-shadow-sm">
+                            <div className="p-6 rounded-2xl bg-black/40 border border-black/[0.04] hover:border-red-500/50 hover:shadow-[0_0_30px_rgba(239,68,68,0.15)] transition-all duration-300">
+                                <div className="text-[10px] text-[#71717A] font-bold uppercase tracking-[0.15em] mb-2">Max Potential Liabilities</div>
+                                <div ref={liabRef} className="text-3xl font-bold font-mono text-[#1A1A1A] drop-shadow-sm">
                                     {isLoading ? "Fetching..." : formatCurrency(metrics.totalLiabilities)}
                                 </div>
-                                <div className="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-wide">Continuous Exposure</div>
+                                <div className="text-[10px] text-[#71717A] font-bold mt-2 uppercase tracking-wide">Continuous Exposure</div>
                             </div>
                         </div>
                     </div>
@@ -165,37 +165,37 @@ export const SolvencyDashboard = () => {
                             <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
                                 <span className="material-symbols-outlined text-primary text-3xl">shield_check</span>
                             </div>
-                            <h3 className="text-lg font-bold text-white leading-tight">Institutional Trust Guarantee</h3>
-                            <p className="text-xs text-zinc-400 leading-relaxed font-light">
+                            <h3 className="text-lg font-bold text-[#1A1A1A] leading-tight">Institutional Trust Guarantee</h3>
+                            <p className="text-xs text-[#71717A] leading-relaxed font-light">
                                 Reflex operates as a 100% collateralized protocol. Every active policy is backed by liquid USDT in isolated pool vaults.
                             </p>
                         </div>
-                        <div className="mt-6 pt-6 border-t border-white/5 flex items-center gap-3">
+                        <div className="mt-6 pt-6 border-t border-black/[0.04] flex items-center gap-3">
                              <span className="material-symbols-outlined text-primary">link</span>
-                             <span className="text-[10px] font-black text-primary uppercase tracking-widest">Powered by Chainlink DONs</span>
+                             <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Powered by Chainlink DONs</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Footer Badges */}
-                <div className="flex flex-wrap gap-8 pt-4 border-t border-white/5 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+                <div className="flex flex-wrap gap-8 pt-4 border-t border-black/[0.04] opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-tighter">Oracle Concensus:</span>
-                        <span className="text-[10px] font-bold text-white font-mono">27 Nodes Active</span>
+                        <span className="text-[10px] font-bold text-[#71717A] uppercase tracking-tighter">Oracle Concensus:</span>
+                        <span className="text-[10px] font-bold text-[#1A1A1A] font-mono">27 Nodes Active</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-tighter">Settlement Layer:</span>
-                        <span className="text-[10px] font-bold text-white font-mono">Arbitrum Sepolia</span>
+                        <span className="text-[10px] font-bold text-[#71717A] uppercase tracking-tighter">Settlement Layer:</span>
+                        <span className="text-[10px] font-bold text-[#1A1A1A] font-mono">Arbitrum Sepolia</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-tighter">Verification Method:</span>
-                        <span className="text-[10px] font-bold text-white font-mono">Chainlink Functions</span>
+                        <span className="text-[10px] font-bold text-[#71717A] uppercase tracking-tighter">Verification Method:</span>
+                        <span className="text-[10px] font-bold text-[#1A1A1A] font-mono">Chainlink Functions</span>
                     </div>
                 </div>
             </div>
 
             {/* Background Text Decor */}
-            <div className="absolute -bottom-10 -right-10 text-[120px] font-black italic text-white/[0.02] pointer-events-none select-none uppercase">
+            <div className="absolute -bottom-10 -right-10 text-[120px] font-bold text-[#1A1A1A]/[0.02] pointer-events-none select-none uppercase">
                 Solvency
             </div>
         </div>
