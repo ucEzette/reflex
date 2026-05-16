@@ -105,13 +105,13 @@ export function AdminControl() {
     };
 
     return (
-        <div className="bg-black/40 border border-white/5 rounded-3xl p-8 backdrop-blur-xl space-y-8">
+        <div className="bg-black/40 border border-black/[0.04] rounded-3xl p-8 backdrop-blur-xl space-y-8">
             <div>
                 <InstitutionalTooltip title="Protocol Command Center" content="High-privileged terminal for emergency management, yield harvesting, and controlling the decentralized relayer quorum.">
                     <h2 className="text-2xl font-bold text-foreground flex items-center gap-3 cursor-help">
                         <ShieldAlert className="w-6 h-6 text-red-500" />
                         Protocol Command Center
-                        <Info className="w-4 h-4 text-zinc-500 opacity-50" />
+                        <Info className="w-4 h-4 text-[#71717A] opacity-50" />
                     </h2>
                 </InstitutionalTooltip>
                 <p className="text-slate-400 text-sm mt-1">High-privileged administrative controls for protocol governance and emergency management.</p>
@@ -119,12 +119,12 @@ export function AdminControl() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Emergency Killswitch */}
-                <div className={`p-6 rounded-2xl border transition-all ${paused ? 'bg-red-500/10 border-red-500/30' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}>
+                <div className={`p-6 rounded-2xl border transition-all ${paused ? 'bg-red-500/10 border-red-500/30' : 'bg-black/[0.03] border-black/[0.04] hover:bg-black/[0.05]'}`}>
                     <div className="flex items-center justify-between mb-4">
                         <div className={`p-2 rounded-lg ${paused ? 'bg-red-500/20' : 'bg-white/10'}`}>
                             {paused ? <Play className="w-5 h-5 text-red-500" /> : <Pause className="w-5 h-5 text-slate-400" />}
                         </div>
-                        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${paused ? 'bg-red-500 text-white' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${paused ? 'bg-red-500 text-[#1A1A1A]' : 'bg-emerald-500/10 text-emerald-500'}`}>
                             {paused ? 'Paused' : 'Active'}
                         </span>
                     </div>
@@ -133,14 +133,14 @@ export function AdminControl() {
                     <button
                         onClick={handleTogglePause}
                         disabled={isBusy}
-                        className={`w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${paused ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'} disabled:opacity-50`}
+                        className={`w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${paused ? 'bg-emerald-500 hover:bg-emerald-600 text-[#1A1A1A]' : 'bg-red-500 hover:bg-red-600 text-[#1A1A1A]'} disabled:opacity-50`}
                     >
                         {isBusy ? 'Processing...' : (paused ? 'Resume Protocol' : 'Trigger Emergency Pause')}
                     </button>
                 </div>
 
                 {/* Relayer Management */}
-                <div className="p-6 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all group">
+                <div className="p-6 bg-black/[0.03] border border-black/[0.04] rounded-2xl hover:bg-black/[0.05] transition-all group">
                     <div className="flex items-center justify-between mb-4">
                         <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
                             <Shield className="w-5 h-5 text-primary" />
@@ -153,14 +153,14 @@ export function AdminControl() {
                         <button
                             onClick={handleAddRelayer}
                             disabled={isBusy}
-                            className="flex-1 py-2 bg-white/5 border border-white/10 hover:border-primary/50 text-white text-[10px] font-bold rounded-lg uppercase tracking-wider transition-all disabled:opacity-50"
+                            className="flex-1 py-2 bg-black/[0.03] border border-black/[0.06] hover:border-primary/50 text-[#1A1A1A] text-[10px] font-bold rounded-lg uppercase tracking-wider transition-all disabled:opacity-50"
                         >
                             {isBusy ? '...' : 'Add Relayer'}
                         </button>
                         <button
                             onClick={handleAdjustQuorum}
                             disabled={isBusy}
-                            className="flex-1 py-2 bg-white/5 border border-white/10 hover:border-red-500/50 text-white text-[10px] font-bold rounded-lg uppercase tracking-wider transition-all disabled:opacity-50"
+                            className="flex-1 py-2 bg-black/[0.03] border border-black/[0.06] hover:border-red-500/50 text-[#1A1A1A] text-[10px] font-bold rounded-lg uppercase tracking-wider transition-all disabled:opacity-50"
                         >
                             {isBusy ? '...' : 'Adjust Quorum'}
                         </button>
@@ -168,7 +168,7 @@ export function AdminControl() {
                 </div>
             </div>
 
-            <div className="p-6 bg-zinc-900/50 border border-white/5 rounded-3xl">
+            <div className="p-6 bg-zinc-900/50 border border-black/[0.04] rounded-3xl">
                 <div className="flex items-center gap-2 mb-4">
                     <Unlock className="w-4 h-4 text-slate-500" />
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Global State Variables</span>
