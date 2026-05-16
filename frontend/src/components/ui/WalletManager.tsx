@@ -93,7 +93,7 @@ export function WalletManager() {
                     <h3 className="text-xl font-bold text-foreground mb-4">Switch to Arbitrum Sepolia</h3>
                     <button
                         onClick={() => switchChain({ chainId: TARGET_CHAIN_ID })}
-                        className="w-full bg-amber-500 text-white py-2 rounded-xl font-bold text-sm hover:bg-amber-600 transition-all flex items-center justify-center gap-2"
+                        className="w-full bg-amber-500 text-[#1A1A1A] py-2 rounded-xl font-bold text-sm hover:bg-amber-600 transition-all flex items-center justify-center gap-2"
                     >
                         <RefreshCcw className="w-4 h-4" />
                         Switch Network
